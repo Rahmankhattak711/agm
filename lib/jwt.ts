@@ -16,3 +16,7 @@ export function signRefreshToken(payload: object) {
 export function verifyRefreshToken(token: string) {
   return jwt.verify(token, REFRESH_TOKEN_SECRET);
 }
+
+export function verifyAccessToken(token: string) {
+  return jwt.verify(token, ACCESS_TOKEN_SECRET);
+}

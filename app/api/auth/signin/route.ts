@@ -29,6 +29,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid password" }, { status: 401 });
     }
 
+    if (!user.isActive) {
+      return NextResponse.json({ error: "Account is deactivated" }, { status: 403 });
+    }
+
     const accessToken = signAccessToken({ userId: user.id, role: user.role });
     const refreshToken = signRefreshToken({ userId: user.id });
 
@@ -36,8 +40,10 @@ export async function POST(request: Request) {
       data: { token: refreshToken, userId: user.id },
     });
 
+    const { passwordHash: _, ...safeUser } = user;
+
     return NextResponse.json(
-      { user, accessToken, refreshToken },
+      { user: safeUser, accessToken, refreshToken },
       { status: 200 },
     );
   } catch (error) {
