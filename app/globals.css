@@ -1,26 +1,74 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --agm-navy: #344b60;
+  --agm-navy-2: #263d52;
+  --agm-green: #28633a;
+  --agm-green-2: #174d2b;
+  --agm-green-soft: #e8f0e8;
+  --agm-ivory: #f8f7f2;
+  --agm-sidebar: #22394c;
+  --agm-sidebar-border: rgba(255,255,255,0.06);
+  --agm-bg: #f6f5f0;
+  --agm-card: #ffffff;
+  --agm-border: rgba(17,24,39,0.07);
+  --agm-text: #263b4d;
+  --agm-muted: #657484;
+  --agm-subtle: #90a0ad;
+  --agm-green-dark: #0e3812;
+  --agm-charcoal: #22222e;
+  --agm-box-bg: #f4f6f4;
+  --agm-box-border: #dbe2db;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-background: var(--agm-bg);
+  --color-foreground: var(--agm-text);
+  --font-poppins: var(--font-poppins);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-agm-navy: var(--agm-navy);
+  --color-agm-navy-2: var(--agm-navy-2);
+  --color-agm-green: var(--agm-green);
+  --color-agm-green-2: var(--agm-green-2);
+  --color-agm-green-soft: var(--agm-green-soft);
+  --color-agm-ivory: var(--agm-ivory);
+  --color-agm-card: var(--agm-card);
+  --color-agm-border: var(--agm-border);
+  --color-agm-text: var(--agm-text);
+  --color-agm-muted: var(--agm-muted);
+  --color-agm-subtle: var(--agm-subtle);
+  --color-agm-green-dark: var(--agm-green-dark);
+  --color-agm-charcoal: var(--agm-charcoal);
+  --color-agm-box-bg: var(--agm-box-bg);
+  --color-agm-box-border: var(--agm-box-border);
 }
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  font-family: var(--font-poppins);
+  background: var(--agm-bg);
+  color: var(--agm-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media print {
+  aside,
+  header,
+  nav,
+  button,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  body,
+  main,
+  #printable-voucher,
+  #printable-statement {
+    background: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
 }
