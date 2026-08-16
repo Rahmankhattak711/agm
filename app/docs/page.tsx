@@ -3,7 +3,7 @@ import 'swagger-ui-react/swagger-ui.css'
 
 export default async function ApiDocsPage() {
   return (
-    <div style={{ backgroundColor: '#fff', minHeight: '100vh', padding: '20px' }}>
+    <div className="flex flex-col items-center justify-center min-h-screen py-2">
       <ReactUI url="/api/doc" />
     </div>
   )
