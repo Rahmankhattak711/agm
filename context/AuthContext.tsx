@@ -2,7 +2,7 @@
 
 import { authService, User } from "@/lib/auth-service";
 import { useRouter } from "next/navigation";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
   user: User | null;
@@ -32,25 +32,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = (accessToken: string, refreshToken: string, userData: User) => {
-    authService.setSession(userData, accessToken, refreshToken);
-    setUser(userData);
-    setLoading(false);
-  };
+  const login = useCallback(
+    (accessToken: string, refreshToken: string, userData: User) => {
+      authService.setSession(userData, accessToken, refreshToken);
+      setUser(userData);
+      setLoading(false);
+    },
+    [],
+  );
 
-  const logout = () => {
+  const logout = useCallback(() => {
     authService.clearSession();
     setUser(null);
     router.push("/login");
-  };
+  }, [router]);
 
-  const checkAuth = () => {
+  const checkAuth = useCallback(() => {
     if (!authService.isAuthenticated()) {
       router.push("/login");
       return false;
     }
     return true;
-  };
+  }, [router]);
 
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
