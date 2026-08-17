@@ -49,7 +49,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header Banner & Status Bar */}
-      <QuotationTemplate/>
+      {/* <QuotationTemplate/> */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-[#284257] to-[#1c3243] text-white shadow-lg">
         <div>
           <div className="flex items-center gap-2">

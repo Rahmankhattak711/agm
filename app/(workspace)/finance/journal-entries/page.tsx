@@ -1,6 +1,5 @@
 "use client";
 
-import AgmLogo from "@/components/AgmLogo";
 import { useAuth } from "@/context/AuthContext";
 import {
   useAccounts,
@@ -23,7 +22,6 @@ export default function JournalEntriesPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [printingEntry, setPrintingEntry] = useState<any | null>(null);
 
   // Form state
   const [entryNumber, setEntryNumber] = useState(
@@ -125,11 +123,6 @@ export default function JournalEntriesPage() {
     );
     setFormError("");
     setIsModalOpen(true);
-  };
-
-  const handlePrintVoucher = (je: any, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setPrintingEntry(je);
   };
 
   const handleDelete = async (
@@ -358,26 +351,8 @@ export default function JournalEntriesPage() {
                         </p>
                       </div>
 
-                      {/* Print, Edit & Delete Action Buttons */}
+                      {/* Edit & Delete Action Buttons */}
                       <div className="flex items-center gap-1.5 ml-2">
-                        <button
-                          onClick={(e) => handlePrintVoucher(je, e)}
-                          title="Print Bill / Voucher"
-                          className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold cursor-pointer transition flex items-center gap-1"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            className="w-3.5 h-3.5"
-                          >
-                            <polyline points="6 9 6 2 18 2 18 9" />
-                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                            <rect x="6" y="14" width="12" height="8" />
-                          </svg>
-                          Print Bill
-                        </button>
                         <button
                           onClick={(e) => handleOpenEditModal(je, e)}
                           title="Edit Entry"
@@ -689,223 +664,6 @@ export default function JournalEntriesPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Print Official Journal Voucher / Bill */}
-      {printingEntry && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-          <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-6">
-            {/* Top Toolbar (Hidden during print) */}
-            <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 bg-slate-50 print:hidden">
-              <span className="text-xs font-bold text-slate-700">
-                Official Voucher Print Preview
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => window.print()}
-                  className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition shadow-sm flex items-center gap-1.5 cursor-pointer"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    className="w-4 h-4"
-                  >
-                    <polyline points="6 9 6 2 18 2 18 9" />
-                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                    <rect x="6" y="14" width="12" height="8" />
-                  </svg>
-                  Print Document
-                </button>
-                <button
-                  onClick={() => setPrintingEntry(null)}
-                  className="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-100 transition cursor-pointer"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-
-            {/* Printable Document Area */}
-            <div
-              className="p-8 sm:p-10 space-y-6 text-slate-900 bg-white"
-              id="printable-voucher"
-            >
-              {/* Header with AGM Branding */}
-              <div className="flex items-start justify-between border-b-2 border-slate-800 pb-5">
-                <div className="space-y-1">
-                  <AgmLogo size="md" collapsed={false} />
-                  <p className="text-[11px] text-slate-500 font-semibold pt-1">
-                    AGM AESTHETIC HOUSE FITOUT COMPANY LLC
-                  </p>
-                  <p className="text-[10px] text-slate-400">
-                    TRN: 100234567890003 · Dubai, United Arab Emirates
-                  </p>
-                </div>
-
-                <div className="text-right space-y-1">
-                  <span className="inline-block px-3 py-1 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-md">
-                    JOURNAL VOUCHER / BILL
-                  </span>
-                  <p className="text-xs font-mono font-bold text-slate-800 pt-1">
-                    VOUCHER #: {printingEntry.entryNumber}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    DATE:{" "}
-                    {new Date(printingEntry.entryDate).toLocaleDateString(
-                      "en-GB",
-                      {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      },
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              {/* Meta information summary */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">
-                    Reference / Invoice
-                  </span>
-                  <p className="font-semibold text-slate-800">
-                    {printingEntry.reference || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">
-                    Posting Status
-                  </span>
-                  <p className="font-bold text-emerald-700">
-                    {printingEntry.isPosted ? "POSTED" : "DRAFT"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">
-                    Prepared By
-                  </span>
-                  <p className="font-semibold text-slate-800">
-                    {printingEntry.user?.fullName || "Accountant"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">
-                    Currency
-                  </span>
-                  <p className="font-bold text-slate-800">AED (UAE Dirham)</p>
-                </div>
-              </div>
-
-              {/* Particulars */}
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  PARTICULARS / DESCRIPTION:
-                </span>
-                <p className="text-xs font-medium text-slate-800 p-2.5 bg-slate-50/70 rounded-lg border border-slate-100 mt-1">
-                  {printingEntry.description || "General Journal Transaction"}
-                </p>
-              </div>
-
-              {/* Double-Entry Transaction Matrix */}
-              <div>
-                <table className="w-full text-xs text-left border border-slate-300">
-                  <thead className="bg-slate-100 text-slate-800 font-bold border-b border-slate-300">
-                    <tr>
-                      <th className="py-2.5 px-3 border-r border-slate-200">
-                        Account Code
-                      </th>
-                      <th className="py-2.5 px-3 border-r border-slate-200">
-                        Account Name & Description
-                      </th>
-                      <th className="py-2.5 px-3 border-r border-slate-200 text-right">
-                        Debit (AED)
-                      </th>
-                      <th className="py-2.5 px-3 text-right">Credit (AED)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {printingEntry.lines?.map((line: any) => (
-                      <tr key={line.id}>
-                        <td className="py-2.5 px-3 font-mono font-bold text-slate-900 border-r border-slate-200">
-                          {line.account?.accountCode || "N/A"}
-                        </td>
-                        <td className="py-2.5 px-3 font-medium text-slate-800 border-r border-slate-200">
-                          {line.account?.accountName || "Ledger Account"}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-semibold border-r border-slate-200 text-slate-900">
-                          {Number(line.debit) > 0
-                            ? formatCurrency(line.debit)
-                            : "—"}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900">
-                          {Number(line.credit) > 0
-                            ? formatCurrency(line.credit)
-                            : "—"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    {(() => {
-                      const totalDebit = (printingEntry.lines || []).reduce(
-                        (s: number, l: any) => s + Number(l.debit || 0),
-                        0,
-                      );
-                      const totalCredit = (printingEntry.lines || []).reduce(
-                        (s: number, l: any) => s + Number(l.credit || 0),
-                        0,
-                      );
-                      return (
-                        <tr className="bg-slate-100 font-black border-t-2 border-slate-800 text-slate-900">
-                          <td
-                            colSpan={2}
-                            className="py-2.5 px-3 uppercase tracking-wider border-r border-slate-300"
-                          >
-                            TOTAL AMOUNT
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono border-r border-slate-300">
-                            {formatCurrency(totalDebit)}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono">
-                            {formatCurrency(totalCredit)}
-                          </td>
-                        </tr>
-                      );
-                    })()}
-                  </tfoot>
-                </table>
-              </div>
-
-              {/* Signatures & Authorizations */}
-              <div className="grid grid-cols-3 gap-6 pt-10 border-t border-slate-200 text-center text-xs">
-                <div>
-                  <div className="h-12 border-b border-dashed border-slate-400 mb-2" />
-                  <p className="font-bold text-slate-800">Prepared By</p>
-                  <p className="text-[10px] text-slate-400">
-                    Accountant / Data Entry
-                  </p>
-                </div>
-                <div>
-                  <div className="h-12 border-b border-dashed border-slate-400 mb-2" />
-                  <p className="font-bold text-slate-800">Verified By</p>
-                  <p className="text-[10px] text-slate-400">
-                    Financial Controller
-                  </p>
-                </div>
-                <div>
-                  <div className="h-12 border-b border-dashed border-slate-400 mb-2" />
-                  <p className="font-bold text-slate-800">Approved By</p>
-                  <p className="text-[10px] text-slate-400">
-                    Finance Director / GM
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}

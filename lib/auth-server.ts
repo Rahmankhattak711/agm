@@ -47,7 +47,7 @@ export function isAdminRole(role: UserRole): boolean {
 export function canManageRole(actor: AuthUser, targetRole: UserRole): boolean {
   if (actor.role === "SUPER_ADMIN") return true;
   if (actor.role === "ADMIN") {
-    return targetRole === "ACCOUNTANT" || targetRole === "USER";
+    return targetRole === "ACCOUNTANT" || targetRole === "HR" || targetRole === "INVENTORY_MANAGER" || targetRole === "USER";
   }
   return false;
 }

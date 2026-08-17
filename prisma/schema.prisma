@@ -5,14 +5,19 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
+// ============================================================
 // 1. AUTHENTICATION & ACCESS CONTROL
+// ============================================================
 
 enum UserRole {
   SUPER_ADMIN
   ADMIN
   ACCOUNTANT
+  HR
+  INVENTORY_MANAGER
   USER
 }
 
@@ -27,6 +32,15 @@ model User {
   journalEntries            JournalEntry[]
   approvedPettyCashVouchers PettyCashTransaction[]
   daybookEntries            DaybookEntry[]
+
+  // HR relations
+  markedAttendances  DailyAttendance[] @relation("AttendanceMarker")
+  approvedLeaves     LeaveRequest[]    @relation("LeaveApprover")
+  approvedBonuses    Bonus[]           @relation("BonusApprover")
+
+  // Inventory relations
+  stockMovements  StockMovement[]
+  purchaseOrders  PurchaseOrder[]
 
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime       @updatedAt @map("updated_at")
@@ -46,7 +60,9 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+// ============================================================
 // 2. CORE DOUBLE-ENTRY ACCOUNTING & DAYBOOK
+// ============================================================
 
 enum AccountType {
   ASSET
@@ -72,6 +88,8 @@ model ChartOfAccount {
   accumulatedDepreciationAccounts FixedAsset[]           @relation("AccumulatedDepreciationAccount")
   depreciationExpenseAccounts     FixedAsset[]           @relation("DepreciationExpenseAccount")
   pettyCashAccounts               PettyCashTransaction[] @relation("PettyCashAccount")
+  inventoryAccounts               ProductCategory[]      @relation("InventoryAccount")
+  cogsAccounts                    ProductCategory[]      @relation("CogsAccount")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -151,7 +169,9 @@ model DaybookEntry {
   @@map("daybook_entries")
 }
 
+// ============================================================
 // 3. VAT TRACKING & POSITION
+// ============================================================
 
 enum VatType {
   INPUT
@@ -183,7 +203,9 @@ model VatEntry {
   @@map("vat_entries")
 }
 
+// ============================================================
 // 4. PETTY CASH MANAGEMENT (Bank, Local Gov / Municipality, Operational)
+// ============================================================
 
 enum PettyCashType {
   TOP_UP
@@ -221,7 +243,9 @@ model PettyCashTransaction {
   @@map("petty_cash_transactions")
 }
 
+// ============================================================
 // 5. FIXED ASSETS & VEHICLES (Depreciation Schedule)
+// ============================================================
 
 enum AssetCategory {
   COMPANY_VEHICLE
@@ -278,12 +302,41 @@ model DepreciationSchedule {
   @@map("depreciation_schedules")
 }
 
+// ============================================================
 // 6. PROFESSIONAL EMPLOYEE & PAYROLL DETAILS
+// ============================================================
 
 enum PaymentMethod {
   WPS_BANK_TRANSFER
   CASH
   CHEQUE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum ContractType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  ON_LEAVE
+  SUSPENDED
+  TERMINATED
+  RESIGNED
 }
 
 model Employee {
@@ -298,25 +351,175 @@ model Employee {
   joiningDate  DateTime @map("joining_date") @db.Date
   isActive     Boolean  @default(true) @map("is_active")
 
-  emiratesId  String? @unique @map("emirates_id")
-  passportNo  String? @map("passport_no")
-  laborCardNo String? @map("labor_card_no")
+  // Personal details
+  gender          Gender?
+  dateOfBirth     DateTime?      @map("date_of_birth") @db.Date
+  nationality     String?
+  maritalStatus   MaritalStatus? @map("marital_status")
+  address         String?
+  profilePhotoUrl String?        @map("profile_photo_url")
 
+  emergencyContactName  String? @map("emergency_contact_name")
+  emergencyContactPhone String? @map("emergency_contact_phone")
+
+  // UAE identification & visa
+  emiratesId          String?   @unique @map("emirates_id")
+  emiratesIdExpiry     DateTime? @map("emirates_id_expiry") @db.Date
+  passportNo          String?   @map("passport_no")
+  passportExpiry       DateTime? @map("passport_expiry") @db.Date
+  laborCardNo         String?   @map("labor_card_no")
+  laborCardExpiry      DateTime? @map("labor_card_expiry") @db.Date
+  visaNumber          String?   @map("visa_number")
+  visaExpiry          DateTime? @map("visa_expiry") @db.Date
+
+  // Employment details
+  contractType       ContractType     @default(FULL_TIME) @map("contract_type")
+  employmentStatus   EmploymentStatus @default(ACTIVE) @map("employment_status")
+  probationEndDate   DateTime?        @map("probation_end_date") @db.Date
+  contractEndDate    DateTime?        @map("contract_end_date") @db.Date
+  terminationDate    DateTime?        @map("termination_date") @db.Date
+  reportsToId        String?          @map("reports_to_id") @db.Uuid
+  reportsTo          Employee?        @relation("EmployeeHierarchy", fields: [reportsToId], references: [id])
+  directReports      Employee[]       @relation("EmployeeHierarchy")
+
+  // Compensation
   basicSalary        Decimal @map("basic_salary") @db.Decimal(12, 2)
   housingAllowance   Decimal @default(0.00) @map("housing_allowance") @db.Decimal(12, 2)
   transportAllowance Decimal @default(0.00) @map("transport_allowance") @db.Decimal(12, 2)
   otherAllowances    Decimal @default(0.00) @map("other_allowances") @db.Decimal(12, 2)
+  monthlySalary      Decimal @default(0.00) @map("monthly_salary") @db.Decimal(12, 2)
+  // monthlySalary = basicSalary + all allowances; kept as a stored/denormalized
+  // total so payroll and reports don't need to recompute it every time.
+
+  annualLeaveBalance Decimal @default(30.00) @map("annual_leave_balance") @db.Decimal(5, 1)
 
   paymentMethod PaymentMethod @default(WPS_BANK_TRANSFER) @map("payment_method")
   bankName      String?       @map("bank_name")
   iban          String?       @map("iban")
 
-  payrolls PayrollRecord[]
+  payrolls    PayrollRecord[]
+  attendances DailyAttendance[]
+  leaves      LeaveRequest[]
+  bonuses     Bonus[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("employees")
+}
+
+// DAILY ATTENDANCE
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+  ON_LEAVE
+  HOLIDAY
+  WEEKEND
+}
+
+model DailyAttendance {
+  id             String   @id @default(uuid()) @db.Uuid
+  employeeId     String   @map("employee_id") @db.Uuid
+  employee       Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  attendanceDate DateTime @map("attendance_date") @db.Date
+
+  checkInTime  DateTime? @map("check_in_time")
+  checkOutTime DateTime? @map("check_out_time")
+
+  status        AttendanceStatus @default(PRESENT)
+  workingHours  Decimal?         @map("working_hours") @db.Decimal(4, 2)
+  overtimeHours Decimal          @default(0.00) @map("overtime_hours") @db.Decimal(4, 2)
+  lateMinutes   Int              @default(0) @map("late_minutes")
+
+  location String? // e.g. site name / project location for on-site staff
+  notes    String?
+
+  markedBy String? @map("marked_by") @db.Uuid
+  marker   User?   @relation("AttendanceMarker", fields: [markedBy], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([employeeId, attendanceDate])
+  @@map("daily_attendance")
+}
+
+// LEAVE MANAGEMENT
+
+enum LeaveType {
+  ANNUAL
+  SICK
+  UNPAID
+  EMERGENCY
+  MATERNITY
+  PATERNITY
+  OTHER
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model LeaveRequest {
+  id         String   @id @default(uuid()) @db.Uuid
+  employeeId String   @map("employee_id") @db.Uuid
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  leaveType LeaveType @map("leave_type")
+  startDate DateTime  @map("start_date") @db.Date
+  endDate   DateTime  @map("end_date") @db.Date
+  totalDays Decimal   @map("total_days") @db.Decimal(4, 1)
+  reason    String?
+
+  status     LeaveStatus @default(PENDING)
+  approvedBy String?     @map("approved_by") @db.Uuid
+  approver   User?       @relation("LeaveApprover", fields: [approvedBy], references: [id])
+  approvedAt DateTime?   @map("approved_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("leave_requests")
+}
+
+// BONUS / INCENTIVE TRACKING
+
+enum BonusType {
+  PERFORMANCE
+  FESTIVAL
+  PROJECT_COMPLETION
+  ATTENDANCE
+  REFERRAL
+  OTHER
+}
+
+model Bonus {
+  id         String   @id @default(uuid()) @db.Uuid
+  employeeId String   @map("employee_id") @db.Uuid
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  type   BonusType @default(OTHER)
+  amount Decimal   @db.Decimal(12, 2)
+  month  Int?
+  year   Int?
+  reason String?
+
+  isApproved Boolean   @default(false) @map("is_approved")
+  approvedBy String?   @map("approved_by") @db.Uuid
+  approver   User?     @relation("BonusApprover", fields: [approvedBy], references: [id])
+
+  isPaid   Boolean   @default(false) @map("is_paid")
+  paidDate DateTime? @map("paid_date") @db.Date
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("bonuses")
 }
 
 model PayrollRecord {
@@ -325,12 +528,19 @@ model PayrollRecord {
   month      Int
   year       Int
 
-  basicSalary Decimal   @map("basic_salary") @db.Decimal(12, 2)
-  allowances  Decimal   @default(0.00) @db.Decimal(12, 2)
-  deductions  Decimal   @default(0.00) @db.Decimal(12, 2)
-  netSalary   Decimal   @map("net_salary") @db.Decimal(12, 2)
-  isPaid      Boolean   @default(false) @map("is_paid")
-  paymentDate DateTime? @map("payment_date") @db.Date
+  basicSalary     Decimal   @map("basic_salary") @db.Decimal(12, 2)
+  allowances      Decimal   @default(0.00) @db.Decimal(12, 2)
+  overtimeAmount  Decimal   @default(0.00) @map("overtime_amount") @db.Decimal(12, 2)
+  bonusAmount     Decimal   @default(0.00) @map("bonus_amount") @db.Decimal(12, 2)
+  absenceDeduction Decimal  @default(0.00) @map("absence_deduction") @db.Decimal(12, 2)
+  otherDeductions Decimal   @default(0.00) @map("other_deductions") @db.Decimal(12, 2)
+  deductions      Decimal   @default(0.00) @db.Decimal(12, 2)
+  netSalary       Decimal   @map("net_salary") @db.Decimal(12, 2)
+  daysPresent     Decimal?  @map("days_present") @db.Decimal(4, 1)
+  daysAbsent      Decimal?  @map("days_absent") @db.Decimal(4, 1)
+  isPaid          Boolean   @default(false) @map("is_paid")
+  paymentDate     DateTime? @map("payment_date") @db.Date
+  remarks         String?
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -340,7 +550,201 @@ model PayrollRecord {
   @@map("payroll_records")
 }
 
-// 7. MONTHLY BALANCE SHEET SUMMARY
+// ============================================================
+// 7. PRODUCT INVENTORY SYSTEM
+// ============================================================
+
+model Supplier {
+  id            String  @id @default(uuid()) @db.Uuid
+  supplierCode  String  @unique @map("supplier_code")
+  name          String
+  contactPerson String? @map("contact_person")
+  phone         String?
+  email         String?
+  address       String?
+  trn           String? // Tax Registration Number
+  isActive      Boolean @default(true) @map("is_active")
+
+  products       Product[]
+  purchaseOrders PurchaseOrder[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("suppliers")
+}
+
+model Warehouse {
+  id       String  @id @default(uuid()) @db.Uuid
+  code     String  @unique
+  name     String
+  location String?
+  isActive Boolean @default(true) @map("is_active")
+
+  stockLevels    StockLevel[]
+  stockMovements StockMovement[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("warehouses")
+}
+
+model ProductCategory {
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique
+
+  parentId String?          @map("parent_id") @db.Uuid
+  parent   ProductCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children ProductCategory[] @relation("CategoryHierarchy")
+
+  // Optional links to accounting for automated inventory/COGS postings
+  inventoryAccountId String?         @map("inventory_account_id") @db.Uuid
+  inventoryAccount   ChartOfAccount? @relation("InventoryAccount", fields: [inventoryAccountId], references: [id])
+  cogsAccountId       String?         @map("cogs_account_id") @db.Uuid
+  cogsAccount         ChartOfAccount? @relation("CogsAccount", fields: [cogsAccountId], references: [id])
+
+  products Product[]
+
+  @@map("product_categories")
+}
+
+enum ProductType {
+  RAW_MATERIAL
+  FINISHED_GOOD
+  CONSUMABLE
+  TOOL_EQUIPMENT
+}
+
+model Product {
+  id          String      @id @default(uuid()) @db.Uuid
+  sku         String      @unique
+  name        String
+  description String?
+  type        ProductType @default(RAW_MATERIAL)
+  unit        String      @default("PCS") // PCS, SQM, KG, LTR, BOX, ROLL, etc.
+  barcode     String?     @unique
+  imageUrl    String?     @map("image_url")
+
+  categoryId String?          @map("category_id") @db.Uuid
+  category   ProductCategory? @relation(fields: [categoryId], references: [id])
+
+  supplierId String?   @map("supplier_id") @db.Uuid
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  costPrice    Decimal @default(0.00) @map("cost_price") @db.Decimal(12, 2)
+  sellingPrice Decimal @default(0.00) @map("selling_price") @db.Decimal(12, 2)
+  reorderLevel Decimal @default(0.00) @map("reorder_level") @db.Decimal(12, 2)
+  reorderQty   Decimal @default(0.00) @map("reorder_qty") @db.Decimal(12, 2)
+
+  isActive Boolean @default(true) @map("is_active")
+
+  stockLevels        StockLevel[]
+  stockMovements     StockMovement[]
+  purchaseOrderItems PurchaseOrderItem[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("products")
+}
+
+model StockLevel {
+  id             String    @id @default(uuid()) @db.Uuid
+  productId      String    @map("product_id") @db.Uuid
+  product        Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouseId    String    @map("warehouse_id") @db.Uuid
+  warehouse      Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  quantityOnHand Decimal   @default(0.00) @map("quantity_on_hand") @db.Decimal(12, 2)
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([productId, warehouseId])
+  @@map("stock_levels")
+}
+
+enum StockMovementType {
+  PURCHASE_IN
+  SALE_OUT
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+  TRANSFER_IN
+  TRANSFER_OUT
+  RETURN_IN
+  RETURN_OUT
+  PROJECT_CONSUMPTION
+}
+
+model StockMovement {
+  id          String            @id @default(uuid()) @db.Uuid
+  productId   String            @map("product_id") @db.Uuid
+  product     Product           @relation(fields: [productId], references: [id])
+  warehouseId String            @map("warehouse_id") @db.Uuid
+  warehouse   Warehouse         @relation(fields: [warehouseId], references: [id])
+  movementType StockMovementType @map("movement_type")
+
+  quantity        Decimal  @db.Decimal(12, 2)
+  unitCost        Decimal? @map("unit_cost") @db.Decimal(12, 2)
+  referenceNumber String?  @map("reference_number") // e.g. PO number, project code
+  notes           String?
+
+  movementDate DateTime @default(now()) @map("movement_date")
+
+  createdBy String? @map("created_by") @db.Uuid
+  creator   User?   @relation(fields: [createdBy], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("stock_movements")
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  ORDERED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id           String              @id @default(uuid()) @db.Uuid
+  poNumber     String              @unique @map("po_number")
+  supplierId   String              @map("supplier_id") @db.Uuid
+  supplier     Supplier            @relation(fields: [supplierId], references: [id])
+  orderDate    DateTime            @map("order_date") @db.Date
+  expectedDate DateTime?           @map("expected_date") @db.Date
+  status       PurchaseOrderStatus @default(DRAFT)
+  totalAmount  Decimal             @default(0.00) @map("total_amount") @db.Decimal(15, 2)
+  notes        String?
+
+  items PurchaseOrderItem[]
+
+  createdBy String? @map("created_by") @db.Uuid
+  creator   User?   @relation(fields: [createdBy], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(uuid()) @db.Uuid
+  purchaseOrderId String        @map("purchase_order_id") @db.Uuid
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  productId       String        @map("product_id") @db.Uuid
+  product         Product       @relation(fields: [productId], references: [id])
+
+  quantityOrdered  Decimal @map("quantity_ordered") @db.Decimal(12, 2)
+  quantityReceived Decimal @default(0.00) @map("quantity_received") @db.Decimal(12, 2)
+  unitCost         Decimal @map("unit_cost") @db.Decimal(12, 2)
+  totalCost        Decimal @map("total_cost") @db.Decimal(15, 2)
+
+  @@map("purchase_order_items")
+}
+
+// ============================================================
+// 8. MONTHLY BALANCE SHEET SUMMARY
+// ============================================================
 
 model MonthlyBalanceSheetSummary {
   id    String @id @default(uuid()) @db.Uuid

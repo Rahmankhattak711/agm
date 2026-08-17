@@ -1,10 +1,14 @@
 "use client";
 
-import AgmLogo from "@/components/AgmLogo";
+import QuotationTemplate, {
+  QuotationItem,
+  QuotationMeta,
+} from "@/components/QuotationTemplate";
 import {
   useAccounts,
   useBalanceSheet,
   useLedger,
+  useProducts,
   useProfitLoss,
   useTrialBalance,
   useVatSummary,
@@ -12,6 +16,7 @@ import {
 import { useState } from "react";
 
 type ReportTab =
+  | "quotation"
   | "profit-loss"
   | "balance-sheet"
   | "trial-balance"
@@ -19,15 +24,17 @@ type ReportTab =
   | "vat-summary";
 
 export default function ReportsPage() {
-  const [activeTab, setActiveTab] = useState<ReportTab>("profit-loss");
+  const [activeTab, setActiveTab] = useState<ReportTab>("quotation");
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
+  // Dynamic API queries
   const { data: profitLoss, isLoading: plLoading } = useProfitLoss();
   const { data: balanceSheet, isLoading: bsLoading } = useBalanceSheet();
   const { data: trialBalance, isLoading: tbLoading } = useTrialBalance();
   const { data: vatSummary, isLoading: vatLoading } = useVatSummary();
   const { data: accounts } = useAccounts();
+  const { data: products = [] } = useProducts();
   const { data: ledger, isLoading: ledgerLoading } = useLedger(
     selectedAccountId || null,
   );
@@ -40,6 +47,7 @@ export default function ReportsPage() {
   };
 
   const tabs: { id: ReportTab; label: string; icon: string }[] = [
+    { id: "quotation", label: "Quotation & Commercial Estimate", icon: "📄" },
     { id: "profit-loss", label: "Profit & Loss", icon: "📊" },
     { id: "balance-sheet", label: "Balance Sheet", icon: "⚖️" },
     { id: "trial-balance", label: "Trial Balance", icon: "📑" },
@@ -47,20 +55,44 @@ export default function ReportsPage() {
     { id: "vat-summary", label: "VAT Position", icon: "🇦🇪" },
   ];
 
-  const getReportTitle = (tab: ReportTab) => {
-    switch (tab) {
-      case "profit-loss":
-        return "STATEMENT OF PROFIT & LOSS (INCOME STATEMENT)";
-      case "balance-sheet":
-        return "BALANCE SHEET STATEMENT OF FINANCIAL POSITION";
-      case "trial-balance":
-        return "GENERAL TRIAL BALANCE MATRIX";
-      case "ledger":
-        return `GENERAL LEDGER STATEMENT - ${selectedAccount?.accountCode || ""} ${selectedAccount?.accountName || ""}`;
-      case "vat-summary":
-        return "UAE VAT RETURN POSITION SUMMARY (FTA 201)";
-    }
+  // Dynamic initial metadata generated from current date/timestamp
+  const dynamicQuotationMeta: Partial<QuotationMeta> = {
+    quotationNo: `AGM-QTN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
+    date: new Date().toLocaleDateString("en-GB"),
+    validUntil: new Date(
+      Date.now() + 15 * 24 * 60 * 60 * 1000,
+    ).toLocaleDateString("en-GB"),
+    customer: "",
+    attention: "",
+    address: "",
+    trn: "",
+    project: "",
+    location: "",
+    reference: "",
+    preparedBy: "",
+    contact: "",
   };
+
+  // Convert real live products from inventory if available, or blank line for user entry
+  const dynamicQuotationItems: QuotationItem[] =
+    products.length > 0
+      ? products.slice(0, 3).map((p, idx) => ({
+          id: idx + 1,
+          productId: p.id,
+          desc: `${p.name} (${p.sku})${p.description ? ` - ${p.description}` : ""}`,
+          qty: 1,
+          unit: p.unit || "PCS",
+          rate: Number(p.sellingPrice || p.costPrice || 0),
+        }))
+      : [
+          {
+            id: 1,
+            desc: "",
+            qty: 1,
+            unit: "Lot",
+            rate: 0,
+          },
+        ];
 
   return (
     <div className="space-y-6">
@@ -71,14 +103,14 @@ export default function ReportsPage() {
             Financial Reports & Statements
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Real-time statutory accounting reports, financial statements, trial
-            balance, and UAE VAT position.
+            Real-time commercial quotations, statutory accounting reports,
+            general ledger, and UAE VAT returns.
           </p>
         </div>
 
         <button
           onClick={() => setIsPrintModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-sm flex items-center gap-2 cursor-pointer self-start"
+          className="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition shadow-sm flex items-center gap-2 cursor-pointer self-start"
         >
           <svg
             viewBox="0 0 24 24"
@@ -91,7 +123,7 @@ export default function ReportsPage() {
             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
             <rect x="6" y="14" width="12" height="8" />
           </svg>
-          Print Statement / Bill
+          Print Quotation Document
         </button>
       </div>
 
@@ -116,6 +148,46 @@ export default function ReportsPage() {
         })}
       </div>
 
+      {/* Tab: Quotation (Primary) */}
+      {activeTab === "quotation" && (
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-bold text-sm text-slate-900">
+                Commercial Quotation & Proposal Generator
+              </h3>
+              <p className="text-xs text-slate-500">
+                Live document editor linked with your product inventory catalog,
+                automated 5% VAT calculations, discounts, and A4 print layout.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsPrintModalOpen(true)}
+              className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition shadow-sm flex items-center gap-2 cursor-pointer shrink-0"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                className="w-4 h-4"
+              >
+                <polyline points="6 9 6 2 18 2 18 9" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="8" />
+              </svg>
+              Print / Save PDF
+            </button>
+          </div>
+
+          <QuotationTemplate
+            initialMeta={dynamicQuotationMeta}
+            initialItems={dynamicQuotationItems}
+            availableProducts={products}
+          />
+        </div>
+      )}
+
       {/* Tab 1: Profit & Loss */}
       {activeTab === "profit-loss" && (
         <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6">
@@ -128,17 +200,9 @@ export default function ReportsPage() {
                 Summary of earned revenue vs operational expenses.
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Live GAAP Basis
-              </span>
-              <button
-                onClick={() => setIsPrintModalOpen(true)}
-                className="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer"
-              >
-                🖨️ Print
-              </button>
-            </div>
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Live GAAP Basis
+            </span>
           </div>
 
           {plLoading ? (
@@ -217,23 +281,15 @@ export default function ReportsPage() {
                 Financial position overview: Assets = Liabilities + Equity
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                  balanceSheet?.balanced
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-amber-50 text-amber-700 border-amber-200"
-                }`}
-              >
-                {balanceSheet?.balanced ? "✓ Balanced" : "⚠ Discrepancy"}
-              </span>
-              <button
-                onClick={() => setIsPrintModalOpen(true)}
-                className="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer"
-              >
-                🖨️ Print
-              </button>
-            </div>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                balanceSheet?.balanced
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-amber-50 text-amber-700 border-amber-200"
+              }`}
+            >
+              {balanceSheet?.balanced ? "✓ Balanced" : "⚠ Discrepancy"}
+            </span>
           </div>
 
           {bsLoading ? (
@@ -295,12 +351,6 @@ export default function ReportsPage() {
                 accounts.
               </p>
             </div>
-            <button
-              onClick={() => setIsPrintModalOpen(true)}
-              className="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer"
-            >
-              🖨️ Print
-            </button>
           </div>
 
           {tbLoading ? (
@@ -365,30 +415,19 @@ export default function ReportsPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="w-full sm:w-72">
-                <select
-                  value={selectedAccountId}
-                  onChange={(e) => setSelectedAccountId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium"
-                >
-                  <option value="">Select an Account...</option>
-                  {accounts?.map((acc) => (
-                    <option key={acc.id} value={acc.id}>
-                      {acc.accountCode} - {acc.accountName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {selectedAccountId && (
-                <button
-                  onClick={() => setIsPrintModalOpen(true)}
-                  className="px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer shrink-0"
-                >
-                  🖨️ Print
-                </button>
-              )}
+            <div className="w-full sm:w-72">
+              <select
+                value={selectedAccountId}
+                onChange={(e) => setSelectedAccountId(e.target.value)}
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium"
+              >
+                <option value="">Select an Account...</option>
+                {accounts?.map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.accountCode} - {acc.accountName}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -500,17 +539,9 @@ export default function ReportsPage() {
                 Standard 5% VAT on sales and recoverable purchases.
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                FTA Form 201 Ready
-              </span>
-              <button
-                onClick={() => setIsPrintModalOpen(true)}
-                className="px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer"
-              >
-                🖨️ Print
-              </button>
-            </div>
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              FTA Form 201 Ready
+            </span>
           </div>
 
           {vatLoading ? (
@@ -567,32 +598,22 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* Modal: Printable Financial Statement Document */}
+      {/* Fullscreen Print Modal: Dynamic Quotation Document */}
       {isPrintModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 backdrop-blur-sm p-3 sm:p-6 md:p-8 flex justify-center items-start">
-          <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-2 sm:my-6 animate-in fade-in zoom-in-95 duration-150 flex flex-col">
-            {/* Top Sticky Toolbar */}
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 backdrop-blur-sm p-2 sm:p-6 md:p-8 flex justify-center items-start">
+          <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-2 animate-in fade-in zoom-in-95 duration-150 flex flex-col">
+            {/* Top Toolbar */}
             <div className="sticky top-0 z-30 flex items-center justify-between px-5 sm:px-7 py-3.5 bg-slate-900 text-white border-b border-slate-800 shadow-md print:hidden">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    className="w-4 h-4"
-                  >
-                    <polyline points="6 9 6 2 18 2 18 9" />
-                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                    <rect x="6" y="14" width="12" height="8" />
-                  </svg>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-xs">
+                  AGM
                 </div>
                 <div>
                   <h3 className="font-bold text-xs sm:text-sm text-white">
-                    Financial Statement Preview
+                    Commercial Quotation Document
                   </h3>
                   <p className="text-[10.5px] text-slate-300">
-                    A4 statutory statement format · Ready for print & export
+                    Official UAE formatted proposal & cost estimate
                   </p>
                 </div>
               </div>
@@ -624,340 +645,14 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            {/* Printable Document Area */}
-            <div
-              className="p-6 sm:p-10 md:p-12 space-y-6 text-slate-900 bg-white"
-              id="printable-statement"
-            >
-              {/* Header with AGM Branding */}
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b-2 border-slate-900 pb-5">
-                <div className="space-y-1.5">
-                  <AgmLogo size="md" collapsed={false} />
-                  <div className="text-xs text-slate-600 pt-1 leading-relaxed">
-                    <p className="font-bold text-slate-900">
-                      AGM AESTHETIC HOUSE FITOUT COMPANY LLC
-                    </p>
-                    <p className="text-[11px] text-slate-500">
-                      TRN / Tax Reg: 100234567890003
-                    </p>
-                    <p className="text-[11px] text-slate-500">
-                      Business Bay, Dubai, United Arab Emirates
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-left sm:text-right space-y-1.5 shrink-0">
-                  <span className="inline-block px-3.5 py-1.5 bg-slate-900 text-white text-xs font-black uppercase tracking-wider rounded-lg shadow-xs">
-                    FINANCIAL REPORT
-                  </span>
-                  <div className="space-y-0.5 pt-1 text-xs">
-                    <p className="text-slate-600">
-                      GENERATED:{" "}
-                      <span className="font-semibold text-slate-900">
-                        {new Date().toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </p>
-                    <p className="font-bold text-slate-900">CURRENCY: AED</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Title */}
-              <div className="text-center py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                <h2 className="text-sm sm:text-base font-black uppercase tracking-wider text-slate-900">
-                  {getReportTitle(activeTab)}
-                </h2>
-                <p className="text-[11px] text-slate-500 font-medium">
-                  Official Financial Statement
-                </p>
-              </div>
-
-              {/* Dynamic Content based on Active Tab */}
-              {activeTab === "profit-loss" && (
-                <div className="space-y-4">
-                  <table className="w-full text-xs text-left border border-slate-300">
-                    <thead className="bg-slate-100 font-bold">
-                      <tr>
-                        <th className="py-2.5 px-3 border-r border-slate-200">
-                          Particulars
-                        </th>
-                        <th className="py-2.5 px-3 text-right">Amount (AED)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      <tr>
-                        <td className="py-2.5 px-3 font-bold text-slate-800 border-r border-slate-200">
-                          Total Operating Turnover / Revenue
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-800">
-                          {formatCurrency(profitLoss?.revenue || 0)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 px-3 font-bold text-slate-800 border-r border-slate-200">
-                          Total Operating & Administrative Expenses
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-rose-800">
-                          {formatCurrency(profitLoss?.expenses || 0)}
-                        </td>
-                      </tr>
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-slate-100 font-black border-t-2 border-slate-800">
-                        <td className="py-3 px-3 uppercase border-r border-slate-200">
-                          NET PROFIT / (LOSS)
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-base text-slate-900">
-                          {formatCurrency(profitLoss?.netIncome || 0)}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              )}
-
-              {activeTab === "balance-sheet" && (
-                <div className="space-y-4">
-                  <table className="w-full text-xs text-left border border-slate-300">
-                    <thead className="bg-slate-100 font-bold">
-                      <tr>
-                        <th className="py-2.5 px-3 border-r border-slate-200">
-                          Classification
-                        </th>
-                        <th className="py-2.5 px-3 text-right">Amount (AED)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      <tr>
-                        <td className="py-2.5 px-3 font-bold text-blue-900 border-r border-slate-200">
-                          1. Total Assets (Current & Non-Current)
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                          {formatCurrency(balanceSheet?.assets || 0)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 px-3 font-bold text-orange-900 border-r border-slate-200">
-                          2. Total Liabilities (Current & Long-Term)
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                          {formatCurrency(balanceSheet?.liabilities || 0)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 px-3 font-bold text-purple-900 border-r border-slate-200">
-                          3. Total Equity (Capital & Retained Earnings)
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                          {formatCurrency(balanceSheet?.equity || 0)}
-                        </td>
-                      </tr>
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-slate-100 font-black border-t-2 border-slate-800">
-                        <td className="py-3 px-3 uppercase border-r border-slate-200">
-                          TOTAL LIABILITIES & EQUITY
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-base text-slate-900">
-                          {formatCurrency(
-                            (balanceSheet?.liabilities || 0) +
-                              (balanceSheet?.equity || 0),
-                          )}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              )}
-
-              {activeTab === "trial-balance" && (
-                <div className="space-y-4">
-                  <table className="w-full text-xs text-left border border-slate-300">
-                    <thead className="bg-slate-100 font-bold">
-                      <tr>
-                        <th className="py-2.5 px-3 border-r border-slate-200">
-                          Account Name
-                        </th>
-                        <th className="py-2.5 px-3 border-r border-slate-200 text-right">
-                          Debit (AED)
-                        </th>
-                        <th className="py-2.5 px-3 text-right">Credit (AED)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {trialBalance?.rows?.map((r) => (
-                        <tr key={r.accountId}>
-                          <td className="py-2.5 px-3 font-semibold text-slate-800 border-r border-slate-200">
-                            {r.accountName || "Account"}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono border-r border-slate-200">
-                            {r.debit > 0 ? formatCurrency(r.debit) : "—"}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono">
-                            {r.credit > 0 ? formatCurrency(r.credit) : "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-slate-100 font-black border-t-2 border-slate-800">
-                        <td className="py-3 px-3 uppercase border-r border-slate-200">
-                          TOTAL
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono border-r border-slate-200">
-                          {formatCurrency(trialBalance?.totalDebit || 0)}
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono">
-                          {formatCurrency(trialBalance?.totalCredit || 0)}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              )}
-
-              {activeTab === "ledger" && (
-                <div className="space-y-4">
-                  <table className="w-full text-xs text-left border border-slate-300">
-                    <thead className="bg-slate-100 font-bold">
-                      <tr>
-                        <th className="py-2.5 px-3 border-r border-slate-200">
-                          Date
-                        </th>
-                        <th className="py-2.5 px-3 border-r border-slate-200">
-                          Entry #
-                        </th>
-                        <th className="py-2.5 px-3 border-r border-slate-200">
-                          Description
-                        </th>
-                        <th className="py-2.5 px-3 border-r border-slate-200 text-right">
-                          Debit
-                        </th>
-                        <th className="py-2.5 px-3 text-right">Credit</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {ledger?.lines?.map((line) => (
-                        <tr key={line.id}>
-                          <td className="py-2.5 px-3 text-slate-600 border-r border-slate-200">
-                            {line.journalEntry?.entryDate
-                              ? new Date(
-                                  line.journalEntry.entryDate,
-                                ).toLocaleDateString("en-GB")
-                              : "—"}
-                          </td>
-                          <td className="py-2.5 px-3 font-mono font-bold text-slate-800 border-r border-slate-200">
-                            {line.journalEntry?.entryNumber || "—"}
-                          </td>
-                          <td className="py-2.5 px-3 text-slate-600 border-r border-slate-200">
-                            {line.journalEntry?.description || "—"}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono font-semibold border-r border-slate-200">
-                            {Number(line.debit) > 0
-                              ? formatCurrency(line.debit)
-                              : "—"}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono font-semibold">
-                            {Number(line.credit) > 0
-                              ? formatCurrency(line.credit)
-                              : "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-slate-100 font-black border-t-2 border-slate-800">
-                        <td
-                          colSpan={3}
-                          className="py-3 px-3 uppercase border-r border-slate-200"
-                        >
-                          NET RUNNING BALANCE
-                        </td>
-                        <td
-                          colSpan={2}
-                          className="py-3 px-3 text-right font-mono text-base"
-                        >
-                          {formatCurrency(ledger?.balance || 0)}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              )}
-
-              {activeTab === "vat-summary" && (
-                <div className="space-y-4">
-                  <table className="w-full text-xs text-left border border-slate-300">
-                    <thead className="bg-slate-100 font-bold">
-                      <tr>
-                        <th className="py-2.5 px-3 border-r border-slate-200">
-                          VAT Component
-                        </th>
-                        <th className="py-2.5 px-3 text-right">Amount (AED)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      <tr>
-                        <td className="py-2.5 px-3 font-bold text-rose-900 border-r border-slate-200">
-                          Output VAT (5% on Fitout Sales / Turnover)
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                          {formatCurrency(vatSummary?.outputVat || 0)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 px-3 font-bold text-emerald-900 border-r border-slate-200">
-                          Input VAT (5% Recoverable on Supplier Purchases)
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                          {formatCurrency(vatSummary?.inputVat || 0)}
-                        </td>
-                      </tr>
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-slate-100 font-black border-t-2 border-slate-800">
-                        <td className="py-3 px-3 uppercase border-r border-slate-200">
-                          NET VAT PAYABLE TO FTA
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono text-base">
-                          {formatCurrency(vatSummary?.net || 0)}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              )}
-
-              {/* Signatures & Authorizations */}
-              <div className="grid grid-cols-3 gap-6 pt-10 border-t border-slate-200 text-center text-xs">
-                <div>
-                  <div className="h-14 border-b-2 border-dotted border-slate-400 mb-2" />
-                  <p className="font-bold text-slate-900">Prepared By</p>
-                  <p className="text-[10px] text-slate-400">
-                    Senior Accountant
-                  </p>
-                </div>
-                <div>
-                  <div className="h-14 border-b-2 border-dotted border-slate-400 mb-2" />
-                  <p className="font-bold text-slate-900">Reviewed By</p>
-                  <p className="text-[10px] text-slate-400">
-                    Chief Financial Officer
-                  </p>
-                </div>
-                <div>
-                  <div className="h-14 border-b-2 border-dotted border-slate-400 mb-2" />
-                  <p className="font-bold text-slate-900">
-                    Authorized Signatory
-                  </p>
-                  <p className="text-[10px] text-slate-400">
-                    Managing Director / Partner
-                  </p>
-                </div>
-              </div>
+            {/* Quotation Document */}
+            <div className="bg-white p-2 sm:p-4">
+              <QuotationTemplate
+                initialMeta={dynamicQuotationMeta}
+                initialItems={dynamicQuotationItems}
+                availableProducts={products}
+                hideOuterWrapper={true}
+              />
             </div>
           </div>
         </div>
