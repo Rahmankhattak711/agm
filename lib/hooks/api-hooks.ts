@@ -393,6 +393,8 @@ export interface UserItem {
   updatedAt: string;
 }
 
+export type UserRecord = UserItem;
+
 export interface UsersResponse {
   users: UserItem[];
   stats: {
@@ -519,7 +521,8 @@ export function useCreateJournalEntry() {
       entryDate: string;
       description?: string;
       reference?: string;
-      createdBy: string;
+      createdBy?: string;
+      isPosted?: boolean;
       lines: Array<{ accountId: string; debit: number; credit: number }>;
     }) =>
       fetchJson<JournalEntry>("/api/journal-entries", {
@@ -542,6 +545,7 @@ export function useUpdateJournalEntry() {
       entryDate?: string;
       description?: string;
       reference?: string;
+      isPosted?: boolean;
       lines?: Array<{ accountId: string; debit: number; credit: number }>;
     }) =>
       fetchJson<JournalEntry>("/api/journal-entries", {
@@ -1290,3 +1294,100 @@ export function useLedger(accountId: string | null) {
     enabled: !!accountId,
   });
 }
+
+// ==========================================
+// Quotations Hooks
+// ==========================================
+
+export interface QuotationItemRecord {
+  id?: string;
+  quotationId?: string;
+  productId?: string | null;
+  product?: { id: string; name: string; sku: string; unit?: string } | null;
+  section?: string;
+  itemOrder?: number;
+  description: string;
+  quantity: number | string;
+  unit: string;
+  unitRate: number | string;
+  totalAmount?: number | string;
+  isFree?: boolean;
+}
+
+export interface QuotationRecord {
+  id: string;
+  quotationNo: string;
+  date: string;
+  validUntil: string;
+  customer: string;
+  attention?: string;
+  address?: string;
+  trn?: string;
+  mobile?: string;
+  project?: string;
+  location?: string;
+  reference?: string;
+  preparedBy?: string;
+  contact?: string;
+  vatPct: number | string;
+  discount: number | string;
+  subtotal: number | string;
+  vatAmount: number | string;
+  totalAmount: number | string;
+  status: "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "EXPIRED";
+  notes?: string | null;
+  terms?: string | null;
+  paymentTerms?: string | null;
+  createdBy?: { id: string; fullName: string; email: string } | null;
+  items: QuotationItemRecord[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function useQuotations(params?: { search?: string; status?: string }) {
+  const q = new URLSearchParams();
+  if (params?.search) q.append("search", params.search);
+  if (params?.status) q.append("status", params.status);
+  const qStr = q.toString() ? `?${q.toString()}` : "";
+
+  return useQuery<QuotationRecord[]>({
+    queryKey: ["quotations", params],
+    queryFn: () => fetchJson<QuotationRecord[]>(`/api/finance/quotations${qStr}`),
+  });
+}
+
+export function useQuotation(id?: string | null) {
+  return useQuery<QuotationRecord>({
+    queryKey: ["quotation", id],
+    queryFn: () => fetchJson<QuotationRecord>(`/api/finance/quotations/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useSaveQuotation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<QuotationRecord> & { items: any[] }) =>
+      fetchJson<QuotationRecord>("/api/finance/quotations", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["quotations"] });
+    },
+  });
+}
+
+export function useDeleteQuotation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ ok: boolean }>(`/api/finance/quotations/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["quotations"] });
+    },
+  });
+}
+
