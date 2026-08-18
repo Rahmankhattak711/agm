@@ -1,0 +1,224 @@
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search") || "";
+    const status = searchParams.get("status") || "";
+
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { quotationNo: { contains: search, mode: "insensitive" } },
+        { customer: { contains: search, mode: "insensitive" } },
+        { project: { contains: search, mode: "insensitive" } },
+        { reference: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    const quotations = await prisma.quotation.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: {
+        items: {
+          orderBy: { itemOrder: "asc" },
+          include: {
+            product: {
+              select: { id: true, name: true, sku: true, unit: true },
+            },
+          },
+        },
+        createdBy: {
+          select: { id: true, fullName: true, email: true },
+        },
+      },
+    });
+
+    return NextResponse.json(quotations);
+  } catch (error: any) {
+    console.error("GET /api/finance/quotations error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch quotations", details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const {
+      quotationNo,
+      date,
+      validUntil,
+      customer,
+      attention,
+      address,
+      trn,
+      mobile,
+      project,
+      location,
+      reference,
+      preparedBy,
+      contact,
+      vatPct = 5,
+      discount = 0,
+      notes,
+      terms,
+      paymentTerms,
+      createdById,
+      status = "DRAFT",
+      items = [],
+    } = body;
+
+    if (!quotationNo) {
+      return NextResponse.json(
+        { error: "Quotation number is required" },
+        { status: 400 }
+      );
+    }
+
+    // Calculate totals safely
+    const computedSubtotal = items.reduce(
+      (sum: number, it: any) => {
+        if (it.isFree || String(it.qty).toLowerCase() === "free" || String(it.rate).toLowerCase() === "free") {
+          return sum;
+        }
+        return sum + Number(it.quantity || it.qty || 0) * Number(it.unitRate || it.rate || 0);
+      },
+      0
+    );
+    const computedVat = (computedSubtotal * Number(vatPct || 0)) / 100;
+    const computedTotal = computedSubtotal + computedVat - Number(discount || 0);
+
+    const quotation = await prisma.$transaction(async (tx) => {
+      // Check if quotation already exists by quotationNo
+      const existing = await tx.quotation.findUnique({
+        where: { quotationNo },
+      });
+
+      let qId: string;
+
+      if (existing) {
+        // Update existing quotation
+        await tx.quotationItem.deleteMany({
+          where: { quotationId: existing.id },
+        });
+
+        const updated = await tx.quotation.update({
+          where: { id: existing.id },
+          data: {
+            date: date || "",
+            validUntil: validUntil || "",
+            customer: customer || "",
+            attention: attention || "",
+            address: address || "",
+            trn: trn || "",
+            mobile: mobile || "",
+            project: project || "",
+            location: location || "",
+            reference: reference || "",
+            preparedBy: preparedBy || "",
+            contact: contact || "",
+            vatPct: Number(vatPct || 0),
+            discount: Number(discount || 0),
+            subtotal: computedSubtotal,
+            vatAmount: computedVat,
+            totalAmount: computedTotal,
+            status: status as any,
+            notes: notes || null,
+            terms: terms || null,
+            paymentTerms: paymentTerms || null,
+            createdById: createdById || null,
+          },
+        });
+        qId = updated.id;
+      } else {
+        // Create new quotation
+        const created = await tx.quotation.create({
+          data: {
+            quotationNo,
+            date: date || "",
+            validUntil: validUntil || "",
+            customer: customer || "",
+            attention: attention || "",
+            address: address || "",
+            trn: trn || "",
+            mobile: mobile || "",
+            project: project || "",
+            location: location || "",
+            reference: reference || "",
+            preparedBy: preparedBy || "",
+            contact: contact || "",
+            vatPct: Number(vatPct || 0),
+            discount: Number(discount || 0),
+            subtotal: computedSubtotal,
+            vatAmount: computedVat,
+            totalAmount: computedTotal,
+            status: status as any,
+            notes: notes || null,
+            terms: terms || null,
+            paymentTerms: paymentTerms || null,
+            createdById: createdById || null,
+          },
+        });
+        qId = created.id;
+      }
+
+      // Insert line items
+      if (Array.isArray(items) && items.length > 0) {
+        const itemRows = items.map((it: any, index: number) => {
+          const isItemFree = Boolean(
+            it.isFree ||
+            String(it.qty).toLowerCase() === "free" ||
+            String(it.rate).toLowerCase() === "free"
+          );
+
+          return {
+            quotationId: qId,
+            productId: it.productId || null,
+            section: it.section || "",
+            itemOrder: index + 1,
+            description: it.description || it.desc || "",
+            quantity: isItemFree ? 0 : Number(it.quantity || it.qty || 1),
+            unit: it.unit || "SQM",
+            unitRate: isItemFree ? 0 : Number(it.unitRate || it.rate || 0),
+            totalAmount: isItemFree
+              ? 0
+              : Number(it.quantity || it.qty || 1) * Number(it.unitRate || it.rate || 0),
+            isFree: isItemFree,
+          };
+        });
+
+        await tx.quotationItem.createMany({
+          data: itemRows,
+        });
+      }
+
+      return tx.quotation.findUnique({
+        where: { id: qId },
+        include: {
+          items: {
+            orderBy: { itemOrder: "asc" },
+            include: { product: true },
+          },
+          createdBy: true,
+        },
+      });
+    });
+
+    return NextResponse.json(quotation, { status: 201 });
+  } catch (error: any) {
+    console.error("POST /api/finance/quotations error:", error);
+    return NextResponse.json(
+      { error: "Failed to save quotation", details: error.message },
+      { status: 500 }
+    );
+  }
+}
