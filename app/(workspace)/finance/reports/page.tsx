@@ -96,8 +96,8 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Print Trigger */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Banner (Hidden in print) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <div>
           <h2 className="text-xl font-black text-slate-900">
             Financial Reports & Statements
@@ -107,28 +107,10 @@ export default function ReportsPage() {
             general ledger, and UAE VAT returns.
           </p>
         </div>
-
-        <button
-          onClick={() => setIsPrintModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition shadow-sm flex items-center gap-2 cursor-pointer self-start"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            className="w-4 h-4"
-          >
-            <polyline points="6 9 6 2 18 2 18 9" />
-            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-            <rect x="6" y="14" width="12" height="8" />
-          </svg>
-          Print Quotation Document
-        </button>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/60 self-start">
+      {/* Navigation Tabs (Hidden in print) */}
+      <div className="flex flex-wrap gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/60 self-start print:hidden">
         {tabs.map((t) => {
           const isActive = activeTab === t.id;
           return (
@@ -151,35 +133,6 @@ export default function ReportsPage() {
       {/* Tab: Quotation (Primary) */}
       {activeTab === "quotation" && (
         <div className="space-y-4">
-          <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div>
-              <h3 className="font-bold text-sm text-slate-900">
-                Commercial Quotation & Proposal Generator
-              </h3>
-              <p className="text-xs text-slate-500">
-                Live document editor linked with your product inventory catalog,
-                automated 5% VAT calculations, discounts, and A4 print layout.
-              </p>
-            </div>
-            <button
-              onClick={() => setIsPrintModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition shadow-sm flex items-center gap-2 cursor-pointer shrink-0"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                className="w-4 h-4"
-              >
-                <polyline points="6 9 6 2 18 2 18 9" />
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                <rect x="6" y="14" width="12" height="8" />
-              </svg>
-              Print / Save PDF
-            </button>
-          </div>
-
           <QuotationTemplate
             initialMeta={dynamicQuotationMeta}
             initialItems={dynamicQuotationItems}

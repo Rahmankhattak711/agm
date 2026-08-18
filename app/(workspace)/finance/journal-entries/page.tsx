@@ -19,6 +19,7 @@ export default function JournalEntriesPage() {
   const deleteJournalEntryMutation = useDeleteJournalEntry();
 
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "POSTED" | "DRAFT">("ALL");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -32,6 +33,7 @@ export default function JournalEntriesPage() {
   );
   const [description, setDescription] = useState("");
   const [reference, setReference] = useState("");
+  const [isPosted, setIsPosted] = useState(true);
   const [lines, setLines] = useState<
     Array<{ accountId: string; debit: number; credit: number }>
   >([
@@ -47,11 +49,14 @@ export default function JournalEntriesPage() {
 
   const filteredEntries = (journalEntries || []).filter((entry) => {
     const q = search.toLowerCase();
-    return (
+    const matchesSearch =
       entry.entryNumber.toLowerCase().includes(q) ||
       (entry.description && entry.description.toLowerCase().includes(q)) ||
-      (entry.reference && entry.reference.toLowerCase().includes(q))
-    );
+      (entry.reference && entry.reference.toLowerCase().includes(q));
+
+    if (statusFilter === "POSTED") return matchesSearch && entry.isPosted;
+    if (statusFilter === "DRAFT") return matchesSearch && !entry.isPosted;
+    return matchesSearch;
   });
 
   const totalDebitsCalc = lines.reduce((s, l) => s + (Number(l.debit) || 0), 0);
@@ -90,6 +95,7 @@ export default function JournalEntriesPage() {
     setEntryDate(new Date().toISOString().split("T")[0]);
     setDescription("");
     setReference("");
+    setIsPosted(true);
     setLines([
       { accountId: accounts?.[0]?.id || "", debit: 0, credit: 0 },
       { accountId: accounts?.[1]?.id || "", debit: 0, credit: 0 },
@@ -109,6 +115,7 @@ export default function JournalEntriesPage() {
     );
     setDescription(je.description || "");
     setReference(je.reference || "");
+    setIsPosted(Boolean(je.isPosted));
     setLines(
       je.lines && je.lines.length > 0
         ? je.lines.map((l: any) => ({
@@ -123,6 +130,18 @@ export default function JournalEntriesPage() {
     );
     setFormError("");
     setIsModalOpen(true);
+  };
+
+  const handleToggleStatus = async (je: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    try {
+      await updateJournalEntryMutation.mutateAsync({
+        id: je.id,
+        isPosted: !je.isPosted,
+      });
+    } catch (err: any) {
+      alert(err.message || "Failed to update entry status");
+    }
   };
 
   const handleDelete = async (
@@ -173,6 +192,7 @@ export default function JournalEntriesPage() {
           entryDate,
           description: description.trim() || undefined,
           reference: reference.trim() || undefined,
+          isPosted,
           lines: lines.map((l) => ({
             accountId: l.accountId,
             debit: Number(l.debit) || 0,
@@ -185,7 +205,7 @@ export default function JournalEntriesPage() {
           entryDate,
           description: description.trim() || undefined,
           reference: reference.trim() || undefined,
-          createdBy: user?.id || "00000000-0000-0000-0000-000000000000",
+          createdBy: user?.id || undefined,
           lines: lines.map((l) => ({
             accountId: l.accountId,
             debit: Number(l.debit) || 0,
@@ -230,31 +250,71 @@ export default function JournalEntriesPage() {
         </button>
       </div>
 
-      {/* Filter and List Container */}
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="relative w-full sm:w-72">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search entry #, ref, or memo..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-            />
+      {/* Main Content Area */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-4">
+        {/* Search & Status Filters */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative w-full sm:w-64">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search entry #, ref, or memo..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              />
+            </div>
+
+            {/* Status Filter Buttons */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/60">
+              <button
+                type="button"
+                onClick={() => setStatusFilter("ALL")}
+                className={`px-3 py-1 text-[11px] font-bold rounded-lg transition cursor-pointer ${
+                  statusFilter === "ALL"
+                    ? "bg-white text-slate-900 shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("POSTED")}
+                className={`px-3 py-1 text-[11px] font-bold rounded-lg transition cursor-pointer ${
+                  statusFilter === "POSTED"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-slate-500 hover:text-emerald-700"
+                }`}
+              >
+                Posted
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("DRAFT")}
+                className={`px-3 py-1 text-[11px] font-bold rounded-lg transition cursor-pointer ${
+                  statusFilter === "DRAFT"
+                    ? "bg-slate-800 text-white shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Draft
+              </button>
+            </div>
           </div>
 
           <p className="text-xs text-slate-500 font-medium">
-            Total {journalEntries?.length || 0} journal records
+            Showing {filteredEntries.length} of {journalEntries?.length || 0} entries
           </p>
         </div>
 
@@ -304,15 +364,18 @@ export default function JournalEntriesPage() {
                           <span className="font-mono font-bold text-xs text-slate-900">
                             {je.entryNumber}
                           </span>
-                          <span
-                            className={`px-2 py-0.2 rounded-full text-[9.5px] font-bold ${
+                          <button
+                            type="button"
+                            onClick={(e) => handleToggleStatus(je, e)}
+                            title={`Click to switch status to ${je.isPosted ? "Draft" : "Posted"}`}
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition shadow-xs ${
                               je.isPosted
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-slate-100 text-slate-700"
+                                ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300/60"
+                                : "bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300/60"
                             }`}
                           >
-                            {je.isPosted ? "Posted" : "Draft"}
-                          </span>
+                            {je.isPosted ? "✓ Posted" : "✎ Draft"}
+                          </button>
                           {je.reference && (
                             <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded font-mono">
                               Ref: {je.reference}
@@ -476,7 +539,7 @@ export default function JournalEntriesPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Entry Number
@@ -499,6 +562,20 @@ export default function JournalEntriesPage() {
                     onChange={(e) => setEntryDate(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={isPosted ? "POSTED" : "DRAFT"}
+                    onChange={(e) => setIsPosted(e.target.value === "POSTED")}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white font-semibold"
+                  >
+                    <option value="POSTED">Posted (General Ledger)</option>
+                    <option value="DRAFT">Draft (Unposted)</option>
+                  </select>
                 </div>
               </div>
 
