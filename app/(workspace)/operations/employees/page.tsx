@@ -188,11 +188,11 @@ export default function EmployeesPage() {
         header: "Registered User / Employee",
         cell: ({ row }) => (
           <div>
-            <span className="font-semibold text-slate-900 block">
+            <span className="font-bold text-slate-900 block text-xs">
               {row.original.firstName} {row.original.lastName}
             </span>
-            <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1.5 mt-0.5">
-              <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 font-bold">
+            <div className="text-[11px] text-slate-500 font-mono flex items-center gap-2 mt-0.5">
+              <span className="font-bold text-slate-700">
                 {row.original.employeeCode}
               </span>
               {row.original.email && <span>• {row.original.email}</span>}
@@ -205,10 +205,10 @@ export default function EmployeesPage() {
         header: "Role & Department",
         cell: ({ row }) => (
           <div>
-            <span className="font-semibold text-slate-800 block">
-              {row.original.designation || "Staff"}
+            <span className="font-bold text-slate-800 block text-xs">
+              {row.original.designation || "Staff Member"}
             </span>
-            <span className="text-[10px] text-slate-400">
+            <span className="inline-block mt-0.5 text-[10px] font-semibold text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-full border border-slate-200/50">
               {row.original.department || "Operations"}
             </span>
           </div>
@@ -218,17 +218,17 @@ export default function EmployeesPage() {
         accessorKey: "uaeCompliance",
         header: "UAE Compliance",
         cell: ({ row }) => (
-          <div className="text-xs text-slate-600">
+          <div className="space-y-0.5">
             {row.original.emiratesId ? (
-              <span className="font-mono font-semibold text-slate-800 block text-[11px]">
+              <span className="font-mono font-bold text-slate-800 block text-[11px] bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200/60 inline-block">
                 EID: {row.original.emiratesId}
               </span>
             ) : (
-              <span className="text-slate-400 text-[10px] block">No Emirates ID</span>
+              <span className="text-slate-400 text-[10.5px] italic block">No Emirates ID</span>
             )}
             {row.original.visaExpiry && (
-              <span className="text-[10px] text-slate-400 block">
-                Visa: {new Date(row.original.visaExpiry).toLocaleDateString()}
+              <span className="text-[10px] font-medium text-slate-500 block">
+                Visa: {new Date(row.original.visaExpiry).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
               </span>
             )}
           </div>
@@ -246,11 +246,11 @@ export default function EmployeesPage() {
 
           return (
             <div className="text-right font-mono">
-              <span className="font-bold text-slate-900 block text-xs">
+              <span className="font-black text-slate-900 block text-xs">
                 AED {gross.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
               <span className="text-[10px] text-slate-400">
-                Basic: AED {Number(row.original.basicSalary).toLocaleString()}
+                Basic: AED {Number(row.original.basicSalary || 0).toLocaleString()}
               </span>
             </div>
           );
@@ -260,8 +260,10 @@ export default function EmployeesPage() {
         accessorKey: "leaveBalance",
         header: "Leave Balance",
         cell: ({ row }) => (
-          <div className="text-center font-bold text-slate-800">
-            {row.original.annualLeaveBalance ?? 30} <span className="text-[10px] font-normal text-slate-400">days</span>
+          <div className="text-center">
+            <span className="font-black text-slate-800 text-xs bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/60">
+              {row.original.annualLeaveBalance ?? 30} <span className="text-[10px] font-normal text-slate-500">days</span>
+            </span>
           </div>
         ),
       },
@@ -271,11 +273,12 @@ export default function EmployeesPage() {
         cell: ({ row }) => (
           <div className="text-center">
             {row.original.employmentStatus === "ACTIVE" ? (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Active Staff
               </span>
             ) : (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 inline-block">
                 {row.original.employmentStatus}
               </span>
             )}
@@ -291,17 +294,23 @@ export default function EmployeesPage() {
               variant="outline"
               size="sm"
               onClick={() => handleOpenEditModal(row.original)}
+              className="text-slate-700 hover:text-slate-900 font-bold border-slate-200 hover:bg-slate-100"
             >
-              Edit Details
+              Edit
             </Button>
             <Button
               variant="danger"
               size="sm"
               onClick={async () => {
-                if (confirm(`Remove employee ${row.original.firstName} ${row.original.lastName}?`)) {
+                if (
+                  confirm(
+                    `Are you sure you want to remove ${row.original.firstName} ${row.original.lastName}?`
+                  )
+                ) {
                   await deleteEmployeeMutation.mutateAsync(row.original.id);
                 }
               }}
+              className="font-bold"
             >
               Remove
             </Button>
@@ -351,8 +360,8 @@ export default function EmployeesPage() {
 
       {/* Filter and Table Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="w-full sm:w-80">
+        <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+          <div className="w-full md:w-80">
             <Input
               placeholder="Search code, name, designation, Emirates ID..."
               value={search}
@@ -366,31 +375,31 @@ export default function EmployeesPage() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <Select
-              value={departmentFilter}
-              onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="w-full sm:w-44"
-            >
-              <option value="ALL">All Departments</option>
-              {departments.map((d: any) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </Select>
+          <div className="flex items-center gap-2.5 w-full md:w-auto">
+            <div className="w-full sm:w-48">
+              <Select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                options={[
+                  { value: "ALL", label: "All Departments" },
+                  ...departments.map((d: any) => ({ value: d, label: d })),
+                ]}
+              />
+            </div>
 
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-36"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="ACTIVE">Active</option>
-              <option value="ON_LEAVE">On Leave</option>
-              <option value="SUSPENDED">Suspended</option>
-              <option value="TERMINATED">Terminated</option>
-            </Select>
+            <div className="w-full sm:w-40">
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                options={[
+                  { value: "ALL", label: "All Statuses" },
+                  { value: "ACTIVE", label: "Active" },
+                  { value: "ON_LEAVE", label: "On Leave" },
+                  { value: "SUSPENDED", label: "Suspended" },
+                  { value: "TERMINATED", label: "Terminated" },
+                ]}
+              />
+            </div>
           </div>
         </div>
 
