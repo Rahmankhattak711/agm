@@ -36,36 +36,66 @@ export async function POST(request: Request) {
       );
     }
 
+    let resolvedCreatedBy = createdBy;
+
+    // Verify if createdBy exists, or fallback to first available user
+    const existingUser = resolvedCreatedBy
+      ? await prisma.user.findUnique({ where: { id: resolvedCreatedBy } })
+      : null;
+
+    if (!existingUser) {
+      const fallbackUser = await prisma.user.findFirst({
+        where: { isActive: true },
+        select: { id: true },
+      });
+      if (fallbackUser) {
+        resolvedCreatedBy = fallbackUser.id;
+      } else {
+        return NextResponse.json(
+          { error: "No active user found to assign createdBy" },
+          { status: 400 },
+        );
+      }
+    }
+
     const created = await prisma.$transaction(async (tx) => {
       const je = await tx.journalEntry.create({
         data: {
           entryNumber,
           entryDate: new Date(entryDate),
-          description,
-          reference,
-          createdBy,
+          description: description || null,
+          reference: reference || null,
+          createdBy: resolvedCreatedBy,
         },
       });
 
       const linesData = lines.map((l: any) => ({
         journalEntryId: je.id,
         accountId: l.accountId,
-        debit: l.debit || 0,
-        credit: l.credit || 0,
+        debit: Number(l.debit || 0),
+        credit: Number(l.credit || 0),
       }));
 
       await tx.journalEntryLine.createMany({ data: linesData });
 
       return tx.journalEntry.findUnique({
         where: { id: je.id },
-        include: { lines: true },
+        include: {
+          lines: {
+            include: { account: true },
+          },
+          user: {
+            select: { fullName: true },
+          },
+        },
       });
     });
 
     return NextResponse.json(created, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("POST /api/journal-entries error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Failed to create journal entry", details: error.message },
       { status: 500 },
     );
   }
@@ -98,7 +128,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    const { id, entryNumber, entryDate, description, reference, lines } = body;
+    const { id, entryNumber, entryDate, description, reference, isPosted, lines } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -131,6 +161,7 @@ export async function PATCH(request: Request) {
       if (entryDate) updateData.entryDate = new Date(entryDate);
       if (description !== undefined) updateData.description = description;
       if (reference !== undefined) updateData.reference = reference;
+      if (typeof isPosted === "boolean") updateData.isPosted = isPosted;
 
       await tx.journalEntry.update({
         where: { id },
@@ -145,8 +176,8 @@ export async function PATCH(request: Request) {
         const linesData = lines.map((l: any) => ({
           journalEntryId: id,
           accountId: l.accountId,
-          debit: l.debit || 0,
-          credit: l.credit || 0,
+          debit: Number(l.debit || 0),
+          credit: Number(l.credit || 0),
         }));
 
         await tx.journalEntryLine.createMany({ data: linesData });
@@ -156,9 +187,7 @@ export async function PATCH(request: Request) {
         where: { id },
         include: {
           lines: {
-            include: {
-              account: true,
-            },
+            include: { account: true },
           },
           user: {
             select: { fullName: true },
@@ -168,9 +197,10 @@ export async function PATCH(request: Request) {
     });
 
     return NextResponse.json(updated);
-  } catch (error) {
+  } catch (error: any) {
+    console.error("PATCH /api/journal-entries error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Failed to update journal entry", details: error.message },
       { status: 500 },
     );
   }
