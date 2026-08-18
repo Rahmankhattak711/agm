@@ -140,7 +140,7 @@ export default function WarehousesPage() {
         ) : warehouses.length === 0 ? (
           <div className="col-span-full py-12 text-center text-slate-400">
             <p className="text-sm font-semibold text-slate-600">No warehouses registered</p>
-            <p className="text-xs mt-1">Click "Add Warehouse" to configure your first depot.</p>
+            <p className="text-xs mt-1">Click &quot;Add Warehouse&quot; to configure your first depot.</p>
           </div>
         ) : (
           warehouses.map((w) => (
