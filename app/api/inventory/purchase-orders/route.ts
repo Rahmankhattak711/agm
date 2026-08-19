@@ -117,18 +117,15 @@ export async function PATCH(request: Request) {
       if (expectedDate !== undefined) updateData.expectedDate = expectedDate ? new Date(expectedDate) : null;
       if (notes !== undefined) updateData.notes = notes?.trim() || null;
 
-      // If status transitioning to RECEIVED or items received, update stock if warehouseId provided
       if (status === "RECEIVED" && warehouseIdToReceive && existing.status !== "RECEIVED") {
         for (const item of existing.items) {
           const qty = Number(item.quantityOrdered);
 
-          // Update item received
           await tx.purchaseOrderItem.update({
             where: { id: item.id },
             data: { quantityReceived: qty },
           });
 
-          // Create stock movement
           await tx.stockMovement.create({
             data: {
               productId: item.productId,
@@ -141,7 +138,6 @@ export async function PATCH(request: Request) {
             },
           });
 
-          // Update stock level
           const existingLevel = await tx.stockLevel.findUnique({
             where: {
               productId_warehouseId: {

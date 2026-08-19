@@ -8,13 +8,12 @@ export async function GET(request: Request) {
     const status = searchParams.get("status");
     const search = searchParams.get("search");
 
-    // Automatically synchronize registered User accounts into Employee records
     const users = await prisma.user.findMany({
       where: { isActive: true },
     });
 
     for (const u of users) {
-      // Find employee by email or generate matching record
+      
       if (u.email) {
         const existing = await prisma.employee.findUnique({
           where: { email: u.email },
@@ -27,7 +26,6 @@ export async function GET(request: Request) {
           const codeSuffix = u.id.replace(/-/g, "").slice(-4).toUpperCase();
           const employeeCode = `EMP-${codeSuffix}`;
 
-          // Map role to department / designation
           let dept = "Operations";
           let desig = "Staff";
           if (u.role === "SUPER_ADMIN" || u.role === "ADMIN") {
@@ -239,7 +237,6 @@ export async function PATCH(request: Request) {
     if (data.otherAllowances !== undefined) data.otherAllowances = Number(data.otherAllowances);
     if (data.annualLeaveBalance !== undefined) data.annualLeaveBalance = Number(data.annualLeaveBalance);
 
-    // Recompute monthly salary if compensation updated
     if (
       data.basicSalary !== undefined ||
       data.housingAllowance !== undefined ||

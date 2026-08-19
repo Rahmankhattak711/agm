@@ -36,36 +36,107 @@ export async function POST(request: Request) {
       );
     }
 
+    let resolvedCreatedBy = createdBy;
+
+    const existingUser = resolvedCreatedBy
+      ? await prisma.user.findUnique({ where: { id: resolvedCreatedBy } })
+      : null;
+
+    if (!existingUser) {
+      const fallbackUser = await prisma.user.findFirst({
+        where: { isActive: true },
+        select: { id: true },
+      });
+      if (fallbackUser) {
+        resolvedCreatedBy = fallbackUser.id;
+      } else {
+        return NextResponse.json(
+          { error: "No active user found to assign createdBy" },
+          { status: 400 },
+        );
+      }
+    }
+
     const created = await prisma.$transaction(async (tx) => {
       const je = await tx.journalEntry.create({
         data: {
           entryNumber,
           entryDate: new Date(entryDate),
-          description,
-          reference,
-          createdBy,
+          description: description || null,
+          reference: reference || null,
+          createdBy: resolvedCreatedBy,
         },
       });
 
-      const linesData = lines.map((l: any) => ({
-        journalEntryId: je.id,
-        accountId: l.accountId,
-        debit: l.debit || 0,
-        credit: l.credit || 0,
-      }));
+      for (const l of lines) {
+        const debit = Number(l.debit || 0);
+        const credit = Number(l.credit || 0);
+        const lineRecord = await tx.journalEntryLine.create({
+          data: {
+            journalEntryId: je.id,
+            accountId: l.accountId,
+            debit,
+            credit,
+          },
+          include: { account: true },
+        });
 
-      await tx.journalEntryLine.createMany({ data: linesData });
+        // Determine if line has VAT details or links to a VAT account
+        let vatType: "INPUT" | "OUTPUT" | null = l.vatType || null;
+        let vatAmount = Number(l.vatAmount || 0);
+        let taxableAmount = Number(l.taxableAmount || 0);
+
+        if (!vatType && lineRecord.account) {
+          if (
+            lineRecord.account.accountCode === "2200" ||
+            lineRecord.account.accountName.toLowerCase().includes("vat input")
+          ) {
+            vatType = "INPUT";
+            vatAmount = vatAmount || debit;
+            taxableAmount = taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+          } else if (
+            lineRecord.account.accountCode === "2210" ||
+            lineRecord.account.accountName.toLowerCase().includes("vat output")
+          ) {
+            vatType = "OUTPUT";
+            vatAmount = vatAmount || credit;
+            taxableAmount = taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+          }
+        }
+
+        if (vatType && vatAmount > 0) {
+          await tx.vatEntry.create({
+            data: {
+              journalEntryLineId: lineRecord.id,
+              taxableAmount: taxableAmount > 0 ? taxableAmount : vatAmount / 0.05,
+              vatAmount,
+              vatType,
+            },
+          });
+        }
+      }
 
       return tx.journalEntry.findUnique({
         where: { id: je.id },
-        include: { lines: true },
+        include: {
+          lines: {
+            include: {
+              account: true,
+              vatEntry: true,
+            },
+          },
+          user: {
+            select: { fullName: true },
+          },
+        },
       });
     });
 
     return NextResponse.json(created, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("POST /api/journal-entries error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Failed to create journal entry", details: error.message },
       { status: 500 },
     );
   }
@@ -79,6 +150,7 @@ export async function GET() {
         lines: {
           include: {
             account: true,
+            vatEntry: true,
           },
         },
         user: {
@@ -98,7 +170,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    const { id, entryNumber, entryDate, description, reference, lines } = body;
+    const { id, entryNumber, entryDate, description, reference, isPosted, lines } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -131,6 +203,7 @@ export async function PATCH(request: Request) {
       if (entryDate) updateData.entryDate = new Date(entryDate);
       if (description !== undefined) updateData.description = description;
       if (reference !== undefined) updateData.reference = reference;
+      if (typeof isPosted === "boolean") updateData.isPosted = isPosted;
 
       await tx.journalEntry.update({
         where: { id },
@@ -142,14 +215,52 @@ export async function PATCH(request: Request) {
           where: { journalEntryId: id },
         });
 
-        const linesData = lines.map((l: any) => ({
-          journalEntryId: id,
-          accountId: l.accountId,
-          debit: l.debit || 0,
-          credit: l.credit || 0,
-        }));
+        for (const l of lines) {
+          const debit = Number(l.debit || 0);
+          const credit = Number(l.credit || 0);
+          const lineRecord = await tx.journalEntryLine.create({
+            data: {
+              journalEntryId: id,
+              accountId: l.accountId,
+              debit,
+              credit,
+            },
+            include: { account: true },
+          });
 
-        await tx.journalEntryLine.createMany({ data: linesData });
+          let vatType: "INPUT" | "OUTPUT" | null = l.vatType || null;
+          let vatAmount = Number(l.vatAmount || 0);
+          let taxableAmount = Number(l.taxableAmount || 0);
+
+          if (!vatType && lineRecord.account) {
+            if (
+              lineRecord.account.accountCode === "2200" ||
+              lineRecord.account.accountName.toLowerCase().includes("vat input")
+            ) {
+              vatType = "INPUT";
+              vatAmount = vatAmount || debit;
+              taxableAmount = taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+            } else if (
+              lineRecord.account.accountCode === "2210" ||
+              lineRecord.account.accountName.toLowerCase().includes("vat output")
+            ) {
+              vatType = "OUTPUT";
+              vatAmount = vatAmount || credit;
+              taxableAmount = taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+            }
+          }
+
+          if (vatType && vatAmount > 0) {
+            await tx.vatEntry.create({
+              data: {
+                journalEntryLineId: lineRecord.id,
+                taxableAmount: taxableAmount > 0 ? taxableAmount : vatAmount / 0.05,
+                vatAmount,
+                vatType,
+              },
+            });
+          }
+        }
       }
 
       return tx.journalEntry.findUnique({
@@ -158,6 +269,7 @@ export async function PATCH(request: Request) {
           lines: {
             include: {
               account: true,
+              vatEntry: true,
             },
           },
           user: {
@@ -168,9 +280,10 @@ export async function PATCH(request: Request) {
     });
 
     return NextResponse.json(updated);
-  } catch (error) {
+  } catch (error: any) {
+    console.error("PATCH /api/journal-entries error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Failed to update journal entry", details: error.message },
       { status: 500 },
     );
   }

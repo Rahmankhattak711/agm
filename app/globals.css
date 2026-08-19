@@ -52,6 +52,37 @@ body {
 }
 
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 8mm 10mm 8mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset all fixed/hidden containers that cause print clipping to 1 page */
+  html,
+  body {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    background: white !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  div,
+  main,
+  section {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* Hide app navigation, headers, and tabs during print */
   aside,
   header,
   nav,
@@ -60,8 +91,6 @@ body {
     display: none !important;
   }
 
-  body,
-  main,
   #printable-voucher,
   #printable-statement {
     background: white !important;
@@ -70,5 +99,45 @@ body {
     margin: 0 !important;
     box-shadow: none !important;
     border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+
+  /* Table structure for repeating header & footer across all printed pages */
+  .print-page-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto !important;
+    table-layout: fixed !important;
+  }
+
+  .print-page-table > thead,
+  thead.print-page-header-group {
+    display: table-header-group !important;
+  }
+
+  .print-page-table > tfoot,
+  tfoot.print-page-footer-group {
+    display: table-footer-group !important;
+  }
+
+  .print-page-table > tbody,
+  tbody.print-page-body-group {
+    display: table-row-group !important;
+  }
+
+  .print-avoid-break {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 }
+
+

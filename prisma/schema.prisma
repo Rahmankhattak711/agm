@@ -42,6 +42,9 @@ model User {
   stockMovements  StockMovement[]
   purchaseOrders  PurchaseOrder[]
 
+  // Quotation relations
+  quotations Quotation[]
+
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime       @updatedAt @map("updated_at")
   tokens    RefreshToken[]
@@ -641,6 +644,7 @@ model Product {
   stockLevels        StockLevel[]
   stockMovements     StockMovement[]
   purchaseOrderItems PurchaseOrderItem[]
+  quotationItems     QuotationItem[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -761,4 +765,81 @@ model MonthlyBalanceSheetSummary {
 
   @@unique([year, month])
   @@map("monthly_balance_sheet_summaries")
+}
+
+// ============================================================
+// 9. COMMERCIAL QUOTATIONS & PROPOSALS
+// ============================================================
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+model Quotation {
+  id          String          @id @default(uuid()) @db.Uuid
+  quotationNo String          @unique @map("quotation_no")
+  date        String          @default("")
+  validUntil  String          @default("") @map("valid_until")
+
+  // Client Details
+  customer    String          @default("")
+  attention   String          @default("")
+  address     String          @default("")
+  trn         String          @default("")
+  mobile      String          @default("")
+
+  // Project Details
+  project     String          @default("")
+  location    String          @default("")
+  reference   String          @default("")
+  preparedBy  String          @default("") @map("prepared_by")
+  contact     String          @default("")
+
+  // Financials
+  vatPct      Decimal         @default(5.00) @map("vat_pct") @db.Decimal(5, 2)
+  discount    Decimal         @default(0.00) @db.Decimal(15, 2)
+  subtotal    Decimal         @default(0.00) @db.Decimal(15, 2)
+  vatAmount   Decimal         @default(0.00) @map("vat_amount") @db.Decimal(15, 2)
+  totalAmount Decimal         @default(0.00) @map("total_amount") @db.Decimal(15, 2)
+
+  status       QuotationStatus @default(DRAFT)
+  notes        String?
+  terms        String?
+  paymentTerms String?         @map("payment_terms")
+
+  createdById String?         @map("created_by_id") @db.Uuid
+  createdBy   User?           @relation(fields: [createdById], references: [id])
+
+  items       QuotationItem[]
+
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id          String     @id @default(uuid()) @db.Uuid
+  quotationId String     @map("quotation_id") @db.Uuid
+  quotation   Quotation  @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  productId   String?    @map("product_id") @db.Uuid
+  product     Product?   @relation(fields: [productId], references: [id])
+
+  section     String?    @default("")
+  itemOrder   Int        @default(1) @map("item_order")
+  description String     @map("description")
+  quantity    Decimal    @default(1.00) @db.Decimal(12, 2)
+  unit        String     @default("SQM")
+  unitRate    Decimal    @default(0.00) @map("unit_rate") @db.Decimal(15, 2)
+  totalAmount Decimal    @default(0.00) @map("total_amount") @db.Decimal(15, 2)
+  isFree      Boolean    @default(false) @map("is_free")
+
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  @@map("quotation_items")
 }

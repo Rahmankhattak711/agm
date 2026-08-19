@@ -5,6 +5,26 @@ import { getSectionFromPath, SECTION_PATHS } from "@/lib/navigation";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import AgmLogo from "./AgmLogo";
+import {
+  AccountsIcon,
+  AttendanceIcon,
+  BonusesIcon,
+  ChevronsLeftIcon,
+  DashboardIcon,
+  EmployeesIcon,
+  FixedAssetsIcon,
+  JournalEntriesIcon,
+  LeavesIcon,
+  LogoutIcon,
+  PettyCashIcon,
+  ProductsIcon,
+  PurchaseOrdersIcon,
+  ReportsIcon,
+  StockMovementsIcon,
+  SuppliersIcon,
+  UserAdminIcon,
+  WarehousesIcon,
+} from "./icons";
 
 interface SidebarProps {
   activeSection?: string;
@@ -29,11 +49,7 @@ const navGroups: NavGroup[] = [
       {
         id: "dashboard",
         label: "Dashboard",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <path d="M3 13h8V3H3v10zM3 21h8v-6H3v6zM13 21h8V11h-8v10zM13 3v6h8V3h-8z" />
-          </svg>
-        ),
+        icon: <DashboardIcon />,
       },
     ],
   },
@@ -43,59 +59,27 @@ const navGroups: NavGroup[] = [
       {
         id: "products",
         label: "Products & Stock",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-            <line x1="12" y1="22.08" x2="12" y2="12" />
-          </svg>
-        ),
+        icon: <ProductsIcon />,
       },
       {
         id: "stock-movements",
         label: "Stock Movements",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <polyline points="17 1 21 5 17 9" />
-            <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-            <polyline points="7 23 3 19 7 15" />
-            <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-          </svg>
-        ),
+        icon: <StockMovementsIcon />,
       },
       {
         id: "purchase-orders",
         label: "Purchase Orders",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <path d="M16 10a4 4 0 0 1-8 0" />
-          </svg>
-        ),
+        icon: <PurchaseOrdersIcon />,
       },
       {
         id: "suppliers",
         label: "Suppliers / Vendors",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="8.5" cy="7" r="4" />
-            <line x1="20" y1="8" x2="20" y2="14" />
-            <line x1="23" y1="11" x2="17" y2="11" />
-          </svg>
-        ),
+        icon: <SuppliersIcon />,
       },
       {
         id: "warehouses",
         label: "Warehouses",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <path d="M3 20h18" />
-            <path d="M3 7l9-4 9 4v13H3V7z" />
-            <path d="M9 20V10h6v10" />
-          </svg>
-        ),
+        icon: <WarehousesIcon />,
       },
     ],
   },
@@ -105,57 +89,27 @@ const navGroups: NavGroup[] = [
       {
         id: "employees",
         label: "Employees Directory",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-        ),
+        icon: <EmployeesIcon />,
       },
       {
         id: "attendance",
         label: "Daily Attendance",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-        ),
+        icon: <AttendanceIcon />,
       },
       {
         id: "leaves",
         label: "Leave Management",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-        ),
+        icon: <LeavesIcon />,
       },
       {
         id: "bonuses",
         label: "Bonuses & Incentives",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
-        ),
+        icon: <BonusesIcon />,
       },
       {
         id: "assets",
         label: "Fixed Assets",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <rect x="1" y="3" width="15" height="13" rx="2" />
-            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-            <circle cx="5.5" cy="18.5" r="2.5" />
-            <circle cx="18.5" cy="18.5" r="2.5" />
-          </svg>
-        ),
+        icon: <FixedAssetsIcon />,
       },
     ],
   },
@@ -165,47 +119,22 @@ const navGroups: NavGroup[] = [
       {
         id: "accounts",
         label: "Chart of Accounts",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
-            <path d="M6 6h10M6 10h10M6 14h6" />
-          </svg>
-        ),
+        icon: <AccountsIcon />,
       },
       {
         id: "journals",
         label: "Journal Entries",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-            <polyline points="10 9 9 9 8 9" />
-          </svg>
-        ),
+        icon: <JournalEntriesIcon />,
       },
       {
         id: "petty-cash",
         label: "Petty Cash",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <rect x="2" y="6" width="20" height="12" rx="2" />
-            <circle cx="12" cy="12" r="2" />
-            <path d="M6 12h.01M18 12h.01" />
-          </svg>
-        ),
+        icon: <PettyCashIcon />,
       },
       {
         id: "reports",
         label: "Financial Reports",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <line x1="18" y1="20" x2="18" y2="10" />
-            <line x1="12" y1="20" x2="12" y2="4" />
-            <line x1="6" y1="20" x2="6" y2="14" />
-          </svg>
-        ),
+        icon: <ReportsIcon />,
       },
     ],
   },
@@ -215,11 +144,7 @@ const navGroups: NavGroup[] = [
       {
         id: "admin",
         label: "User Management",
-        icon: (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px]">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-        ),
+        icon: <UserAdminIcon />,
       },
     ],
   },
@@ -298,15 +223,11 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
           onClick={() => setCollapsed((c) => !c)}
           className="ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 transition-all hover:bg-white/10 hover:text-white cursor-pointer"
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            className={`h-[13px] w-[13px] transition-transform duration-300 ${collapsed ? "rotate-180" : "rotate-0"}`}
-          >
-            <path d="M11 19l-7-7 7-7M18 19l-7-7 7-7" />
-          </svg>
+          <ChevronsLeftIcon
+            className={`h-[13px] w-[13px] transition-transform duration-300 ${
+              collapsed ? "rotate-180" : "rotate-0"
+            }`}
+          />
         </button>
       </div>
 
@@ -385,17 +306,7 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
               title="Sign out"
               className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/8 text-red-200 transition-all hover:bg-red-500/15 hover:text-red-100 cursor-pointer"
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                className="h-[13px] w-[13px]"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16,17 21,12 16,7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
+              <LogoutIcon className="h-[13px] w-[13px]" strokeWidth={2} />
             </button>
           </div>
         ) : (

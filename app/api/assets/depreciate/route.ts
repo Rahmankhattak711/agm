@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const results: any[] = [];
 
     for (const asset of assets) {
-      // compute opening book value = cost - sum(previous depreciation)
+      
       const agg = await prisma.depreciationSchedule.aggregate({
         where: { assetId: asset.id },
         _sum: { depreciationAmount: true },
@@ -23,7 +23,6 @@ export async function POST(request: Request) {
 
       if (depreciationAmount <= 0) continue;
 
-      // create journal entry and schedule in a transaction per asset
       const created = await prisma.$transaction(async (tx) => {
         const entryNumber = `DEP-${asset.assetCode}-${fiscalYear || new Date().getFullYear()}`;
         const je = await tx.journalEntry.create({

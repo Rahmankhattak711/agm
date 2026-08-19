@@ -1,26 +1,32 @@
 "use client";
 
+import {
+  EmployeesIcon,
+  EyeIcon,
+  EyeOffIcon,
+  LockIcon,
+  MailIcon,
+  SpinnerIcon,
+} from "@/components/icons";
+import AgmLogo from "@/components/AgmLogo";
 import { useAuth } from "@/context/AuthContext";
+import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import AgmLogo from "@/components/AgmLogo";
 
 export default function SignupPage() {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
 
   const mutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (values: { fullName: string; email: string; password: string }) => {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, password }),
+        body: JSON.stringify(values),
       });
 
       const data = await res.json();
@@ -33,180 +39,256 @@ export default function SignupPage() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (fullName && email && password) {
-      mutation.mutate();
-    }
-  };
+  const form = useForm({
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+    },
+    onSubmit: async ({ value }) => {
+      mutation.mutate(value);
+    },
+  });
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 overflow-hidden bg-[radial-gradient(ellipse_at_top,_#2d4a5e_0%,_#1b2e3d_45%,_#111d27_100%)]">
-      {/* Background Decorative Mesh & Patterns */}
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        <svg aria-hidden="true" viewBox="0 0 1440 900" className="w-full h-full object-cover">
-          <path
-            d="M-100 200 C 300 100, 600 400, 1000 250 C 1200 150, 1400 300, 1600 200"
-            fill="none"
-            stroke="#59a06d"
-            strokeWidth="1.5"
-          />
-          <path
-            d="M-50 400 C 400 300, 700 600, 1100 450 C 1300 350, 1500 500, 1700 400"
-            fill="none"
-            stroke="#a1d1b1"
-            strokeWidth="1.2"
-            strokeDasharray="6 6"
-          />
-        </svg>
+    <div className="flex min-h-screen">
+      {/* LEFT: Branding & Architectural Aesthetics */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#1d3345] via-[#243c50] to-[#2c455a] p-12 flex-col justify-between overflow-hidden">
+        {/* Subtle geometric structural vectors */}
+        <div className="absolute inset-0 opacity-15 pointer-events-none">
+          <svg aria-hidden="true" viewBox="0 0 1440 900" className="w-full h-full object-cover">
+            <line x1="0" y1="150" x2="1440" y2="750" stroke="#dff7e6" strokeWidth="1.2" strokeDasharray="6 6" />
+            <line x1="0" y1="750" x2="1440" y2="150" stroke="#dff7e6" strokeWidth="1.2" strokeDasharray="6 6" />
+            <rect x="200" y="100" width="400" height="700" fill="none" stroke="#dff7e6" strokeWidth="1" />
+            <rect x="840" y="100" width="400" height="700" fill="none" stroke="#dff7e6" strokeWidth="1" />
+            <circle cx="720" cy="450" r="320" fill="none" stroke="#dff7e6" strokeWidth="1" opacity="0.6" />
+          </svg>
+        </div>
+
+        <div className="relative z-10">
+          <AgmLogo size="lg" theme="light" />
+        </div>
+
+        <div className="relative z-10 max-w-md">
+          <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-[#a3e6ba] border border-emerald-400/30 text-xs font-bold uppercase tracking-wider mb-4">
+            New Account Registration
+          </span>
+          <h1 className="text-4xl font-extrabold text-white tracking-tight leading-tight">
+            Interior Fitout & Project Accounting Suite
+          </h1>
+          <p className="mt-4 text-sm text-slate-300 leading-relaxed">
+            Create an administrator profile to manage inventory records, employee attendance, double-entry vouchers, and statutory VAT reports.
+          </p>
+        </div>
+
+        <div className="relative z-10 text-xs text-slate-400 flex items-center justify-between border-t border-white/10 pt-6">
+          <span>© {new Date().getFullYear()} AGM Technical Services LLC</span>
+          <span>UAE FTA Compliant</span>
+        </div>
       </div>
 
-      <div className="relative z-10 w-full max-w-md">
-        {/* Card Container */}
-        <div className="rounded-3xl border border-white/12 bg-white/95 backdrop-blur-xl p-7 sm:p-9 shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-all">
-          {/* Header & Logo */}
-          <div className="flex flex-col items-center text-center mb-6">
-            <div className="mb-3">
-              <AgmLogo size="md" collapsed={false} />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-2">Create an Account</h2>
+      {/* RIGHT: Signup Card Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-slate-50">
+        <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl shadow-[0_20px_60px_-15px_rgba(38,59,77,0.1)] border border-slate-200/80">
+          <div className="lg:hidden mb-6 flex justify-center">
+            <AgmLogo size="md" theme="dark" />
+          </div>
+
+          <div className="mb-6 text-center lg:text-left">
+            <h2 className="text-2xl font-bold text-[#263b4d] tracking-tight">
+              Create an Account
+            </h2>
             <p className="text-xs text-slate-500 mt-1 max-w-xs">
               Register a new administrative or accounting user profile.
             </p>
           </div>
 
-          {/* Error Message Alert */}
           {mutation.error && (
             <div className="mb-4 rounded-xl bg-rose-50 p-3 text-xs font-semibold text-rose-700 border border-rose-200 flex items-center gap-2 animate-in fade-in">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 shrink-0">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
               <span>{mutation.error.message}</span>
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label
-                htmlFor="fullName"
-                className="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
-              >
-                Full Name
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                </span>
-                <input
-                  id="fullName"
-                  type="text"
-                  required
-                  placeholder="John Doe"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  disabled={mutation.isPending}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-3.5 py-2.5 text-xs font-medium text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition"
-                />
-              </div>
-            </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+            className="space-y-4"
+          >
+            <form.Field
+              name="fullName"
+              validators={{
+                onChange: ({ value }) => (!value.trim() ? "Full name is required" : undefined),
+              }}
+            >
+              {(field) => {
+                const isTouched = field.state.meta.isTouched;
+                const error = isTouched && field.state.meta.errors[0];
+                return (
+                  <div>
+                    <label
+                      htmlFor="fullName"
+                      className="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
+                    >
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                        <EmployeesIcon className="w-4 h-4" />
+                      </span>
+                      <input
+                        id="fullName"
+                        name={field.name}
+                        type="text"
+                        placeholder="John Doe"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        disabled={mutation.isPending}
+                        className={`w-full rounded-xl border ${
+                          error ? "border-rose-400 bg-rose-50/30" : "border-slate-200 bg-slate-50/50"
+                        } pl-10 pr-3.5 py-2.5 text-xs font-medium text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition`}
+                      />
+                    </div>
+                    {error && (
+                      <p className="text-[11px] text-rose-600 mt-1 font-medium">{String(error)}</p>
+                    )}
+                  </div>
+                );
+              }}
+            </form.Field>
 
-            <div>
-              <label
-                htmlFor="email"
-                className="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
-              >
-                Email Address
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                    <polyline points="22,6 12,13 2,6" />
-                  </svg>
-                </span>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  placeholder="name@agm.ae"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={mutation.isPending}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-3.5 py-2.5 text-xs font-medium text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition"
-                />
-              </div>
-            </div>
+            <form.Field
+              name="email"
+              validators={{
+                onChange: ({ value }) =>
+                  !value
+                    ? "Email is required"
+                    : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+                    ? "Invalid email address"
+                    : undefined,
+              }}
+            >
+              {(field) => {
+                const isTouched = field.state.meta.isTouched;
+                const error = isTouched && field.state.meta.errors[0];
+                return (
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
+                    >
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                        <MailIcon className="w-4 h-4" />
+                      </span>
+                      <input
+                        id="email"
+                        name={field.name}
+                        type="email"
+                        placeholder="name@agm.ae"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        disabled={mutation.isPending}
+                        className={`w-full rounded-xl border ${
+                          error ? "border-rose-400 bg-rose-50/30" : "border-slate-200 bg-slate-50/50"
+                        } pl-10 pr-3.5 py-2.5 text-xs font-medium text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition`}
+                      />
+                    </div>
+                    {error && (
+                      <p className="text-[11px] text-rose-600 mt-1 font-medium">{String(error)}</p>
+                    )}
+                  </div>
+                );
+              }}
+            </form.Field>
 
-            <div>
-              <label
-                htmlFor="password"
-                className="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
-                </span>
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={mutation.isPending}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-10 py-2.5 text-xs font-medium text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition"
-                />
+            <form.Field
+              name="password"
+              validators={{
+                onChange: ({ value }) =>
+                  !value
+                    ? "Password is required"
+                    : value.length < 6
+                    ? "Password must be at least 6 characters"
+                    : undefined,
+              }}
+            >
+              {(field) => {
+                const isTouched = field.state.meta.isTouched;
+                const error = isTouched && field.state.meta.errors[0];
+                return (
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
+                    >
+                      Password
+                    </label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                        <LockIcon className="w-4 h-4" />
+                      </span>
+                      <input
+                        id="password"
+                        name={field.name}
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        disabled={mutation.isPending}
+                        className={`w-full rounded-xl border ${
+                          error ? "border-rose-400 bg-rose-50/30" : "border-slate-200 bg-slate-50/50"
+                        } pl-10 pr-10 py-2.5 text-xs font-medium text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      >
+                        {showPassword ? (
+                          <EyeOffIcon className="w-4 h-4" />
+                        ) : (
+                          <EyeIcon className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                    {error && (
+                      <p className="text-[11px] text-rose-600 mt-1 font-medium">{String(error)}</p>
+                    )}
+                  </div>
+                );
+              }}
+            </form.Field>
+
+            <form.Subscribe
+              selector={(state) => [state.canSubmit, state.isSubmitting]}
+            >
+              {([canSubmit, isSubmitting]) => (
                 <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  type="submit"
+                  disabled={!canSubmit || mutation.isPending || isSubmitting}
+                  className="w-full rounded-xl bg-gradient-to-r from-[#215a36] to-[#1c472d] hover:from-[#28633a] hover:to-[#225537] py-3 text-xs font-bold text-white shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 mt-2"
                 >
-                  {showPassword ? (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
+                  {mutation.isPending || isSubmitting ? (
+                    <>
+                      <SpinnerIcon className="w-4 h-4 animate-spin" />
+                      Creating Account...
+                    </>
                   ) : (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
+                    "Create Account & Proceed"
                   )}
                 </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={mutation.isPending}
-              className="w-full rounded-xl bg-gradient-to-r from-[#215a36] to-[#1c472d] hover:from-[#28633a] hover:to-[#225537] py-3 text-xs font-bold text-white shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 mt-2"
-            >
-              {mutation.isPending ? (
-                <>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4 animate-spin">
-                    <polyline points="23 4 23 10 17 10" />
-                    <path d="M20.49 15a9 9 0 1 1-1.39-7" />
-                  </svg>
-                  Creating Account...
-                </>
-              ) : (
-                "Create Account & Proceed"
               )}
-            </button>
+            </form.Subscribe>
           </form>
 
-          {/* Footer Link */}
           <p className="mt-6 text-center text-xs text-slate-500">
             Already have an account?{" "}
             <Link

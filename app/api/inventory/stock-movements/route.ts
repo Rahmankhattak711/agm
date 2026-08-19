@@ -61,7 +61,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Quantity must be greater than 0" }, { status: 400 });
     }
 
-    // Execute in transaction: create movement + update stock level
     const result = await prisma.$transaction(async (tx) => {
       const movement = await tx.stockMovement.create({
         data: {
@@ -81,7 +80,6 @@ export async function POST(request: Request) {
         },
       });
 
-      // Find current stock level
       const existingLevel = await tx.stockLevel.findUnique({
         where: {
           productId_warehouseId: {

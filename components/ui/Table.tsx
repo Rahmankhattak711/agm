@@ -1,8 +1,5 @@
 import React, { TableHTMLAttributes } from "react";
 
-// =======================
-// Table Container
-// =======================
 export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
   wrapperClassName?: string;
 }
@@ -22,9 +19,6 @@ export const Table: React.FC<TableProps> = ({
   );
 };
 
-// =======================
-// Table Header
-// =======================
 export const TableHead: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({
   children,
   className = "",
@@ -51,9 +45,6 @@ export const TableHeaderCell: React.FC<
   );
 };
 
-// =======================
-// Table Body & Rows
-// =======================
 export const TableBody: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({
   children,
   className = "",
@@ -90,9 +81,6 @@ export const TableCell: React.FC<
   );
 };
 
-// =======================
-// Empty & Loading States
-// =======================
 export const TableEmpty: React.FC<{
   title?: string;
   message?: string;
@@ -121,16 +109,37 @@ export const TableLoading: React.FC<{
   );
 };
 
-// =======================
-// Modal Component
-// =======================
-export const Modal: React.FC<{
+import OutsideClickHandler from "react-outside-click-handler";
+import { useEffect } from "react";
+
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
-}> = ({ isOpen, onClose, title, children, maxWidth = "md" }) => {
+  closeOnOutsideClick?: boolean;
+}
+
+export const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  maxWidth = "md",
+  closeOnOutsideClick = true,
+}) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const widthClass: Record<string, string> = {
@@ -143,20 +152,29 @@ export const Modal: React.FC<{
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
-      <div
-        className={`w-full ${widthClass[maxWidth]} bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto`}
+      <OutsideClickHandler
+        onOutsideClick={() => {
+          if (closeOnOutsideClick) {
+            onClose();
+          }
+        }}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-          <h3 className="font-bold text-sm text-slate-900">{title}</h3>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
-          >
-            ✕
-          </button>
+        <div
+          className={`w-full ${widthClass[maxWidth]} bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto`}
+        >
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+            <h3 className="font-bold text-sm text-slate-900">{title}</h3>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="p-5">{children}</div>
         </div>
-        <div className="p-5">{children}</div>
-      </div>
+      </OutsideClickHandler>
     </div>
   );
 };

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useForm } from "@tanstack/react-form";
 import {
   useBonuses,
   useCreateBonus,
@@ -11,13 +12,16 @@ import {
   BonusType,
   Bonus,
 } from "@/lib/hooks/api-hooks";
+import { PlusIcon } from "@/components/icons";
 import {
   Button,
-  Input,
   Select,
-  Textarea,
   DataTable,
   Modal,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+  FormSubmit,
 } from "@/components/ui";
 
 export default function BonusesPage() {
@@ -25,14 +29,6 @@ export default function BonusesPage() {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [employeeFilter, setEmployeeFilter] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Form states
-  const [employeeId, setEmployeeId] = useState("");
-  const [type, setType] = useState<BonusType>("PERFORMANCE");
-  const [amount, setAmount] = useState("1000");
-  const [month, setMonth] = useState((new Date().getMonth() + 1).toString());
-  const [year, setYear] = useState(new Date().getFullYear().toString());
-  const [reason, setReason] = useState("");
   const [formError, setFormError] = useState("");
 
   const { data: bonuses = [], isLoading, error } = useBonuses({
@@ -51,49 +47,53 @@ export default function BonusesPage() {
     return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  // Metrics
   const totalBonusesCount = bonuses.length;
   const approvedTotal = bonuses
     .filter((b) => b.isApproved)
     .reduce((acc, b) => acc + Number(b.amount || 0), 0);
   const pendingApprovals = bonuses.filter((b) => !b.isApproved).length;
 
+  const form = useForm({
+    defaultValues: {
+      employeeId: "",
+      type: "PERFORMANCE" as BonusType,
+      amount: "1000",
+      month: (new Date().getMonth() + 1).toString(),
+      year: new Date().getFullYear().toString(),
+      reason: "",
+    },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        await createBonus.mutateAsync({
+          employeeId: value.employeeId,
+          type: value.type,
+          amount: Number(value.amount),
+          month: parseInt(value.month, 10),
+          year: parseInt(value.year, 10),
+          reason: value.reason.trim() || undefined,
+        });
+
+        setIsModalOpen(false);
+      } catch (err: any) {
+        setFormError(err.message || "Failed to award bonus");
+      }
+    },
+  });
+
   const handleOpenModal = () => {
-    if (employees.length > 0) setEmployeeId(employees[0].id);
-    setType("PERFORMANCE");
-    setAmount("1000");
-    setMonth((new Date().getMonth() + 1).toString());
-    setYear(new Date().getFullYear().toString());
-    setReason("");
     setFormError("");
+    form.reset({
+      employeeId: employees[0]?.id || "",
+      type: "PERFORMANCE",
+      amount: "1000",
+      month: (new Date().getMonth() + 1).toString(),
+      year: new Date().getFullYear().toString(),
+      reason: "",
+    });
     setIsModalOpen(true);
   };
 
-  const handleCreateBonus = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-    if (!employeeId || !amount) {
-      setFormError("Employee and amount are required.");
-      return;
-    }
-
-    try {
-      await createBonus.mutateAsync({
-        employeeId,
-        type,
-        amount: Number(amount),
-        month: parseInt(month, 10),
-        year: parseInt(year, 10),
-        reason: reason.trim() || undefined,
-      });
-
-      setIsModalOpen(false);
-    } catch (err: any) {
-      setFormError(err.message || "Failed to award bonus");
-    }
-  };
-
-  // TanStack Table Column Definitions
   const columns = useMemo<ColumnDef<Bonus>[]>(
     () => [
       {
@@ -101,122 +101,113 @@ export default function BonusesPage() {
         header: "Employee",
         cell: ({ row }) => (
           <div>
-            <div className="font-semibold text-slate-900">
-              {row.original.employee?.firstName} {row.original.employee?.lastName}
-            </div>
+            <span className="font-bold text-slate-900 block">
+              {row.original.employee?.firstName || ""} {row.original.employee?.lastName || "Staff"}
+            </span>
             <span className="font-mono text-[10px] text-slate-400">
-              {row.original.employee?.employeeCode}
+              Code: {row.original.employee?.employeeCode || "N/A"}
             </span>
           </div>
         ),
       },
       {
         accessorKey: "type",
-        header: "Bonus Type",
+        header: "Incentive Type",
         cell: ({ row }) => (
-          <span className="font-semibold text-slate-800">
+          <span className="font-semibold text-slate-800 text-xs">
             {row.original.type.replace("_", " ")}
           </span>
         ),
       },
       {
         accessorKey: "period",
-        header: "Period",
+        header: "Payroll Period",
         cell: ({ row }) => (
-          <span className="text-slate-600">
-            {row.original.month ? `M${row.original.month} / ${row.original.year}` : "-"}
+          <span className="font-mono text-xs text-slate-700">
+            {row.original.month}/{row.original.year}
           </span>
         ),
       },
       {
         accessorKey: "amount",
-        header: "Amount",
+        header: "Bonus Amount",
         cell: ({ row }) => (
-          <span className="font-mono font-bold text-slate-900 block text-right">
+          <span className="font-mono font-bold text-emerald-800 text-sm">
             {formatCurrency(row.original.amount)}
           </span>
         ),
       },
       {
+        accessorKey: "status",
+        header: "Approval & Payout",
+        cell: ({ row }) => {
+          const isApproved = row.original.isApproved;
+          const isPaid = row.original.isPaid;
+          return (
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                  isApproved
+                    ? "bg-emerald-100 text-emerald-800"
+                    : "bg-amber-100 text-amber-800"
+                }`}
+              >
+                {isApproved ? "Approved" : "Pending"}
+              </span>
+              {isPaid && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800">
+                  Paid
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "reason",
-        header: "Reason / Milestone",
+        header: "Notes",
         cell: ({ row }) => (
-          <span className="text-slate-600 max-w-xs truncate block">
+          <span className="text-xs text-slate-600 truncate max-w-xs block">
             {row.original.reason || <span className="text-slate-300">-</span>}
           </span>
         ),
       },
       {
-        accessorKey: "isApproved",
-        header: "Approval",
-        cell: ({ row }) => (
-          <div className="text-center">
-            {row.original.isApproved ? (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Approved
-              </span>
-            ) : (
-              <Button
-                variant="secondary"
-                size="sm"
-                className="border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800"
-                onClick={() =>
-                  updateBonus.mutateAsync({
-                    id: row.original.id,
-                    isApproved: true,
-                  })
-                }
-              >
-                Approve
-              </Button>
-            )}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "isPaid",
-        header: "Payment",
-        cell: ({ row }) => (
-          <div className="text-center">
-            {row.original.isPaid ? (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                Paid
-              </span>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  updateBonus.mutateAsync({
-                    id: row.original.id,
-                    isPaid: true,
-                  })
-                }
-              >
-                Mark Paid
-              </Button>
-            )}
-          </div>
-        ),
-      },
-      {
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => (
-          <div className="text-right">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
-                if (confirm("Delete this bonus entry?")) {
-                  await deleteBonus.mutateAsync(row.original.id);
-                }
-              }}
-            >
-              Delete
-            </Button>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const isApproved = row.original.isApproved;
+          return (
+            <div className="flex items-center justify-end gap-1.5">
+              {!isApproved && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-emerald-700 hover:bg-emerald-50"
+                  onClick={async () => {
+                    await updateBonus.mutateAsync({
+                      id: row.original.id,
+                      isApproved: true,
+                    });
+                  }}
+                >
+                  Approve
+                </Button>
+              )}
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={async () => {
+                  if (confirm("Delete this bonus grant?")) {
+                    await deleteBonus.mutateAsync(row.original.id);
+                  }
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          );
+        },
       },
     ],
     [deleteBonus, updateBonus]
@@ -224,57 +215,51 @@ export default function BonusesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Actions */}
+      
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900">Bonuses & Performance Incentives</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Project milestone achievements, festival allowances, and monthly performance rewards.
+            Commission allocations, project milestones, festival rewards, and management approvals.
           </p>
         </div>
 
         <Button
           variant="primary"
           onClick={handleOpenModal}
-          icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-4 h-4">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          }
+          icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
         >
           Award Bonus
         </Button>
       </div>
 
-      {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Approved Incentives</p>
-          <p className="text-2xl font-black text-emerald-800 font-mono mt-1">{formatCurrency(approvedTotal)}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Granted Bonuses</p>
+          <p className="text-2xl font-black text-slate-900 mt-1">{totalBonusesCount}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Performance awards logged</p>
+        </div>
+
+        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Approved Pool Total</p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">{formatCurrency(approvedTotal)}</p>
           <p className="text-xs text-slate-500 mt-0.5">Ready for payroll disbursement</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pending Approvals</p>
-          <p className="text-2xl font-black text-amber-700 mt-1">{pendingApprovals}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Awaiting management sign-off</p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Entries</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{totalBonusesCount}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Recorded this fiscal period</p>
+          <p className="text-2xl font-black text-amber-600 mt-1">{pendingApprovals}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Awaiting management signoff</p>
         </div>
       </div>
 
-      {/* Filter and TanStack Table Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 w-full">
             <Select
               value={selectedMonth}
-              onChange={(e) => setSelectedMonth(parseInt(e.target.value, 10))}
-              className="w-32"
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              className="w-full sm:w-40"
             >
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                 <option key={m} value={m}>
@@ -285,128 +270,158 @@ export default function BonusesPage() {
 
             <Select
               value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
-              className="w-28"
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="w-full sm:w-36"
             >
-              <option value={2025}>2025</option>
-              <option value={2026}>2026</option>
-              <option value={2027}>2027</option>
+              {[2024, 2025, 2026].map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
             </Select>
-          </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Select
               value={employeeFilter}
               onChange={(e) => setEmployeeFilter(e.target.value)}
-              className="w-full sm:w-60"
+              className="w-full sm:w-56"
             >
               <option value="">All Employees</option>
               {employees.map((e) => (
                 <option key={e.id} value={e.id}>
-                  {e.firstName} {e.lastName} ({e.employeeCode})
+                  {e.firstName} {e.lastName}
                 </option>
               ))}
             </Select>
           </div>
         </div>
 
-        {/* TanStack Table Render */}
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">Error loading bonuses: {(error as any).message}</div>
+          <div className="py-8 text-center text-xs text-red-500">
+            Error loading bonus records: {(error as any).message}
+          </div>
         ) : (
           <DataTable
             columns={columns}
             data={bonuses}
             isLoading={isLoading}
-            emptyTitle="No bonuses recorded for this period"
+            emptyTitle="No bonuses logged for this period"
             emptyMessage='Click "Award Bonus" to record an incentive.'
           />
         )}
       </div>
 
-      {/* Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Award Employee Bonus" maxWidth="lg">
-        <form onSubmit={handleCreateBonus} className="space-y-3.5">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Award Incentive / Bonus" maxWidth="lg">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-3.5"
+        >
           {formError && (
             <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
               {formError}
             </div>
           )}
 
-          <Select
-            label="Employee *"
-            required
-            value={employeeId}
-            onChange={(e) => setEmployeeId(e.target.value)}
+          <form.Field
+            name="employeeId"
+            validators={{
+              onChange: ({ value }) => (!value ? "Employee selection is required" : undefined),
+            }}
           >
-            {employees.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.firstName} {e.lastName} ({e.employeeCode})
-              </option>
-            ))}
-          </Select>
+            {(field) => (
+              <FormSelect field={field} label="Employee *" required>
+                <option value="">-- Select Employee --</option>
+                {employees.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.firstName} {e.lastName} ({e.employeeCode})
+                  </option>
+                ))}
+              </FormSelect>
+            )}
+          </form.Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <Select
-              label="Incentive Type"
-              value={type}
-              onChange={(e) => setType(e.target.value as BonusType)}
-            >
-              <option value="PERFORMANCE">Performance Bonus</option>
-              <option value="FESTIVAL">Festival / Eid Bonus</option>
-              <option value="PROJECT_COMPLETION">Project Completion</option>
-              <option value="ATTENDANCE">Attendance Incentive</option>
-              <option value="REFERRAL">Referral Bonus</option>
-              <option value="OTHER">Other</option>
-            </Select>
+            <form.Field name="type">
+              {(field) => (
+                <FormSelect field={field} label="Incentive Type">
+                  <option value="PERFORMANCE">Performance Bonus</option>
+                  <option value="FESTIVAL">Festival / Eid Bonus</option>
+                  <option value="PROJECT_COMPLETION">Project Completion</option>
+                  <option value="ATTENDANCE">Attendance Incentive</option>
+                  <option value="REFERRAL">Referral Bonus</option>
+                  <option value="OTHER">Other</option>
+                </FormSelect>
+              )}
+            </form.Field>
 
-            <Input
-              label="Amount (AED) *"
-              type="number"
-              min="1"
-              step="0.01"
-              required
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
+            <form.Field
+              name="amount"
+              validators={{
+                onChange: ({ value }) =>
+                  !value || Number(value) <= 0 ? "Amount must be greater than 0" : undefined,
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Amount (AED) *"
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  required
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Select
-              label="Month"
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-            >
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                <option key={m} value={m}>
-                  Month {m}
-                </option>
-              ))}
-            </Select>
+            <form.Field name="month">
+              {(field) => (
+                <FormSelect field={field} label="Month">
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                    <option key={m} value={m}>
+                      Month {m}
+                    </option>
+                  ))}
+                </FormSelect>
+              )}
+            </form.Field>
 
-            <Input
-              label="Year"
-              type="number"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-            />
+            <form.Field name="year">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Year"
+                  type="number"
+                />
+              )}
+            </form.Field>
           </div>
 
-          <Textarea
-            label="Reason / Milestone Achievement"
-            rows={2}
-            placeholder="Completed project ahead of schedule..."
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          />
+          <form.Field name="reason">
+            {(field) => (
+              <FormTextarea
+                field={field}
+                label="Reason / Milestone Achievement"
+                rows={2}
+                placeholder="Completed project ahead of schedule..."
+              />
+            )}
+          </form.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createBonus.isPending}>
-              {createBonus.isPending ? "Submitting..." : "Award Bonus"}
-            </Button>
+            <FormSubmit
+              form={form}
+              loading={createBonus.isPending}
+            >
+              Award Bonus
+            </FormSubmit>
           </div>
         </form>
       </Modal>

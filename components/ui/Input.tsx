@@ -1,8 +1,5 @@
 import React, { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, forwardRef } from "react";
 
-// =======================
-// Text / Number Input
-// =======================
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
@@ -41,9 +38,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 );
 Input.displayName = "Input";
 
-// =======================
-// Select Dropdown
-// =======================
 export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
@@ -81,9 +75,6 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 );
 Select.displayName = "Select";
 
-// =======================
-// Textarea
-// =======================
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;

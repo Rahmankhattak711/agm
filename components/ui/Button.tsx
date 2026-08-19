@@ -1,3 +1,4 @@
+import { SpinnerIcon } from "@/components/icons";
 import React, { ButtonHTMLAttributes } from "react";
 
 export type ButtonVariant = "primary" | "secondary" | "danger" | "outline" | "ghost" | "dark";
@@ -7,6 +8,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   icon?: React.ReactNode;
+  loading?: boolean;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -16,6 +18,7 @@ export const Button: React.FC<ButtonProps> = ({
   icon,
   className = "",
   disabled,
+  loading = false,
   ...props
 }) => {
   const baseClasses =
@@ -42,11 +45,15 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      disabled={disabled}
+      disabled={disabled || loading}
       className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
       {...props}
     >
-      {icon && <span className="shrink-0">{icon}</span>}
+      {loading ? (
+        <SpinnerIcon />
+      ) : (
+        icon && <span className="shrink-0">{icon}</span>
+      )}
       {children}
     </button>
   );

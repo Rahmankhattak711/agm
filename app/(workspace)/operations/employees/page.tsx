@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useForm } from "@tanstack/react-form";
 import {
   useEmployees,
   useUpdateEmployee,
@@ -12,12 +13,16 @@ import {
   EmploymentStatus,
   PaymentMethod,
 } from "@/lib/hooks/api-hooks";
+import { SearchIcon } from "@/components/icons";
 import {
   Button,
   Input,
   Select,
   DataTable,
   Modal,
+  FormInput,
+  FormSelect,
+  FormSubmit,
 } from "@/components/ui";
 
 export default function EmployeesPage() {
@@ -26,42 +31,6 @@ export default function EmployeesPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
-
-  // Form State
-  const [employeeCode, setEmployeeCode] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [department, setDepartment] = useState("Operations");
-  const [designation, setDesignation] = useState("");
-  const [joiningDate, setJoiningDate] = useState(new Date().toISOString().split("T")[0]);
-
-  // Extended Personal & UAE Details
-  const [gender, setGender] = useState<Gender>("MALE");
-  const [nationality, setNationality] = useState("UAE");
-  const [emiratesId, setEmiratesId] = useState("");
-  const [emiratesIdExpiry, setEmiratesIdExpiry] = useState("");
-  const [passportNo, setPassportNo] = useState("");
-  const [passportExpiry, setPassportExpiry] = useState("");
-  const [laborCardNo, setLaborCardNo] = useState("");
-  const [laborCardExpiry, setLaborCardExpiry] = useState("");
-  const [visaNumber, setVisaNumber] = useState("");
-  const [visaExpiry, setVisaExpiry] = useState("");
-  const [emergencyContactName, setEmergencyContactName] = useState("");
-  const [emergencyContactPhone, setEmergencyContactPhone] = useState("");
-
-  // Employment & Compensation
-  const [contractType, setContractType] = useState<ContractType>("FULL_TIME");
-  const [employmentStatus, setEmploymentStatus] = useState<EmploymentStatus>("ACTIVE");
-  const [basicSalary, setBasicSalary] = useState("5000");
-  const [housingAllowance, setHousingAllowance] = useState("0");
-  const [transportAllowance, setTransportAllowance] = useState("0");
-  const [otherAllowances, setOtherAllowances] = useState("0");
-  const [annualLeaveBalance, setAnnualLeaveBalance] = useState("30");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("WPS_BANK_TRANSFER");
-  const [bankName, setBankName] = useState("");
-  const [iban, setIban] = useState("");
   const [formError, setFormError] = useState("");
 
   const { data: employees = [], isLoading, error } = useEmployees({
@@ -91,143 +60,197 @@ export default function EmployeesPage() {
     new Set(employees.map((e) => e.department).filter(Boolean))
   );
 
+  const form = useForm({
+    defaultValues: {
+      employeeCode: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      department: "Operations",
+      designation: "",
+      joiningDate: new Date().toISOString().split("T")[0],
+      gender: "MALE" as Gender,
+      nationality: "UAE",
+      emiratesId: "",
+      emiratesIdExpiry: "",
+      passportNo: "",
+      passportExpiry: "",
+      laborCardNo: "",
+      laborCardExpiry: "",
+      visaNumber: "",
+      visaExpiry: "",
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      contractType: "FULL_TIME" as ContractType,
+      employmentStatus: "ACTIVE" as EmploymentStatus,
+      basicSalary: "5000",
+      housingAllowance: "0",
+      transportAllowance: "0",
+      otherAllowances: "0",
+      annualLeaveBalance: "30",
+      paymentMethod: "WPS_BANK_TRANSFER" as PaymentMethod,
+      bankName: "",
+      iban: "",
+    },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      if (!editingEmployee) return;
+
+      try {
+        await updateEmployeeMutation.mutateAsync({
+          id: editingEmployee.id,
+          employeeCode: value.employeeCode.trim(),
+          firstName: value.firstName.trim(),
+          lastName: value.lastName.trim(),
+          email: value.email.trim() || undefined,
+          phone: value.phone.trim() || undefined,
+          department: value.department.trim() || undefined,
+          designation: value.designation.trim() || undefined,
+          joiningDate: value.joiningDate,
+          gender: value.gender,
+          nationality: value.nationality.trim() || undefined,
+          emiratesId: value.emiratesId.trim() || undefined,
+          emiratesIdExpiry: value.emiratesIdExpiry || undefined,
+          passportNo: value.passportNo.trim() || undefined,
+          passportExpiry: value.passportExpiry || undefined,
+          laborCardNo: value.laborCardNo.trim() || undefined,
+          laborCardExpiry: value.laborCardExpiry || undefined,
+          visaNumber: value.visaNumber.trim() || undefined,
+          visaExpiry: value.visaExpiry || undefined,
+          emergencyContactName: value.emergencyContactName.trim() || undefined,
+          emergencyContactPhone: value.emergencyContactPhone.trim() || undefined,
+          contractType: value.contractType,
+          employmentStatus: value.employmentStatus,
+          basicSalary: Number(value.basicSalary),
+          housingAllowance: Number(value.housingAllowance),
+          transportAllowance: Number(value.transportAllowance),
+          otherAllowances: Number(value.otherAllowances),
+          annualLeaveBalance: Number(value.annualLeaveBalance),
+          paymentMethod: value.paymentMethod,
+          bankName: value.bankName.trim() || undefined,
+          iban: value.iban.trim() || undefined,
+        });
+
+        setIsModalOpen(false);
+      } catch (err: any) {
+        setFormError(err.message || "Failed to save employee");
+      }
+    },
+  });
+
   const handleOpenEditModal = (emp: Employee) => {
     setEditingEmployee(emp);
-    setEmployeeCode(emp.employeeCode);
-    setFirstName(emp.firstName);
-    setLastName(emp.lastName);
-    setEmail(emp.email || "");
-    setPhone(emp.phone || "");
-    setDepartment(emp.department || "Operations");
-    setDesignation(emp.designation || "");
-    setJoiningDate(new Date(emp.joiningDate).toISOString().split("T")[0]);
-    setGender(emp.gender || "MALE");
-    setNationality(emp.nationality || "UAE");
-    setEmiratesId(emp.emiratesId || "");
-    setEmiratesIdExpiry(emp.emiratesIdExpiry ? new Date(emp.emiratesIdExpiry).toISOString().split("T")[0] : "");
-    setPassportNo(emp.passportNo || "");
-    setPassportExpiry(emp.passportExpiry ? new Date(emp.passportExpiry).toISOString().split("T")[0] : "");
-    setLaborCardNo(emp.laborCardNo || "");
-    setLaborCardExpiry(emp.laborCardExpiry ? new Date(emp.laborCardExpiry).toISOString().split("T")[0] : "");
-    setVisaNumber(emp.visaNumber || "");
-    setVisaExpiry(emp.visaExpiry ? new Date(emp.visaExpiry).toISOString().split("T")[0] : "");
-    setEmergencyContactName(emp.emergencyContactName || "");
-    setEmergencyContactPhone(emp.emergencyContactPhone || "");
-    setContractType(emp.contractType || "FULL_TIME");
-    setEmploymentStatus(emp.employmentStatus || "ACTIVE");
-    setBasicSalary(emp.basicSalary.toString());
-    setHousingAllowance(emp.housingAllowance?.toString() || "0");
-    setTransportAllowance(emp.transportAllowance?.toString() || "0");
-    setOtherAllowances(emp.otherAllowances?.toString() || "0");
-    setAnnualLeaveBalance(emp.annualLeaveBalance?.toString() || "30");
-    setPaymentMethod(emp.paymentMethod || "WPS_BANK_TRANSFER");
-    setBankName(emp.bankName || "");
-    setIban(emp.iban || "");
     setFormError("");
+    form.reset({
+      employeeCode: emp.employeeCode,
+      firstName: emp.firstName,
+      lastName: emp.lastName,
+      email: emp.email || "",
+      phone: emp.phone || "",
+      department: emp.department || "Operations",
+      designation: emp.designation || "",
+      joiningDate: new Date(emp.joiningDate).toISOString().split("T")[0],
+      gender: emp.gender || "MALE",
+      nationality: emp.nationality || "UAE",
+      emiratesId: emp.emiratesId || "",
+      emiratesIdExpiry: emp.emiratesIdExpiry ? new Date(emp.emiratesIdExpiry).toISOString().split("T")[0] : "",
+      passportNo: emp.passportNo || "",
+      passportExpiry: emp.passportExpiry ? new Date(emp.passportExpiry).toISOString().split("T")[0] : "",
+      laborCardNo: emp.laborCardNo || "",
+      laborCardExpiry: emp.laborCardExpiry ? new Date(emp.laborCardExpiry).toISOString().split("T")[0] : "",
+      visaNumber: emp.visaNumber || "",
+      visaExpiry: emp.visaExpiry ? new Date(emp.visaExpiry).toISOString().split("T")[0] : "",
+      emergencyContactName: emp.emergencyContactName || "",
+      emergencyContactPhone: emp.emergencyContactPhone || "",
+      contractType: emp.contractType || "FULL_TIME",
+      employmentStatus: emp.employmentStatus || "ACTIVE",
+      basicSalary: emp.basicSalary.toString(),
+      housingAllowance: emp.housingAllowance?.toString() || "0",
+      transportAllowance: emp.transportAllowance?.toString() || "0",
+      otherAllowances: emp.otherAllowances?.toString() || "0",
+      annualLeaveBalance: emp.annualLeaveBalance?.toString() || "30",
+      paymentMethod: emp.paymentMethod || "WPS_BANK_TRANSFER",
+      bankName: emp.bankName || "",
+      iban: emp.iban || "",
+    });
     setIsModalOpen(true);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
+  const formatCurrency = (val: number | string | undefined) => {
+    const num = Number(val || 0);
+    return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
 
-    if (!firstName.trim() || !lastName.trim() || !basicSalary) {
-      setFormError("First name, last name, and basic salary are required.");
-      return;
-    }
-
-    if (!editingEmployee) return;
-
-    try {
-      const payload = {
-        id: editingEmployee.id,
-        employeeCode: employeeCode.trim(),
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        email: email.trim() || undefined,
-        phone: phone.trim() || undefined,
-        department: department.trim() || undefined,
-        designation: designation.trim() || undefined,
-        joiningDate,
-        gender,
-        nationality: nationality.trim() || undefined,
-        emiratesId: emiratesId.trim() || undefined,
-        emiratesIdExpiry: emiratesIdExpiry || undefined,
-        passportNo: passportNo.trim() || undefined,
-        passportExpiry: passportExpiry || undefined,
-        laborCardNo: laborCardNo.trim() || undefined,
-        laborCardExpiry: laborCardExpiry || undefined,
-        visaNumber: visaNumber.trim() || undefined,
-        visaExpiry: visaExpiry || undefined,
-        emergencyContactName: emergencyContactName.trim() || undefined,
-        emergencyContactPhone: emergencyContactPhone.trim() || undefined,
-        contractType,
-        employmentStatus,
-        basicSalary: Number(basicSalary),
-        housingAllowance: Number(housingAllowance),
-        transportAllowance: Number(transportAllowance),
-        otherAllowances: Number(otherAllowances),
-        annualLeaveBalance: Number(annualLeaveBalance),
-        paymentMethod,
-        bankName: bankName.trim() || undefined,
-        iban: iban.trim() || undefined,
-      };
-
-      await updateEmployeeMutation.mutateAsync(payload);
-      setIsModalOpen(false);
-    } catch (err: any) {
-      setFormError(err.message || "Failed to save employee");
+  const getStatusBadge = (status: EmploymentStatus) => {
+    switch (status) {
+      case "ACTIVE":
+        return "bg-emerald-100 text-emerald-800 border-emerald-200";
+      case "ON_LEAVE":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "SUSPENDED":
+        return "bg-amber-100 text-amber-800 border-amber-200";
+      case "TERMINATED":
+      case "RESIGNED":
+        return "bg-rose-100 text-rose-800 border-rose-200";
+      default:
+        return "bg-slate-100 text-slate-700 border-slate-200";
     }
   };
 
-  // TanStack Table Column Definitions
   const columns = useMemo<ColumnDef<Employee>[]>(
     () => [
       {
-        accessorKey: "employee",
-        header: "Registered User / Employee",
+        accessorKey: "employeeCode",
+        header: "Emp ID",
+        cell: ({ row }) => (
+          <span className="font-mono font-bold text-slate-800">
+            {row.original.employeeCode}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "name",
+        header: "Employee Details",
         cell: ({ row }) => (
           <div>
-            <span className="font-semibold text-slate-900 block">
+            <div className="font-bold text-slate-900">
               {row.original.firstName} {row.original.lastName}
-            </span>
-            <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1.5 mt-0.5">
-              <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 font-bold">
-                {row.original.employeeCode}
+            </div>
+            <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+              <span>{row.original.designation || "Staff"}</span>
+              <span>&bull;</span>
+              <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">
+                {row.original.department || "Operations"}
               </span>
-              {row.original.email && <span>• {row.original.email}</span>}
             </div>
           </div>
         ),
       },
       {
-        accessorKey: "role",
-        header: "Role & Department",
+        accessorKey: "contact",
+        header: "Contact Details",
         cell: ({ row }) => (
-          <div>
-            <span className="font-semibold text-slate-800 block">
-              {row.original.designation || "Staff"}
-            </span>
-            <span className="text-[10px] text-slate-400">
-              {row.original.department || "Operations"}
-            </span>
+          <div className="text-xs">
+            <span className="text-slate-700 block">{row.original.phone || "-"}</span>
+            <span className="text-slate-400 font-mono text-[10px]">{row.original.email || "-"}</span>
           </div>
         ),
       },
       {
-        accessorKey: "uaeCompliance",
+        accessorKey: "emiratesId",
         header: "UAE Compliance",
         cell: ({ row }) => (
-          <div className="text-xs text-slate-600">
+          <div className="text-xs">
             {row.original.emiratesId ? (
-              <span className="font-mono font-semibold text-slate-800 block text-[11px]">
-                EID: {row.original.emiratesId}
+              <span className="font-mono font-bold text-slate-800 block text-[11px]">
+                {row.original.emiratesId}
               </span>
             ) : (
-              <span className="text-slate-400 text-[10px] block">No Emirates ID</span>
+              <span className="text-slate-300 italic">No Emirates ID</span>
             )}
             {row.original.visaExpiry && (
-              <span className="text-[10px] text-slate-400 block">
+              <span className="text-[10px] text-amber-700 block font-medium">
                 Visa: {new Date(row.original.visaExpiry).toLocaleDateString()}
               </span>
             )}
@@ -235,51 +258,37 @@ export default function EmployeesPage() {
         ),
       },
       {
-        accessorKey: "grossSalary",
-        header: "Gross Salary",
+        accessorKey: "monthlySalary",
+        header: "Monthly Payroll",
         cell: ({ row }) => {
-          const gross =
+          const total =
             Number(row.original.basicSalary || 0) +
             Number(row.original.housingAllowance || 0) +
             Number(row.original.transportAllowance || 0) +
             Number(row.original.otherAllowances || 0);
-
           return (
-            <div className="text-right font-mono">
-              <span className="font-bold text-slate-900 block text-xs">
-                AED {gross.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <div>
+              <span className="font-mono font-bold text-slate-900 block text-xs">
+                {formatCurrency(total)}
               </span>
               <span className="text-[10px] text-slate-400">
-                Basic: AED {Number(row.original.basicSalary).toLocaleString()}
+                Basic: {formatCurrency(row.original.basicSalary)}
               </span>
             </div>
           );
         },
       },
       {
-        accessorKey: "leaveBalance",
-        header: "Leave Balance",
-        cell: ({ row }) => (
-          <div className="text-center font-bold text-slate-800">
-            {row.original.annualLeaveBalance ?? 30} <span className="text-[10px] font-normal text-slate-400">days</span>
-          </div>
-        ),
-      },
-      {
-        accessorKey: "status",
+        accessorKey: "employmentStatus",
         header: "Status",
         cell: ({ row }) => (
-          <div className="text-center">
-            {row.original.employmentStatus === "ACTIVE" ? (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Active Staff
-              </span>
-            ) : (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
-                {row.original.employmentStatus}
-              </span>
-            )}
-          </div>
+          <span
+            className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusBadge(
+              row.original.employmentStatus
+            )}`}
+          >
+            {row.original.employmentStatus.replace("_", " ")}
+          </span>
         ),
       },
       {
@@ -298,12 +307,12 @@ export default function EmployeesPage() {
               variant="danger"
               size="sm"
               onClick={async () => {
-                if (confirm(`Remove employee ${row.original.firstName} ${row.original.lastName}?`)) {
+                if (confirm(`Delete employee record for ${row.original.firstName} ${row.original.lastName}?`)) {
                   await deleteEmployeeMutation.mutateAsync(row.original.id);
                 }
               }}
             >
-              Remove
+              Delete
             </Button>
           </div>
         ),
@@ -314,87 +323,75 @@ export default function EmployeesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner */}
+      
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Employee Master Directory</h2>
+          <h2 className="text-xl font-black text-slate-900">Workforce & Human Capital Directory</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Synchronized registered users, UAE labor compliance, WPS payroll allowances, and personnel files.
+            Manage employee master data, UAE visa dates, labor cards, salary packages, and WPS details.
           </p>
         </div>
       </div>
 
-      {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Workforce</p>
           <p className="text-2xl font-black text-slate-900 mt-1">{totalWorkforce}</p>
-          <p className="text-xs text-emerald-700 font-medium mt-0.5">{activeStaff} active registered personnel</p>
+          <p className="text-xs text-slate-500 mt-0.5">Registered personnel</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Monthly Payroll Obligation</p>
-          <p className="text-2xl font-black text-emerald-800 font-mono mt-1">
-            AED {totalMonthlyPayroll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Basic + UAE Allowances</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active Staff</p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">{activeStaff}</p>
+          <p className="text-xs text-slate-500 mt-0.5">On-duty workforce</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">WPS SIF Ready</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {employees.filter((e) => e.iban).length} / {totalWorkforce}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">IBAN configured staff</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Monthly Payroll Commitment</p>
+          <p className="text-2xl font-black text-slate-900 mt-1">{formatCurrency(totalMonthlyPayroll)}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Basic + allowances (WPS)</p>
         </div>
       </div>
 
-      {/* Filter and Table Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="w-full sm:w-80">
             <Input
-              placeholder="Search code, name, designation, Emirates ID..."
+              placeholder="Search code, name, phone, Emirates ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              leftIcon={
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              }
+              leftIcon={<SearchIcon className="w-4 h-4" strokeWidth={2} />}
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <Select
-              value={departmentFilter}
-              onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="w-full sm:w-44"
-            >
-              <option value="ALL">All Departments</option>
-              {departments.map((d: any) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </Select>
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+            <div className="w-full sm:w-44">
+              <Select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                options={[
+                  { value: "ALL", label: "All Departments" },
+                  ...departments.map((d: any) => ({ value: d, label: d })),
+                ]}
+              />
+            </div>
 
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-36"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="ACTIVE">Active</option>
-              <option value="ON_LEAVE">On Leave</option>
-              <option value="SUSPENDED">Suspended</option>
-              <option value="TERMINATED">Terminated</option>
-            </Select>
+            <div className="w-full sm:w-40">
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                options={[
+                  { value: "ALL", label: "All Statuses" },
+                  { value: "ACTIVE", label: "Active" },
+                  { value: "ON_LEAVE", label: "On Leave" },
+                  { value: "SUSPENDED", label: "Suspended" },
+                  { value: "TERMINATED", label: "Terminated" },
+                ]}
+              />
+            </div>
           </div>
         </div>
 
-        {/* TanStack Table Render */}
         {error ? (
           <div className="py-8 text-center text-xs text-red-500">Error loading employees: {(error as any).message}</div>
         ) : (
@@ -408,7 +405,6 @@ export default function EmployeesPage() {
         )}
       </div>
 
-      {/* Edit Details Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -421,135 +417,217 @@ export default function EmployeesPage() {
           </div>
         )}
 
-        <form onSubmit={handleSave} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-4"
+        >
           <div className="text-xs font-bold text-slate-700 uppercase border-b border-slate-200 pb-1">
             1. Role & General Information
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Input
-              label="Employee Code"
-              value={employeeCode}
-              onChange={(e) => setEmployeeCode(e.target.value)}
-              className="uppercase font-mono"
-            />
-            <Input
-              label="First Name *"
-              required
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-            />
-            <Input
-              label="Last Name *"
-              required
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-            />
+            <form.Field name="employeeCode">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Employee Code"
+                  className="uppercase font-mono"
+                />
+              )}
+            </form.Field>
+
+            <form.Field
+              name="firstName"
+              validators={{
+                onChange: ({ value }) => (!value.trim() ? "First name is required" : undefined),
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="First Name *"
+                  required
+                />
+              )}
+            </form.Field>
+
+            <form.Field
+              name="lastName"
+              validators={{
+                onChange: ({ value }) => (!value.trim() ? "Last name is required" : undefined),
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Last Name *"
+                  required
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Input
-              label="Department"
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-            />
-            <Input
-              label="Designation"
-              value={designation}
-              onChange={(e) => setDesignation(e.target.value)}
-            />
-            <Input
-              label="Joining Date"
-              type="date"
-              value={joiningDate}
-              onChange={(e) => setJoiningDate(e.target.value)}
-            />
+            <form.Field name="department">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Department"
+                />
+              )}
+            </form.Field>
+
+            <form.Field name="designation">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Designation"
+                />
+              )}
+            </form.Field>
+
+            <form.Field name="joiningDate">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Joining Date"
+                  type="date"
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="text-xs font-bold text-slate-700 uppercase border-b border-slate-200 pb-1 pt-2">
             2. UAE Identification & Visa Compliance
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Emirates ID"
-              placeholder="784-XXXX-XXXXXXX-X"
-              value={emiratesId}
-              onChange={(e) => setEmiratesId(e.target.value)}
-            />
-            <Input
-              label="Emirates ID Expiry"
-              type="date"
-              value={emiratesIdExpiry}
-              onChange={(e) => setEmiratesIdExpiry(e.target.value)}
-            />
+            <form.Field name="emiratesId">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Emirates ID"
+                  placeholder="784-XXXX-XXXXXXX-X"
+                />
+              )}
+            </form.Field>
+
+            <form.Field name="emiratesIdExpiry">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Emirates ID Expiry"
+                  type="date"
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Passport Number"
-              value={passportNo}
-              onChange={(e) => setPassportNo(e.target.value)}
-            />
-            <Input
-              label="Visa Expiry Date"
-              type="date"
-              value={visaExpiry}
-              onChange={(e) => setVisaExpiry(e.target.value)}
-            />
+            <form.Field name="passportNo">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Passport Number"
+                />
+              )}
+            </form.Field>
+
+            <form.Field name="visaExpiry">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Visa Expiry Date"
+                  type="date"
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="text-xs font-bold text-slate-700 uppercase border-b border-slate-200 pb-1 pt-2">
             3. Compensation & Allowances (AED)
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Input
-              label="Basic Salary *"
-              type="number"
-              required
-              value={basicSalary}
-              onChange={(e) => setBasicSalary(e.target.value)}
-            />
-            <Input
-              label="Housing"
-              type="number"
-              value={housingAllowance}
-              onChange={(e) => setHousingAllowance(e.target.value)}
-            />
-            <Input
-              label="Transport"
-              type="number"
-              value={transportAllowance}
-              onChange={(e) => setTransportAllowance(e.target.value)}
-            />
-            <Input
-              label="Other Allowances"
-              type="number"
-              value={otherAllowances}
-              onChange={(e) => setOtherAllowances(e.target.value)}
-            />
+            <form.Field
+              name="basicSalary"
+              validators={{
+                onChange: ({ value }) =>
+                  !value || Number(value) <= 0 ? "Valid basic salary is required" : undefined,
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Basic Salary *"
+                  type="number"
+                  required
+                />
+              )}
+            </form.Field>
+
+            <form.Field name="housingAllowance">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Housing"
+                  type="number"
+                />
+              )}
+            </form.Field>
+
+            <form.Field name="transportAllowance">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Transport"
+                  type="number"
+                />
+              )}
+            </form.Field>
+
+            <form.Field name="otherAllowances">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Other Allowances"
+                  type="number"
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Select
-              label="Payment Method"
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-            >
-              <option value="WPS_BANK_TRANSFER">WPS Bank Transfer</option>
-              <option value="CASH">Cash</option>
-              <option value="CHEQUE">Cheque</option>
-            </Select>
-            <Input
-              label="Bank Name"
-              placeholder="e.g. Emirates NBD"
-              value={bankName}
-              onChange={(e) => setBankName(e.target.value)}
-            />
-            <Input
-              label="IBAN Number"
-              placeholder="AE000000000000000000000"
-              value={iban}
-              onChange={(e) => setIban(e.target.value)}
-            />
+            <form.Field name="paymentMethod">
+              {(field) => (
+                <FormSelect field={field} label="Payment Method">
+                  <option value="WPS_BANK_TRANSFER">WPS Bank Transfer</option>
+                  <option value="CASH">Cash</option>
+                  <option value="CHEQUE">Cheque</option>
+                </FormSelect>
+              )}
+            </form.Field>
+
+            <form.Field name="bankName">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Bank Name"
+                  placeholder="e.g. Emirates NBD"
+                />
+              )}
+            </form.Field>
+
+            <form.Field name="iban">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="IBAN Number"
+                  placeholder="AE000000000000000000000"
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
@@ -560,12 +638,12 @@ export default function EmployeesPage() {
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={updateEmployeeMutation.isPending}
+            <FormSubmit
+              form={form}
+              loading={updateEmployeeMutation.isPending}
             >
-              {updateEmployeeMutation.isPending ? "Saving..." : "Save Details"}
-            </Button>
+              Save Details
+            </FormSubmit>
           </div>
         </form>
       </Modal>
