@@ -4,11 +4,26 @@ import React, { ChangeEvent, useEffect, useState } from "react";
 import {
   Product,
   QuotationRecord,
+  useAccounts,
+  useCreateJournalEntry,
   useDeleteQuotation,
   useQuotations,
   useSaveQuotation,
 } from "@/lib/hooks/api-hooks";
-import { Check, FolderOpen, Loader2, Plus, Printer, Save, Trash2 } from "lucide-react";
+import {
+  ArrowRightLeft,
+  Check,
+  FileCheck,
+  FileText,
+  FolderOpen,
+  Loader2,
+  Plus,
+  Printer,
+  Save,
+  Send,
+  Trash2,
+  Zap,
+} from "lucide-react";
 import Image from "next/image";
 import OutsideClickHandler from "react-outside-click-handler";
 
@@ -56,6 +71,9 @@ export default function QuotationTemplate({
 }: QuotationTemplateProps) {
   const [selectedQuotationId, setSelectedQuotationId] = useState<string>("");
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string>("");
+  const [ledgerPostedMsg, setLedgerPostedMsg] = useState<string>("");
+  const [isPostingLedger, setIsPostingLedger] = useState<boolean>(false);
+  const [docType, setDocType] = useState<"QUOTATION" | "TAX_INVOICE">("QUOTATION");
   const [status, setStatus] = useState<
     "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "EXPIRED"
   >("DRAFT");
@@ -63,8 +81,10 @@ export default function QuotationTemplate({
 
   const { data: savedQuotations = [], isLoading: isLoadingSaved } =
     useQuotations();
+  const { data: accountsList = [] } = useAccounts();
   const saveQuotationMutation = useSaveQuotation();
   const deleteQuotationMutation = useDeleteQuotation();
+  const createJournalEntryMutation = useCreateJournalEntry();
 
   const [meta, setMeta] = useState<QuotationMeta>({
     quotationNo:
@@ -314,8 +334,109 @@ export default function QuotationTemplate({
     setIsSavedDrawerOpen(false);
   };
 
+  const handleConvertToInvoice = () => {
+    setDocType("TAX_INVOICE");
+    setStatus("ACCEPTED");
+    if (meta.quotationNo.startsWith("AGM-QTN-")) {
+      const invNo = meta.quotationNo.replace("AGM-QTN-", "AGM-INV-");
+      setMeta((prev) => ({
+        ...prev,
+        quotationNo: invNo,
+        reference: prev.reference || prev.quotationNo,
+      }));
+    } else if (!meta.quotationNo.startsWith("AGM-INV-")) {
+      const invNo = `AGM-INV-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
+      setMeta((prev) => ({
+        ...prev,
+        quotationNo: invNo,
+        reference: prev.reference || prev.quotationNo,
+      }));
+    }
+    setSaveSuccessMsg("Converted to Official UAE Tax Invoice!");
+    setTimeout(() => setSaveSuccessMsg(""), 4000);
+  };
+
+  const handlePostInvoiceToLedger = async () => {
+    if (items.length === 0 || subtotal <= 0) {
+      alert("Please add at least one line item with a rate before posting.");
+      return;
+    }
+    if (
+      !confirm(
+        `Post this Tax Invoice (${meta.quotationNo}) to the General Ledger?\n\n` +
+          `• Debit Accounts Receivable: AED ${fmt(total)}\n` +
+          `• Credit Fitout Revenue: AED ${fmt(subtotal - Number(discount || 0))}\n` +
+          `• Credit UAE VAT Output (5%): AED ${fmt(vatAmt)}\n\n` +
+          `This will record turnover in Profit & Loss and update the VAT Return!`
+      )
+    ) {
+      return;
+    }
+
+    setIsPostingLedger(true);
+    try {
+      const arAccount =
+        accountsList.find((a) => a.accountCode === "1200") ||
+        accountsList.find((a) => a.type === "ASSET" && a.accountName.toLowerCase().includes("receivable")) ||
+        accountsList.find((a) => a.accountCode === "1020") ||
+        accountsList[0];
+      const revAccount =
+        accountsList.find((a) => a.accountCode === "4000") ||
+        accountsList.find((a) => a.type === "REVENUE") ||
+        accountsList[1];
+      const vatOutAccount =
+        accountsList.find((a) => a.accountCode === "2210") ||
+        accountsList.find((a) => a.accountName.toLowerCase().includes("vat output")) ||
+        accountsList[2];
+
+      if (!arAccount || !revAccount || !vatOutAccount) {
+        alert("Chart of accounts not found for AR (1200), Revenue (4000), or VAT Output (2210).");
+        setIsPostingLedger(false);
+        return;
+      }
+
+      const entryNumber = `JE-INV-${Date.now().toString().slice(-6)}`;
+      const payload = {
+        entryNumber,
+        entryDate: new Date().toISOString(),
+        description: `Tax Invoice ${meta.quotationNo} - ${meta.customer || "Client"} (${meta.project || "Fitout Project"})`,
+        reference: meta.quotationNo,
+        createdBy: "system",
+        lines: [
+          {
+            accountId: arAccount.id,
+            debit: total,
+            credit: 0,
+          },
+          {
+            accountId: revAccount.id,
+            debit: 0,
+            credit: subtotal - Number(discount || 0),
+          },
+          {
+            accountId: vatOutAccount.id,
+            debit: 0,
+            credit: vatAmt,
+            vatType: "OUTPUT" as const,
+            taxableAmount: subtotal - Number(discount || 0),
+            vatAmount: vatAmt,
+          },
+        ],
+      };
+
+      await createJournalEntryMutation.mutateAsync(payload);
+      setLedgerPostedMsg(`Posted to General Ledger as ${entryNumber}! P&L & VAT updated.`);
+      setTimeout(() => setLedgerPostedMsg(""), 6000);
+    } catch (err: any) {
+      alert("Error posting invoice to ledger: " + (err.message || "Unknown error"));
+    } finally {
+      setIsPostingLedger(false);
+    }
+  };
+
   const handleNewQuotation = () => {
     setSelectedQuotationId("");
+    setDocType("QUOTATION");
     setMeta({
       quotationNo: `AGM-QTN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
       date: new Date().toLocaleDateString("en-GB"),
@@ -373,20 +494,68 @@ export default function QuotationTemplate({
     >
       
       <div className="max-w-4xl mx-auto mb-4 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3 print:hidden">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Mode Switcher */}
+          <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200">
+            <button
+              onClick={() => setDocType("QUOTATION")}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1 ${
+                docType === "QUOTATION"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <FileText size={13} /> Quotation
+            </button>
+            <button
+              onClick={() => setDocType("TAX_INVOICE")}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1 ${
+                docType === "TAX_INVOICE"
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <FileCheck size={13} /> Tax Invoice
+            </button>
+          </div>
+
           <button
             onClick={handleNewQuotation}
             className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus size={14} /> New Blank Quotation
+            <Plus size={14} /> New Blank
           </button>
 
           <button
             onClick={() => setIsSavedDrawerOpen(true)}
             className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
           >
-            <FolderOpen size={14} /> Saved in DB ({savedQuotations.length})
+            <FolderOpen size={14} /> Saved DB ({savedQuotations.length})
           </button>
+
+          {docType === "QUOTATION" ? (
+            <button
+              onClick={handleConvertToInvoice}
+              className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              title="Convert this quotation directly into an official UAE Tax Invoice"
+            >
+              <ArrowRightLeft size={14} /> Convert to Invoice
+            </button>
+          ) : (
+            <button
+              onClick={handlePostInvoiceToLedger}
+              disabled={isPostingLedger}
+              className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
+              title="Post this Invoice directly to General Ledger, updating Turnover and VAT Return"
+            >
+              {isPostingLedger ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Zap size={14} className="text-amber-300" />
+              )}
+              Post to Accounting (GL)
+            </button>
+          )}
 
           {selectedQuotationId && (
             <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold">
@@ -399,6 +568,12 @@ export default function QuotationTemplate({
           {saveSuccessMsg && (
             <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 animate-fade-in">
               <Check size={14} /> {saveSuccessMsg}
+            </span>
+          )}
+
+          {ledgerPostedMsg && (
+            <span className="text-xs font-bold text-purple-700 flex items-center gap-1 animate-fade-in bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-200">
+              <Check size={14} /> {ledgerPostedMsg}
             </span>
           )}
 
@@ -431,7 +606,7 @@ export default function QuotationTemplate({
             onClick={() => window.print()}
             className="px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
-            <Printer size={14} /> Print Document
+            <Printer size={14} /> Print
           </button>
         </div>
       </div>
@@ -596,13 +771,20 @@ export default function QuotationTemplate({
               <td className="p-0 border-none align-top">
                 
                 <div className="flex items-center justify-between px-10 py-4 w-full border-b border-slate-100 bg-slate-50/50">
-                  <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-                    COMMERCIAL QUOTATION
-                  </h1>
+                  <div>
+                    <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+                      {docType === "TAX_INVOICE" ? "TAX INVOICE" : "COMMERCIAL QUOTATION"}
+                    </h1>
+                    {docType === "TAX_INVOICE" && (
+                      <p className="text-[11px] font-semibold text-emerald-700">
+                        Official UAE FTA Tax Invoice (Standard Rated 5% VAT)
+                      </p>
+                    )}
+                  </div>
                   <div className="text-[12px] text-right space-y-0.5">
                     <div className="flex justify-end gap-2">
                       <span className="text-slate-500 font-semibold">
-                        Quotation No:
+                        {docType === "TAX_INVOICE" ? "Invoice No:" : "Quotation No:"}
                       </span>
                       <input
                         className={
@@ -616,7 +798,9 @@ export default function QuotationTemplate({
                       />
                     </div>
                     <div className="flex justify-end gap-2">
-                      <span className="text-slate-500 font-semibold">Date:</span>
+                      <span className="text-slate-500 font-semibold">
+                        {docType === "TAX_INVOICE" ? "Invoice Date:" : "Date:"}
+                      </span>
                       <input
                         className={
                           inputBase + " text-right w-36 font-bold text-slate-900"
@@ -629,7 +813,7 @@ export default function QuotationTemplate({
                     </div>
                     <div className="flex justify-end gap-2">
                       <span className="text-slate-500 font-semibold">
-                        Valid Until:
+                        {docType === "TAX_INVOICE" ? "Payment Due Date:" : "Valid Until:"}
                       </span>
                       <input
                         className={
