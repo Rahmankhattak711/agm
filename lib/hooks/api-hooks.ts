@@ -1,10 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authFetch } from "@/lib/api-client";
 
-// ==========================================
-// 1. Finance & Accounting Types
-// ==========================================
-
 export interface ChartOfAccount {
   id: string;
   accountCode: string;
@@ -12,6 +8,9 @@ export interface ChartOfAccount {
   type: "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE";
   isActive: boolean;
   parentId?: string | null;
+  _count?: {
+    journalLines?: number;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -23,6 +22,15 @@ export interface JournalEntryLine {
   debit: string | number;
   credit: string | number;
   account?: ChartOfAccount;
+  vatType?: "INPUT" | "OUTPUT" | null;
+  taxableAmount?: string | number;
+  vatAmount?: string | number;
+  vatEntry?: {
+    id: string;
+    taxableAmount: string | number;
+    vatAmount: string | number;
+    vatType: "INPUT" | "OUTPUT";
+  } | null;
 }
 
 export interface JournalEntry {
@@ -82,10 +90,6 @@ export interface FixedAsset {
   }>;
 }
 
-// ==========================================
-// 2. HR & Employee Types
-// ==========================================
-
 export type Gender = "MALE" | "FEMALE";
 export type MaritalStatus = "SINGLE" | "MARRIED" | "DIVORCED" | "WIDOWED";
 export type ContractType = "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERN";
@@ -108,7 +112,6 @@ export interface Employee {
   joiningDate: string;
   isActive: boolean;
 
-  // Personal details
   gender?: Gender | null;
   dateOfBirth?: string | null;
   nationality?: string | null;
@@ -118,7 +121,6 @@ export interface Employee {
   emergencyContactName?: string | null;
   emergencyContactPhone?: string | null;
 
-  // UAE documents
   emiratesId?: string | null;
   emiratesIdExpiry?: string | null;
   passportNo?: string | null;
@@ -128,7 +130,6 @@ export interface Employee {
   visaNumber?: string | null;
   visaExpiry?: string | null;
 
-  // Employment
   contractType: ContractType;
   employmentStatus: EmploymentStatus;
   probationEndDate?: string | null;
@@ -137,7 +138,6 @@ export interface Employee {
   reportsToId?: string | null;
   reportsTo?: { id: string; firstName: string; lastName: string; employeeCode: string } | null;
 
-  // Compensation
   basicSalary: string | number;
   housingAllowance?: string | number;
   transportAllowance?: string | number;
@@ -228,10 +228,6 @@ export interface Bonus {
   paidDate?: string | null;
   createdAt: string;
 }
-
-// ==========================================
-// 3. Inventory & Supply Chain Types
-// ==========================================
 
 export type ProductType = "RAW_MATERIAL" | "FINISHED_GOOD" | "CONSUMABLE" | "TOOL_EQUIPMENT";
 export type StockMovementType =
@@ -379,10 +375,6 @@ export interface PurchaseOrder {
   updatedAt: string;
 }
 
-// ==========================================
-// 4. Users & Reports Types
-// ==========================================
-
 export interface UserItem {
   id: string;
   email: string;
@@ -412,60 +404,156 @@ export interface UsersResponse {
   };
 }
 
+export interface ProfitLossItem {
+  id?: string;
+  section: string;
+  accountCode?: string;
+  accountName: string;
+  amount: number;
+}
+
 export interface ProfitLossReport {
+  companyName?: string;
+  reportTitle?: string;
+  income?: ProfitLossItem[];
+  totalIncome?: number;
+  directExpenses?: ProfitLossItem[];
+  totalDirectExpenses?: number;
+  grossProfit?: number;
+  operatingExpenses?: ProfitLossItem[];
+  totalOperatingExpenses?: number;
+  totalExpenses?: number;
+  netProfit?: number;
   revenue: number;
   expenses: number;
   netIncome: number;
 }
 
+export interface BalanceSheetItem {
+  id?: string;
+  section: string;
+  accountCode?: string;
+  accountName: string;
+  amount: number;
+}
+
 export interface BalanceSheetReport {
+  companyName?: string;
+  reportTitle?: string;
+  currentAssets?: BalanceSheetItem[];
+  totalCurrentAssets?: number;
+  fixedAssets?: BalanceSheetItem[];
+  totalFixedAssets?: number;
+  totalAssets?: number;
+  currentLiabilities?: BalanceSheetItem[];
+  totalCurrentLiabilities?: number;
+  totalLiabilities?: number;
+  equity?: BalanceSheetItem[];
+  totalEquity?: number;
+  totalLiabilitiesAndEquity?: number;
+  balanceCheck?: number;
+  balanced: boolean;
   assets: number;
   liabilities: number;
-  equity: number;
-  balanced: boolean;
+  equityAmount?: number;
 }
 
 export interface TrialBalanceRow {
   accountId: string;
+  accountCode?: string;
   accountName: string | null;
+  type?: "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE" | string;
   debit: number;
   credit: number;
+  netBalance?: number;
 }
 
 export interface TrialBalanceReport {
   rows: TrialBalanceRow[];
   totalDebit: number;
   totalCredit: number;
+  difference?: number;
+  isBalanced?: boolean;
 }
 
 export interface LedgerReport {
+  account?: ChartOfAccount;
   lines: Array<{
     id: string;
     journalEntryId: string;
     accountId: string;
-    debit: string | number;
-    credit: string | number;
+    debit: number;
+    credit: number;
+    runningBalance?: number;
     journalEntry?: {
       entryNumber: string;
       entryDate: string;
       description?: string;
       reference?: string;
+      createdByName?: string;
     };
   }>;
   totalDebit: number;
   totalCredit: number;
   balance: number;
+  netBalance?: number;
+  isDebitNormal?: boolean;
+}
+
+export interface VatTransactionRecord {
+  id: string;
+  vatType: "INPUT" | "OUTPUT";
+  taxableAmount: number;
+  vatRate: number;
+  vatAmount: number;
+  createdAt: string;
+  entryNumber: string;
+  entryDate: string;
+  description: string;
+  accountName: string;
+  accountCode: string;
+}
+
+export interface VatQuarterDetail {
+  quarter: string;
+  vatRate: string;
+  inputVat: number;
+  outputVat: number;
+  netVat: number;
+  position: "VAT Payable" | "VAT Receivable" | string;
+  status: "Paid" | "Pending" | string;
+}
+
+export interface VatMonthlyRow {
+  month: string;
+  inputVat: number;
+  outputVat: number;
+  netVat: number;
+}
+
+export interface VatMonthlyBreakdownRow {
+  month: string;
+  taxableAmount: number;
+  nonVatAmount: number;
+  vatAmount: number;
+  totalAmount: number;
 }
 
 export interface VatSummaryReport {
-  inputVat: number;
+  companyName?: string;
+  reportTitle?: string;
+  quarters?: VatQuarterDetail[];
+  monthlyNet?: VatMonthlyRow[];
+  monthlyPurchases?: VatMonthlyBreakdownRow[];
+  monthlyIncome?: VatMonthlyBreakdownRow[];
+  taxableSales?: number;
   outputVat: number;
+  taxablePurchases?: number;
+  inputVat: number;
   net: number;
+  status?: "PAYABLE" | "REFUNDABLE";
+  entries?: VatTransactionRecord[];
 }
-
-// ==========================================
-// Helper Fetcher
-// ==========================================
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await authFetch(url, options);
@@ -475,10 +563,6 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   }
   return res.json();
 }
-
-// ==========================================
-// Accounts Hooks
-// ==========================================
 
 export function useAccounts() {
   return useQuery<ChartOfAccount[]>({
@@ -502,10 +586,6 @@ export function useCreateAccount() {
   });
 }
 
-// ==========================================
-// Journal Entries Hooks
-// ==========================================
-
 export function useJournalEntries() {
   return useQuery<JournalEntry[]>({
     queryKey: ["journal-entries"],
@@ -523,7 +603,14 @@ export function useCreateJournalEntry() {
       reference?: string;
       createdBy?: string;
       isPosted?: boolean;
-      lines: Array<{ accountId: string; debit: number; credit: number }>;
+      lines: Array<{
+        accountId: string;
+        debit: number;
+        credit: number;
+        vatType?: "INPUT" | "OUTPUT" | null;
+        taxableAmount?: number;
+        vatAmount?: number;
+      }>;
     }) =>
       fetchJson<JournalEntry>("/api/journal-entries", {
         method: "POST",
@@ -546,7 +633,14 @@ export function useUpdateJournalEntry() {
       description?: string;
       reference?: string;
       isPosted?: boolean;
-      lines?: Array<{ accountId: string; debit: number; credit: number }>;
+      lines?: Array<{
+        accountId: string;
+        debit: number;
+        credit: number;
+        vatType?: "INPUT" | "OUTPUT" | null;
+        taxableAmount?: number;
+        vatAmount?: number;
+      }>;
     }) =>
       fetchJson<JournalEntry>("/api/journal-entries", {
         method: "PATCH",
@@ -573,10 +667,6 @@ export function useDeleteJournalEntry() {
     },
   });
 }
-
-// ==========================================
-// Petty Cash Hooks
-// ==========================================
 
 export function usePettyCash() {
   return useQuery<PettyCashTransaction[]>({
@@ -606,10 +696,6 @@ export function useCreatePettyCash() {
     },
   });
 }
-
-// ==========================================
-// Fixed Assets Hooks
-// ==========================================
 
 export function useAssets() {
   return useQuery<FixedAsset[]>({
@@ -642,10 +728,6 @@ export function useCreateAsset() {
     },
   });
 }
-
-// ==========================================
-// Employees Hooks
-// ==========================================
 
 export function useEmployees(filters?: { department?: string; status?: string; search?: string }) {
   const params = new URLSearchParams();
@@ -701,10 +783,6 @@ export function useDeleteEmployee() {
   });
 }
 
-// ==========================================
-// Daily Attendance Hooks
-// ==========================================
-
 export function useDailyAttendance(filters?: { employeeId?: string; date?: string; month?: number; year?: number }) {
   const params = new URLSearchParams();
   if (filters?.employeeId) params.append("employeeId", filters.employeeId);
@@ -746,10 +824,6 @@ export function useDeleteAttendance() {
     },
   });
 }
-
-// ==========================================
-// Leave Requests Hooks
-// ==========================================
 
 export function useLeaveRequests(filters?: { employeeId?: string; status?: string }) {
   const params = new URLSearchParams();
@@ -812,10 +886,6 @@ export function useDeleteLeaveRequest() {
     },
   });
 }
-
-// ==========================================
-// Bonuses & Incentives Hooks
-// ==========================================
 
 export function useBonuses(filters?: { employeeId?: string; month?: number; year?: number }) {
   const params = new URLSearchParams();
@@ -880,10 +950,6 @@ export function useDeleteBonus() {
   });
 }
 
-// ==========================================
-// Inventory Product Categories Hooks
-// ==========================================
-
 export function useProductCategories() {
   return useQuery<ProductCategory[]>({
     queryKey: ["product-categories"],
@@ -931,10 +997,6 @@ export function useDeleteProductCategory() {
     },
   });
 }
-
-// ==========================================
-// Inventory Suppliers Hooks
-// ==========================================
 
 export function useSuppliers() {
   return useQuery<Supplier[]>({
@@ -992,10 +1054,6 @@ export function useDeleteSupplier() {
   });
 }
 
-// ==========================================
-// Inventory Warehouses Hooks
-// ==========================================
-
 export function useWarehouses() {
   return useQuery<Warehouse[]>({
     queryKey: ["warehouses"],
@@ -1043,10 +1101,6 @@ export function useDeleteWarehouse() {
     },
   });
 }
-
-// ==========================================
-// Products Hooks
-// ==========================================
 
 export function useProducts(filters?: { categoryId?: string; supplierId?: string; type?: string; search?: string }) {
   const params = new URLSearchParams();
@@ -1104,10 +1158,6 @@ export function useDeleteProduct() {
   });
 }
 
-// ==========================================
-// Stock Movements Hooks
-// ==========================================
-
 export function useStockMovements(filters?: { productId?: string; warehouseId?: string; movementType?: string }) {
   const params = new URLSearchParams();
   if (filters?.productId) params.append("productId", filters.productId);
@@ -1145,10 +1195,6 @@ export function useCreateStockMovement() {
     },
   });
 }
-
-// ==========================================
-// Purchase Orders Hooks
-// ==========================================
 
 export function usePurchaseOrders(filters?: { status?: string; supplierId?: string }) {
   const params = new URLSearchParams();
@@ -1225,10 +1271,6 @@ export function useDeletePurchaseOrder() {
   });
 }
 
-// ==========================================
-// Users Hooks
-// ==========================================
-
 export function useUsers() {
   return useQuery<UsersResponse>({
     queryKey: ["users"],
@@ -1254,10 +1296,6 @@ export function useCreateUser() {
     },
   });
 }
-
-// ==========================================
-// Reports Hooks
-// ==========================================
 
 export function useProfitLoss() {
   return useQuery<ProfitLossReport>({
@@ -1294,10 +1332,6 @@ export function useLedger(accountId: string | null) {
     enabled: !!accountId,
   });
 }
-
-// ==========================================
-// Quotations Hooks
-// ==========================================
 
 export interface QuotationItemRecord {
   id?: string;
@@ -1390,4 +1424,3 @@ export function useDeleteQuotation() {
     },
   });
 }
-

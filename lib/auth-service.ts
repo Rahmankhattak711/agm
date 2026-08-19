@@ -33,6 +33,15 @@ export const authService = {
     localStorage.setItem("agm_user", JSON.stringify(user));
     localStorage.setItem("agm_access_token", accessToken);
     localStorage.setItem("agm_refresh_token", refreshToken);
+
+    document.cookie = `agm_access_token=${encodeURIComponent(
+      accessToken
+    )}; path=/; max-age=604800; SameSite=Lax`;
+    if (user.role) {
+      document.cookie = `agm_user_role=${encodeURIComponent(
+        user.role
+      )}; path=/; max-age=604800; SameSite=Lax`;
+    }
   },
 
   clearSession(): void {
@@ -40,9 +49,12 @@ export const authService = {
     localStorage.removeItem("agm_user");
     localStorage.removeItem("agm_access_token");
     localStorage.removeItem("agm_refresh_token");
+
+    document.cookie = "agm_access_token=; path=/; max-age=0; SameSite=Lax";
+    document.cookie = "agm_user_role=; path=/; max-age=0; SameSite=Lax";
   },
 
   isAuthenticated(): boolean {
     return !!this.getAccessToken();
-  }
+  },
 };
