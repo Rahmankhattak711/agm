@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useForm } from "@tanstack/react-form";
 import { useCreatePettyCash, usePettyCash, PettyCashTransaction } from "@/lib/hooks/api-hooks";
 import {
   Button,
   Input,
   DataTable,
   Modal,
+  FormInput,
+  FormSubmit,
 } from "@/components/ui";
 
 export default function PettyCashPage() {
@@ -17,14 +20,6 @@ export default function PettyCashPage() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<string>("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Form State
-  const [voucherNumber, setVoucherNumber] = useState(`PCV-${Date.now().toString().slice(-5)}`);
-  const [transactionDate, setTransactionDate] = useState(new Date().toISOString().split("T")[0]);
-  const [category, setCategory] = useState("Operational Expense");
-  const [amount, setAmount] = useState("");
-  const [transactionType, setTransactionType] = useState<"DISBURSEMENT" | "TOP_UP">("DISBURSEMENT");
-  const [receiptImageUrl, setReceiptImageUrl] = useState("");
   const [formError, setFormError] = useState("");
 
   const formatCurrency = (val: number | string | undefined) => {
@@ -52,39 +47,44 @@ export default function PettyCashPage() {
     });
   }, [transactions, search, filterType]);
 
+  const form = useForm({
+    defaultValues: {
+      voucherNumber: `PCV-${Date.now().toString().slice(-5)}`,
+      transactionDate: new Date().toISOString().split("T")[0],
+      category: "Operational Expense",
+      amount: "",
+      transactionType: "DISBURSEMENT" as "DISBURSEMENT" | "TOP_UP",
+      receiptImageUrl: "",
+    },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        await createPettyCashMutation.mutateAsync({
+          voucherNumber: value.voucherNumber.trim(),
+          transactionDate: value.transactionDate,
+          category: value.category.trim(),
+          amount: Number(value.amount),
+          transactionType: value.transactionType,
+          receiptImageUrl: value.receiptImageUrl.trim() || undefined,
+        });
+        setIsModalOpen(false);
+      } catch (err: any) {
+        setFormError(err.message || "Failed to record petty cash voucher");
+      }
+    },
+  });
+
   const handleOpenModal = () => {
-    setVoucherNumber(`PCV-${Date.now().toString().slice(-5)}`);
-    setTransactionDate(new Date().toISOString().split("T")[0]);
-    setCategory("Operational Expense");
-    setAmount("");
-    setTransactionType("DISBURSEMENT");
-    setReceiptImageUrl("");
     setFormError("");
+    form.reset({
+      voucherNumber: `PCV-${Date.now().toString().slice(-5)}`,
+      transactionDate: new Date().toISOString().split("T")[0],
+      category: "Operational Expense",
+      amount: "",
+      transactionType: "DISBURSEMENT",
+      receiptImageUrl: "",
+    });
     setIsModalOpen(true);
-  };
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-
-    if (!voucherNumber.trim() || !amount || Number(amount) <= 0) {
-      setFormError("Please provide a valid voucher number and positive amount.");
-      return;
-    }
-
-    try {
-      await createPettyCashMutation.mutateAsync({
-        voucherNumber: voucherNumber.trim(),
-        transactionDate,
-        category: category.trim(),
-        amount: Number(amount),
-        transactionType,
-        receiptImageUrl: receiptImageUrl.trim() || undefined,
-      });
-      setIsModalOpen(false);
-    } catch (err: any) {
-      setFormError(err.message || "Failed to record petty cash voucher");
-    }
   };
 
   const columns = useMemo<ColumnDef<PettyCashTransaction>[]>(
@@ -109,9 +109,11 @@ export default function PettyCashPage() {
       },
       {
         accessorKey: "category",
-        header: "Category",
+        header: "Category / Description",
         cell: ({ row }) => (
-          <span className="font-semibold text-slate-800">{row.original.category}</span>
+          <span className="font-semibold text-slate-900 text-xs">
+            {row.original.category}
+          </span>
         ),
       },
       {
@@ -121,8 +123,10 @@ export default function PettyCashPage() {
           const isTopUp = row.original.transactionType === "TOP_UP";
           return (
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                isTopUp ? "bg-blue-100 text-blue-800 border border-blue-200" : "bg-amber-100 text-amber-800 border border-amber-200"
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                isTopUp
+                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                  : "bg-amber-50 text-amber-700 border-amber-200"
               }`}
             >
               {isTopUp ? "Top-Up" : "Disbursement"}
@@ -132,31 +136,36 @@ export default function PettyCashPage() {
       },
       {
         accessorKey: "amount",
-        header: "Amount",
+        header: "Amount (AED)",
         cell: ({ row }) => {
           const isTopUp = row.original.transactionType === "TOP_UP";
           return (
-            <div className="text-right font-mono font-bold text-xs">
-              <span className={isTopUp ? "text-blue-700" : "text-slate-900"}>
-                {isTopUp ? "+" : "-"} {formatCurrency(row.original.amount)}
-              </span>
-            </div>
+            <span
+              className={`font-mono font-bold text-xs ${
+                isTopUp ? "text-blue-700" : "text-slate-900"
+              }`}
+            >
+              {isTopUp ? "+" : "-"} {formatCurrency(row.original.amount)}
+            </span>
           );
         },
       },
       {
-        accessorKey: "isApproved",
+        accessorKey: "status",
         header: "Approval",
         cell: ({ row }) => (
-          <div className="text-center">
+          <span
+            className={`inline-flex items-center gap-1 text-[11px] font-semibold ${
+              row.original.isApproved ? "text-emerald-700" : "text-amber-600"
+            }`}
+          >
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                row.original.isApproved ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-100 text-slate-600"
+              className={`w-1.5 h-1.5 rounded-full ${
+                row.original.isApproved ? "bg-emerald-500" : "bg-amber-500"
               }`}
-            >
-              {row.original.isApproved ? "Approved" : "Recorded"}
-            </span>
-          </div>
+            />
+            {row.original.isApproved ? "Approved" : "Pending"}
+          </span>
         ),
       },
     ],
@@ -165,111 +174,104 @@ export default function PettyCashPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Actions */}
+      
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900">Petty Cash Management</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Log small cash disbursements, operational expenses, bank fees, and cash float top-ups.
+            Track daily disbursements, operational cash expenses, and replenishment top-ups.
           </p>
         </div>
+
         <Button
           variant="primary"
-          size="lg"
           onClick={handleOpenModal}
           icon={
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-4 h-4">
               <path d="M12 5v14M5 12h14" />
             </svg>
           }
-          className="self-start shadow-sm"
         >
-          Record Voucher
+          Add Voucher
         </Button>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Net Cash Float Balance</p>
-          <p className={`text-xl font-black mt-1 ${netBalance >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-            {formatCurrency(netBalance)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Current available cash on hand</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Available Float Balance</p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">{formatCurrency(netBalance)}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Net in-hand cash</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Disbursements</p>
-          <p className="text-xl font-black text-slate-800 mt-1">{formatCurrency(totalDisbursements)}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Disbursed for operational expenses</p>
+          <p className="text-2xl font-black text-slate-900 mt-1">{formatCurrency(totalDisbursements)}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Expenses paid out</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Top-Ups</p>
-          <p className="text-xl font-black text-slate-800 mt-1">{formatCurrency(totalTopUps)}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Bank cash replenishments</p>
+          <p className="text-2xl font-black text-blue-700 mt-1">{formatCurrency(totalTopUps)}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Replenishments credited</p>
         </div>
       </div>
 
-      {/* Filter and Table Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="w-full sm:w-72">
+          <div className="w-full sm:w-80">
             <Input
-              type="text"
               placeholder="Search voucher # or category..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
-          {/* Type Toggle Buttons */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl text-xs font-bold">
-            <button
-              onClick={() => setFilterType("ALL")}
-              className={`px-3 py-1 rounded-lg transition cursor-pointer ${
-                filterType === "ALL" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setFilterType("DISBURSEMENT")}
-              className={`px-3 py-1 rounded-lg transition cursor-pointer ${
-                filterType === "DISBURSEMENT" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Disbursements
-            </button>
-            <button
-              onClick={() => setFilterType("TOP_UP")}
-              className={`px-3 py-1 rounded-lg transition cursor-pointer ${
-                filterType === "TOP_UP" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Top-Ups
-            </button>
+          <div className="flex items-center gap-2">
+            {["ALL", "DISBURSEMENT", "TOP_UP"].map((type) => (
+              <button
+                key={type}
+                onClick={() => setFilterType(type)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                  filterType === type
+                    ? "bg-slate-900 text-white border-slate-900"
+                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                }`}
+              >
+                {type === "ALL" ? "All" : type === "DISBURSEMENT" ? "Disbursements" : "Top-Ups"}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* TanStack DataTable View */}
-        <DataTable
-          columns={columns}
-          data={filteredTransactions}
-          isLoading={isLoading}
-          emptyTitle="No petty cash vouchers recorded"
-          emptyMessage="Record your first cash voucher using the button above."
-        />
+        {error ? (
+          <div className="py-8 text-center text-xs text-red-500">
+            Error loading petty cash records: {(error as any).message}
+          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={filteredTransactions}
+            isLoading={isLoading}
+            emptyTitle="No petty cash vouchers logged"
+            emptyMessage="Click 'Add Voucher' to record cash expenses or top-ups."
+          />
+        )}
       </div>
 
-      {/* Modal: Record Petty Cash Voucher */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Record Petty Cash Voucher"
         maxWidth="md"
       >
-        <form onSubmit={handleCreate} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-4"
+        >
           {formError && (
             <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
               {formError}
@@ -277,68 +279,106 @@ export default function PettyCashPage() {
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="Voucher Number"
-              value={voucherNumber}
-              onChange={(e) => setVoucherNumber(e.target.value)}
-              required
-            />
-            <Input
-              type="date"
-              label="Date"
-              value={transactionDate}
-              onChange={(e) => setTransactionDate(e.target.value)}
-              required
-            />
+            <form.Field
+              name="voucherNumber"
+              validators={{
+                onChange: ({ value }) => (!value.trim() ? "Voucher number is required" : undefined),
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Voucher Number *"
+                  required
+                />
+              )}
+            </form.Field>
+
+            <form.Field
+              name="transactionDate"
+              validators={{
+                onChange: ({ value }) => (!value ? "Date is required" : undefined),
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  type="date"
+                  label="Date *"
+                  required
+                />
+              )}
+            </form.Field>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Type</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setTransactionType("DISBURSEMENT")}
-                className={`py-2 rounded-xl text-xs font-bold border transition cursor-pointer ${
-                  transactionType === "DISBURSEMENT"
-                    ? "bg-amber-600 text-white border-amber-600"
-                    : "bg-slate-50 text-slate-700 border-slate-200"
-                }`}
-              >
-                Disbursement (Expense)
-              </button>
-              <button
-                type="button"
-                onClick={() => setTransactionType("TOP_UP")}
-                className={`py-2 rounded-xl text-xs font-bold border transition cursor-pointer ${
-                  transactionType === "TOP_UP"
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-slate-50 text-slate-700 border-slate-200"
-                }`}
-              >
-                Top-Up (Replenish)
-              </button>
-            </div>
-          </div>
+          <form.Field name="transactionType">
+            {(field) => (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Type</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => field.handleChange("DISBURSEMENT")}
+                    className={`py-2 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                      field.state.value === "DISBURSEMENT"
+                        ? "bg-amber-600 text-white border-amber-600"
+                        : "bg-slate-50 text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    Disbursement (Expense)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => field.handleChange("TOP_UP")}
+                    className={`py-2 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                      field.state.value === "TOP_UP"
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-slate-50 text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    Top-Up (Replenish)
+                  </button>
+                </div>
+              </div>
+            )}
+          </form.Field>
 
-          <Input
-            label="Category / Description"
-            placeholder="e.g. Office Supplies, Refreshments, Courier"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            required
-          />
+          <form.Field
+            name="category"
+            validators={{
+              onChange: ({ value }) => (!value.trim() ? "Category / description is required" : undefined),
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Category / Description *"
+                placeholder="e.g. Office Supplies, Refreshments, Courier"
+                required
+              />
+            )}
+          </form.Field>
 
-          <Input
-            type="number"
-            step="0.01"
-            label="Amount (AED)"
-            placeholder="0.00"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            required
-          />
+          <form.Field
+            name="amount"
+            validators={{
+              onChange: ({ value }) =>
+                !value || Number(value) <= 0 ? "Please enter a valid positive amount" : undefined,
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                type="number"
+                step="0.01"
+                label="Amount (AED) *"
+                placeholder="0.00"
+                required
+              />
+            )}
+          </form.Field>
 
-          <div className="pt-3 flex items-center justify-end gap-2.5">
+          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-100">
             <Button
               type="button"
               variant="outline"
@@ -346,13 +386,13 @@ export default function PettyCashPage() {
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
+            <FormSubmit
+              form={form}
               variant="primary"
-              disabled={createPettyCashMutation.isPending}
+              loading={createPettyCashMutation.isPending}
             >
-              {createPettyCashMutation.isPending ? "Saving..." : "Save Voucher"}
-            </Button>
+              Save Voucher
+            </FormSubmit>
           </div>
         </form>
       </Modal>

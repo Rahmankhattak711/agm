@@ -2,13 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useForm } from "@tanstack/react-form";
 import { useAccounts, useCreateAccount, ChartOfAccount } from "@/lib/hooks/api-hooks";
 import {
   Button,
   Input,
-  Select,
   DataTable,
   Modal,
+  FormInput,
+  FormSelect,
+  FormSubmit,
 } from "@/components/ui";
 
 const ACCOUNT_TYPES = [
@@ -26,11 +29,6 @@ export default function AccountsPage() {
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState<string>("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Form State
-  const [accountCode, setAccountCode] = useState("");
-  const [accountName, setAccountName] = useState("");
-  const [type, setType] = useState<"ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE">("ASSET");
   const [formError, setFormError] = useState("");
 
   const filteredAccounts = useMemo(() => {
@@ -46,28 +44,35 @@ export default function AccountsPage() {
   const countByType = (accType: string) =>
     (accounts || []).filter((a) => a.type === accType).length;
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm({
+    defaultValues: {
+      accountCode: "",
+      accountName: "",
+      type: "ASSET" as "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE",
+    },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        await createAccountMutation.mutateAsync({
+          accountCode: value.accountCode.trim(),
+          accountName: value.accountName.trim(),
+          type: value.type,
+        });
+        setIsModalOpen(false);
+      } catch (err: any) {
+        setFormError(err.message || "Failed to create account");
+      }
+    },
+  });
+
+  const handleOpenModal = () => {
     setFormError("");
-
-    if (!accountCode.trim() || !accountName.trim()) {
-      setFormError("Please fill in both Account Code and Account Name.");
-      return;
-    }
-
-    try {
-      await createAccountMutation.mutateAsync({
-        accountCode: accountCode.trim(),
-        accountName: accountName.trim(),
-        type,
-      });
-      setIsModalOpen(false);
-      setAccountCode("");
-      setAccountName("");
-      setType("ASSET");
-    } catch (err: any) {
-      setFormError(err.message || "Failed to create account");
-    }
+    form.reset({
+      accountCode: "",
+      accountName: "",
+      type: "ASSET",
+    });
+    setIsModalOpen(true);
   };
 
   const columns = useMemo<ColumnDef<ChartOfAccount>[]>(
@@ -99,33 +104,35 @@ export default function AccountsPage() {
                 typeObj?.color || "bg-slate-100 text-slate-700"
               }`}
             >
-              {row.original.type}
+              {typeObj?.label || row.original.type}
             </span>
           );
         },
       },
       {
-        accessorKey: "isActive",
-        header: "Status",
+        accessorKey: "journalLinesCount",
+        header: "Transactions",
         cell: ({ row }) => (
-          <div className="text-center">
-            <span
-              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                row.original.isActive ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-100 text-slate-500"
-              }`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${row.original.isActive ? "bg-emerald-500" : "bg-slate-400"}`} />
-              {row.original.isActive ? "Active" : "Inactive"}
-            </span>
-          </div>
+          <span className="text-slate-500 font-medium text-xs">
+            {row.original._count?.journalLines ?? 0}
+          </span>
         ),
       },
       {
-        accessorKey: "createdAt",
-        header: "Created",
+        accessorKey: "status",
+        header: "Status",
         cell: ({ row }) => (
-          <span className="text-slate-500 text-xs">
-            {new Date(row.original.createdAt).toLocaleDateString()}
+          <span
+            className={`inline-flex items-center gap-1 text-[11px] font-semibold ${
+              row.original.isActive ? "text-emerald-700" : "text-slate-400"
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                row.original.isActive ? "bg-emerald-500" : "bg-slate-300"
+              }`}
+            />
+            {row.original.isActive ? "Active" : "Inactive"}
           </span>
         ),
       },
@@ -135,68 +142,58 @@ export default function AccountsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Action */}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Chart of Accounts</h2>
+          <h2 className="text-xl font-black text-slate-900">General Ledger & Accounts</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            General ledger structure defining assets, liabilities, equity, revenues, and expenses.
+            Manage your Chart of Accounts across standard accounting classification hierarchies.
           </p>
         </div>
+
         <Button
           variant="primary"
-          size="lg"
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleOpenModal}
           icon={
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-4 h-4">
               <path d="M12 5v14M5 12h14" />
             </svg>
           }
-          className="self-start shadow-sm"
         >
-          Add New Account
+          Add Account
         </Button>
       </div>
 
-      {/* Account Type Summary Pills */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <button
-          onClick={() => setSelectedType("ALL")}
-          className={`p-3 rounded-xl border text-left transition cursor-pointer ${
-            selectedType === "ALL"
-              ? "bg-slate-900 border-slate-900 text-white shadow-xs"
-              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-          }`}
-        >
-          <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">All Accounts</p>
-          <p className="text-lg font-black mt-0.5">{accounts.length}</p>
-        </button>
-
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {ACCOUNT_TYPES.map((t) => {
           const isSelected = selectedType === t.value;
+          const count = countByType(t.value);
           return (
             <button
               key={t.value}
-              onClick={() => setSelectedType(t.value)}
-              className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+              onClick={() => setSelectedType(isSelected ? "ALL" : t.value)}
+              className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                 isSelected
-                  ? "bg-slate-900 border-slate-900 text-white shadow-xs"
-                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                  ? "bg-white border-emerald-500 ring-2 ring-emerald-500/10 shadow-sm"
+                  : "bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300"
               }`}
             >
-              <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">{t.label}</p>
-              <p className="text-lg font-black mt-0.5">{countByType(t.value)}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-700">{t.label}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${t.color}`}>
+                  {count}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1">Class {t.value}</p>
             </button>
           );
         })}
       </div>
 
-      {/* Filter and Table Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="w-full sm:w-72">
+          <div className="w-full sm:w-80">
             <Input
-              type="text"
               placeholder="Search code or account name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -208,7 +205,6 @@ export default function AccountsPage() {
           </p>
         </div>
 
-        {/* TanStack DataTable View */}
         <DataTable
           columns={columns}
           data={filteredAccounts}
@@ -218,44 +214,69 @@ export default function AccountsPage() {
         />
       </div>
 
-      {/* Modal: Create Account */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Add Chart of Account"
         maxWidth="md"
       >
-        <form onSubmit={handleCreate} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-4 w-96"
+        >
           {formError && (
             <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
               {formError}
             </div>
           )}
 
-          <Input
-            label="Account Code"
-            placeholder="e.g. 1050, 4020, 5300"
-            value={accountCode}
-            onChange={(e) => setAccountCode(e.target.value)}
-            required
-          />
+          <form.Field
+            name="accountCode"
+            validators={{
+              onChange: ({ value }) => (!value.trim() ? "Account code is required" : undefined),
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Account Code *"
+                placeholder="e.g. 1050, 4020, 5300"
+                required
+              />
+            )}
+          </form.Field>
 
-          <Input
-            label="Account Name"
-            placeholder="e.g. Office Stationery, Marketing Revenue"
-            value={accountName}
-            onChange={(e) => setAccountName(e.target.value)}
-            required
-          />
+          <form.Field
+            name="accountName"
+            validators={{
+              onChange: ({ value }) => (!value.trim() ? "Account name is required" : undefined),
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Account Name *"
+                placeholder="e.g. Office Stationery, Marketing Revenue"
+                required
+              />
+            )}
+          </form.Field>
 
-          <Select
-            label="Account Type"
-            value={type}
-            onChange={(e) => setType(e.target.value as any)}
-            options={ACCOUNT_TYPES.map((t) => ({ value: t.value, label: t.label }))}
-          />
+          <form.Field name="type">
+            {(field) => (
+              <FormSelect
+                field={field}
+                label="Account Type"
+                options={ACCOUNT_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+              />
+            )}
+          </form.Field>
 
-          <div className="pt-3 flex items-center justify-end gap-2.5">
+          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-100">
             <Button
               type="button"
               variant="outline"
@@ -263,13 +284,13 @@ export default function AccountsPage() {
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
+            <FormSubmit
+              form={form}
               variant="primary"
-              disabled={createAccountMutation.isPending}
+              loading={createAccountMutation.isPending}
             >
-              {createAccountMutation.isPending ? "Creating..." : "Save Account"}
-            </Button>
+              Save Account
+            </FormSubmit>
           </div>
         </form>
       </Modal>
