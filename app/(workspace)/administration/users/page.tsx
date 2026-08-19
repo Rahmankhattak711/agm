@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import { useCreateUser, useUsers, UserItem } from "@/lib/hooks/api-hooks";
 import { useAuth } from "@/context/AuthContext";
+import { PlusIcon } from "@/components/icons";
 import {
   Button,
   Input,
@@ -159,11 +160,7 @@ export default function UsersPage() {
             variant="primary"
             size="lg"
             onClick={handleOpenModal}
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-4 h-4">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            }
+            icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
             className="self-start shadow-sm"
           >
             Add New User

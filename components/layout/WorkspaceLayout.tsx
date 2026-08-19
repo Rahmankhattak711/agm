@@ -1,6 +1,7 @@
 "use client";
 
 import Sidebar from "@/components/Sidebar";
+import { RefreshIcon, SpinnerIcon } from "@/components/icons";
 import { useAuth } from "@/context/AuthContext";
 import { getPageMeta } from "@/lib/navigation";
 import { usePathname, useRouter } from "next/navigation";
@@ -20,16 +21,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-3">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#28633a"
-            strokeWidth={2.5}
-            className="w-8 h-8 animate-spin"
-          >
-            <polyline points="23 4 23 10 17 10" />
-            <path d="M20.49 15a9 9 0 1 1-1.39-7" />
-          </svg>
+          <SpinnerIcon className="w-8 h-8 animate-spin text-[#28633a]" strokeWidth={2.5} />
           <span className="text-xs font-semibold text-slate-500">
             Verifying session...
           </span>
@@ -62,16 +54,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
             onClick={() => router.refresh()}
             className="flex items-center gap-1.75 px-3 py-2.25 rounded-xl border border-slate-900/14 bg-white/76 text-slate-700 cursor-pointer text-xs font-bold hover:bg-white transition-colors"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.2}
-              className="w-3.5 h-3.5"
-            >
-              <path d="M20 11a8 8 0 1 0 2 5.4" />
-              <polyline points="20 4 20 11 13 11" />
-            </svg>
+            <RefreshIcon className="w-3.5 h-3.5" strokeWidth={2.2} />
             Refresh
           </button>
         </header>

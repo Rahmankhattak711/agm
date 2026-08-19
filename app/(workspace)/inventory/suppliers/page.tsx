@@ -10,6 +10,7 @@ import {
   useDeleteSupplier,
   Supplier,
 } from "@/lib/hooks/api-hooks";
+import { PlusIcon, SearchIcon } from "@/components/icons";
 import {
   Button,
   Input,
@@ -233,11 +234,7 @@ export default function SuppliersPage() {
         <Button
           variant="primary"
           onClick={handleOpenCreate}
-          icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-4 h-4">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          }
+          icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
         >
           Add New Supplier
         </Button>
@@ -274,12 +271,7 @@ export default function SuppliersPage() {
               placeholder="Search code, company name, TRN, contact..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              leftIcon={
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              }
+              leftIcon={<SearchIcon className="w-4 h-4" strokeWidth={2} />}
             />
           </div>
         </div>

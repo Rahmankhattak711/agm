@@ -1,12 +1,20 @@
 "use client";
 
+import {
+  AlertCircleIcon,
+  EyeIcon,
+  EyeOffIcon,
+  LockIcon,
+  MailIcon,
+  SpinnerIcon,
+} from "@/components/icons";
+import AgmLogo from "@/components/AgmLogo";
 import { useAuth } from "@/context/AuthContext";
-import { useMutation } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import AgmLogo from "@/components/AgmLogo";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -78,11 +86,7 @@ export default function LoginPage() {
 
           {mutation.error && (
             <div className="mb-4 rounded-xl bg-rose-50 p-3 text-xs font-semibold text-rose-700 border border-rose-200 flex items-center gap-2 animate-in fade-in">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 shrink-0">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+              <AlertCircleIcon className="w-4 h-4 shrink-0" />
               <span>{mutation.error.message}</span>
             </div>
           )}
@@ -119,10 +123,7 @@ export default function LoginPage() {
                     </label>
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                          <polyline points="22,6 12,13 2,6" />
-                        </svg>
+                        <MailIcon className="w-4 h-4" />
                       </span>
                       <input
                         id="email"
@@ -167,10 +168,7 @@ export default function LoginPage() {
                     </div>
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                        </svg>
+                        <LockIcon className="w-4 h-4" />
                       </span>
                       <input
                         id="password"
@@ -191,15 +189,9 @@ export default function LoginPage() {
                         className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
                       >
                         {showPassword ? (
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                            <line x1="1" y1="1" x2="23" y2="23" />
-                          </svg>
+                          <EyeOffIcon className="w-4 h-4" />
                         ) : (
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                            <circle cx="12" cy="12" r="3" />
-                          </svg>
+                          <EyeIcon className="w-4 h-4" />
                         )}
                       </button>
                     </div>
@@ -222,10 +214,7 @@ export default function LoginPage() {
                 >
                   {mutation.isPending || isSubmitting ? (
                     <>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4 animate-spin">
-                        <polyline points="23 4 23 10 17 10" />
-                        <path d="M20.49 15a9 9 0 1 1-1.39-7" />
-                      </svg>
+                      <SpinnerIcon className="w-4 h-4 animate-spin" />
                       Authenticating...
                     </>
                   ) : (

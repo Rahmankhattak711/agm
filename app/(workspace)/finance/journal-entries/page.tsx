@@ -8,9 +8,10 @@ import {
   useJournalEntries,
   useUpdateJournalEntry,
 } from "@/lib/hooks/api-hooks";
-import { useState } from "react";
-import { useForm } from "@tanstack/react-form";
+import { PlusIcon } from "@/components/icons";
 import { Modal } from "@/components/ui";
+import { useForm } from "@tanstack/react-form";
+import { useState } from "react";
 
 interface JournalLineFormItem {
   accountId: string;
@@ -270,9 +271,7 @@ export default function JournalEntriesPage() {
           onClick={handleOpenAddModal}
           className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#215a36] to-[#1c472d] hover:from-[#28633a] hover:to-[#225537] text-white text-xs font-bold shadow-xs hover:shadow-md transition cursor-pointer self-start sm:self-auto"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-4 h-4">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
+          <PlusIcon className="w-4 h-4" strokeWidth={2.2} />
           New Journal Entry
         </button>
       </div>

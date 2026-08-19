@@ -13,6 +13,7 @@ import {
   EmploymentStatus,
   PaymentMethod,
 } from "@/lib/hooks/api-hooks";
+import { SearchIcon } from "@/components/icons";
 import {
   Button,
   Input,
@@ -359,12 +360,7 @@ export default function EmployeesPage() {
               placeholder="Search code, name, phone, Emirates ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              leftIcon={
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              }
+              leftIcon={<SearchIcon className="w-4 h-4" strokeWidth={2} />}
             />
           </div>
 

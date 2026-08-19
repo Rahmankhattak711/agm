@@ -15,14 +15,27 @@ interface BarChartProps {
 }
 
 export default function BarChart({
-  data,
+  data = [],
   title,
   subtitle,
   height = 180,
-  formatValue = (v) => `AED ${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+  formatValue = (v) =>
+    `AED ${Number(v || 0).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`,
 }: BarChartProps) {
-  const maxVal = Math.max(...data.map((d) => Math.abs(d.value)), 1);
-  const isAllZero = data.every((d) => d.value === 0);
+  const safeData = (data || []).map((d) => ({
+    ...d,
+    value:
+      typeof d.value === "number"
+        ? isNaN(d.value)
+          ? 0
+          : d.value
+        : Number(d.value || 0) || 0,
+  }));
+  const maxVal = Math.max(...safeData.map((d) => Math.abs(d.value)), 1);
+  const isAllZero = safeData.length === 0 || safeData.every((d) => d.value === 0);
 
   return (
     <div className="flex flex-col justify-between h-full space-y-4">
@@ -52,7 +65,7 @@ export default function BarChart({
           <div className="border-b border-slate-200 w-full" />
         </div>
 
-        {data.map((item, idx) => {
+        {safeData.map((item, idx) => {
           const absVal = Math.abs(item.value);
           const percentage = isAllZero ? 6 : Math.max((absVal / maxVal) * 85, 8);
 
@@ -87,7 +100,7 @@ export default function BarChart({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
-        {data.map((item, i) => (
+        {safeData.map((item, i) => (
           <div key={i} className="flex items-center gap-1.5">
             <span
               className="w-2.5 h-2.5 rounded-full flex-shrink-0"

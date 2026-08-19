@@ -1,5 +1,6 @@
 "use client";
 
+import { PrintIcon, SearchIcon } from "@/components/icons";
 import QuotationTemplate, {
   QuotationItem,
   QuotationMeta,
@@ -184,10 +185,7 @@ export default function ReportsPage() {
                   onClick={() => window.print()}
                   className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer print:hidden"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-                    <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                    <path d="M6 14h12v8H6z" />
-                  </svg>
+                  <PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />
                   Print / Save PDF
                 </button>
               </div>
@@ -855,10 +853,7 @@ export default function ReportsPage() {
                 onClick={() => window.print()}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer print:hidden"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-                  <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                  <path d="M6 14h12v8H6z" />
-                </svg>
+                <PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />
                 Print / Save PDF
               </button>
             </div>
@@ -1156,10 +1151,7 @@ export default function ReportsPage() {
                 onClick={() => window.print()}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer print:hidden"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-                  <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                  <path d="M6 14h12v8H6z" />
-                </svg>
+                <PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />
                 Print / Save PDF
               </button>
             </div>
@@ -1564,10 +1556,7 @@ export default function ReportsPage() {
                 onClick={() => window.print()}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer print:hidden"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-                  <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                  <path d="M6 14h12v8H6z" />
-                </svg>
+                <PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />
                 Print / Save PDF
               </button>
             </div>
@@ -1694,10 +1683,7 @@ export default function ReportsPage() {
                       onChange={(e) => setTbSearch(e.target.value)}
                       className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     />
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 text-slate-400 absolute left-3 top-2.5">
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="m21 21-4.3-4.3" />
-                    </svg>
+                    <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" strokeWidth={2} />
                   </div>
 
                   <div className="flex flex-wrap gap-1.5">
@@ -1851,10 +1837,7 @@ export default function ReportsPage() {
                   onClick={() => window.print()}
                   className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer print:hidden"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-                    <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                    <path d="M6 14h12v8H6z" />
-                  </svg>
+                  <PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />
                   Print / Save PDF
                 </button>
               )}
@@ -2081,10 +2064,7 @@ export default function ReportsPage() {
                 onClick={() => window.print()}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer print:hidden"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
-                  <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                  <path d="M6 14h12v8H6z" />
-                </svg>
+                <PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />
                 Print / Save PDF
               </button>
             </div>
@@ -2695,17 +2675,7 @@ export default function ReportsPage() {
                   onClick={() => window.print()}
                   className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-sm flex items-center gap-1.5 cursor-pointer"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    className="w-4 h-4"
-                  >
-                    <polyline points="6 9 6 2 18 2 18 9" />
-                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                    <rect x="6" y="14" width="12" height="8" />
-                  </svg>
+                  <PrintIcon className="w-4 h-4" strokeWidth={2} />
                   Print / Save PDF
                 </button>
                 <button

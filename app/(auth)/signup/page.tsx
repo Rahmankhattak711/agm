@@ -1,12 +1,20 @@
 "use client";
 
+import {
+  EmployeesIcon,
+  EyeIcon,
+  EyeOffIcon,
+  LockIcon,
+  MailIcon,
+  SpinnerIcon,
+} from "@/components/icons";
+import AgmLogo from "@/components/AgmLogo";
 import { useAuth } from "@/context/AuthContext";
-import { useMutation } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import AgmLogo from "@/components/AgmLogo";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -38,40 +46,58 @@ export default function SignupPage() {
       password: "",
     },
     onSubmit: async ({ value }) => {
-      await mutation.mutateAsync(value);
+      mutation.mutate(value);
     },
   });
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 overflow-hidden bg-[radial-gradient(ellipse_at_top,_#2d4a5e_0%,_#1b2e3d_45%,_#111d27_100%)]">
-      
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        <svg aria-hidden="true" viewBox="0 0 1440 900" className="w-full h-full object-cover">
-          <path
-            d="M-100 200 C 300 100, 600 400, 1000 250 C 1200 150, 1400 300, 1600 200"
-            fill="none"
-            stroke="#59a06d"
-            strokeWidth="1.5"
-          />
-          <path
-            d="M-50 400 C 400 300, 700 600, 1100 450 C 1300 350, 1500 500, 1700 400"
-            fill="none"
-            stroke="#a1d1b1"
-            strokeWidth="1.2"
-            strokeDasharray="6 6"
-          />
-        </svg>
+    <div className="flex min-h-screen">
+      {/* LEFT: Branding & Architectural Aesthetics */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#1d3345] via-[#243c50] to-[#2c455a] p-12 flex-col justify-between overflow-hidden">
+        {/* Subtle geometric structural vectors */}
+        <div className="absolute inset-0 opacity-15 pointer-events-none">
+          <svg aria-hidden="true" viewBox="0 0 1440 900" className="w-full h-full object-cover">
+            <line x1="0" y1="150" x2="1440" y2="750" stroke="#dff7e6" strokeWidth="1.2" strokeDasharray="6 6" />
+            <line x1="0" y1="750" x2="1440" y2="150" stroke="#dff7e6" strokeWidth="1.2" strokeDasharray="6 6" />
+            <rect x="200" y="100" width="400" height="700" fill="none" stroke="#dff7e6" strokeWidth="1" />
+            <rect x="840" y="100" width="400" height="700" fill="none" stroke="#dff7e6" strokeWidth="1" />
+            <circle cx="720" cy="450" r="320" fill="none" stroke="#dff7e6" strokeWidth="1" opacity="0.6" />
+          </svg>
+        </div>
+
+        <div className="relative z-10">
+          <AgmLogo size="lg" theme="light" />
+        </div>
+
+        <div className="relative z-10 max-w-md">
+          <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-[#a3e6ba] border border-emerald-400/30 text-xs font-bold uppercase tracking-wider mb-4">
+            New Account Registration
+          </span>
+          <h1 className="text-4xl font-extrabold text-white tracking-tight leading-tight">
+            Interior Fitout & Project Accounting Suite
+          </h1>
+          <p className="mt-4 text-sm text-slate-300 leading-relaxed">
+            Create an administrator profile to manage inventory records, employee attendance, double-entry vouchers, and statutory VAT reports.
+          </p>
+        </div>
+
+        <div className="relative z-10 text-xs text-slate-400 flex items-center justify-between border-t border-white/10 pt-6">
+          <span>© {new Date().getFullYear()} AGM Technical Services LLC</span>
+          <span>UAE FTA Compliant</span>
+        </div>
       </div>
 
-      <div className="relative z-10 w-full max-w-md">
-        
-        <div className="rounded-3xl border border-white/12 bg-white/95 backdrop-blur-xl p-7 sm:p-9 shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-all">
-          
-          <div className="flex flex-col items-center text-center mb-6">
-            <div className="mb-3">
-              <AgmLogo size="md" collapsed={false} />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-2">Create an Account</h2>
+      {/* RIGHT: Signup Card Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-slate-50">
+        <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl shadow-[0_20px_60px_-15px_rgba(38,59,77,0.1)] border border-slate-200/80">
+          <div className="lg:hidden mb-6 flex justify-center">
+            <AgmLogo size="md" theme="dark" />
+          </div>
+
+          <div className="mb-6 text-center lg:text-left">
+            <h2 className="text-2xl font-bold text-[#263b4d] tracking-tight">
+              Create an Account
+            </h2>
             <p className="text-xs text-slate-500 mt-1 max-w-xs">
               Register a new administrative or accounting user profile.
             </p>
@@ -79,11 +105,6 @@ export default function SignupPage() {
 
           {mutation.error && (
             <div className="mb-4 rounded-xl bg-rose-50 p-3 text-xs font-semibold text-rose-700 border border-rose-200 flex items-center gap-2 animate-in fade-in">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 shrink-0">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
               <span>{mutation.error.message}</span>
             </div>
           )}
@@ -115,10 +136,7 @@ export default function SignupPage() {
                     </label>
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                          <circle cx="12" cy="7" r="4" />
-                        </svg>
+                        <EmployeesIcon className="w-4 h-4" />
                       </span>
                       <input
                         id="fullName"
@@ -166,10 +184,7 @@ export default function SignupPage() {
                     </label>
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                          <polyline points="22,6 12,13 2,6" />
-                        </svg>
+                        <MailIcon className="w-4 h-4" />
                       </span>
                       <input
                         id="email"
@@ -217,10 +232,7 @@ export default function SignupPage() {
                     </label>
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                        </svg>
+                        <LockIcon className="w-4 h-4" />
                       </span>
                       <input
                         id="password"
@@ -241,15 +253,9 @@ export default function SignupPage() {
                         className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
                       >
                         {showPassword ? (
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                            <line x1="1" y1="1" x2="23" y2="23" />
-                          </svg>
+                          <EyeOffIcon className="w-4 h-4" />
                         ) : (
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                            <circle cx="12" cy="12" r="3" />
-                          </svg>
+                          <EyeIcon className="w-4 h-4" />
                         )}
                       </button>
                     </div>
@@ -272,10 +278,7 @@ export default function SignupPage() {
                 >
                   {mutation.isPending || isSubmitting ? (
                     <>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4 animate-spin">
-                        <polyline points="23 4 23 10 17 10" />
-                        <path d="M20.49 15a9 9 0 1 1-1.39-7" />
-                      </svg>
+                      <SpinnerIcon className="w-4 h-4 animate-spin" />
                       Creating Account...
                     </>
                   ) : (

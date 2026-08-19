@@ -11,6 +11,7 @@ import {
   AttendanceStatus,
   DailyAttendance,
 } from "@/lib/hooks/api-hooks";
+import { PlusIcon } from "@/components/icons";
 import {
   Button,
   Input,
@@ -261,11 +262,7 @@ export default function AttendancePage() {
           <Button
             variant="primary"
             onClick={handleOpenModal}
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-4 h-4">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            }
+            icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
           >
             Record Entry
           </Button>
