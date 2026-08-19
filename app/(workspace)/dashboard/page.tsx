@@ -48,8 +48,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header Banner & Status Bar */}
-      {/* <QuotationTemplate/> */}
+      
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-[#284257] to-[#1c3243] text-white shadow-lg">
         <div>
           <div className="flex items-center gap-2">
@@ -82,7 +81,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Top Stat Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           id="stat-revenue"
@@ -153,7 +151,6 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Secondary Metrics Bar */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
@@ -197,7 +194,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <BarChart
@@ -220,9 +216,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Navigation Cards & Recent Journal Entries */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions Panel */}
+        
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
           <div>
             <h3 className="font-bold text-sm text-slate-900">Quick Navigation</h3>
@@ -312,7 +307,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Recent Journal Entries List */}
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <div>

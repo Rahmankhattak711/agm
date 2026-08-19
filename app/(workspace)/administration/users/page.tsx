@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useForm } from "@tanstack/react-form";
 import { useCreateUser, useUsers, UserItem } from "@/lib/hooks/api-hooks";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -10,6 +11,9 @@ import {
   Select,
   DataTable,
   Modal,
+  FormInput,
+  FormSelect,
+  FormSubmit,
 } from "@/components/ui";
 
 const ROLES = [
@@ -27,12 +31,6 @@ export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Form State
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("ACCOUNTANT");
   const [formError, setFormError] = useState("");
 
   const users = usersData?.users || [];
@@ -49,36 +47,39 @@ export default function UsersPage() {
     });
   }, [users, search, roleFilter]);
 
+  const form = useForm({
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+      role: "ACCOUNTANT",
+    },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        await createUserMutation.mutateAsync({
+          fullName: value.fullName.trim(),
+          email: value.email.trim(),
+          password: value.password,
+          role: value.role,
+        });
+
+        setIsModalOpen(false);
+      } catch (err: any) {
+        setFormError(err.message || "Failed to create user");
+      }
+    },
+  });
+
   const handleOpenModal = () => {
-    setFullName("");
-    setEmail("");
-    setPassword("");
-    setRole("ACCOUNTANT");
     setFormError("");
+    form.reset({
+      fullName: "",
+      email: "",
+      password: "",
+      role: "ACCOUNTANT",
+    });
     setIsModalOpen(true);
-  };
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-
-    if (!fullName.trim() || !email.trim() || !password) {
-      setFormError("Full name, email, and temporary password are required.");
-      return;
-    }
-
-    try {
-      await createUserMutation.mutateAsync({
-        fullName: fullName.trim(),
-        email: email.trim(),
-        password,
-        role,
-      });
-
-      setIsModalOpen(false);
-    } catch (err: any) {
-      setFormError(err.message || "Failed to create user");
-    }
   };
 
   const columns = useMemo<ColumnDef<UserItem>[]>(
@@ -145,7 +146,7 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Action */}
+      
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900">User & Access Management</h2>
@@ -170,7 +171,6 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* Role Stats Pills */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Users</p>
@@ -197,7 +197,6 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Filter and Table Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="w-full sm:w-72">
@@ -218,7 +217,6 @@ export default function UsersPage() {
           </div>
         </div>
 
-        {/* TanStack DataTable View */}
         <DataTable
           columns={columns}
           data={filteredUsers}
@@ -228,59 +226,98 @@ export default function UsersPage() {
         />
       </div>
 
-      {/* Modal: Add User */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Add New System User"
         maxWidth="md"
       >
-        <form onSubmit={handleCreate} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-4"
+        >
           {formError && (
             <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
               {formError}
             </div>
           )}
 
-          <Input
-            label="Full Name"
-            placeholder="e.g. John Doe"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
+          <form.Field
+            name="fullName"
+            validators={{
+              onChange: ({ value }) => (!value.trim() ? "Full name is required" : undefined),
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Full Name *"
+                placeholder="e.g. John Doe"
+                required
+              />
+            )}
+          </form.Field>
 
-          <Input
-            type="email"
-            label="Email Address"
-            placeholder="user@agm.ae"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <form.Field
+            name="email"
+            validators={{
+              onChange: ({ value }) =>
+                !value.trim()
+                  ? "Email is required"
+                  : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+                  ? "Invalid email format"
+                  : undefined,
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                type="email"
+                label="Email Address *"
+                placeholder="user@agm.ae"
+                required
+              />
+            )}
+          </form.Field>
 
-          <Input
-            type="password"
-            label="Temporary Password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <form.Field
+            name="password"
+            validators={{
+              onChange: ({ value }) =>
+                !value ? "Temporary password is required" : value.length < 6 ? "Password must be at least 6 characters" : undefined,
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                type="password"
+                label="Temporary Password *"
+                placeholder="••••••••"
+                required
+              />
+            )}
+          </form.Field>
 
-          <Select
-            label="Access Role"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            options={[
-              { value: "SUPER_ADMIN", label: "Super Admin (All permissions)" },
-              { value: "ADMIN", label: "Admin (Manage operations & finance)" },
-              { value: "ACCOUNTANT", label: "Accountant (General Ledger & Reports)" },
-              { value: "USER", label: "User (Standard submitter)" },
-            ]}
-          />
+          <form.Field name="role">
+            {(field) => (
+              <FormSelect
+                field={field}
+                label="Access Role"
+                options={[
+                  { value: "SUPER_ADMIN", label: "Super Admin (All permissions)" },
+                  { value: "ADMIN", label: "Admin (Manage operations & finance)" },
+                  { value: "ACCOUNTANT", label: "Accountant (General Ledger & Reports)" },
+                  { value: "USER", label: "User (Standard submitter)" },
+                ]}
+              />
+            )}
+          </form.Field>
 
-          <div className="pt-3 flex items-center justify-end gap-2.5">
+          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-100">
             <Button
               type="button"
               variant="outline"
@@ -288,13 +325,13 @@ export default function UsersPage() {
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
+            <FormSubmit
+              form={form}
               variant="primary"
-              disabled={createUserMutation.isPending}
+              loading={createUserMutation.isPending}
             >
-              {createUserMutation.isPending ? "Creating..." : "Create User"}
-            </Button>
+              Create User
+            </FormSubmit>
           </div>
         </form>
       </Modal>
