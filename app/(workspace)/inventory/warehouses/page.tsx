@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
 import {
   useWarehouses,
   useCreateWarehouse,
@@ -8,16 +9,11 @@ import {
   useDeleteWarehouse,
   Warehouse,
 } from "@/lib/hooks/api-hooks";
-import { Button, Input, Modal } from "@/components/ui";
+import { Button, Modal, FormInput, FormSubmit } from "@/components/ui";
 
 export default function WarehousesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
-
-  // Form
-  const [code, setCode] = useState("");
-  const [name, setName] = useState("");
-  const [location, setLocation] = useState("");
   const [formError, setFormError] = useState("");
 
   const { data: warehouses = [], isLoading, error } = useWarehouses();
@@ -25,62 +21,61 @@ export default function WarehousesPage() {
   const updateWarehouse = useUpdateWarehouse();
   const deleteWarehouse = useDeleteWarehouse();
 
-  const resetForm = () => {
-    setCode(`WH-${Date.now().toString().slice(-4)}`);
-    setName("");
-    setLocation("");
-    setEditingWarehouse(null);
-    setFormError("");
-  };
+  const form = useForm({
+    defaultValues: {
+      code: `WH-${Date.now().toString().slice(-4)}`,
+      name: "",
+      location: "",
+    },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        if (editingWarehouse) {
+          await updateWarehouse.mutateAsync({
+            id: editingWarehouse.id,
+            code: value.code.trim(),
+            name: value.name.trim(),
+            location: value.location.trim() || null,
+          });
+        } else {
+          await createWarehouse.mutateAsync({
+            code: value.code.trim(),
+            name: value.name.trim(),
+            location: value.location.trim() || undefined,
+          });
+        }
+        setIsModalOpen(false);
+      } catch (err: any) {
+        setFormError(err.message || "Failed to save warehouse");
+      }
+    },
+  });
 
   const handleOpenCreate = () => {
-    resetForm();
+    setEditingWarehouse(null);
+    setFormError("");
+    form.reset({
+      code: `WH-${Date.now().toString().slice(-4)}`,
+      name: "",
+      location: "",
+    });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (w: Warehouse) => {
     setEditingWarehouse(w);
-    setCode(w.code);
-    setName(w.name);
-    setLocation(w.location || "");
     setFormError("");
+    form.reset({
+      code: w.code,
+      name: w.name,
+      location: w.location || "",
+    });
     setIsModalOpen(true);
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-    if (!code.trim() || !name.trim()) {
-      setFormError("Warehouse code and name are required.");
-      return;
-    }
-
-    try {
-      if (editingWarehouse) {
-        await updateWarehouse.mutateAsync({
-          id: editingWarehouse.id,
-          code: code.trim(),
-          name: name.trim(),
-          location: location.trim() || null,
-        });
-      } else {
-        await createWarehouse.mutateAsync({
-          code: code.trim(),
-          name: name.trim(),
-          location: location.trim() || undefined,
-        });
-      }
-
-      setIsModalOpen(false);
-      resetForm();
-    } catch (err: any) {
-      setFormError(err.message || "Failed to save warehouse");
-    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Actions */}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900">Warehouses & Storage Facilities</h2>
@@ -102,7 +97,6 @@ export default function WarehousesPage() {
         </Button>
       </div>
 
-      {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Facilities</p>
@@ -127,7 +121,6 @@ export default function WarehousesPage() {
         </div>
       </div>
 
-      {/* Warehouse Facilities Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading ? (
           <div className="col-span-full py-12 text-center text-xs text-slate-400 animate-pulse">
@@ -182,7 +175,6 @@ export default function WarehousesPage() {
                   </div>
                 </div>
 
-                {/* Stock on hand list */}
                 <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5">
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     Stocked SKUs ({w.stockLevels?.length || 0})
@@ -213,51 +205,79 @@ export default function WarehousesPage() {
         )}
       </div>
 
-      {/* Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingWarehouse ? "Edit Facility" : "Add New Warehouse"}
         maxWidth="md"
       >
-        <form onSubmit={handleSave} className="space-y-3.5">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-3.5 w-96"
+        >
           {formError && (
             <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
               {formError}
             </div>
           )}
 
-          <Input
-            label="Facility Code *"
-            required
-            placeholder="e.g. WH-DXB-01"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            className="uppercase"
-          />
+          <form.Field
+            name="code"
+            validators={{
+              onChange: ({ value }) => (!value.trim() ? "Facility code is required" : undefined),
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Facility Code *"
+                required
+                placeholder="e.g. WH-DXB-01"
+                className="uppercase"
+              />
+            )}
+          </form.Field>
 
-          <Input
-            label="Facility Name *"
-            required
-            placeholder="e.g. Main Workshop & Central Depot"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <form.Field
+            name="name"
+            validators={{
+              onChange: ({ value }) => (!value.trim() ? "Facility name is required" : undefined),
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Facility Name *"
+                required
+                placeholder="e.g. Main Workshop & Central Depot"
+              />
+            )}
+          </form.Field>
 
-          <Input
-            label="Location / Address"
-            placeholder="e.g. Ras Al Khor Industrial 2, Dubai"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
+          <form.Field name="location">
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Location / Address"
+                placeholder="e.g. Ras Al Khor Industrial 2, Dubai"
+              />
+            )}
+          </form.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createWarehouse.isPending || updateWarehouse.isPending}>
-              {createWarehouse.isPending || updateWarehouse.isPending ? "Saving..." : "Save Facility"}
-            </Button>
+            <FormSubmit
+              form={form}
+              loading={createWarehouse.isPending || updateWarehouse.isPending}
+            >
+              Save Facility
+            </FormSubmit>
           </div>
         </form>
       </Modal>

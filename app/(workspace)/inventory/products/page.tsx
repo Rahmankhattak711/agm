@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useForm } from "@tanstack/react-form";
 import {
   useProducts,
   useCreateProduct,
@@ -20,6 +21,9 @@ import {
   Select,
   DataTable,
   Modal,
+  FormInput,
+  FormSelect,
+  FormSubmit,
 } from "@/components/ui";
 
 export default function ProductsPage() {
@@ -29,29 +33,7 @@ export default function ProductsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [adjustStockProduct, setAdjustStockProduct] = useState<Product | null>(null);
-
-  // Form states
-  const [sku, setSku] = useState("");
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [type, setType] = useState<ProductType>("RAW_MATERIAL");
-  const [unit, setUnit] = useState("PCS");
-  const [barcode, setBarcode] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [supplierId, setSupplierId] = useState("");
-  const [costPrice, setCostPrice] = useState("0");
-  const [sellingPrice, setSellingPrice] = useState("0");
-  const [reorderLevel, setReorderLevel] = useState("10");
-  const [reorderQty, setReorderQty] = useState("50");
-  const [initialWarehouseId, setInitialWarehouseId] = useState("");
-  const [initialQuantity, setInitialQuantity] = useState("0");
   const [formError, setFormError] = useState("");
-
-  // Stock Adjustment Form states
-  const [adjustWarehouseId, setAdjustWarehouseId] = useState("");
-  const [adjustMovementType, setAdjustMovementType] = useState<"ADJUSTMENT_IN" | "ADJUSTMENT_OUT" | "PROJECT_CONSUMPTION">("ADJUSTMENT_IN");
-  const [adjustQty, setAdjustQty] = useState("1");
-  const [adjustNotes, setAdjustNotes] = useState("");
 
   const { data: products = [], isLoading, error } = useProducts({
     categoryId: selectedCategory !== "ALL" ? selectedCategory : undefined,
@@ -73,7 +55,6 @@ export default function ProductsPage() {
     return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  // Metrics
   const totalProducts = products.length;
   const totalStockItems = products.reduce((acc, p) => acc + (p.totalOnHand || 0), 0);
   const lowStockCount = products.filter((p) => p.isLowStock).length;
@@ -82,116 +63,145 @@ export default function ProductsPage() {
     0
   );
 
-  const resetForm = () => {
-    setSku("");
-    setName("");
-    setDescription("");
-    setType("RAW_MATERIAL");
-    setUnit("PCS");
-    setBarcode("");
-    setCategoryId("");
-    setSupplierId("");
-    setCostPrice("0");
-    setSellingPrice("0");
-    setReorderLevel("10");
-    setReorderQty("50");
-    setInitialWarehouseId("");
-    setInitialQuantity("0");
-    setEditingProduct(null);
-    setFormError("");
-  };
+  const productForm = useForm({
+    defaultValues: {
+      sku: "",
+      name: "",
+      description: "",
+      type: "RAW_MATERIAL" as ProductType,
+      unit: "PCS",
+      barcode: "",
+      categoryId: "",
+      supplierId: "",
+      costPrice: "0",
+      sellingPrice: "0",
+      reorderLevel: "10",
+      reorderQty: "50",
+      initialWarehouseId: "",
+      initialQuantity: "0",
+    },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        if (editingProduct) {
+          await updateProduct.mutateAsync({
+            id: editingProduct.id,
+            sku: value.sku.trim(),
+            name: value.name.trim(),
+            description: value.description.trim() || undefined,
+            type: value.type,
+            unit: value.unit.trim() || "PCS",
+            barcode: value.barcode.trim() || undefined,
+            categoryId: value.categoryId || null,
+            supplierId: value.supplierId || null,
+            costPrice: Number(value.costPrice),
+            sellingPrice: Number(value.sellingPrice),
+            reorderLevel: Number(value.reorderLevel),
+            reorderQty: Number(value.reorderQty),
+          });
+        } else {
+          await createProduct.mutateAsync({
+            sku: value.sku.trim(),
+            name: value.name.trim(),
+            description: value.description.trim() || undefined,
+            type: value.type,
+            unit: value.unit.trim() || "PCS",
+            barcode: value.barcode.trim() || undefined,
+            categoryId: value.categoryId || null,
+            supplierId: value.supplierId || null,
+            costPrice: Number(value.costPrice),
+            sellingPrice: Number(value.sellingPrice),
+            reorderLevel: Number(value.reorderLevel),
+            reorderQty: Number(value.reorderQty),
+            initialWarehouseId: value.initialWarehouseId || null,
+            initialQuantity: Number(value.initialQuantity) || 0,
+          });
+        }
+
+        setIsCreateOpen(false);
+      } catch (err: any) {
+        setFormError(err.message || "Failed to save product");
+      }
+    },
+  });
+
+  const adjustForm = useForm({
+    defaultValues: {
+      warehouseId: "",
+      movementType: "ADJUSTMENT_IN" as "ADJUSTMENT_IN" | "ADJUSTMENT_OUT" | "PROJECT_CONSUMPTION",
+      quantity: "1",
+      notes: "",
+    },
+    onSubmit: async ({ value }) => {
+      if (!adjustStockProduct || !value.warehouseId || !value.quantity) return;
+
+      await createMovement.mutateAsync({
+        productId: adjustStockProduct.id,
+        warehouseId: value.warehouseId,
+        movementType: value.movementType,
+        quantity: Number(value.quantity),
+        unitCost: Number(adjustStockProduct.costPrice),
+        notes: value.notes.trim() || "Stock adjustment",
+      });
+
+      setAdjustStockProduct(null);
+    },
+  });
 
   const handleOpenCreate = () => {
-    resetForm();
+    setEditingProduct(null);
+    setFormError("");
+    productForm.reset({
+      sku: "",
+      name: "",
+      description: "",
+      type: "RAW_MATERIAL",
+      unit: "PCS",
+      barcode: "",
+      categoryId: "",
+      supplierId: "",
+      costPrice: "0",
+      sellingPrice: "0",
+      reorderLevel: "10",
+      reorderQty: "50",
+      initialWarehouseId: "",
+      initialQuantity: "0",
+    });
     setIsCreateOpen(true);
   };
 
   const handleOpenEdit = (p: Product) => {
     setEditingProduct(p);
-    setSku(p.sku);
-    setName(p.name);
-    setDescription(p.description || "");
-    setType(p.type);
-    setUnit(p.unit);
-    setBarcode(p.barcode || "");
-    setCategoryId(p.categoryId || "");
-    setSupplierId(p.supplierId || "");
-    setCostPrice(p.costPrice.toString());
-    setSellingPrice(p.sellingPrice.toString());
-    setReorderLevel(p.reorderLevel.toString());
-    setReorderQty(p.reorderQty.toString());
     setFormError("");
+    productForm.reset({
+      sku: p.sku,
+      name: p.name,
+      description: p.description || "",
+      type: p.type,
+      unit: p.unit,
+      barcode: p.barcode || "",
+      categoryId: p.categoryId || "",
+      supplierId: p.supplierId || "",
+      costPrice: p.costPrice.toString(),
+      sellingPrice: p.sellingPrice.toString(),
+      reorderLevel: p.reorderLevel.toString(),
+      reorderQty: p.reorderQty.toString(),
+      initialWarehouseId: "",
+      initialQuantity: "0",
+    });
     setIsCreateOpen(true);
   };
 
-  const handleSaveProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-    if (!sku.trim() || !name.trim()) {
-      setFormError("SKU and Name are required.");
-      return;
-    }
-
-    try {
-      if (editingProduct) {
-        await updateProduct.mutateAsync({
-          id: editingProduct.id,
-          sku: sku.trim(),
-          name: name.trim(),
-          description: description.trim() || undefined,
-          type,
-          unit: unit.trim() || "PCS",
-          barcode: barcode.trim() || undefined,
-          categoryId: categoryId || null,
-          supplierId: supplierId || null,
-          costPrice: Number(costPrice),
-          sellingPrice: Number(sellingPrice),
-          reorderLevel: Number(reorderLevel),
-          reorderQty: Number(reorderQty),
-        });
-      } else {
-        await createProduct.mutateAsync({
-          sku: sku.trim(),
-          name: name.trim(),
-          description: description.trim() || undefined,
-          type,
-          unit: unit.trim() || "PCS",
-          barcode: barcode.trim() || undefined,
-          categoryId: categoryId || null,
-          supplierId: supplierId || null,
-          costPrice: Number(costPrice),
-          sellingPrice: Number(sellingPrice),
-          reorderLevel: Number(reorderLevel),
-          reorderQty: Number(reorderQty),
-          initialWarehouseId: initialWarehouseId || null,
-          initialQuantity: Number(initialQuantity) || 0,
-        });
-      }
-
-      setIsCreateOpen(false);
-      resetForm();
-    } catch (err: any) {
-      setFormError(err.message || "Failed to save product");
-    }
-  };
-
-  const handleStockAdjustment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!adjustStockProduct || !adjustWarehouseId || !adjustQty) return;
-
-    await createMovement.mutateAsync({
-      productId: adjustStockProduct.id,
-      warehouseId: adjustWarehouseId,
-      movementType: adjustMovementType,
-      quantity: Number(adjustQty),
-      unitCost: Number(adjustStockProduct.costPrice),
-      notes: adjustNotes.trim() || "Stock adjustment",
+  const handleOpenAdjust = (p: Product) => {
+    setAdjustStockProduct(p);
+    adjustForm.reset({
+      warehouseId: warehouses[0]?.id || "",
+      movementType: "ADJUSTMENT_IN",
+      quantity: "1",
+      notes: "",
     });
-
-    setAdjustStockProduct(null);
   };
 
-  // TanStack Table Column Definitions
   const columns = useMemo<ColumnDef<Product>[]>(
     () => [
       {
@@ -262,21 +272,22 @@ export default function ProductsPage() {
         ),
       },
       {
-        accessorKey: "isLowStock",
+        accessorKey: "status",
         header: "Status",
-        cell: ({ row }) => (
-          <div className="text-center">
-            {row.original.isLowStock ? (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                Low Stock
-              </span>
-            ) : (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                In Stock
-              </span>
-            )}
-          </div>
-        ),
+        cell: ({ row }) => {
+          const isLow = row.original.isLowStock;
+          return (
+            <span
+              className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                isLow
+                  ? "bg-amber-100 text-amber-800 border border-amber-200"
+                  : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+              }`}
+            >
+              {isLow ? "Low Stock" : "Optimal"}
+            </span>
+          );
+        },
       },
       {
         id: "actions",
@@ -286,12 +297,9 @@ export default function ProductsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                setAdjustStockProduct(row.original);
-                if (warehouses.length > 0) setAdjustWarehouseId(warehouses[0].id);
-              }}
+              onClick={() => handleOpenAdjust(row.original)}
             >
-              Move
+              Adjust
             </Button>
             <Button
               variant="outline"
@@ -315,17 +323,17 @@ export default function ProductsPage() {
         ),
       },
     ],
-    [deleteProduct, warehouses]
+    [deleteProduct]
   );
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Actions */}
+      
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Products & Inventory Catalog</h2>
+          <h2 className="text-xl font-black text-slate-900">Product & Raw Materials Catalog</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Track materials, finished items, warehouse distribution, and automatic low-stock alerts.
+            Manage inventory SKUs, technical fitout supplies, unit costs, and reorder levels.
           </p>
         </div>
 
@@ -338,43 +346,41 @@ export default function ProductsPage() {
             </svg>
           }
         >
-          Add New Product
+          Add Product / SKU
         </Button>
       </div>
 
-      {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total SKUs</p>
           <p className="text-2xl font-black text-slate-900 mt-1">{totalProducts}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Active catalog items</p>
+          <p className="text-xs text-slate-500 mt-0.5">Registered catalogue lines</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Stock on Hand</p>
-          <p className="text-2xl font-black text-slate-900 font-mono mt-1">{totalStockItems.toLocaleString()}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Physical items stored</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Units in Stock</p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">{totalStockItems.toLocaleString()}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Across all registered warehouses</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Low Stock Alerts</p>
-          <p className="text-2xl font-black text-amber-700 mt-1">{lowStockCount}</p>
-          <p className="text-xs text-amber-700 font-medium mt-0.5">Below reorder trigger</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Low Stock Warnings</p>
+          <p className="text-2xl font-black text-amber-600 mt-1">{lowStockCount}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Below reorder trigger level</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Valuation at Cost</p>
-          <p className="text-2xl font-black text-emerald-800 font-mono mt-1">{formatCurrency(totalInventoryValue)}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Total holding inventory value</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Inventory Valuation</p>
+          <p className="text-2xl font-black text-slate-900 mt-1">{formatCurrency(totalInventoryValue)}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Cost price holding value</p>
         </div>
       </div>
 
-      {/* Filter and TanStack Table Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="w-full sm:w-72">
+          <div className="w-full sm:w-80">
             <Input
-              placeholder="Search SKU, product name, barcode..."
+              placeholder="Search SKU, name, barcode..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               leftIcon={
@@ -386,11 +392,11 @@ export default function ProductsPage() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
             <Select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-40"
+              className="w-full sm:w-44"
             >
               <option value="ALL">All Categories</option>
               {categories.map((c) => (
@@ -403,39 +409,44 @@ export default function ProductsPage() {
             <Select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="w-44"
+              className="w-full sm:w-44"
             >
               <option value="ALL">All Types</option>
               <option value="RAW_MATERIAL">Raw Material</option>
               <option value="FINISHED_GOOD">Finished Good</option>
               <option value="CONSUMABLE">Consumable</option>
-              <option value="TOOL_EQUIPMENT">Tool & Equipment</option>
+              <option value="TOOL_EQUIPMENT">Tools & Equip</option>
             </Select>
           </div>
         </div>
 
-        {/* TanStack Table Render */}
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">Error loading products: {(error as any).message}</div>
+          <div className="py-8 text-center text-xs text-red-500">Error loading catalog: {(error as any).message}</div>
         ) : (
           <DataTable
             columns={columns}
             data={products}
             isLoading={isLoading}
             emptyTitle="No products found"
-            emptyMessage="Add your first product to start tracking inventory."
+            emptyMessage='Click "Add Product / SKU" to create your first stock item.'
           />
         )}
       </div>
 
-      {/* Product Create/Edit Modal */}
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        title={editingProduct ? "Edit Product" : "Add New Product"}
-        maxWidth="xl"
+        title={editingProduct ? "Edit Product Details" : "Add New SKU to Inventory"}
+        maxWidth="lg"
       >
-        <form onSubmit={handleSaveProduct} className="space-y-3.5">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            productForm.handleSubmit();
+          }}
+          className="space-y-3.5"
+        >
           {formError && (
             <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
               {formError}
@@ -443,124 +454,163 @@ export default function ProductsPage() {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="SKU / Code *"
-              required
-              placeholder="e.g. MAT-WOOD-001"
-              value={sku}
-              onChange={(e) => setSku(e.target.value)}
-              className="uppercase"
-            />
-            <Input
-              label="Product Name *"
-              required
-              placeholder="e.g. 18mm MDF Board"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Select
-              label="Type"
-              value={type}
-              onChange={(e) => setType(e.target.value as ProductType)}
+            <productForm.Field
+              name="sku"
+              validators={{
+                onChange: ({ value }) => (!value.trim() ? "SKU is required" : undefined),
+              }}
             >
-              <option value="RAW_MATERIAL">Raw Material</option>
-              <option value="FINISHED_GOOD">Finished Good</option>
-              <option value="CONSUMABLE">Consumable</option>
-              <option value="TOOL_EQUIPMENT">Tool & Equipment</option>
-            </Select>
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="SKU Code *"
+                  required
+                  placeholder="e.g. MAT-WOD-001"
+                  className="uppercase"
+                />
+              )}
+            </productForm.Field>
 
-            <Input
-              label="Unit of Measure"
-              placeholder="PCS, SQM, KG, LTR, BOX"
-              value={unit}
-              onChange={(e) => setUnit(e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Select
-              label="Category"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
+            <productForm.Field
+              name="name"
+              validators={{
+                onChange: ({ value }) => (!value.trim() ? "Product name is required" : undefined),
+              }}
             >
-              <option value="">-- None --</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-
-            <Select
-              label="Supplier"
-              value={supplierId}
-              onChange={(e) => setSupplierId(e.target.value)}
-            >
-              <option value="">-- None --</option>
-              {suppliers.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} ({s.supplierCode})
-                </option>
-              ))}
-            </Select>
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Product Name *"
+                  required
+                  placeholder="e.g. 18mm MDF Board"
+                />
+              )}
+            </productForm.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Cost Price (AED)"
-              type="number"
-              step="0.01"
-              value={costPrice}
-              onChange={(e) => setCostPrice(e.target.value)}
-            />
-            <Input
-              label="Selling Price (AED)"
-              type="number"
-              step="0.01"
-              value={sellingPrice}
-              onChange={(e) => setSellingPrice(e.target.value)}
-            />
+            <productForm.Field name="type">
+              {(field) => (
+                <FormSelect field={field} label="Type">
+                  <option value="RAW_MATERIAL">Raw Material</option>
+                  <option value="FINISHED_GOOD">Finished Good</option>
+                  <option value="CONSUMABLE">Consumable</option>
+                  <option value="TOOL_EQUIPMENT">Tool & Equipment</option>
+                </FormSelect>
+              )}
+            </productForm.Field>
+
+            <productForm.Field name="unit">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Unit of Measure"
+                  placeholder="PCS, SQM, KG, LTR, BOX"
+                />
+              )}
+            </productForm.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Reorder Trigger Level"
-              type="number"
-              value={reorderLevel}
-              onChange={(e) => setReorderLevel(e.target.value)}
-            />
-            <Input
-              label="Barcode (Optional)"
-              placeholder="e.g. 629110000000"
-              value={barcode}
-              onChange={(e) => setBarcode(e.target.value)}
-            />
+            <productForm.Field name="categoryId">
+              {(field) => (
+                <FormSelect field={field} label="Category">
+                  <option value="">-- None --</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </FormSelect>
+              )}
+            </productForm.Field>
+
+            <productForm.Field name="supplierId">
+              {(field) => (
+                <FormSelect field={field} label="Supplier">
+                  <option value="">-- None --</option>
+                  {suppliers.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.supplierCode})
+                    </option>
+                  ))}
+                </FormSelect>
+              )}
+            </productForm.Field>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <productForm.Field name="costPrice">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Cost Price (AED)"
+                  type="number"
+                  step="0.01"
+                />
+              )}
+            </productForm.Field>
+
+            <productForm.Field name="sellingPrice">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Selling Price (AED)"
+                  type="number"
+                  step="0.01"
+                />
+              )}
+            </productForm.Field>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <productForm.Field name="reorderLevel">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Reorder Trigger Level"
+                  type="number"
+                />
+              )}
+            </productForm.Field>
+
+            <productForm.Field name="barcode">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Barcode (Optional)"
+                  placeholder="e.g. 629110000000"
+                />
+              )}
+            </productForm.Field>
           </div>
 
           {!editingProduct && warehouses.length > 0 && (
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
               <span className="text-[11px] font-bold text-slate-700 uppercase block">Opening Stock (Optional)</span>
               <div className="grid grid-cols-2 gap-2">
-                <Select
-                  value={initialWarehouseId}
-                  onChange={(e) => setInitialWarehouseId(e.target.value)}
-                >
-                  <option value="">-- Select Warehouse --</option>
-                  {warehouses.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.name}
-                    </option>
-                  ))}
-                </Select>
-                <Input
-                  type="number"
-                  placeholder="Opening Qty"
-                  value={initialQuantity}
-                  onChange={(e) => setInitialQuantity(e.target.value)}
-                />
+                <productForm.Field name="initialWarehouseId">
+                  {(field) => (
+                    <FormSelect field={field}>
+                      <option value="">-- Select Warehouse --</option>
+                      {warehouses.map((w) => (
+                        <option key={w.id} value={w.id}>
+                          {w.name}
+                        </option>
+                      ))}
+                    </FormSelect>
+                  )}
+                </productForm.Field>
+
+                <productForm.Field name="initialQuantity">
+                  {(field) => (
+                    <FormInput
+                      field={field}
+                      type="number"
+                      placeholder="Opening Qty"
+                    />
+                  )}
+                </productForm.Field>
               </div>
             </div>
           )}
@@ -569,68 +619,97 @@ export default function ProductsPage() {
             <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createProduct.isPending || updateProduct.isPending}>
-              {createProduct.isPending || updateProduct.isPending ? "Saving..." : "Save Product"}
-            </Button>
+            <FormSubmit
+              form={productForm}
+              loading={createProduct.isPending || updateProduct.isPending}
+            >
+              Save Product
+            </FormSubmit>
           </div>
         </form>
       </Modal>
 
-      {/* Stock Adjustment Modal */}
       <Modal
         isOpen={!!adjustStockProduct}
         onClose={() => setAdjustStockProduct(null)}
         title={`Stock Movement: ${adjustStockProduct?.name || ""}`}
         maxWidth="md"
       >
-        <form onSubmit={handleStockAdjustment} className="space-y-3.5">
-          <Select
-            label="Warehouse *"
-            required
-            value={adjustWarehouseId}
-            onChange={(e) => setAdjustWarehouseId(e.target.value)}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            adjustForm.handleSubmit();
+          }}
+          className="space-y-3.5"
+        >
+          <adjustForm.Field
+            name="warehouseId"
+            validators={{
+              onChange: ({ value }) => (!value ? "Warehouse is required" : undefined),
+            }}
           >
-            {warehouses.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name} ({w.code})
-              </option>
-            ))}
-          </Select>
+            {(field) => (
+              <FormSelect field={field} label="Warehouse *" required>
+                <option value="">-- Select Warehouse --</option>
+                {warehouses.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name} ({w.code})
+                  </option>
+                ))}
+              </FormSelect>
+            )}
+          </adjustForm.Field>
 
-          <Select
-            label="Movement Type"
-            value={adjustMovementType}
-            onChange={(e) => setAdjustMovementType(e.target.value as any)}
+          <adjustForm.Field name="movementType">
+            {(field) => (
+              <FormSelect field={field} label="Movement Type">
+                <option value="ADJUSTMENT_IN">Stock In / Audit (+)</option>
+                <option value="ADJUSTMENT_OUT">Stock Out / Damage (-)</option>
+                <option value="PROJECT_CONSUMPTION">Project Site Consumption (-)</option>
+              </FormSelect>
+            )}
+          </adjustForm.Field>
+
+          <adjustForm.Field
+            name="quantity"
+            validators={{
+              onChange: ({ value }) =>
+                !value || Number(value) <= 0 ? "Quantity must be greater than 0" : undefined,
+            }}
           >
-            <option value="ADJUSTMENT_IN">Stock In / Audit (+)</option>
-            <option value="ADJUSTMENT_OUT">Stock Out / Damage (-)</option>
-            <option value="PROJECT_CONSUMPTION">Project Site Consumption (-)</option>
-          </Select>
+            {(field) => (
+              <FormInput
+                field={field}
+                label={`Quantity (${adjustStockProduct?.unit || "PCS"}) *`}
+                type="number"
+                min="0.1"
+                step="any"
+                required
+              />
+            )}
+          </adjustForm.Field>
 
-          <Input
-            label={`Quantity (${adjustStockProduct?.unit || "PCS"}) *`}
-            type="number"
-            min="0.1"
-            step="any"
-            required
-            value={adjustQty}
-            onChange={(e) => setAdjustQty(e.target.value)}
-          />
-
-          <Input
-            label="Notes / Project Reference"
-            placeholder="e.g. Project #42 Site installation"
-            value={adjustNotes}
-            onChange={(e) => setAdjustNotes(e.target.value)}
-          />
+          <adjustForm.Field name="notes">
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Notes / Project Reference"
+                placeholder="e.g. Project #42 Site installation"
+              />
+            )}
+          </adjustForm.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
             <Button type="button" variant="outline" onClick={() => setAdjustStockProduct(null)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createMovement.isPending}>
-              {createMovement.isPending ? "Recording..." : "Confirm Movement"}
-            </Button>
+            <FormSubmit
+              form={adjustForm}
+              loading={createMovement.isPending}
+            >
+              Confirm Movement
+            </FormSubmit>
           </div>
         </form>
       </Modal>

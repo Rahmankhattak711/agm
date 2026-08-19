@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useForm } from "@tanstack/react-form";
 import {
   useSuppliers,
   useCreateSupplier,
@@ -14,21 +15,14 @@ import {
   Input,
   DataTable,
   Modal,
+  FormInput,
+  FormSubmit,
 } from "@/components/ui";
 
 export default function SuppliersPage() {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
-
-  // Form
-  const [supplierCode, setSupplierCode] = useState("");
-  const [name, setName] = useState("");
-  const [contactPerson, setContactPerson] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
-  const [trn, setTrn] = useState("");
   const [formError, setFormError] = useState("");
 
   const { data: suppliers = [], isLoading, error } = useSuppliers();
@@ -44,76 +38,79 @@ export default function SuppliersPage() {
       (s.trn && s.trn.includes(search))
   );
 
-  const resetForm = () => {
-    setSupplierCode(`SUP-${Date.now().toString().slice(-4)}`);
-    setName("");
-    setContactPerson("");
-    setPhone("");
-    setEmail("");
-    setAddress("");
-    setTrn("");
-    setEditingSupplier(null);
-    setFormError("");
-  };
+  const form = useForm({
+    defaultValues: {
+      supplierCode: `SUP-${Date.now().toString().slice(-4)}`,
+      name: "",
+      contactPerson: "",
+      phone: "",
+      email: "",
+      address: "",
+      trn: "",
+    },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        if (editingSupplier) {
+          await updateSupplier.mutateAsync({
+            id: editingSupplier.id,
+            supplierCode: value.supplierCode.trim(),
+            name: value.name.trim(),
+            contactPerson: value.contactPerson.trim() || null,
+            phone: value.phone.trim() || null,
+            email: value.email.trim() || null,
+            address: value.address.trim() || null,
+            trn: value.trn.trim() || null,
+          });
+        } else {
+          await createSupplier.mutateAsync({
+            supplierCode: value.supplierCode.trim(),
+            name: value.name.trim(),
+            contactPerson: value.contactPerson.trim() || undefined,
+            phone: value.phone.trim() || undefined,
+            email: value.email.trim() || undefined,
+            address: value.address.trim() || undefined,
+            trn: value.trn.trim() || undefined,
+          });
+        }
+
+        setIsModalOpen(false);
+      } catch (err: any) {
+        setFormError(err.message || "Failed to save supplier");
+      }
+    },
+  });
 
   const handleOpenCreate = () => {
-    resetForm();
+    setEditingSupplier(null);
+    setFormError("");
+    form.reset({
+      supplierCode: `SUP-${Date.now().toString().slice(-4)}`,
+      name: "",
+      contactPerson: "",
+      phone: "",
+      email: "",
+      address: "",
+      trn: "",
+    });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (s: Supplier) => {
     setEditingSupplier(s);
-    setSupplierCode(s.supplierCode);
-    setName(s.name);
-    setContactPerson(s.contactPerson || "");
-    setPhone(s.phone || "");
-    setEmail(s.email || "");
-    setAddress(s.address || "");
-    setTrn(s.trn || "");
     setFormError("");
+    form.reset({
+      supplierCode: s.supplierCode,
+      name: s.name,
+      contactPerson: s.contactPerson || "",
+      phone: s.phone || "",
+      email: s.email || "",
+      address: s.address || "",
+      trn: s.trn || "",
+    });
     setIsModalOpen(true);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-    if (!supplierCode.trim() || !name.trim()) {
-      setFormError("Supplier code and name are required.");
-      return;
-    }
-
-    try {
-      if (editingSupplier) {
-        await updateSupplier.mutateAsync({
-          id: editingSupplier.id,
-          supplierCode: supplierCode.trim(),
-          name: name.trim(),
-          contactPerson: contactPerson.trim() || null,
-          phone: phone.trim() || null,
-          email: email.trim() || null,
-          address: address.trim() || null,
-          trn: trn.trim() || null,
-        });
-      } else {
-        await createSupplier.mutateAsync({
-          supplierCode: supplierCode.trim(),
-          name: name.trim(),
-          contactPerson: contactPerson.trim() || undefined,
-          phone: phone.trim() || undefined,
-          email: email.trim() || undefined,
-          address: address.trim() || undefined,
-          trn: trn.trim() || undefined,
-        });
-      }
-
-      setIsModalOpen(false);
-      resetForm();
-    } catch (err: any) {
-      setFormError(err.message || "Failed to save supplier");
-    }
-  };
-
-  // TanStack Table Column Definitions
   const columns = useMemo<ColumnDef<Supplier>[]>(
     () => [
       {
@@ -224,7 +221,7 @@ export default function SuppliersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Actions */}
+      
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900">Suppliers & Vendor Management</h2>
@@ -246,7 +243,6 @@ export default function SuppliersPage() {
         </Button>
       </div>
 
-      {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Suppliers</p>
@@ -271,7 +267,6 @@ export default function SuppliersPage() {
         </div>
       </div>
 
-      {/* Filter and TanStack Table Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="w-full sm:w-80">
@@ -289,7 +284,6 @@ export default function SuppliersPage() {
           </div>
         </div>
 
-        {/* TanStack Table Render */}
         {error ? (
           <div className="py-8 text-center text-xs text-red-500">Error loading suppliers: {(error as any).message}</div>
         ) : (
@@ -303,14 +297,20 @@ export default function SuppliersPage() {
         )}
       </div>
 
-      {/* Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingSupplier ? "Edit Supplier" : "Add New Supplier"}
         maxWidth="lg"
       >
-        <form onSubmit={handleSave} className="space-y-3.5">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-3.5"
+        >
           {formError && (
             <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
               {formError}
@@ -318,67 +318,104 @@ export default function SuppliersPage() {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Supplier Code *"
-              required
-              value={supplierCode}
-              onChange={(e) => setSupplierCode(e.target.value)}
-              className="uppercase"
-            />
-            <Input
-              label="Company Name *"
-              required
-              placeholder="e.g. Al Futtaim Hardware"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <form.Field
+              name="supplierCode"
+              validators={{
+                onChange: ({ value }) => (!value.trim() ? "Supplier code is required" : undefined),
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Supplier Code *"
+                  required
+                  className="uppercase"
+                />
+              )}
+            </form.Field>
+
+            <form.Field
+              name="name"
+              validators={{
+                onChange: ({ value }) => (!value.trim() ? "Company name is required" : undefined),
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Company Name *"
+                  required
+                  placeholder="e.g. Al Futtaim Hardware"
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Contact Person"
-              placeholder="Sales Rep Name"
-              value={contactPerson}
-              onChange={(e) => setContactPerson(e.target.value)}
-            />
-            <Input
-              label="Phone Number"
-              placeholder="+971 50 000 0000"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
+            <form.Field name="contactPerson">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Contact Person"
+                  placeholder="Sales Rep Name"
+                />
+              )}
+            </form.Field>
+
+            <form.Field name="phone">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Phone Number"
+                  placeholder="+971 50 000 0000"
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Email"
-              type="email"
-              placeholder="sales@vendor.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Input
-              label="Tax TRN"
-              placeholder="100XXXXXXXXX003"
-              value={trn}
-              onChange={(e) => setTrn(e.target.value)}
-            />
+            <form.Field name="email">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Email"
+                  type="email"
+                  placeholder="sales@vendor.com"
+                />
+              )}
+            </form.Field>
+
+            <form.Field name="trn">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Tax TRN"
+                  placeholder="100XXXXXXXXX003"
+                />
+              )}
+            </form.Field>
           </div>
 
-          <Input
-            label="Address / Location"
-            placeholder="Al Quoz Ind. 3, Dubai"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
+          <form.Field name="address">
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Address / Location"
+                placeholder="Al Quoz Ind. 3, Dubai"
+              />
+            )}
+          </form.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createSupplier.isPending || updateSupplier.isPending}>
-              {createSupplier.isPending || updateSupplier.isPending ? "Saving..." : "Save Supplier"}
-            </Button>
+            <FormSubmit
+              form={form}
+              loading={createSupplier.isPending || updateSupplier.isPending}
+            >
+              Save Supplier
+            </FormSubmit>
           </div>
         </form>
       </Modal>
