@@ -88,7 +88,7 @@ export async function PATCH(request: Request) {
     }
 
     const updated = await prisma.$transaction(async (tx) => {
-      // If transitioning to APPROVED and was not APPROVED before, deduct annual leave balance if ANNUAL
+      
       if (status === "APPROVED" && existing.status !== "APPROVED" && existing.leaveType === "ANNUAL") {
         const days = Number(existing.totalDays);
         const currentBalance = Number(existing.employee.annualLeaveBalance);
@@ -98,7 +98,6 @@ export async function PATCH(request: Request) {
         });
       }
 
-      // If reversing an APPROVED leave, refund the balance
       if (existing.status === "APPROVED" && status !== "APPROVED" && existing.leaveType === "ANNUAL") {
         const days = Number(existing.totalDays);
         const currentBalance = Number(existing.employee.annualLeaveBalance);

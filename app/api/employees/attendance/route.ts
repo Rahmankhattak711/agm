@@ -57,7 +57,6 @@ export async function POST(request: Request) {
     const user = await getAuthUser(request);
     const body = await request.json();
 
-    // Check if bulk attendance submission
     if (Array.isArray(body)) {
       const results = [];
       for (const item of body) {
