@@ -84,7 +84,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Calculate totals safely
     const computedSubtotal = items.reduce(
       (sum: number, it: any) => {
         if (it.isFree || String(it.qty).toLowerCase() === "free" || String(it.rate).toLowerCase() === "free") {
@@ -98,7 +97,7 @@ export async function POST(request: Request) {
     const computedTotal = computedSubtotal + computedVat - Number(discount || 0);
 
     const quotation = await prisma.$transaction(async (tx) => {
-      // Check if quotation already exists by quotationNo
+      
       const existing = await tx.quotation.findUnique({
         where: { quotationNo },
       });
@@ -106,7 +105,7 @@ export async function POST(request: Request) {
       let qId: string;
 
       if (existing) {
-        // Update existing quotation
+        
         await tx.quotationItem.deleteMany({
           where: { quotationId: existing.id },
         });
@@ -140,7 +139,7 @@ export async function POST(request: Request) {
         });
         qId = updated.id;
       } else {
-        // Create new quotation
+        
         const created = await tx.quotation.create({
           data: {
             quotationNo,
@@ -171,7 +170,6 @@ export async function POST(request: Request) {
         qId = created.id;
       }
 
-      // Insert line items
       if (Array.isArray(items) && items.length > 0) {
         const itemRows = items.map((it: any, index: number) => {
           const isItemFree = Boolean(
