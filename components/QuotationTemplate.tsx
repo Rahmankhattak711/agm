@@ -10,6 +10,7 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { Check, FolderOpen, Loader2, Plus, Printer, Save, Trash2 } from "lucide-react";
 import Image from "next/image";
+import OutsideClickHandler from "react-outside-click-handler";
 
 export interface QuotationMeta {
   quotationNo: string;
@@ -370,7 +371,7 @@ export default function QuotationTemplate({
           : "min-h-screen bg-slate-100 py-8 px-4 print:bg-white print:py-0 print:px-0"
       }
     >
-      {/* Top Action Ribbon (Hidden when printing) */}
+      
       <div className="max-w-4xl mx-auto mb-4 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div className="flex items-center gap-2">
           <button
@@ -435,10 +436,10 @@ export default function QuotationTemplate({
         </div>
       </div>
 
-      {/* Saved Quotations Modal / Drawer */}
       {isSavedDrawerOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-xs p-4 flex justify-center items-center print:hidden">
-          <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh]">
+          <OutsideClickHandler onOutsideClick={() => setIsSavedDrawerOpen(false)}>
+            <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh]">
             <div className="flex items-center justify-between px-6 py-4 bg-slate-900 text-white">
               <div className="flex items-center gap-2">
                 <FolderOpen size={18} className="text-emerald-400" />
@@ -513,16 +514,16 @@ export default function QuotationTemplate({
               )}
             </div>
           </div>
-        </div>
+        </OutsideClickHandler>
+      </div>
       )}
 
-      {/* Main Printable Document Canvas with Original UI */}
       <div
         className="mx-auto bg-white shadow-lg print:shadow-none max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible"
         id="printable-voucher"
       >
         <table className="print-page-table w-full border-collapse">
-          {/* REPEATING HEADER ACROSS ALL PAGES */}
+          
           <thead className="print-page-header-group">
             <tr>
               <th className="p-0 font-normal text-left border-none">
@@ -553,7 +554,6 @@ export default function QuotationTemplate({
             </tr>
           </thead>
 
-          {/* REPEATING FOOTER ACROSS ALL PAGES */}
           <tfoot className="print-page-footer-group">
             <tr>
               <td className="p-0 border-none">
@@ -591,11 +591,10 @@ export default function QuotationTemplate({
             </tr>
           </tfoot>
 
-          {/* MAIN DOCUMENT BODY */}
           <tbody className="print-page-body-group">
             <tr>
               <td className="p-0 border-none align-top">
-                {/* Title bar */}
+                
                 <div className="flex items-center justify-between px-10 py-4 w-full border-b border-slate-100 bg-slate-50/50">
                   <h1 className="text-2xl font-black text-slate-900 tracking-tight">
                     COMMERCIAL QUOTATION
@@ -645,7 +644,6 @@ export default function QuotationTemplate({
                   </div>
                 </div>
 
-                {/* Info boxes */}
                 <div className="grid grid-cols-2 gap-0 px-10 py-6 text-[12.5px] print-avoid-break">
                   <div className="border border-agm-box-border bg-agm-box-bg p-3.5 rounded-l-xl">
                     <div className="font-bold mb-1.5 text-slate-900 uppercase text-[11px] tracking-wider text-agm-green">
@@ -724,7 +722,6 @@ export default function QuotationTemplate({
                   </div>
                 </div>
 
-                {/* Salutation */}
                 <div className="px-10 text-[13px] text-slate-800 print-avoid-break">
                   <div className="font-bold">Dear Sir / Madam,</div>
                   <div className="text-slate-600 mt-0.5">
@@ -732,7 +729,6 @@ export default function QuotationTemplate({
                   </div>
                 </div>
 
-                {/* Table */}
                 <div className="px-10 mt-4">
                   <table className="w-full text-[12px] border-collapse border border-agm-box-border bg-white rounded-lg overflow-hidden shadow-xs">
                     <thead>
@@ -867,7 +863,6 @@ export default function QuotationTemplate({
                     <Plus size={14} /> + Add Line Item
                   </button>
 
-                  {/* Totals Box */}
                   <div className="flex justify-end mt-4 print-avoid-break">
                     <table className="text-[12.5px] border-collapse border border-agm-box-border w-80 rounded-lg overflow-hidden">
                       <tbody>
@@ -931,7 +926,6 @@ export default function QuotationTemplate({
                   </div>
                 </div>
 
-                {/* Commercial Terms & Acceptance */}
                 <div className="grid grid-cols-2 gap-0 px-10 mt-6 text-[11.5px] print-avoid-break">
                   <div className="border border-agm-box-border bg-agm-box-bg p-3.5 rounded-l-xl">
                     <div className="font-bold mb-1 text-slate-900 uppercase text-[11px]">

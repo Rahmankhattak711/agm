@@ -35,7 +35,7 @@ export default function StatCard({
         animationDelay: `${delay}ms`,
       }}
     >
-      {/* Shine overlay */}
+      
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -46,7 +46,6 @@ export default function StatCard({
         }}
       />
 
-      {/* Dot pattern */}
       <div
         className="absolute inset-0 pointer-events-none opacity-6"
         style={{
@@ -57,7 +56,7 @@ export default function StatCard({
       />
 
       <div className="relative z-10">
-        {/* Top row: icon + trend */}
+        
         <div className="flex items-start justify-between mb-3.5">
           <div className="w-10.5 h-10.5 rounded-[13px] flex items-center justify-center bg-white/22 shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex-shrink-0">
             {icon}
@@ -69,7 +68,6 @@ export default function StatCard({
           )}
         </div>
 
-        {/* Value block */}
         {loading ? (
           <div className="flex flex-col gap-2">
             <div className="h-7 w-24 rounded-lg bg-white/20 animate-shimmer" />
@@ -89,7 +87,6 @@ export default function StatCard({
           </>
         )}
 
-        {/* Sparkline bars */}
         {sparkline && sparkline.length > 0 && !loading && (
           <div className="flex items-end gap-0.5 mt-3.5 h-7">
             {sparkline.map((v, i) => (

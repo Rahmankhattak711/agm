@@ -61,7 +61,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-3">
-      {/* Table Container */}
+      
       <div className="overflow-x-auto rounded-xl border border-slate-100">
         <table className="w-full text-left text-xs">
           <thead>
@@ -144,7 +144,6 @@ export function DataTable<TData, TValue>({
         </table>
       </div>
 
-      {/* TanStack Table Pagination Controls */}
       {showPagination && data.length > pageSize && (
         <div className="flex items-center justify-between px-1 text-xs text-slate-500">
           <div>

@@ -26,7 +26,7 @@ export default function BarChart({
 
   return (
     <div className="flex flex-col justify-between h-full space-y-4">
-      {/* Chart Header */}
+      
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-bold text-sm text-slate-900">{title}</h3>
@@ -41,12 +41,11 @@ export default function BarChart({
         </span>
       </div>
 
-      {/* Modern Bar Graph Presentation */}
       <div
         className="relative flex items-end justify-around gap-3 pt-6 pb-2 px-2 bg-slate-50/60 rounded-2xl border border-slate-100"
         style={{ minHeight: height }}
       >
-        {/* Background Grid Lines */}
+        
         <div className="absolute inset-x-4 top-4 bottom-8 flex flex-col justify-between pointer-events-none opacity-40">
           <div className="border-b border-dashed border-slate-300 w-full" />
           <div className="border-b border-dashed border-slate-300 w-full" />
@@ -62,14 +61,13 @@ export default function BarChart({
               key={idx}
               className="relative z-10 flex-1 flex flex-col items-center max-w-[120px] group cursor-pointer"
             >
-              {/* Value Tooltip / Label */}
+              
               <div className="mb-2 transition-transform duration-200 group-hover:-translate-y-1 text-center">
                 <span className="inline-block px-2 py-0.5 rounded-md bg-white border border-slate-200/80 shadow-xs text-[10px] font-bold text-slate-800 font-mono">
                   {formatValue(item.value)}
                 </span>
               </div>
 
-              {/* Bar Container Track */}
               <div className="w-full h-32 flex items-end justify-center rounded-xl bg-slate-200/40 p-1">
                 <div
                   className="w-full rounded-lg transition-all duration-500 shadow-xs group-hover:opacity-90"
@@ -80,7 +78,6 @@ export default function BarChart({
                 />
               </div>
 
-              {/* Category Label */}
               <span className="mt-2 text-[11px] font-bold text-slate-600 text-center tracking-tight truncate w-full">
                 {item.label}
               </span>
@@ -89,7 +86,6 @@ export default function BarChart({
         })}
       </div>
 
-      {/* Legend & Breakdown Strip */}
       <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
         {data.map((item, i) => (
           <div key={i} className="flex items-center gap-1.5">
