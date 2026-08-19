@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useForm } from "@tanstack/react-form";
 import {
   useLeaveRequests,
   useCreateLeaveRequest,
@@ -14,25 +15,19 @@ import {
 } from "@/lib/hooks/api-hooks";
 import {
   Button,
-  Input,
   Select,
-  Textarea,
   DataTable,
   Modal,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+  FormSubmit,
 } from "@/components/ui";
 
 export default function LeavesPage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [employeeFilter, setEmployeeFilter] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Form states
-  const [employeeId, setEmployeeId] = useState("");
-  const [leaveType, setLeaveType] = useState<LeaveType>("ANNUAL");
-  const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
-  const [endDate, setEndDate] = useState(new Date().toISOString().split("T")[0]);
-  const [totalDays, setTotalDays] = useState("1");
-  const [reason, setReason] = useState("");
   const [formError, setFormError] = useState("");
 
   const { data: leaves = [], isLoading, error } = useLeaveRequests({
@@ -45,97 +40,64 @@ export default function LeavesPage() {
   const updateStatus = useUpdateLeaveStatus();
   const deleteLeave = useDeleteLeaveRequest();
 
-  // Metrics
   const pendingCount = leaves.filter((l) => l.status === "PENDING").length;
   const approvedCount = leaves.filter((l) => l.status === "APPROVED").length;
   const rejectedCount = leaves.filter((l) => l.status === "REJECTED").length;
 
-  const handleStartDateChange = (val: string) => {
-    setStartDate(val);
-    if (new Date(val) > new Date(endDate)) {
-      setEndDate(val);
-      setTotalDays("1");
-    } else {
-      const diff = Math.ceil(
-        (new Date(endDate).getTime() - new Date(val).getTime()) / (1000 * 3600 * 24)
-      ) + 1;
-      setTotalDays(diff.toString());
-    }
-  };
+  const form = useForm({
+    defaultValues: {
+      employeeId: "",
+      leaveType: "ANNUAL" as LeaveType,
+      startDate: new Date().toISOString().split("T")[0],
+      endDate: new Date().toISOString().split("T")[0],
+      totalDays: "1",
+      reason: "",
+    },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        await createLeave.mutateAsync({
+          employeeId: value.employeeId,
+          leaveType: value.leaveType,
+          startDate: value.startDate,
+          endDate: value.endDate,
+          totalDays: Number(value.totalDays),
+          reason: value.reason.trim() || undefined,
+        });
 
-  const handleEndDateChange = (val: string) => {
-    setEndDate(val);
-    const diff = Math.ceil(
-      (new Date(val).getTime() - new Date(startDate).getTime()) / (1000 * 3600 * 24)
-    ) + 1;
-    setTotalDays(Math.max(1, diff).toString());
-  };
+        setIsModalOpen(false);
+      } catch (err: any) {
+        setFormError(err.message || "Failed to submit leave request");
+      }
+    },
+  });
 
   const handleOpenModal = () => {
-    if (employees.length > 0) setEmployeeId(employees[0].id);
-    setLeaveType("ANNUAL");
-    setStartDate(new Date().toISOString().split("T")[0]);
-    setEndDate(new Date().toISOString().split("T")[0]);
-    setTotalDays("1");
-    setReason("");
     setFormError("");
+    form.reset({
+      employeeId: employees[0]?.id || "",
+      leaveType: "ANNUAL",
+      startDate: new Date().toISOString().split("T")[0],
+      endDate: new Date().toISOString().split("T")[0],
+      totalDays: "1",
+      reason: "",
+    });
     setIsModalOpen(true);
   };
 
-  const handleCreateLeave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-    if (!employeeId || !startDate || !endDate || !totalDays) {
-      setFormError("Please fill in all required fields.");
-      return;
-    }
-
-    try {
-      await createLeave.mutateAsync({
-        employeeId,
-        leaveType,
-        startDate,
-        endDate,
-        totalDays: Number(totalDays),
-        reason: reason.trim() || undefined,
-      });
-
-      setIsModalOpen(false);
-    } catch (err: any) {
-      setFormError(err.message || "Failed to submit leave request");
-    }
-  };
-
-  const getStatusBadge = (st: LeaveStatus) => {
-    switch (st) {
+  const getStatusBadge = (status: LeaveStatus) => {
+    switch (status) {
       case "PENDING":
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-            Pending Approval
-          </span>
-        );
+        return "bg-amber-100 text-amber-800 border-amber-200";
       case "APPROVED":
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            Approved
-          </span>
-        );
+        return "bg-emerald-100 text-emerald-800 border-emerald-200";
       case "REJECTED":
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-            Rejected
-          </span>
-        );
-      case "CANCELLED":
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
-            Cancelled
-          </span>
-        );
+        return "bg-rose-100 text-rose-800 border-rose-200";
+      default:
+        return "bg-slate-100 text-slate-700 border-slate-200";
     }
   };
 
-  // TanStack Table Column Definitions
   const columns = useMemo<ColumnDef<LeaveRequest>[]>(
     () => [
       {
@@ -143,121 +105,112 @@ export default function LeavesPage() {
         header: "Employee",
         cell: ({ row }) => (
           <div>
-            <div className="font-semibold text-slate-900">
-              {row.original.employee?.firstName} {row.original.employee?.lastName}
-            </div>
+            <span className="font-bold text-slate-900 block">
+              {row.original.employee?.firstName || ""} {row.original.employee?.lastName || "Staff"}
+            </span>
             <span className="font-mono text-[10px] text-slate-400">
-              {row.original.employee?.employeeCode}
+              Code: {row.original.employee?.employeeCode || "N/A"}
             </span>
           </div>
         ),
       },
       {
         accessorKey: "leaveType",
-        header: "Leave Type",
+        header: "Category",
         cell: ({ row }) => (
-          <span className="font-semibold text-slate-800">
+          <span className="font-semibold text-slate-800 text-xs">
             {row.original.leaveType}
           </span>
         ),
       },
       {
-        accessorKey: "period",
-        header: "Period",
+        accessorKey: "duration",
+        header: "Dates & Duration",
         cell: ({ row }) => (
-          <span className="text-slate-600 whitespace-nowrap">
-            {new Date(row.original.startDate).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-            })}{" "}
-            &rarr;{" "}
-            {new Date(row.original.endDate).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </span>
+          <div>
+            <span className="font-mono text-xs font-semibold text-slate-800 block">
+              {new Date(row.original.startDate).toLocaleDateString()} &rarr;{" "}
+              {new Date(row.original.endDate).toLocaleDateString()}
+            </span>
+            <span className="text-[11px] font-bold text-emerald-800">
+              {row.original.totalDays} Days
+            </span>
+          </div>
         ),
       },
       {
-        accessorKey: "totalDays",
-        header: "Days",
+        accessorKey: "status",
+        header: "Approval Status",
         cell: ({ row }) => (
-          <span className="font-bold text-slate-900">
-            {row.original.totalDays}{" "}
-            {Number(row.original.totalDays) === 1 ? "day" : "days"}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "balance",
-        header: "Balance",
-        cell: ({ row }) => (
-          <span className="font-semibold text-slate-700">
-            {row.original.employee?.annualLeaveBalance ?? 30} days
+          <span
+            className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusBadge(
+              row.original.status
+            )}`}
+          >
+            {row.original.status}
           </span>
         ),
       },
       {
         accessorKey: "reason",
-        header: "Reason",
+        header: "Notes / Reason",
         cell: ({ row }) => (
-          <span className="text-slate-600 max-w-xs truncate block">
+          <span className="text-xs text-slate-600 truncate max-w-xs block">
             {row.original.reason || <span className="text-slate-300">-</span>}
           </span>
         ),
       },
       {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => getStatusBadge(row.original.status),
-      },
-      {
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1.5">
-            {row.original.status === "PENDING" && (
-              <>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() =>
-                    updateStatus.mutateAsync({
-                      id: row.original.id,
-                      status: "APPROVED",
-                    })
+        cell: ({ row }) => {
+          const isPending = row.original.status === "PENDING";
+          return (
+            <div className="flex items-center justify-end gap-1.5">
+              {isPending && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-emerald-700 hover:bg-emerald-50"
+                    onClick={async () => {
+                      await updateStatus.mutateAsync({
+                        id: row.original.id,
+                        status: "APPROVED",
+                      });
+                    }}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-rose-700 hover:bg-rose-50"
+                    onClick={async () => {
+                      await updateStatus.mutateAsync({
+                        id: row.original.id,
+                        status: "REJECTED",
+                      });
+                    }}
+                  >
+                    Reject
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={async () => {
+                  if (confirm("Delete this leave application?")) {
+                    await deleteLeave.mutateAsync(row.original.id);
                   }
-                >
-                  Approve
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() =>
-                    updateStatus.mutateAsync({
-                      id: row.original.id,
-                      status: "REJECTED",
-                    })
-                  }
-                >
-                  Reject
-                </Button>
-              </>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
-                if (confirm("Delete this leave request?")) {
-                  await deleteLeave.mutateAsync(row.original.id);
-                }
-              }}
-            >
-              Delete
-            </Button>
-          </div>
-        ),
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          );
+        },
       },
     ],
     [deleteLeave, updateStatus]
@@ -265,12 +218,12 @@ export default function LeavesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Actions */}
+      
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Leave Management & Vacation Balances</h2>
+          <h2 className="text-xl font-black text-slate-900">Leave Management & Approvals</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Review annual vacations, sick days, unpaid leaves, and manage employee leave balances.
+            Track annual leaves, medical sick leaves, duration calculators, and supervisor authorizations.
           </p>
         </div>
 
@@ -287,35 +240,33 @@ export default function LeavesPage() {
         </Button>
       </div>
 
-      {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pending Review</p>
-          <p className="text-2xl font-black text-amber-700 mt-1">{pendingCount}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Awaiting management action</p>
+          <p className="text-2xl font-black text-amber-600 mt-1">{pendingCount}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Awaiting HR authorization</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Approved Leaves</p>
           <p className="text-2xl font-black text-emerald-800 mt-1">{approvedCount}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Active & upcoming leaves</p>
+          <p className="text-xs text-slate-500 mt-0.5">Granted time off</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Rejected Requests</p>
-          <p className="text-2xl font-black text-rose-700 mt-1">{rejectedCount}</p>
+          <p className="text-2xl font-black text-rose-800 mt-1">{rejectedCount}</p>
           <p className="text-xs text-slate-500 mt-0.5">Declined applications</p>
         </div>
       </div>
 
-      {/* Filter and TanStack Table Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 w-full">
             <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-40"
+              className="w-full sm:w-44"
             >
               <option value="ALL">All Statuses</option>
               <option value="PENDING">Pending</option>
@@ -326,111 +277,154 @@ export default function LeavesPage() {
             <Select
               value={employeeFilter}
               onChange={(e) => setEmployeeFilter(e.target.value)}
-              className="w-60"
+              className="w-full sm:w-56"
             >
               <option value="">All Employees</option>
               {employees.map((e) => (
                 <option key={e.id} value={e.id}>
-                  {e.firstName} {e.lastName} ({e.employeeCode})
+                  {e.firstName} {e.lastName}
                 </option>
               ))}
             </Select>
           </div>
         </div>
 
-        {/* TanStack Table Render */}
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">Error loading leaves: {(error as any).message}</div>
+          <div className="py-8 text-center text-xs text-red-500">
+            Error loading leave records: {(error as any).message}
+          </div>
         ) : (
           <DataTable
             columns={columns}
             data={leaves}
             isLoading={isLoading}
-            emptyTitle="No leave requests found"
+            emptyTitle="No leave applications logged"
             emptyMessage='Click "Request Leave" to submit a new vacation application.'
           />
         )}
       </div>
 
-      {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Submit Leave Request" maxWidth="lg">
-        <form onSubmit={handleCreateLeave} className="space-y-3.5">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-3.5"
+        >
           {formError && (
             <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
               {formError}
             </div>
           )}
 
-          <Select
-            label="Employee *"
-            required
-            value={employeeId}
-            onChange={(e) => setEmployeeId(e.target.value)}
+          <form.Field
+            name="employeeId"
+            validators={{
+              onChange: ({ value }) => (!value ? "Employee selection is required" : undefined),
+            }}
           >
-            {employees.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.firstName} {e.lastName} ({e.employeeCode}) - Balance: {e.annualLeaveBalance ?? 30} days
-              </option>
-            ))}
-          </Select>
+            {(field) => (
+              <FormSelect field={field} label="Employee *" required>
+                <option value="">-- Select Employee --</option>
+                {employees.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.firstName} {e.lastName} ({e.employeeCode}) - Balance: {e.annualLeaveBalance ?? 30} days
+                  </option>
+                ))}
+              </FormSelect>
+            )}
+          </form.Field>
 
-          <Select
-            label="Leave Type *"
-            value={leaveType}
-            onChange={(e) => setLeaveType(e.target.value as LeaveType)}
-          >
-            <option value="ANNUAL">Annual Leave (Paid)</option>
-            <option value="SICK">Sick Leave</option>
-            <option value="UNPAID">Unpaid Leave</option>
-            <option value="EMERGENCY">Emergency Leave</option>
-            <option value="MATERNITY">Maternity Leave</option>
-            <option value="PATERNITY">Paternity Leave</option>
-            <option value="OTHER">Other</option>
-          </Select>
+          <form.Field name="leaveType">
+            {(field) => (
+              <FormSelect field={field} label="Leave Type *">
+                <option value="ANNUAL">Annual Leave (Paid)</option>
+                <option value="SICK">Sick Leave</option>
+                <option value="UNPAID">Unpaid Leave</option>
+                <option value="EMERGENCY">Emergency Leave</option>
+                <option value="MATERNITY">Maternity Leave</option>
+                <option value="PATERNITY">Paternity Leave</option>
+                <option value="OTHER">Other</option>
+              </FormSelect>
+            )}
+          </form.Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="Start Date *"
-              type="date"
-              required
-              value={startDate}
-              onChange={(e) => handleStartDateChange(e.target.value)}
-            />
+            <form.Field
+              name="startDate"
+              validators={{
+                onChange: ({ value }) => (!value ? "Start date is required" : undefined),
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Start Date *"
+                  type="date"
+                  required
+                />
+              )}
+            </form.Field>
 
-            <Input
-              label="End Date *"
-              type="date"
-              required
-              value={endDate}
-              onChange={(e) => handleEndDateChange(e.target.value)}
-            />
+            <form.Field
+              name="endDate"
+              validators={{
+                onChange: ({ value }) => (!value ? "End date is required" : undefined),
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="End Date *"
+                  type="date"
+                  required
+                />
+              )}
+            </form.Field>
           </div>
 
-          <Input
-            label="Total Days *"
-            type="number"
-            min="0.5"
-            step="0.5"
-            required
-            value={totalDays}
-            onChange={(e) => setTotalDays(e.target.value)}
-          />
+          <form.Field
+            name="totalDays"
+            validators={{
+              onChange: ({ value }) =>
+                !value || Number(value) <= 0 ? "Total days must be greater than 0" : undefined,
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Total Days *"
+                type="number"
+                min="0.5"
+                step="0.5"
+                required
+              />
+            )}
+          </form.Field>
 
-          <Textarea
-            label="Reason / Notes"
-            rows={2}
-            placeholder="Vacation travel, personal matter, medical visit..."
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          />
+          <form.Field name="reason">
+            {(field) => (
+              <FormTextarea
+                field={field}
+                label="Reason / Notes"
+                rows={2}
+                placeholder="Vacation travel, personal matter, medical visit..."
+              />
+            )}
+          </form.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createLeave.isPending}>
-              {createLeave.isPending ? "Submitting..." : "Submit Request"}
-            </Button>
+            <FormSubmit
+              form={form}
+              loading={createLeave.isPending}
+            >
+              Submit Request
+            </FormSubmit>
           </div>
         </form>
       </Modal>
