@@ -7,17 +7,16 @@ import { Button } from "@/components/ui";
 export default function NotFound() {
   return (
     <main className="relative min-h-screen flex items-center justify-center bg-[#f6f5f0] px-4 py-12 font-sans overflow-hidden">
-      {/* Background Decorative Gradient Blobs */}
+      
       <div className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-slate-900/5 blur-3xl" />
 
       <div className="relative w-full max-w-lg rounded-3xl border border-slate-200/80 bg-white p-8 sm:p-10 text-center shadow-xl shadow-slate-900/5">
-        {/* Brand Logo */}
+        
         <div className="flex justify-center mb-6">
           <AgmLogo size="md" collapsed={false} />
         </div>
 
-        {/* 404 Large Numeric Badge */}
         <div className="relative mx-auto mb-4 inline-flex items-center justify-center">
           <span className="font-mono text-7xl sm:text-8xl font-black tracking-tighter text-slate-900/10 select-none">
             404
@@ -40,7 +39,6 @@ export default function NotFound() {
           </div>
         </div>
 
-        {/* Header Text */}
         <p className="text-[11px] font-black uppercase tracking-widest text-emerald-700">
           Page Not Found
         </p>
@@ -51,7 +49,6 @@ export default function NotFound() {
           The ERP module, financial statement, or page you requested could not be located or has been relocated.
         </p>
 
-        {/* Helpful Quick Links */}
         <div className="mt-6 pt-5 border-t border-slate-100 grid grid-cols-2 gap-2 text-left">
           <Link
             href="/dashboard"
@@ -98,7 +95,6 @@ export default function NotFound() {
           </Link>
         </div>
 
-        {/* Primary Action Button */}
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link href="/dashboard" className="w-full sm:w-auto">
             <Button
