@@ -103,7 +103,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // If initial stock was provided, create initial stock level and movement
     if (initialWarehouseId && initialQuantity && Number(initialQuantity) > 0) {
       await prisma.stockLevel.create({
         data: {
