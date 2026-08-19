@@ -1,10 +1,18 @@
 "use client";
 
 import { useBalanceSheet, useEmployees, useJournalEntries, usePettyCash, useProfitLoss, useVatSummary } from "@/lib/hooks/api-hooks";
-import StatCard from "@/components/StatCard";
+import {
+  EmployeesIcon,
+  JournalEntriesIcon,
+  PettyCashIcon,
+  PlusIcon,
+  ProductsIcon,
+  ReportsIcon,
+} from "@/components/icons";
 import BarChart from "@/components/BarChart";
-import Link from "next/link";
 import QuotationTemplate from "@/components/QuotationTemplate";
+import StatCard from "@/components/StatCard";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const { data: profitLoss, isLoading: plLoading } = useProfitLoss();
@@ -19,13 +27,18 @@ export default function DashboardPage() {
     return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const revenue = profitLoss?.revenue || 0;
-  const expenses = profitLoss?.expenses || 0;
-  const netIncome = profitLoss?.netIncome || 0;
-  const totalAssets = balanceSheet?.assets || 0;
-  const totalLiabilities = balanceSheet?.liabilities || 0;
-  const totalEquity = balanceSheet?.equity || 0;
-  const isBalanced = balanceSheet?.balanced ?? false;
+  const revenue = typeof profitLoss?.revenue === "number" ? profitLoss.revenue : Number(profitLoss?.totalIncome || 0);
+  const expenses = typeof profitLoss?.expenses === "number" ? profitLoss.expenses : Number(profitLoss?.totalExpenses || 0);
+  const netIncome = typeof profitLoss?.netIncome === "number" ? profitLoss.netIncome : Number(profitLoss?.netProfit || 0);
+  const totalAssets = Number(balanceSheet?.totalAssets ?? balanceSheet?.assets ?? 0);
+  const totalLiabilities = Number(balanceSheet?.totalLiabilities ?? balanceSheet?.liabilities ?? 0);
+  const totalEquity = Number(
+    balanceSheet?.totalEquity ??
+      (typeof balanceSheet?.equityAmount === "number"
+        ? balanceSheet.equityAmount
+        : 0)
+  );
+  const isBalanced = Boolean(balanceSheet?.balanced);
 
   const totalPettyCashOut = (pettyCash || [])
     .filter((t) => t.transactionType === "DISBURSEMENT")
@@ -73,9 +86,7 @@ export default function DashboardPage() {
             href="/finance/journal-entries"
             className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-sm flex items-center gap-1.5"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="w-3.5 h-3.5">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+            <PlusIcon className="w-3.5 h-3.5" strokeWidth={2.2} />
             New Journal Entry
           </Link>
         </div>
@@ -89,12 +100,7 @@ export default function DashboardPage() {
           subtitle="Operating Income"
           gradient="bg-gradient-to-br from-[#215a36] via-[#1b4b2d] to-[#123620]"
           loading={plLoading}
-          icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} className="w-5 h-5">
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-              <polyline points="17 6 23 6 23 12" />
-            </svg>
-          }
+          icon={<ReportsIcon size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
           trend={{ label: "Active Fiscal Year", up: true }}
           sparkline={[20, 35, 45, 60, 80, 95]}
         />
@@ -106,13 +112,7 @@ export default function DashboardPage() {
           subtitle={netIncome >= 0 ? "Positive Net Margin" : "Net Deficit"}
           gradient="bg-gradient-to-br from-[#2a4d69] via-[#213f56] to-[#172c3d]"
           loading={plLoading}
-          icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} className="w-5 h-5">
-              <rect x="2" y="4" width="20" height="16" rx="2" />
-              <line x1="12" y1="8" x2="12" y2="16" />
-              <line x1="8" y1="12" x2="16" y2="12" />
-            </svg>
-          }
+          icon={<JournalEntriesIcon size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
           trend={{ label: `${((netIncome / (revenue || 1)) * 100).toFixed(1)}% margin`, up: netIncome >= 0 }}
           sparkline={[10, 25, 30, 45, 55, 70]}
         />
@@ -124,11 +124,7 @@ export default function DashboardPage() {
           subtitle="Current & Fixed Assets"
           gradient="bg-gradient-to-br from-[#3b5368] via-[#2d4052] to-[#202f3d]"
           loading={bsLoading}
-          icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} className="w-5 h-5">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-            </svg>
-          }
+          icon={<ProductsIcon size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
           sparkline={[40, 50, 60, 65, 80, 85]}
         />
 
@@ -139,14 +135,7 @@ export default function DashboardPage() {
           subtitle="UAE WPS Payroll Ready"
           gradient="bg-gradient-to-br from-[#4a6b57] via-[#365241] to-[#24382c]"
           loading={empLoading}
-          icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} className="w-5 h-5">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-          }
+          icon={<EmployeesIcon size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
           sparkline={[5, 10, 15, 20, 25, activeEmployees * 5 || 30]}
         />
       </div>
@@ -159,10 +148,7 @@ export default function DashboardPage() {
             <p className="text-xs text-slate-500 mt-0.5">{pettyCash?.length || 0} vouchers recorded</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
-              <rect x="2" y="6" width="20" height="12" rx="2" />
-              <circle cx="12" cy="12" r="2" />
-            </svg>
+            <PettyCashIcon className="w-5 h-5" strokeWidth={2} />
           </div>
         </div>
 
@@ -173,9 +159,7 @@ export default function DashboardPage() {
             <p className="text-xs text-slate-500 mt-0.5">Output: {formatCurrency(vatSummary?.outputVat || 0)} | Input: {formatCurrency(vatSummary?.inputVat || 0)}</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-700">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
+            <ReportsIcon className="w-5 h-5" strokeWidth={2} />
           </div>
         </div>
 
@@ -186,10 +170,7 @@ export default function DashboardPage() {
             <p className="text-xs text-slate-500 mt-0.5">Double-entry audit trail synced</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/60 flex items-center justify-center text-blue-700">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-            </svg>
+            <JournalEntriesIcon className="w-5 h-5" strokeWidth={2} />
           </div>
         </div>
       </div>
@@ -325,9 +306,7 @@ export default function DashboardPage() {
             <div className="py-8 text-center text-xs text-slate-400 animate-pulse">Loading journal entries...</div>
           ) : recentEntries.length === 0 ? (
             <div className="py-10 text-center text-slate-400">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-8 h-8 mx-auto mb-2 opacity-50">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              </svg>
+              <JournalEntriesIcon className="w-8 h-8 mx-auto mb-2 opacity-50" strokeWidth={1.5} />
               <p className="text-xs font-medium">No journal entries recorded yet.</p>
               <Link href="/finance/journal-entries" className="text-xs font-bold text-emerald-600 hover:underline mt-1 inline-block">
                 Create first entry
