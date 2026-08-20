@@ -61,20 +61,22 @@ export default function ReportsPage() {
   ];
 
   const dynamicQuotationMeta: Partial<QuotationMeta> = {
-    quotationNo: `AGM-QTN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
+    quotationNo: `Q-${Date.now().toString().slice(-5)}`,
     date: new Date().toLocaleDateString("en-GB"),
     validUntil: new Date(
-      Date.now() + 15 * 24 * 60 * 60 * 1000,
+      Date.now() + 10 * 24 * 60 * 60 * 1000,
     ).toLocaleDateString("en-GB"),
-    customer: "",
+    customer: "Brian Berthelsen",
     attention: "",
-    address: "",
+    address: "Dubai, UAE",
     trn: "",
-    project: "",
-    location: "",
+    mobile: "+971 56 545 3103",
+    email: "",
+    project: "Proposed G+1 Townhouses",
+    location: "Al Furjan, Dubai - UAE",
     reference: "",
-    preparedBy: "",
-    contact: "",
+    preparedBy: "assem@agmfitout.com",
+    contact: "+971 48 749839/+971 50 3407300",
   };
 
   const dynamicQuotationItems: QuotationItem[] =
@@ -84,7 +86,6 @@ export default function ReportsPage() {
           productId: p.id,
           desc: `${p.name} (${p.sku})${p.description ? ` - ${p.description}` : ""}`,
           qty: 1,
-          unit: p.unit || "PCS",
           rate: Number(p.sellingPrice || p.costPrice || 0),
         }))
       : [
@@ -92,7 +93,6 @@ export default function ReportsPage() {
             id: 1,
             desc: "",
             qty: 1,
-            unit: "Lot",
             rate: 0,
           },
         ];
