@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/app/generated/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -84,7 +85,7 @@ export async function PUT(
     const computedVat = (computedSubtotal * Number(vatPct || 0)) / 100;
     const computedTotal = computedSubtotal + computedVat - Number(discount || 0);
 
-    const updated = await prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.quotationItem.deleteMany({
         where: { quotationId: id },
       });

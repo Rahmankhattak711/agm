@@ -1,6 +1,9 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+type Account = Awaited<ReturnType<typeof prisma.chartOfAccount.findMany>>[number];
+type TrialRow = { accountId: string; accountCode: string; accountName: string; type: string; debit: number; credit: number; netBalance: number };
+
 export async function GET() {
   try {
     const [accounts, groups] = await Promise.all([
@@ -21,7 +24,7 @@ export async function GET() {
       });
     }
 
-    const rows = accounts.map((acct) => {
+    const rows: TrialRow[] = accounts.map((acct: Account) => {
       const g = groupMap.get(acct.id) || { debit: 0, credit: 0 };
       return {
         accountId: acct.id,
@@ -37,8 +40,8 @@ export async function GET() {
       };
     });
 
-    const totalDebit = rows.reduce((s, r) => s + r.debit, 0);
-    const totalCredit = rows.reduce((s, r) => s + r.credit, 0);
+    const totalDebit = rows.reduce((s: number, r: TrialRow) => s + r.debit, 0);
+    const totalCredit = rows.reduce((s: number, r: TrialRow) => s + r.credit, 0);
     const difference = Math.abs(totalDebit - totalCredit);
     const isBalanced = difference < 0.01;
 

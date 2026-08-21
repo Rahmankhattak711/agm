@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/app/generated/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const created = await prisma.$transaction(async (tx) => {
+    const created = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const je = await tx.journalEntry.create({
         data: {
           entryNumber,
@@ -197,7 +198,7 @@ export async function PATCH(request: Request) {
       }
     }
 
-    const updated = await prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const updateData: any = {};
       if (entryNumber) updateData.entryNumber = entryNumber;
       if (entryDate) updateData.entryDate = new Date(entryDate);

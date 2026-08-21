@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/app/generated/prisma";
 import { getAuthUser } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Quantity must be greater than 0" }, { status: 400 });
     }
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const movement = await tx.stockMovement.create({
         data: {
           productId,

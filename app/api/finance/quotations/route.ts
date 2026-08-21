@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/app/generated/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -96,7 +97,7 @@ export async function POST(request: Request) {
     const computedVat = (computedSubtotal * Number(vatPct || 0)) / 100;
     const computedTotal = computedSubtotal + computedVat - Number(discount || 0);
 
-    const quotation = await prisma.$transaction(async (tx) => {
+    const quotation = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       
       const existing = await tx.quotation.findUnique({
         where: { quotationNo },

@@ -1,6 +1,9 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+type Account = Awaited<ReturnType<typeof prisma.chartOfAccount.findMany>>[number];
+type ProfitItem = { id: string; section: string; accountCode: string; accountName: string; amount: number };
+
 export async function GET() {
   try {
     const [accounts, lines] = await Promise.all([
@@ -29,8 +32,8 @@ export async function GET() {
       }
     }
 
-    const incomeAccounts = accounts.filter((a) => a.type === "REVENUE");
-    const expenseAccounts = accounts.filter((a) => a.type === "EXPENSE");
+    const incomeAccounts = accounts.filter((a: Account) => a.type === "REVENUE");
+    const expenseAccounts = accounts.filter((a: Account) => a.type === "EXPENSE");
 
     const isDirectExpense = (acc: {
       accountCode: string;
@@ -47,7 +50,7 @@ export async function GET() {
       );
     };
 
-    const incomeItems = incomeAccounts.map((acc) => ({
+    const incomeItems: ProfitItem[] = incomeAccounts.map((acc: Account) => ({
       id: acc.id,
       section: "Income",
       accountCode: acc.accountCode,
@@ -55,9 +58,9 @@ export async function GET() {
       amount: balanceMap.get(acc.id) || 0,
     }));
 
-    const directExpenseItems = expenseAccounts
+    const directExpenseItems: ProfitItem[] = expenseAccounts
       .filter(isDirectExpense)
-      .map((acc) => ({
+      .map((acc: Account) => ({
         id: acc.id,
         section: "Direct Material Expense",
         accountCode: acc.accountCode,
@@ -65,9 +68,9 @@ export async function GET() {
         amount: balanceMap.get(acc.id) || 0,
       }));
 
-    const operatingExpenseItems = expenseAccounts
-      .filter((acc) => !isDirectExpense(acc))
-      .map((acc) => ({
+    const operatingExpenseItems: ProfitItem[] = expenseAccounts
+      .filter((acc: Account) => !isDirectExpense(acc))
+      .map((acc: Account) => ({
         id: acc.id,
         section: "Operating Expense",
         accountCode: acc.accountCode,
@@ -75,14 +78,14 @@ export async function GET() {
         amount: balanceMap.get(acc.id) || 0,
       }));
 
-    const totalIncome = incomeItems.reduce((s, i) => s + i.amount, 0);
+    const totalIncome = incomeItems.reduce((s: number, i: ProfitItem) => s + i.amount, 0);
     const totalDirectExpenses = directExpenseItems.reduce(
-      (s, i) => s + i.amount,
+      (s: number, i: ProfitItem) => s + i.amount,
       0,
     );
     const grossProfit = totalIncome - totalDirectExpenses;
     const totalOperatingExpenses = operatingExpenseItems.reduce(
-      (s, i) => s + i.amount,
+      (s: number, i: ProfitItem) => s + i.amount,
       0,
     );
     const totalExpenses = totalOperatingExpenses;

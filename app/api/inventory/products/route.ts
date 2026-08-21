@@ -35,9 +35,9 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" },
     });
 
-    const transformed = products.map((p) => {
+    const transformed = products.map((p: (typeof products)[number]) => {
       const totalOnHand = p.stockLevels.reduce(
-        (acc, sl) => acc + Number(sl.quantityOnHand),
+        (acc: number, sl: (typeof p.stockLevels)[number]) => acc + Number(sl.quantityOnHand),
         0
       );
       const isLowStock = Number(p.reorderLevel) > 0 && totalOnHand <= Number(p.reorderLevel);

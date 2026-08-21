@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/app/generated/prisma";
 import { getAuthUser } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
@@ -87,7 +88,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Leave request not found" }, { status: 404 });
     }
 
-    const updated = await prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       
       if (status === "APPROVED" && existing.status !== "APPROVED" && existing.leaveType === "ANNUAL") {
         const days = Number(existing.totalDays);
