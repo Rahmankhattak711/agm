@@ -98,7 +98,7 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <div>
           <h2 className="text-xl font-black text-slate-900">
@@ -140,27 +140,68 @@ export default function ReportsPage() {
           });
         };
 
-        const totalRevenue = Number(profitLoss?.totalIncome || profitLoss?.revenue || 1040276.53);
-        const directExpenses = Number(profitLoss?.totalDirectExpenses || 463991.68);
-        const grossProfit = Number(profitLoss?.grossProfit || totalRevenue - directExpenses);
-        const operatingExpenses = Number(profitLoss?.totalOperatingExpenses || 395982.52);
+        const totalRevenue = Number(profitLoss?.totalIncome ?? profitLoss?.revenue ?? 0);
+        const directExpenses = Number(profitLoss?.totalDirectExpenses ?? 0);
+        const grossProfit = Number(profitLoss?.grossProfit ?? (totalRevenue - directExpenses));
+        const operatingExpenses = Number(profitLoss?.totalOperatingExpenses ?? 0);
         const totalExpenses = directExpenses + operatingExpenses;
-        const netProfit = Number(profitLoss?.netProfit || grossProfit - operatingExpenses);
+        const netProfit = Number(profitLoss?.netProfit ?? (grossProfit - operatingExpenses));
         const grossMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
         const netMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-        const currentAssets = Number(balanceSheet?.totalCurrentAssets || 161208.38);
-        const fixedAssets = Number(balanceSheet?.totalFixedAssets || 163273.95);
-        const totalAssets = Number(balanceSheet?.totalAssets || currentAssets + fixedAssets);
-        const currentLiabilities = Number(balanceSheet?.totalCurrentLiabilities || 80277.67);
-        const totalLiabilities = Number(balanceSheet?.totalLiabilities || currentLiabilities);
-        const totalEquity = Number(balanceSheet?.totalEquity || 244204.66);
+        const currentAssets = Number(balanceSheet?.totalCurrentAssets ?? 0);
+        const fixedAssets = Number(balanceSheet?.totalFixedAssets ?? 0);
+        const totalAssets = Number(balanceSheet?.totalAssets ?? (currentAssets + fixedAssets));
+        const currentLiabilities = Number(balanceSheet?.totalCurrentLiabilities ?? 0);
+        const totalLiabilities = Number(balanceSheet?.totalLiabilities ?? currentLiabilities);
+        const totalEquity = Number(balanceSheet?.totalEquity ?? 0);
         const workingCapital = currentAssets - currentLiabilities;
         const currentRatio = currentLiabilities > 0 ? currentAssets / currentLiabilities : 0;
 
-        const outputVat = Number(vatSummary?.outputVat || 52013.83);
-        const inputVat = Number(vatSummary?.inputVat || 47421.27);
+        const outputVat = Number(vatSummary?.outputVat ?? 0);
+        const inputVat = Number(vatSummary?.inputVat ?? 0);
         const netVat = outputVat - inputVat;
+
+        const rawQuarters = vatSummary?.quarters || [];
+        const quartersList = [
+          { key: "Q1", label: "1st Quarter", defaultMonths: "Feb, Mar, Apr" },
+          { key: "Q2", label: "2nd Quarter", defaultMonths: "May, Jun, July" },
+          { key: "Q3", label: "3rd Quarter", defaultMonths: "Aug, Sep, Oct" },
+          { key: "Q4", label: "4th Quarter", defaultMonths: "Nov, Dec, Jan" },
+        ].map((qDef, idx) => {
+          const qData = rawQuarters[idx] || rawQuarters.find((q: any) => q.key === qDef.key);
+          const sales = Number(qData?.sales ?? 0);
+          const purchases = Number(qData?.purchases ?? 0);
+          const nonVatExpenses = Number(qData?.nonVatExpenses ?? 0);
+          const qGrossProfit = Number(qData?.grossProfit !== undefined ? qData.grossProfit : sales - purchases);
+          const qOutputVat = Number(qData?.outputVat ?? 0);
+          const qInputVat = Number(qData?.inputVat ?? 0);
+          const qNetVat = Number(qData?.netVat !== undefined ? qData.netVat : qOutputVat - qInputVat);
+          const status = qData?.status || (qNetVat > 0 ? "Pending" : "In Balance");
+          const position = qData?.position || (qNetVat > 0 ? "VAT Payable" : qNetVat < 0 ? "VAT Receivable" : "In Balance");
+          return {
+            ...qDef,
+            sales,
+            purchases,
+            nonVatExpenses,
+            grossProfit: qGrossProfit,
+            outputVat: qOutputVat,
+            inputVat: qInputVat,
+            netVat: qNetVat,
+            status,
+            position,
+          };
+        });
+
+        const matrixTotals = {
+          sales: quartersList.reduce((s, q) => s + q.sales, 0),
+          purchases: quartersList.reduce((s, q) => s + q.purchases, 0),
+          nonVatExpenses: quartersList.reduce((s, q) => s + q.nonVatExpenses, 0),
+          grossProfit: quartersList.reduce((s, q) => s + q.grossProfit, 0),
+          outputVat: quartersList.reduce((s, q) => s + q.outputVat, 0),
+          inputVat: quartersList.reduce((s, q) => s + q.inputVat, 0),
+          netVat: quartersList.reduce((s, q) => s + q.netVat, 0),
+        };
 
         return (
           <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-8">
@@ -342,201 +383,68 @@ export default function ReportsPage() {
 
               {/* 4 QUARTER SUMMARY CARDS */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                {/* Q1 CARD */}
-                <div
-                  onClick={() => setQuarterlyTab("Q1")}
-                  className={`p-4.5 rounded-2xl border transition cursor-pointer ${
-                    quarterlyTab === "Q1"
-                      ? "bg-white border-blue-500 ring-2 ring-blue-500/20 shadow-md"
-                      : "bg-white border-slate-200/80 hover:border-slate-300 shadow-xs"
-                  }`}
-                >
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                    <div>
-                      <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wider">
-                        1st Quarter
+                {quartersList.map((q) => (
+                  <div
+                    key={q.key}
+                    onClick={() => setQuarterlyTab(q.key as any)}
+                    className={`p-4.5 rounded-2xl border transition cursor-pointer ${
+                      quarterlyTab === q.key
+                        ? "bg-white border-blue-500 ring-2 ring-blue-500/20 shadow-md"
+                        : "bg-white border-slate-200/80 hover:border-slate-300 shadow-xs"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                      <div>
+                        <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wider">
+                          {q.label}
+                        </span>
+                        <h5 className="font-bold text-xs text-slate-900">{q.defaultMonths}</h5>
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          q.netVat > 0
+                            ? "bg-amber-100 text-amber-800"
+                            : q.netVat < 0
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {q.position}
                       </span>
-                      <h5 className="font-bold text-xs text-slate-900">Feb, Mar, Apr</h5>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                      VAT Paid
-                    </span>
-                  </div>
 
-                  <div className="mt-3 space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Revenue (Turnover):</span>
-                      <span className="font-mono font-bold text-slate-900">{formatCurrency(531505.59)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Direct Materials:</span>
-                      <span className="font-mono font-semibold text-rose-700">{formatCurrency(441638.58)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold">
-                      <span className="text-slate-700">Gross Operating Profit:</span>
-                      <span className="font-mono text-blue-900">{formatCurrency(89867.01)}</span>
-                    </div>
-                    <div className="pt-2 border-t border-slate-100 flex justify-between">
-                      <span className="text-slate-500">Output VAT 5%:</span>
-                      <span className="font-mono text-rose-700">{formatCurrency(26575.28)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Input VAT 5%:</span>
-                      <span className="font-mono text-emerald-700">{formatCurrency(22081.93)}</span>
-                    </div>
-                    <div className="pt-1.5 border-t border-slate-100 flex justify-between font-black">
-                      <span className="text-slate-900">Net VAT Position:</span>
-                      <span className="font-mono text-amber-800">{formatCurrency(4493.35)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Q2 CARD */}
-                <div
-                  onClick={() => setQuarterlyTab("Q2")}
-                  className={`p-4.5 rounded-2xl border transition cursor-pointer ${
-                    quarterlyTab === "Q2"
-                      ? "bg-white border-blue-500 ring-2 ring-blue-500/20 shadow-md"
-                      : "bg-white border-slate-200/80 hover:border-slate-300 shadow-xs"
-                  }`}
-                >
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                    <div>
-                      <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wider">
-                        2nd Quarter
-                      </span>
-                      <h5 className="font-bold text-xs text-slate-900">May, Jun, July</h5>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
-                      VAT Payable
-                    </span>
-                  </div>
-
-                  <div className="mt-3 space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Revenue (Turnover):</span>
-                      <span className="font-mono font-bold text-slate-900">{formatCurrency(508770.94)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Direct Materials:</span>
-                      <span className="font-mono font-semibold text-rose-700">{formatCurrency(479598.89)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold">
-                      <span className="text-slate-700">Gross Operating Profit:</span>
-                      <span className="font-mono text-blue-900">{formatCurrency(29172.05)}</span>
-                    </div>
-                    <div className="pt-2 border-t border-slate-100 flex justify-between">
-                      <span className="text-slate-500">Output VAT 5%:</span>
-                      <span className="font-mono text-rose-700">{formatCurrency(25438.55)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Input VAT 5%:</span>
-                      <span className="font-mono text-emerald-700">{formatCurrency(23979.94)}</span>
-                    </div>
-                    <div className="pt-1.5 border-t border-slate-100 flex justify-between font-black">
-                      <span className="text-slate-900">Net VAT Position:</span>
-                      <span className="font-mono text-amber-800">{formatCurrency(1458.6)}</span>
+                    <div className="mt-3 space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Revenue (Turnover):</span>
+                        <span className="font-mono font-bold text-slate-900">{formatCurrency(q.sales)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Direct Materials:</span>
+                        <span className="font-mono font-semibold text-rose-700">{formatCurrency(q.purchases)}</span>
+                      </div>
+                      <div className="flex justify-between font-bold">
+                        <span className="text-slate-700">Gross Operating Profit:</span>
+                        <span className={`font-mono ${q.grossProfit >= 0 ? "text-blue-900" : "text-rose-700"}`}>
+                          {q.grossProfit < 0 ? `(${formatCurrency(Math.abs(q.grossProfit))})` : formatCurrency(q.grossProfit)}
+                        </span>
+                      </div>
+                      <div className="pt-2 border-t border-slate-100 flex justify-between">
+                        <span className="text-slate-500">Output VAT 5%:</span>
+                        <span className="font-mono text-rose-700">{formatCurrency(q.outputVat)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Input VAT 5%:</span>
+                        <span className="font-mono text-emerald-700">{formatCurrency(q.inputVat)}</span>
+                      </div>
+                      <div className="pt-1.5 border-t border-slate-100 flex justify-between font-black">
+                        <span className="text-slate-900">Net VAT Position:</span>
+                        <span className={`font-mono ${q.netVat >= 0 ? "text-amber-800" : "text-emerald-700"}`}>
+                          {q.netVat < 0 ? `(${formatCurrency(Math.abs(q.netVat))})` : formatCurrency(q.netVat)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Q3 CARD */}
-                <div
-                  onClick={() => setQuarterlyTab("Q3")}
-                  className={`p-4.5 rounded-2xl border transition cursor-pointer ${
-                    quarterlyTab === "Q3"
-                      ? "bg-white border-blue-500 ring-2 ring-blue-500/20 shadow-md"
-                      : "bg-white border-slate-200/80 hover:border-slate-300 shadow-xs"
-                  }`}
-                >
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                    <div>
-                      <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
-                        3rd Quarter
-                      </span>
-                      <h5 className="font-bold text-xs text-slate-900">Aug, Sep, Oct</h5>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                      VAT Receivable
-                    </span>
-                  </div>
-
-                  <div className="mt-3 space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Revenue (Turnover):</span>
-                      <span className="font-mono font-bold text-slate-900">{formatCurrency(0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Direct Materials:</span>
-                      <span className="font-mono font-semibold text-rose-700">{formatCurrency(27187.93)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold">
-                      <span className="text-slate-700">Gross Operating Profit:</span>
-                      <span className="font-mono text-rose-700">({formatCurrency(27187.93)})</span>
-                    </div>
-                    <div className="pt-2 border-t border-slate-100 flex justify-between">
-                      <span className="text-slate-500">Output VAT 5%:</span>
-                      <span className="font-mono text-slate-500">{formatCurrency(0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Input VAT 5%:</span>
-                      <span className="font-mono text-emerald-700">{formatCurrency(1359.4)}</span>
-                    </div>
-                    <div className="pt-1.5 border-t border-slate-100 flex justify-between font-black">
-                      <span className="text-slate-900">Net VAT Position:</span>
-                      <span className="font-mono text-emerald-700">({formatCurrency(1359.4)})</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Q4 CARD */}
-                <div
-                  onClick={() => setQuarterlyTab("Q4")}
-                  className={`p-4.5 rounded-2xl border transition cursor-pointer ${
-                    quarterlyTab === "Q4"
-                      ? "bg-white border-blue-500 ring-2 ring-blue-500/20 shadow-md"
-                      : "bg-white border-slate-200/80 hover:border-slate-300 shadow-xs"
-                  }`}
-                >
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                        4th Quarter
-                      </span>
-                      <h5 className="font-bold text-xs text-slate-900">Nov, Dec, Jan</h5>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
-                      In Balance
-                    </span>
-                  </div>
-
-                  <div className="mt-3 space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Revenue (Turnover):</span>
-                      <span className="font-mono font-bold text-slate-900">{formatCurrency(0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Direct Materials:</span>
-                      <span className="font-mono font-semibold text-slate-500">{formatCurrency(0)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold">
-                      <span className="text-slate-700">Gross Operating Profit:</span>
-                      <span className="font-mono text-slate-900">{formatCurrency(0)}</span>
-                    </div>
-                    <div className="pt-2 border-t border-slate-100 flex justify-between">
-                      <span className="text-slate-500">Output VAT 5%:</span>
-                      <span className="font-mono text-slate-500">{formatCurrency(0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Input VAT 5%:</span>
-                      <span className="font-mono text-slate-500">{formatCurrency(0)}</span>
-                    </div>
-                    <div className="pt-1.5 border-t border-slate-100 flex justify-between font-black">
-                      <span className="text-slate-900">Net VAT Position:</span>
-                      <span className="font-mono text-slate-700">{formatCurrency(0)}</span>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
 
               {/* MASTER 3-MONTH GROUP COMPARISON MATRIX TABLE */}
@@ -565,67 +473,73 @@ export default function ReportsPage() {
                     <tbody className="divide-y divide-slate-100 font-medium">
                       <tr className="hover:bg-slate-50/50">
                         <td className="py-2 px-4 font-bold text-slate-900">Turnover / Sales Revenue</td>
-                        <td className="py-2 px-4 text-right font-mono font-bold text-slate-900">{formatNumber(531505.59)}</td>
-                        <td className="py-2 px-4 text-right font-mono font-bold text-slate-900">{formatNumber(508770.94)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-slate-400">0.00</td>
-                        <td className="py-2 px-4 text-right font-mono text-slate-400">0.00</td>
+                        {quartersList.map((q) => (
+                          <td key={q.key} className="py-2 px-4 text-right font-mono font-bold text-slate-900">
+                            {formatNumber(q.sales)}
+                          </td>
+                        ))}
                         <td className="py-2 px-4 text-right font-mono font-black text-slate-950 bg-slate-50/40">
-                          {formatNumber(1040276.53)}
+                          {formatNumber(matrixTotals.sales)}
                         </td>
                       </tr>
 
                       <tr className="hover:bg-slate-50/50">
                         <td className="py-2 px-4 font-semibold text-slate-700">Direct Material Expenses (Purchases)</td>
-                        <td className="py-2 px-4 text-right font-mono text-rose-700">{formatNumber(441638.58)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-rose-700">{formatNumber(479598.89)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-rose-700">{formatNumber(27187.93)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-slate-400">0.00</td>
+                        {quartersList.map((q) => (
+                          <td key={q.key} className="py-2 px-4 text-right font-mono text-rose-700">
+                            {formatNumber(q.purchases)}
+                          </td>
+                        ))}
                         <td className="py-2 px-4 text-right font-mono font-bold text-rose-800 bg-slate-50/40">
-                          {formatNumber(948425.39)}
+                          {formatNumber(matrixTotals.purchases)}
                         </td>
                       </tr>
 
                       <tr className="hover:bg-slate-50/50">
                         <td className="py-2 px-4 font-semibold text-slate-700">Non-VAT Material / Expense Items</td>
-                        <td className="py-2 px-4 text-right font-mono text-slate-600">{formatNumber(64144.38)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-slate-600">{formatNumber(49776.98)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-slate-600">{formatNumber(2275.8)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-slate-400">0.00</td>
+                        {quartersList.map((q) => (
+                          <td key={q.key} className="py-2 px-4 text-right font-mono text-slate-600">
+                            {formatNumber(q.nonVatExpenses)}
+                          </td>
+                        ))}
                         <td className="py-2 px-4 text-right font-mono font-bold text-slate-700 bg-slate-50/40">
-                          {formatNumber(116197.16)}
+                          {formatNumber(matrixTotals.nonVatExpenses)}
                         </td>
                       </tr>
 
                       <tr className="bg-slate-50/80 font-bold">
                         <td className="py-2.5 px-4 text-blue-950 font-bold">Gross Operating Profit</td>
-                        <td className="py-2.5 px-4 text-right font-mono font-bold text-blue-900">{formatNumber(89867.01)}</td>
-                        <td className="py-2.5 px-4 text-right font-mono font-bold text-blue-900">{formatNumber(29172.05)}</td>
-                        <td className="py-2.5 px-4 text-right font-mono font-bold text-rose-700">({formatNumber(27187.93)})</td>
-                        <td className="py-2.5 px-4 text-right font-mono text-slate-400">0.00</td>
+                        {quartersList.map((q) => (
+                          <td key={q.key} className="py-2.5 px-4 text-right font-mono font-bold text-blue-900">
+                            {q.grossProfit < 0 ? `(${formatNumber(Math.abs(q.grossProfit))})` : formatNumber(q.grossProfit)}
+                          </td>
+                        ))}
                         <td className="py-2.5 px-4 text-right font-mono font-black text-blue-950 bg-slate-100/60">
-                          {formatNumber(91851.14)}
+                          {matrixTotals.grossProfit < 0 ? `(${formatNumber(Math.abs(matrixTotals.grossProfit))})` : formatNumber(matrixTotals.grossProfit)}
                         </td>
                       </tr>
 
                       <tr className="hover:bg-slate-50/50">
                         <td className="py-2 px-4 font-semibold text-slate-700">Output VAT (5% on Sales)</td>
-                        <td className="py-2 px-4 text-right font-mono text-rose-700">{formatNumber(26575.28)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-rose-700">{formatNumber(25438.55)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-slate-400">0.00</td>
-                        <td className="py-2 px-4 text-right font-mono text-slate-400">0.00</td>
+                        {quartersList.map((q) => (
+                          <td key={q.key} className="py-2 px-4 text-right font-mono text-rose-700">
+                            {formatNumber(q.outputVat)}
+                          </td>
+                        ))}
                         <td className="py-2 px-4 text-right font-mono font-black text-rose-800 bg-slate-50/40">
-                          {formatNumber(52013.83)}
+                          {formatNumber(matrixTotals.outputVat)}
                         </td>
                       </tr>
 
                       <tr className="hover:bg-slate-50/50">
                         <td className="py-2 px-4 font-semibold text-slate-700">Input VAT (5% Recoverable)</td>
-                        <td className="py-2 px-4 text-right font-mono text-emerald-700">{formatNumber(22081.93)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-emerald-700">{formatNumber(23979.94)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-emerald-700">{formatNumber(1359.4)}</td>
-                        <td className="py-2 px-4 text-right font-mono text-slate-400">0.00</td>
+                        {quartersList.map((q) => (
+                          <td key={q.key} className="py-2 px-4 text-right font-mono text-emerald-700">
+                            {formatNumber(q.inputVat)}
+                          </td>
+                        ))}
                         <td className="py-2 px-4 text-right font-mono font-black text-emerald-800 bg-slate-50/40">
-                          {formatNumber(47421.27)}
+                          {formatNumber(matrixTotals.inputVat)}
                         </td>
                       </tr>
 
@@ -633,27 +547,41 @@ export default function ReportsPage() {
                         <td className="py-3 px-4 uppercase tracking-wider font-bold">
                           NET VAT POSITION (OUTPUT - INPUT)
                         </td>
-                        <td className="py-3 px-4 text-right font-mono font-black text-amber-400">
-                          {formatNumber(4493.35)}
-                        </td>
-                        <td className="py-3 px-4 text-right font-mono font-black text-amber-400">
-                          {formatNumber(1458.6)}
-                        </td>
-                        <td className="py-3 px-4 text-right font-mono font-black text-emerald-400">
-                          ({formatNumber(1359.4)})
-                        </td>
-                        <td className="py-3 px-4 text-right font-mono font-bold text-slate-400">0.00</td>
-                        <td className="py-3 px-4 text-right font-mono font-black text-amber-400 bg-slate-950">
-                          {formatNumber(4592.56)}
+                        {quartersList.map((q) => (
+                          <td
+                            key={q.key}
+                            className={`py-3 px-4 text-right font-mono font-black ${
+                              q.netVat >= 0 ? "text-amber-400" : "text-emerald-400"
+                            }`}
+                          >
+                            {q.netVat < 0 ? `(${formatNumber(Math.abs(q.netVat))})` : formatNumber(q.netVat)}
+                          </td>
+                        ))}
+                        <td
+                          className={`py-3 px-4 text-right font-mono font-black bg-slate-950 ${
+                            matrixTotals.netVat >= 0 ? "text-amber-400" : "text-emerald-400"
+                          }`}
+                        >
+                          {matrixTotals.netVat < 0 ? `(${formatNumber(Math.abs(matrixTotals.netVat))})` : formatNumber(matrixTotals.netVat)}
                         </td>
                       </tr>
 
                       <tr className="bg-slate-100 text-slate-700 font-bold">
                         <td className="py-2 px-4 font-bold text-slate-900">VAT Status & Filing</td>
-                        <td className="py-2 px-4 text-right font-semibold text-emerald-700">✓ Paid</td>
-                        <td className="py-2 px-4 text-right font-semibold text-amber-700">Pending</td>
-                        <td className="py-2 px-4 text-right font-semibold text-emerald-700">Receivable</td>
-                        <td className="py-2 px-4 text-right font-semibold text-slate-500">In Balance</td>
+                        {quartersList.map((q) => (
+                          <td
+                            key={q.key}
+                            className={`py-2 px-4 text-right font-semibold ${
+                              q.status === "Paid"
+                                ? "text-emerald-700"
+                                : q.status === "Pending"
+                                ? "text-amber-700"
+                                : "text-slate-500"
+                            }`}
+                          >
+                            {q.status}
+                          </td>
+                        ))}
                         <td className="py-2 px-4 text-right font-bold text-slate-900 bg-slate-200/60">
                           Form 201 Ready
                         </td>
@@ -871,56 +799,9 @@ export default function ReportsPage() {
               });
             };
 
-            const defaultIncome = [
-              { section: "Income", accountName: "Service Income", amount: 0 },
-              { section: "Income", accountName: "Discount Recieved", amount: 0 },
-              { section: "Income", accountName: "Other Inc", amount: 0 },
-            ];
-
-            const defaultDirect = [
-              { section: "Direct Material Expense", accountName: "Purchase Materials", amount: 0 },
-            ];
-
-            const defaultOperating = [
-              { section: "Operating Expense", accountName: "Depreciation Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Garbage Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "End Of Service Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Car Maint, Parts, Serv", amount: 0 },
-              { section: "Operating Expense", accountName: "Credit/Bank Card Charge Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Discount Allowed Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Etisalat Bill exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Combine Expenses", amount: 0 },
-              { section: "Operating Expense", accountName: "Food EXP", amount: 0 },
-              { section: "Operating Expense", accountName: "Medical Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Leave Salary Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Office Stationery Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Wages Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Parking Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Petrol Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Rent Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Salaries Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Staff Visa Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Transport Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Water Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Salik Bills Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Insurance Exp", amount: 0 },
-              { section: "Operating Expense", accountName: "Rental Car Exp", amount: 0 },
-            ];
-
-            const incomeRows =
-              profitLoss?.income && profitLoss.income.length > 0
-                ? profitLoss.income
-                : defaultIncome;
-
-            const directExpenseRows =
-              profitLoss?.directExpenses && profitLoss.directExpenses.length > 0
-                ? profitLoss.directExpenses
-                : defaultDirect;
-
-            const operatingExpenseRows =
-              profitLoss?.operatingExpenses && profitLoss.operatingExpenses.length > 0
-                ? profitLoss.operatingExpenses
-                : defaultOperating;
+            const incomeRows = profitLoss?.income && profitLoss.income.length > 0 ? profitLoss.income : [];
+            const directExpenseRows = profitLoss?.directExpenses && profitLoss.directExpenses.length > 0 ? profitLoss.directExpenses : [];
+            const operatingExpenseRows = profitLoss?.operatingExpenses && profitLoss.operatingExpenses.length > 0 ? profitLoss.operatingExpenses : [];
 
             const totalIncome =
               profitLoss?.totalIncome !== undefined
@@ -1169,58 +1050,10 @@ export default function ReportsPage() {
               });
             };
 
-            const defaultCurrentAssets = [
-              { section: "Current Asset", accountName: "Account Recievable", amount: 0 },
-              { section: "Current Asset", accountName: "Advance Salary", amount: 0 },
-              { section: "Current Asset", accountName: "Mr.MD Assem-Petty Cash", amount: 0 },
-              { section: "Current Asset", accountName: "Petty Cash", amount: 0 },
-              { section: "Current Asset", accountName: "RAK Bank", amount: 0 },
-              { section: "Current Asset", accountName: "Prepaid Rent", amount: 0 },
-              { section: "Current Asset", accountName: "Prepaid Staff Visa", amount: 0 },
-            ];
-
-            const defaultFixedAssets = [
-              { section: "Fixed Asset", accountName: "Company Cars-1", amount: 0 },
-              { section: "Fixed Asset", accountName: "Company Cars-2", amount: 0 },
-              { section: "Fixed Asset", accountName: "Company Cars-3", amount: 0 },
-              { section: "Fixed Asset", accountName: "Company Cars-4", amount: 0 },
-              { section: "Fixed Asset", accountName: "Office Chair", amount: 0 },
-              { section: "Fixed Asset", accountName: "Office Computer", amount: 0 },
-              { section: "Fixed Asset", accountName: "Office Printer", amount: 0 },
-              { section: "Fixed Asset", accountName: "Office Table", amount: 0 },
-              { section: "Fixed Asset", accountName: "Other Fixed Asset", amount: 0 },
-            ];
-
-            const defaultCurrentLiabilities = [
-              { section: "Current Liability", accountName: "Accounts Payable", amount: 0 },
-              { section: "Current Liability", accountName: "Accrued Salaries", amount: 0 },
-              { section: "Current Liability", accountName: "VAT Payable", amount: 0 },
-            ];
-
-            const defaultEquity = [
-              { section: "Capital", accountName: "Managing Partner", amount: 0 },
-              { section: "Retained Earnings", accountName: "Current Year Earnings", amount: 0 },
-            ];
-
-            const currentAssetsRows =
-              balanceSheet?.currentAssets && balanceSheet.currentAssets.length > 0
-                ? balanceSheet.currentAssets
-                : defaultCurrentAssets;
-
-            const fixedAssetsRows =
-              balanceSheet?.fixedAssets && balanceSheet.fixedAssets.length > 0
-                ? balanceSheet.fixedAssets
-                : defaultFixedAssets;
-
-            const currentLiabilitiesRows =
-              balanceSheet?.currentLiabilities && balanceSheet.currentLiabilities.length > 0
-                ? balanceSheet.currentLiabilities
-                : defaultCurrentLiabilities;
-
-            const equityRows =
-              balanceSheet?.equity && balanceSheet.equity.length > 0
-                ? balanceSheet.equity
-                : defaultEquity;
+            const currentAssetsRows = balanceSheet?.currentAssets && balanceSheet.currentAssets.length > 0 ? balanceSheet.currentAssets : [];
+            const fixedAssetsRows = balanceSheet?.fixedAssets && balanceSheet.fixedAssets.length > 0 ? balanceSheet.fixedAssets : [];
+            const currentLiabilitiesRows = balanceSheet?.currentLiabilities && balanceSheet.currentLiabilities.length > 0 ? balanceSheet.currentLiabilities : [];
+            const equityRows = balanceSheet?.equity && balanceSheet.equity.length > 0 ? balanceSheet.equity : [];
 
             const totalCurrentAssets =
               balanceSheet?.totalCurrentAssets !== undefined
@@ -2082,135 +1915,47 @@ export default function ReportsPage() {
               });
             };
 
-            // Default Quarters from PDF
-            const defaultQuarters = [
-              {
-                quarter: "Feb,Mar,Apr-(1st)",
-                vatRate: "5%",
-                inputVat: 22081.93,
-                outputVat: 26575.28,
-                netVat: 4493.35,
-                position: "VAT Payable",
-                status: "Paid",
-              },
-              {
-                quarter: "May,Jun,July-(2nd)",
-                vatRate: "5%",
-                inputVat: 23979.94,
-                outputVat: 25438.55,
-                netVat: 1458.6,
-                position: "VAT Payable",
-                status: "Pending",
-              },
-              {
-                quarter: "Aug,Sep,Oct-(3rd)",
-                vatRate: "5%",
-                inputVat: 1359.4,
-                outputVat: 0.0,
-                netVat: -1359.4,
-                position: "VAT Receivable",
-                status: "Pending",
-              },
-              {
-                quarter: "Nov,Dec,Jan(4th)",
-                vatRate: "5%",
-                inputVat: 0.0,
-                outputVat: 0.0,
-                netVat: 0.0,
-                position: "VAT Payable",
-                status: "Pending",
-              },
-            ];
-
-            // Default Monthly Net from PDF
-            const defaultMonthlyNet = [
-              { month: "FEBRUARY", inputVat: 5996.4, outputVat: 9699.91, netVat: 3703.5 },
-              { month: "MARCH", inputVat: 3977.65, outputVat: 8940.94, netVat: 4963.29 },
-              { month: "APRIL", inputVat: 12107.88, outputVat: 7934.44, netVat: -4173.44 },
-              { month: "MAY", inputVat: 5540.82, outputVat: 11330.1, netVat: 5789.28 },
-              { month: "JUNE", inputVat: 6990.76, outputVat: 4379.98, netVat: -2610.78 },
-              { month: "JULY", inputVat: 11448.37, outputVat: 9728.48, netVat: -1719.89 },
-              { month: "AUGUST", inputVat: 1359.4, outputVat: 0.0, netVat: -1359.4 },
-              { month: "SEPTEMBER", inputVat: 0.0, outputVat: 0.0, netVat: 0.0 },
-              { month: "OCTOBER", inputVat: 0.0, outputVat: 0.0, netVat: 0.0 },
-              { month: "NOVEMBER", inputVat: 0.0, outputVat: 0.0, netVat: 0.0 },
-              { month: "DECEMBER", inputVat: 0.0, outputVat: 0.0, netVat: 0.0 },
-              { month: "JANUARY", inputVat: 0.0, outputVat: 0.0, netVat: 0.0 },
-            ];
-
-            // Default Monthly Purchases from PDF
-            const defaultPurchases = [
-              { month: "FEBRUARY", taxableAmount: 119928.06, nonVatAmount: 21603.8, vatAmount: 5996.4, totalAmount: 147528.26 },
-              { month: "MARCH", taxableAmount: 79553.01, nonVatAmount: 15520.57, vatAmount: 3977.65, totalAmount: 99051.23 },
-              { month: "APRIL", taxableAmount: 242157.51, nonVatAmount: 27020.01, vatAmount: 12107.88, totalAmount: 281285.4 },
-              { month: "MAY", taxableAmount: 110816.39, nonVatAmount: 11569.45, vatAmount: 5540.82, totalAmount: 127926.66 },
-              { month: "JUNE", taxableAmount: 139815.2, nonVatAmount: 23166.47, vatAmount: 6990.76, totalAmount: 169972.42 },
-              { month: "JULY", taxableAmount: 228967.3, nonVatAmount: 15041.06, vatAmount: 11448.37, totalAmount: 255456.73 },
-              { month: "AUGUST", taxableAmount: 27187.93, nonVatAmount: 2275.8, vatAmount: 1359.4, totalAmount: 30823.13 },
-              { month: "SEPTEMBER", taxableAmount: 0.0, nonVatAmount: 0.0, vatAmount: 0.0, totalAmount: 0.0 },
-              { month: "OCTOBER", taxableAmount: 0.0, nonVatAmount: 0.0, vatAmount: 0.0, totalAmount: 0.0 },
-              { month: "NOVEMBER", taxableAmount: 0.0, nonVatAmount: 0.0, vatAmount: 0.0, totalAmount: 0.0 },
-              { month: "DECEMBER", taxableAmount: 0.0, nonVatAmount: 0.0, vatAmount: 0.0, totalAmount: 0.0 },
-              { month: "JANUARY", taxableAmount: 0.0, nonVatAmount: 0.0, vatAmount: 0.0, totalAmount: 0.0 },
-            ];
-
-            // Default Monthly Income from PDF
-            const defaultIncome = [
-              { month: "FEBRUARY", taxableAmount: 193998.1, nonVatAmount: 0.0, vatAmount: 9699.91, totalAmount: 203698.01 },
-              { month: "MARCH", taxableAmount: 178818.73, nonVatAmount: 0.0, vatAmount: 8940.94, totalAmount: 187759.67 },
-              { month: "APRIL", taxableAmount: 158688.76, nonVatAmount: 0.0, vatAmount: 7934.44, totalAmount: 166623.2 },
-              { month: "MAY", taxableAmount: 226601.9, nonVatAmount: 0.0, vatAmount: 11330.1, totalAmount: 237932.0 },
-              { month: "JUNE", taxableAmount: 87599.52, nonVatAmount: 0.0, vatAmount: 4379.98, totalAmount: 91979.5 },
-              { month: "JULY", taxableAmount: 194569.52, nonVatAmount: 0.0, vatAmount: 9728.48, totalAmount: 204298.0 },
-              { month: "AUGUST", taxableAmount: 0.0, nonVatAmount: 0.0, vatAmount: 0.0, totalAmount: 0.0 },
-              { month: "SEPTEMBER", taxableAmount: 0.0, nonVatAmount: 0.0, vatAmount: 0.0, totalAmount: 0.0 },
-              { month: "OCTOBER", taxableAmount: 0.0, nonVatAmount: 0.0, vatAmount: 0.0, totalAmount: 0.0 },
-              { month: "NOVEMBER", taxableAmount: 0.0, nonVatAmount: 0.0, vatAmount: 0.0, totalAmount: 0.0 },
-              { month: "DECEMBER", taxableAmount: 0.0, nonVatAmount: 0.0, vatAmount: 0.0, totalAmount: 0.0 },
-              { month: "JANUARY", taxableAmount: 0.0, nonVatAmount: 0.0, vatAmount: 0.0, totalAmount: 0.0 },
-            ];
-
             const quartersData =
               vatSummary?.quarters && vatSummary.quarters.length > 0
                 ? vatSummary.quarters
-                : defaultQuarters;
+                : [];
 
             const monthlyNetData =
               vatSummary?.monthlyNet && vatSummary.monthlyNet.length > 0
                 ? vatSummary.monthlyNet
-                : defaultMonthlyNet;
+                : [];
 
             const purchasesData =
               vatSummary?.monthlyPurchases && vatSummary.monthlyPurchases.length > 0
                 ? vatSummary.monthlyPurchases
-                : defaultPurchases;
+                : [];
 
             const incomeData =
               vatSummary?.monthlyIncome && vatSummary.monthlyIncome.length > 0
                 ? vatSummary.monthlyIncome
-                : defaultIncome;
+                : [];
 
             const totalInputVat =
               vatSummary?.inputVat !== undefined
-                ? vatSummary.inputVat
-                : monthlyNetData.reduce((s, r) => s + Number(r.inputVat || 0), 0);
+                ? Number(vatSummary.inputVat)
+                : monthlyNetData.reduce((s: number, r: any) => s + Number(r.inputVat || 0), 0);
 
             const totalOutputVat =
               vatSummary?.outputVat !== undefined
-                ? vatSummary.outputVat
-                : monthlyNetData.reduce((s, r) => s + Number(r.outputVat || 0), 0);
+                ? Number(vatSummary.outputVat)
+                : monthlyNetData.reduce((s: number, r: any) => s + Number(r.outputVat || 0), 0);
 
             const netVat = totalOutputVat - totalInputVat;
 
-            const totalPurchasesTaxable = purchasesData.reduce((s, r) => s + Number(r.taxableAmount || 0), 0);
-            const totalPurchasesNonVat = purchasesData.reduce((s, r) => s + Number(r.nonVatAmount || 0), 0);
-            const totalPurchasesVat = purchasesData.reduce((s, r) => s + Number(r.vatAmount || 0), 0);
-            const totalPurchasesAmount = purchasesData.reduce((s, r) => s + Number(r.totalAmount || 0), 0);
+            const totalPurchasesTaxable = purchasesData.reduce((s: number, r: any) => s + Number(r.taxableAmount || 0), 0);
+            const totalPurchasesNonVat = purchasesData.reduce((s: number, r: any) => s + Number(r.nonVatAmount || 0), 0);
+            const totalPurchasesVat = purchasesData.reduce((s: number, r: any) => s + Number(r.vatAmount || 0), 0);
+            const totalPurchasesAmount = purchasesData.reduce((s: number, r: any) => s + Number(r.totalAmount || 0), 0);
 
-            const totalIncomeTaxable = incomeData.reduce((s, r) => s + Number(r.taxableAmount || 0), 0);
-            const totalIncomeNonVat = incomeData.reduce((s, r) => s + Number(r.nonVatAmount || 0), 0);
-            const totalIncomeVat = incomeData.reduce((s, r) => s + Number(r.vatAmount || 0), 0);
-            const totalIncomeAmount = incomeData.reduce((s, r) => s + Number(r.totalAmount || 0), 0);
+            const totalIncomeTaxable = incomeData.reduce((s: number, r: any) => s + Number(r.taxableAmount || 0), 0);
+            const totalIncomeNonVat = incomeData.reduce((s: number, r: any) => s + Number(r.nonVatAmount || 0), 0);
+            const totalIncomeVat = incomeData.reduce((s: number, r: any) => s + Number(r.vatAmount || 0), 0);
+            const totalIncomeAmount = incomeData.reduce((s: number, r: any) => s + Number(r.totalAmount || 0), 0);
 
             return (
               <div className="space-y-8">
@@ -2653,7 +2398,7 @@ export default function ReportsPage() {
       {isPrintModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 backdrop-blur-sm p-2 sm:p-6 md:p-8 flex justify-center items-start">
           <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-2 animate-in fade-in zoom-in-95 duration-150 flex flex-col">
-            
+
             <div className="sticky top-0 z-30 flex items-center justify-between px-5 sm:px-7 py-3.5 bg-slate-900 text-white border-b border-slate-800 shadow-md print:hidden">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-xs">
