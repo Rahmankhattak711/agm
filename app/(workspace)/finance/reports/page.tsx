@@ -61,20 +61,21 @@ export default function ReportsPage() {
   ];
 
   const dynamicQuotationMeta: Partial<QuotationMeta> = {
-    quotationNo: `AGM-QTN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
+    quotationNo: `Q-${Date.now().toString().slice(-5)}`,
     date: new Date().toLocaleDateString("en-GB"),
     validUntil: new Date(
-      Date.now() + 15 * 24 * 60 * 60 * 1000,
+      Date.now() + 10 * 24 * 60 * 60 * 1000,
     ).toLocaleDateString("en-GB"),
-    customer: "",
+    customer: "Brian Berthelsen",
     attention: "",
-    address: "",
+    address: "Dubai, UAE",
     trn: "",
-    project: "",
-    location: "",
+    mobile: "+971 56 545 3103",
+    project: "Proposed G+1 Townhouses",
+    location: "Al Furjan, Dubai - UAE",
     reference: "",
-    preparedBy: "",
-    contact: "",
+    preparedBy: "assem@agmfitout.com",
+    contact: "+971 48 749839/+971 50 3407300",
   };
 
   const dynamicQuotationItems: QuotationItem[] =
@@ -84,7 +85,6 @@ export default function ReportsPage() {
           productId: p.id,
           desc: `${p.name} (${p.sku})${p.description ? ` - ${p.description}` : ""}`,
           qty: 1,
-          unit: p.unit || "PCS",
           rate: Number(p.sellingPrice || p.costPrice || 0),
         }))
       : [
@@ -92,7 +92,6 @@ export default function ReportsPage() {
             id: 1,
             desc: "",
             qty: 1,
-            unit: "Lot",
             rate: 0,
           },
         ];
@@ -150,10 +149,10 @@ export default function ReportsPage() {
         const grossMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
         const netMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-        const currentAssets = Number(balanceSheet?.currentAssetsTotal || 161208.38);
-        const fixedAssets = Number(balanceSheet?.fixedAssetsTotal || 163273.95);
+        const currentAssets = Number(balanceSheet?.totalCurrentAssets || 161208.38);
+        const fixedAssets = Number(balanceSheet?.totalFixedAssets || 163273.95);
         const totalAssets = Number(balanceSheet?.totalAssets || currentAssets + fixedAssets);
-        const currentLiabilities = Number(balanceSheet?.currentLiabilitiesTotal || 80277.67);
+        const currentLiabilities = Number(balanceSheet?.totalCurrentLiabilities || 80277.67);
         const totalLiabilities = Number(balanceSheet?.totalLiabilities || currentLiabilities);
         const totalEquity = Number(balanceSheet?.totalEquity || 244204.66);
         const workingCapital = currentAssets - currentLiabilities;

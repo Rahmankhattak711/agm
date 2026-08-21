@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export const MONTH_NAMES = [
+const MONTH_NAMES = [
   "FEBRUARY",
   "MARCH",
   "APRIL",

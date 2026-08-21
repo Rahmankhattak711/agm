@@ -50,35 +50,53 @@ export default function LoginPage() {
   });
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 overflow-hidden bg-[radial-gradient(ellipse_at_top,_#2d4a5e_0%,_#1b2e3d_45%,_#111d27_100%)]">
-      
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        <svg aria-hidden="true" viewBox="0 0 1440 900" className="w-full h-full object-cover">
-          <path
-            d="M-100 200 C 300 100, 600 400, 1000 250 C 1200 150, 1400 300, 1600 200"
-            fill="none"
-            stroke="#59a06d"
-            strokeWidth="1.5"
-          />
-          <path
-            d="M-50 400 C 400 300, 700 600, 1100 450 C 1300 350, 1500 500, 1700 400"
-            fill="none"
-            stroke="#a1d1b1"
-            strokeWidth="1.2"
-            strokeDasharray="6 6"
-          />
-        </svg>
+    <div className="flex min-h-screen">
+      {/* LEFT: Branding & Architectural Aesthetics */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#1d3345] via-[#243c50] to-[#2c455a] p-12 flex-col justify-between overflow-hidden">
+        {/* Subtle geometric structural vectors */}
+        <div className="absolute inset-0 opacity-15 pointer-events-none">
+          <svg aria-hidden="true" viewBox="0 0 1440 900" className="w-full h-full object-cover">
+            <line x1="0" y1="150" x2="1440" y2="750" stroke="#dff7e6" strokeWidth="1.2" strokeDasharray="6 6" />
+            <line x1="0" y1="750" x2="1440" y2="150" stroke="#dff7e6" strokeWidth="1.2" strokeDasharray="6 6" />
+            <rect x="200" y="100" width="400" height="700" fill="none" stroke="#dff7e6" strokeWidth="1" />
+            <rect x="840" y="100" width="400" height="700" fill="none" stroke="#dff7e6" strokeWidth="1" />
+            <circle cx="720" cy="450" r="320" fill="none" stroke="#dff7e6" strokeWidth="1" opacity="0.6" />
+          </svg>
+        </div>
+
+        <div className="relative z-10">
+          <AgmLogo size="lg" theme="light" />
+        </div>
+
+        <div className="relative z-10 max-w-md">
+          <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-[#a3e6ba] border border-emerald-400/30 text-xs font-bold uppercase tracking-wider mb-4">
+            Authorized Access Portal
+          </span>
+          <h1 className="text-4xl font-extrabold text-white tracking-tight leading-tight">
+            Interior Fitout & Project Accounting Suite
+          </h1>
+          <p className="mt-4 text-sm text-slate-300 leading-relaxed">
+            Sign in to access real-time financial reporting, double-entry ledgers, inventory tracking, daily attendance, and statutory UAE VAT returns.
+          </p>
+        </div>
+
+        <div className="relative z-10 text-xs text-slate-400 flex items-center justify-between border-t border-white/10 pt-6">
+          <span>© {new Date().getFullYear()} AGM Technical Services LLC</span>
+          <span>UAE FTA Compliant</span>
+        </div>
       </div>
 
-      <div className="relative z-10 w-full max-w-md">
-        
-        <div className="rounded-3xl border border-white/12 bg-white/95 backdrop-blur-xl p-7 sm:p-9 shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-all">
-          
-          <div className="flex flex-col items-center text-center mb-6">
-            <div className="mb-3">
-              <AgmLogo size="md" collapsed={false} />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-2">Enterprise Sign In</h2>
+      {/* RIGHT: Login Card Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-slate-50">
+        <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl shadow-[0_20px_60px_-15px_rgba(38,59,77,0.1)] border border-slate-200/80">
+          <div className="lg:hidden mb-6 flex justify-center">
+            <AgmLogo size="md" theme="dark" />
+          </div>
+
+          <div className="mb-6 text-center lg:text-left">
+            <h2 className="text-2xl font-bold text-[#263b4d] tracking-tight">
+              Enterprise Sign In
+            </h2>
             <p className="text-xs text-slate-500 mt-1 max-w-xs">
               Access your accounting workspace, general ledger, and ERP portal.
             </p>
@@ -225,7 +243,7 @@ export default function LoginPage() {
             </form.Subscribe>
           </form>
 
-          <p className="mt-5 text-center text-xs text-slate-500">
+          <p className="mt-6 text-center text-xs text-slate-500">
             Don&apos;t have an account?{" "}
             <Link
               href="/signup"

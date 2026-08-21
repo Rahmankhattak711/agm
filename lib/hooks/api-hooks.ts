@@ -1342,7 +1342,7 @@ export interface QuotationItemRecord {
   itemOrder?: number;
   description: string;
   quantity: number | string;
-  unit: string;
+  unit?: string;
   unitRate: number | string;
   totalAmount?: number | string;
   isFree?: boolean;
