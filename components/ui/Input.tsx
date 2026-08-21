@@ -4,12 +4,13 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   leftIcon?: React.ReactNode;
+  containerClassName?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, leftIcon, className = "", ...props }, ref) => {
+  ({ label, error, leftIcon, className = "", containerClassName = "w-full", ...props }, ref) => {
     return (
-      <div className="w-full">
+      <div className={containerClassName}>
         {label && (
           <label className="block text-xs font-bold text-slate-700 mb-1">
             {label}
@@ -42,12 +43,13 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
   options?: Array<{ value: string | number; label: string }>;
+  containerClassName?: string;
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, options, children, className = "", ...props }, ref) => {
+  ({ label, error, options, children, className = "", containerClassName = "w-full", ...props }, ref) => {
     return (
-      <div className="w-full">
+      <div className={containerClassName}>
         {label && (
           <label className="block text-xs font-bold text-slate-700 mb-1">
             {label}
@@ -78,12 +80,13 @@ Select.displayName = "Select";
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
+  containerClassName?: string;
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ label, error, className = "", ...props }, ref) => {
+  ({ label, error, className = "", containerClassName = "w-full", ...props }, ref) => {
     return (
-      <div className="w-full">
+      <div className={containerClassName}>
         {label && (
           <label className="block text-xs font-bold text-slate-700 mb-1">
             {label}

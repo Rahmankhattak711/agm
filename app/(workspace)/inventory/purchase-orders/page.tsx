@@ -14,7 +14,7 @@ import {
   PurchaseOrder,
   PurchaseOrderStatus,
 } from "@/lib/hooks/api-hooks";
-import { PlusIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon } from "@/components/icons";
 import {
   Button,
   Input,
@@ -40,6 +40,7 @@ interface ItemRow {
 }
 
 export default function PurchaseOrdersPage() {
+  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [supplierFilter, setSupplierFilter] = useState<string>("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -64,6 +65,18 @@ export default function PurchaseOrdersPage() {
     const num = Number(val || 0);
     return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
+
+  const filteredPOs = useMemo(() => {
+    if (!search.trim()) return purchaseOrders;
+    const q = search.toLowerCase();
+    return purchaseOrders.filter(
+      (p) =>
+        p.poNumber?.toLowerCase().includes(q) ||
+        p.supplier?.name?.toLowerCase().includes(q) ||
+        p.supplier?.trn?.toLowerCase().includes(q) ||
+        p.notes?.toLowerCase().includes(q)
+    );
+  }, [purchaseOrders, search]);
 
   const totalPOs = purchaseOrders.length;
   const draftCount = purchaseOrders.filter((p) => p.status === "DRAFT").length;
@@ -159,25 +172,25 @@ export default function PurchaseOrdersPage() {
     switch (status) {
       case "DRAFT":
         return (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
             Draft
           </span>
         );
       case "ORDERED":
         return (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
             Ordered
           </span>
         );
       case "RECEIVED":
         return (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
             Received
           </span>
         );
       case "CANCELLED":
         return (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
             Cancelled
           </span>
         );
@@ -192,7 +205,7 @@ export default function PurchaseOrdersPage() {
         accessorKey: "poNumber",
         header: "PO Number",
         cell: ({ row }) => (
-          <span className="font-mono font-bold text-slate-800">
+          <span className="font-mono font-bold text-slate-900">
             {row.original.poNumber}
           </span>
         ),
@@ -202,10 +215,10 @@ export default function PurchaseOrdersPage() {
         header: "Vendor / Supplier",
         cell: ({ row }) => (
           <div>
-            <span className="font-semibold text-slate-900 block">
+            <span className="font-bold text-slate-900 block">
               {row.original.supplier?.name}
             </span>
-            <span className="font-mono text-[10px] text-slate-400">
+            <span className="font-mono text-[10px] text-slate-500 font-medium">
               TRN: {row.original.supplier?.trn || "N/A"}
             </span>
           </div>
@@ -215,8 +228,8 @@ export default function PurchaseOrdersPage() {
         accessorKey: "orderDate",
         header: "Order Date",
         cell: ({ row }) => (
-          <span className="text-slate-600 text-xs font-mono">
-            {new Date(row.original.orderDate).toLocaleDateString()}
+          <span className="text-slate-600 text-xs font-mono font-medium">
+            {new Date(row.original.orderDate).toLocaleDateString("en-GB")}
           </span>
         ),
       },
@@ -224,7 +237,7 @@ export default function PurchaseOrdersPage() {
         accessorKey: "itemsCount",
         header: "Line Items",
         cell: ({ row }) => (
-          <span className="text-slate-700 text-xs">
+          <span className="text-slate-700 text-xs font-semibold">
             {row.original.items?.length || 0} Products
           </span>
         ),
@@ -310,7 +323,6 @@ export default function PurchaseOrdersPage() {
 
   return (
     <div className="space-y-6">
-      
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900">Purchase Orders & Procurement</h2>
@@ -355,12 +367,21 @@ export default function PurchaseOrdersPage() {
       </div>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="flex flex-wrap items-center gap-2.5 w-full">
+        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
+          <div className="w-full lg:w-80">
+            <Input
+              placeholder="Search PO number, supplier, TRN..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              leftIcon={<SearchIcon className="w-4 h-4 text-slate-400" strokeWidth={2} />}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
             <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-44"
+              containerClassName="w-full sm:w-44"
             >
               <option value="ALL">All Statuses</option>
               <option value="DRAFT">Draft</option>
@@ -372,7 +393,7 @@ export default function PurchaseOrdersPage() {
             <Select
               value={supplierFilter}
               onChange={(e) => setSupplierFilter(e.target.value)}
-              className="w-full sm:w-56"
+              containerClassName="w-full sm:w-56"
             >
               <option value="">All Suppliers</option>
               {suppliers.map((s) => (
@@ -389,7 +410,7 @@ export default function PurchaseOrdersPage() {
         ) : (
           <DataTable
             columns={columns}
-            data={purchaseOrders}
+            data={filteredPOs}
             isLoading={isLoading}
             emptyTitle="No purchase orders found"
             emptyMessage='Click "Create Purchase Order" to register your vendor orders.'

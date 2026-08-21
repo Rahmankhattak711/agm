@@ -62,13 +62,13 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-3">
       
-      <div className="overflow-x-auto rounded-xl border border-slate-100">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-xs">
         <table className="w-full text-left text-xs">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr
                 key={headerGroup.id}
-                className="border-b border-slate-100 bg-slate-50/50 text-slate-400 uppercase tracking-wider font-semibold"
+                className="border-b border-slate-200 bg-slate-50/75 text-slate-500 uppercase tracking-wider font-bold text-[10.5px]"
               >
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort();
@@ -77,8 +77,8 @@ export function DataTable<TData, TValue>({
                   return (
                     <th
                       key={header.id}
-                      className={`py-3 px-3.5 ${
-                        canSort ? "cursor-pointer select-none hover:text-slate-700 transition-colors" : ""
+                      className={`py-3 px-4 ${
+                        canSort ? "cursor-pointer select-none hover:text-slate-900 transition-colors" : ""
                       }`}
                       onClick={header.column.getToggleSortingHandler()}
                     >
@@ -111,16 +111,16 @@ export function DataTable<TData, TValue>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="py-12 text-center text-xs text-slate-400 animate-pulse"
+                  className="py-14 text-center text-xs text-slate-400 animate-pulse"
                 >
                   Loading data...
                 </td>
               </tr>
             ) : table.getRowModel().rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="py-12 text-center text-slate-400">
-                  <p className="text-sm font-semibold text-slate-600">{emptyTitle}</p>
-                  {emptyMessage && <p className="text-xs mt-1">{emptyMessage}</p>}
+                <td colSpan={columns.length} className="py-14 text-center text-slate-400">
+                  <p className="text-sm font-bold text-slate-700">{emptyTitle}</p>
+                  {emptyMessage && <p className="text-xs text-slate-400 mt-1">{emptyMessage}</p>}
                 </td>
               </tr>
             ) : (
@@ -128,12 +128,12 @@ export function DataTable<TData, TValue>({
                 <tr
                   key={row.id}
                   onClick={() => onRowClick && onRowClick(row.original)}
-                  className={`hover:bg-slate-50/80 transition-colors ${
+                  className={`hover:bg-slate-50/70 transition-colors ${
                     onRowClick ? "cursor-pointer" : ""
                   }`}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="py-3 px-3.5 text-slate-700">
+                    <td key={cell.id} className="py-3 px-4 text-slate-800">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
