@@ -11,7 +11,6 @@ export async function POST(request: Request) {
     if (
       !entryNumber ||
       !entryDate ||
-      !createdBy ||
       !Array.isArray(lines) ||
       lines.length === 0
     ) {
