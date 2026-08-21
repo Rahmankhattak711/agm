@@ -515,7 +515,13 @@ export interface VatTransactionRecord {
 }
 
 export interface VatQuarterDetail {
+  key?: string;
   quarter: string;
+  months?: string[];
+  sales?: number;
+  purchases?: number;
+  nonVatExpenses?: number;
+  grossProfit?: number;
   vatRate: string;
   inputVat: number;
   outputVat: number;
