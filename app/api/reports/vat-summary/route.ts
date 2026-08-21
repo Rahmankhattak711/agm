@@ -163,12 +163,22 @@ export async function GET() {
     const q3Months = ["AUGUST", "SEPTEMBER", "OCTOBER"];
     const q4Months = ["NOVEMBER", "DECEMBER", "JANUARY"];
 
-    const calcQuarter = (title: string, months: string[]) => {
+    const calcQuarter = (title: string, months: string[], quarterKey: string) => {
+      const sales = months.reduce((s, m) => s + monthlyData[m].incomeTaxable + monthlyData[m].incomeNonVat, 0);
+      const purchases = months.reduce((s, m) => s + monthlyData[m].purchaseTaxable, 0);
+      const nonVatExpenses = months.reduce((s, m) => s + monthlyData[m].purchaseNonVat, 0);
+      const grossProfit = sales - purchases;
       const inVat = months.reduce((s, m) => s + monthlyData[m].purchaseVat, 0);
       const outVat = months.reduce((s, m) => s + monthlyData[m].incomeVat, 0);
       const netVat = outVat - inVat;
       return {
+        key: quarterKey,
         quarter: title,
+        months,
+        sales,
+        purchases,
+        nonVatExpenses,
+        grossProfit,
         vatRate: "5%",
         inputVat: inVat,
         outputVat: outVat,
@@ -179,10 +189,10 @@ export async function GET() {
     };
 
     const quarters = [
-      calcQuarter("Feb,Mar,Apr-(1st)", q1Months),
-      calcQuarter("May,Jun,July-(2nd)", q2Months),
-      calcQuarter("Aug,Sep,Oct-(3rd)", q3Months),
-      calcQuarter("Nov,Dec,Jan(4th)", q4Months),
+      calcQuarter("Feb,Mar,Apr-(1st)", q1Months, "Q1"),
+      calcQuarter("May,Jun,July-(2nd)", q2Months, "Q2"),
+      calcQuarter("Aug,Sep,Oct-(3rd)", q3Months, "Q3"),
+      calcQuarter("Nov,Dec,Jan(4th)", q4Months, "Q4"),
     ];
 
     let totalInputVat = 0;
