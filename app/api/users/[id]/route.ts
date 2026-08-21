@@ -1,4 +1,4 @@
-import type { UserRole } from "@/app/generated/prisma/enums";
+import type { UserRole } from "@/app/generated/prisma";
 import {
   canManageRole,
   canManageUser,
