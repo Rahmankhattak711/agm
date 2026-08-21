@@ -46,9 +46,10 @@ export async function POST(request: Request) {
       { user: safeUser, accessToken, refreshToken },
       { status: 200 },
     );
-  } catch (error) {
+  } catch (error: any) {
+    console.error("POST /api/auth/signin error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: error?.message || "Internal Server Error" },
       { status: 500 },
     );
   }
