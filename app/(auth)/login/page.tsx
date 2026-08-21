@@ -51,9 +51,9 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen">
-      {/* LEFT: Branding & Architectural Aesthetics */}
+
       <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#1d3345] via-[#243c50] to-[#2c455a] p-12 flex-col justify-between overflow-hidden">
-        {/* Subtle geometric structural vectors */}
+
         <div className="absolute inset-0 opacity-15 pointer-events-none">
           <svg aria-hidden="true" viewBox="0 0 1440 900" className="w-full h-full object-cover">
             <line x1="0" y1="150" x2="1440" y2="750" stroke="#dff7e6" strokeWidth="1.2" strokeDasharray="6 6" />
@@ -86,7 +86,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* RIGHT: Login Card Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-slate-50">
         <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl shadow-[0_20px_60px_-15px_rgba(38,59,77,0.1)] border border-slate-200/80">
           <div className="lg:hidden mb-6 flex justify-center">

@@ -89,7 +89,7 @@ export async function PATCH(request: Request) {
     }
 
     const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      
+
       if (status === "APPROVED" && existing.status !== "APPROVED" && existing.leaveType === "ANNUAL") {
         const days = Number(existing.totalDays);
         const currentBalance = Number(existing.employee.annualLeaveBalance);

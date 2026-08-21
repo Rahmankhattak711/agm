@@ -37,7 +37,6 @@ export default function JournalEntriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
 
-  // VAT Transaction State
   const [transactionType, setTransactionType] = useState<"NON_VAT" | "VAT_5">("NON_VAT");
   const [vatNature, setVatNature] = useState<"OUTPUT" | "INPUT">("OUTPUT");
   const [vatBaseAmount, setVatBaseAmount] = useState<string>("");
@@ -257,7 +256,7 @@ export default function JournalEntriesPage() {
 
   return (
     <div className="space-y-6">
-      
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900">Journal Entries & Daybook</h2>

@@ -11,7 +11,7 @@ import {
   StockMovementType,
   StockMovement,
 } from "@/lib/hooks/api-hooks";
-import { PlusIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon } from "@/components/icons";
 import {
   Button,
   Input,
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui";
 
 export default function StockMovementsPage() {
+  const [search, setSearch] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
   const [selectedWarehouse, setSelectedWarehouse] = useState("");
   const [selectedType, setSelectedType] = useState<string>("ALL");
@@ -40,6 +41,19 @@ export default function StockMovementsPage() {
   const { data: products = [] } = useProducts();
   const { data: warehouses = [] } = useWarehouses();
   const createMovement = useCreateStockMovement();
+
+  const filteredMovements = useMemo(() => {
+    if (!search.trim()) return movements;
+    const q = search.toLowerCase();
+    return movements.filter(
+      (m) =>
+        m.product?.name?.toLowerCase().includes(q) ||
+        m.product?.sku?.toLowerCase().includes(q) ||
+        m.warehouse?.name?.toLowerCase().includes(q) ||
+        m.referenceNumber?.toLowerCase().includes(q) ||
+        m.notes?.toLowerCase().includes(q)
+    );
+  }, [movements, search]);
 
   const totalMovements = movements.length;
   const inMovements = movements.filter((m) =>
@@ -98,16 +112,23 @@ export default function StockMovementsPage() {
   const getBadge = (type: StockMovementType) => {
     switch (type) {
       case "PURCHASE_IN":
-      case "ADJUSTMENT_IN":
-      case "RETURN_IN":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "TRANSFER_IN":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200";
-      case "SALE_OUT":
+        return "bg-blue-50 text-blue-700 border-blue-200";
+      case "ADJUSTMENT_IN":
+        return "bg-teal-50 text-teal-700 border-teal-200";
+      case "RETURN_IN":
+        return "bg-cyan-50 text-cyan-700 border-cyan-200";
       case "PROJECT_CONSUMPTION":
+        return "bg-purple-50 text-purple-700 border-purple-200";
+      case "SALE_OUT":
+        return "bg-rose-50 text-rose-700 border-rose-200";
       case "ADJUSTMENT_OUT":
-      case "RETURN_OUT":
+        return "bg-amber-50 text-amber-700 border-amber-200";
       case "TRANSFER_OUT":
-        return "bg-rose-100 text-rose-800 border-rose-200";
+        return "bg-slate-100 text-slate-700 border-slate-200";
+      case "RETURN_OUT":
+        return "bg-orange-50 text-orange-700 border-orange-200";
       default:
         return "bg-slate-100 text-slate-700 border-slate-200";
     }
@@ -121,7 +142,7 @@ export default function StockMovementsPage() {
         cell: ({ row }) => (
           <div>
             <span className="font-mono text-xs font-semibold text-slate-800 block">
-              {new Date(row.original.movementDate).toLocaleDateString()}
+              {new Date(row.original.movementDate).toLocaleDateString("en-GB")}
             </span>
             <span className="text-[10px] text-slate-400 font-mono">
               {new Date(row.original.movementDate).toLocaleTimeString([], {
@@ -137,10 +158,10 @@ export default function StockMovementsPage() {
         header: "Product / Material",
         cell: ({ row }) => (
           <div>
-            <span className="font-semibold text-slate-900 block">
+            <span className="font-bold text-slate-900 block">
               {row.original.product?.name || "Product"}
             </span>
-            <span className="font-mono text-[10px] text-slate-400">
+            <span className="font-mono text-[10px] text-slate-500 font-medium">
               SKU: {row.original.product?.sku || "N/A"}
             </span>
           </div>
@@ -150,7 +171,7 @@ export default function StockMovementsPage() {
         accessorKey: "warehouse",
         header: "Storage Depot",
         cell: ({ row }) => (
-          <span className="font-medium text-slate-700">
+          <span className="font-semibold text-slate-700">
             {row.original.warehouse?.name || "Main Depot"}
           </span>
         ),
@@ -160,11 +181,11 @@ export default function StockMovementsPage() {
         header: "Movement Category",
         cell: ({ row }) => (
           <span
-            className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getBadge(
+            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getBadge(
               row.original.movementType
             )}`}
           >
-            {row.original.movementType.replace("_", " ")}
+            {row.original.movementType.replace(/_/g, " ")}
           </span>
         ),
       },
@@ -196,8 +217,8 @@ export default function StockMovementsPage() {
         accessorKey: "referenceNumber",
         header: "Reference / Project",
         cell: ({ row }) => (
-          <span className="font-mono text-xs text-slate-600">
-            {row.original.referenceNumber || <span className="text-slate-300">-</span>}
+          <span className="font-mono text-xs font-semibold text-slate-700">
+            {row.original.referenceNumber || <span className="text-slate-300 font-normal">—</span>}
           </span>
         ),
       },
@@ -205,8 +226,8 @@ export default function StockMovementsPage() {
         accessorKey: "creator",
         header: "Logged By",
         cell: ({ row }) => (
-          <span className="text-xs text-slate-500">
-            {row.original.creator?.fullName || "System"}
+          <span className="text-xs text-slate-600 font-medium">
+            {row.original.creator?.fullName || "System Admin"}
           </span>
         ),
       },
@@ -216,7 +237,6 @@ export default function StockMovementsPage() {
 
   return (
     <div className="space-y-6">
-      
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900">Stock Movements & Audit Ledger</h2>
@@ -255,12 +275,21 @@ export default function StockMovementsPage() {
       </div>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="flex flex-wrap items-center gap-2.5 w-full">
+        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
+          <div className="w-full lg:w-80">
+            <Input
+              placeholder="Search product, SKU, reference..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              leftIcon={<SearchIcon className="w-4 h-4 text-slate-400" strokeWidth={2} />}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
             <Select
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
-              className="w-full sm:w-56"
+              containerClassName="w-full sm:w-48"
             >
               <option value="">All Products</option>
               {products.map((p) => (
@@ -273,7 +302,7 @@ export default function StockMovementsPage() {
             <Select
               value={selectedWarehouse}
               onChange={(e) => setSelectedWarehouse(e.target.value)}
-              className="w-full sm:w-48"
+              containerClassName="w-full sm:w-44"
             >
               <option value="">All Warehouses</option>
               {warehouses.map((w) => (
@@ -286,7 +315,7 @@ export default function StockMovementsPage() {
             <Select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full sm:w-48"
+              containerClassName="w-full sm:w-44"
             >
               <option value="ALL">All Types</option>
               <option value="PURCHASE_IN">Purchase In (+)</option>
@@ -307,7 +336,7 @@ export default function StockMovementsPage() {
         ) : (
           <DataTable
             columns={columns}
-            data={movements}
+            data={filteredMovements}
             isLoading={isLoading}
             emptyTitle="No stock movements logged"
             emptyMessage='Click "Record Stock Movement" to log adjustments or purchases.'

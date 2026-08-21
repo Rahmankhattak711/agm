@@ -98,7 +98,7 @@ export async function POST(request: Request) {
     const computedTotal = computedSubtotal + computedVat - Number(discount || 0);
 
     const quotation = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      
+
       const existing = await tx.quotation.findUnique({
         where: { quotationNo },
       });
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
       let qId: string;
 
       if (existing) {
-        
+
         await tx.quotationItem.deleteMany({
           where: { quotationId: existing.id },
         });
@@ -140,7 +140,7 @@ export async function POST(request: Request) {
         });
         qId = updated.id;
       } else {
-        
+
         const created = await tx.quotation.create({
           data: {
             quotationNo,

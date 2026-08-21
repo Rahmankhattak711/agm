@@ -43,7 +43,6 @@ export async function GET() {
       }),
     ]);
 
-    // Monthly accumulators
     const monthlyData: Record<
       string,
       {
@@ -67,14 +66,13 @@ export async function GET() {
       };
     }
 
-    // Populate from journal lines
     for (const l of allLines) {
       const entryDate = l.journalEntry?.entryDate
         ? new Date(l.journalEntry.entryDate)
         : null;
       if (!entryDate) continue;
 
-      const mIdx = entryDate.getMonth(); // 0 = Jan, 1 = Feb...
+      const mIdx = entryDate.getMonth(); 
       const mName = [
         "JANUARY",
         "FEBRUARY",
@@ -111,7 +109,7 @@ export async function GET() {
           monthlyData[mName].incomeVat += vatAmt;
         }
       } else {
-        // Non-VAT lines
+
         if (type === "EXPENSE" && debit > 0) {
           monthlyData[mName].purchaseNonVat += debit;
         } else if (type === "REVENUE" && credit > 0) {
@@ -120,7 +118,6 @@ export async function GET() {
       }
     }
 
-    // Monthly Purchase Breakdown
     const monthlyPurchases = MONTH_NAMES.map((m) => {
       const d = monthlyData[m];
       return {
@@ -132,7 +129,6 @@ export async function GET() {
       };
     });
 
-    // Monthly Income Breakdown
     const monthlyIncome = MONTH_NAMES.map((m) => {
       const d = monthlyData[m];
       return {
@@ -144,7 +140,6 @@ export async function GET() {
       };
     });
 
-    // Monthly Net Summary
     const monthlyNet = MONTH_NAMES.map((m) => {
       const d = monthlyData[m];
       const inVat = d.purchaseVat;
@@ -157,7 +152,6 @@ export async function GET() {
       };
     });
 
-    // Quarters
     const q1Months = ["FEBRUARY", "MARCH", "APRIL"];
     const q2Months = ["MAY", "JUNE", "JULY"];
     const q3Months = ["AUGUST", "SEPTEMBER", "OCTOBER"];
@@ -243,7 +237,7 @@ export async function GET() {
       monthlyNet,
       monthlyPurchases,
       monthlyIncome,
-      // Totals
+
       inputVat: totalInputVat,
       outputVat: totalOutputVat,
       net: netTotalVat,

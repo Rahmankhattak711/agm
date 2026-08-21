@@ -15,7 +15,6 @@ export async function GET() {
       }),
     ]);
 
-    // Aggregate balances for each account
     const balanceMap = new Map<string, number>();
     let netRevenue = 0;
     let netExpense = 0;
@@ -59,7 +58,6 @@ export async function GET() {
       );
     };
 
-    // Current Assets
     const currentAssetItems: BalanceItem[] = assetAccounts
       .filter((acc: Account) => !isFixedAsset(acc))
       .map((acc: Account) => ({
@@ -70,7 +68,6 @@ export async function GET() {
         amount: balanceMap.get(acc.id) || 0,
       }));
 
-    // Fixed Assets
     const fixedAssetItems: BalanceItem[] = assetAccounts
       .filter(isFixedAsset)
       .map((acc: Account) => ({
@@ -81,7 +78,6 @@ export async function GET() {
         amount: balanceMap.get(acc.id) || 0,
       }));
 
-    // Current Liabilities
     const currentLiabilityItems: BalanceItem[] = liabilityAccounts.map((acc: Account) => ({
       id: acc.id,
       section: "Current Liability",
@@ -90,7 +86,6 @@ export async function GET() {
       amount: balanceMap.get(acc.id) || 0,
     }));
 
-    // Equity items
     const equityItems: BalanceItem[] = equityAccounts.map((acc: Account) => {
       let amt = balanceMap.get(acc.id) || 0;
       let section = "Capital";
@@ -111,7 +106,6 @@ export async function GET() {
       };
     });
 
-    // If Retained Earnings / Current Year Earnings account isn't explicitly in chart of accounts, append it
     if (!equityItems.some((e: BalanceItem) => e.section === "Retained Earnings")) {
       equityItems.push({
         id: "current-year-earnings",
@@ -150,7 +144,7 @@ export async function GET() {
       totalLiabilitiesAndEquity,
       balanceCheck,
       balanced,
-      // For backwards compatibility with dashboard
+
       assets: totalAssets,
       liabilities: totalLiabilities,
       equityAmount: totalEquity,

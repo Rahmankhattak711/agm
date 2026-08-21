@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     }
 
     const accessToken = signAccessToken({ userId: payload.userId });
-    
+
     const newRefreshToken = signRefreshToken({ userId: payload.userId });
 
     await prisma.refreshToken.create({
