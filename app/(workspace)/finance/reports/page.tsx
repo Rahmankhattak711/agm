@@ -71,7 +71,6 @@ export default function ReportsPage() {
     address: "Dubai, UAE",
     trn: "",
     mobile: "+971 56 545 3103",
-    email: "",
     project: "Proposed G+1 Townhouses",
     location: "Al Furjan, Dubai - UAE",
     reference: "",
@@ -150,10 +149,10 @@ export default function ReportsPage() {
         const grossMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
         const netMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-        const currentAssets = Number(balanceSheet?.currentAssetsTotal || 161208.38);
-        const fixedAssets = Number(balanceSheet?.fixedAssetsTotal || 163273.95);
+        const currentAssets = Number(balanceSheet?.totalCurrentAssets || 161208.38);
+        const fixedAssets = Number(balanceSheet?.totalFixedAssets || 163273.95);
         const totalAssets = Number(balanceSheet?.totalAssets || currentAssets + fixedAssets);
-        const currentLiabilities = Number(balanceSheet?.currentLiabilitiesTotal || 80277.67);
+        const currentLiabilities = Number(balanceSheet?.totalCurrentLiabilities || 80277.67);
         const totalLiabilities = Number(balanceSheet?.totalLiabilities || currentLiabilities);
         const totalEquity = Number(balanceSheet?.totalEquity || 244204.66);
         const workingCapital = currentAssets - currentLiabilities;
