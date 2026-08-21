@@ -81,7 +81,6 @@ export async function POST(request: Request) {
           include: { account: true },
         });
 
-        // Determine if line has VAT details or links to a VAT account
         let vatType: "INPUT" | "OUTPUT" | null = l.vatType || null;
         let vatAmount = Number(l.vatAmount || 0);
         let taxableAmount = Number(l.taxableAmount || 0);

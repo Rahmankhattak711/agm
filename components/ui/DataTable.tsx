@@ -61,7 +61,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-3">
-      
+
       <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-xs">
         <table className="w-full text-left text-xs">
           <thead>

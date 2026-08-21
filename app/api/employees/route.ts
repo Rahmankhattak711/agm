@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     });
 
     for (const u of users) {
-      
+
       if (u.email) {
         const existing = await prisma.employee.findUnique({
           where: { email: u.email },
@@ -62,7 +62,7 @@ export async function GET(request: Request) {
               },
             });
           } catch (e) {
-            
+
           }
         }
       }

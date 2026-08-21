@@ -103,7 +103,7 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
         </div>
       ) : (
         <div className="space-y-8">
-          {/* 4 Top KPI Cards */}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4.5 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
               <div>

@@ -15,7 +15,7 @@ export default function AgmLogo({
   className = "",
   theme = "auto",
 }: AgmLogoProps) {
-  
+
   const dimensions = {
     sm: { height: 38, width: 110 },
     md: { height: 56, width: 165 },

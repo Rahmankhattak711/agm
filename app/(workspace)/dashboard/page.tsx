@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-[#284257] to-[#1c3243] text-white shadow-lg">
         <div>
           <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
           <div>
             <h3 className="font-bold text-sm text-slate-900">Quick Navigation</h3>

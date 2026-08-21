@@ -109,7 +109,7 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
         </div>
       ) : (
         <div className="space-y-6">
-          {/* 4 KPI Top Cards */}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4.5 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
               <div>

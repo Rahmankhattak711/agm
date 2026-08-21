@@ -9,10 +9,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================================
-// 1. AUTHENTICATION & ACCESS CONTROL
-// ============================================================
-
 enum UserRole {
   SUPER_ADMIN
   ADMIN
@@ -34,16 +30,13 @@ model User {
   approvedPettyCashVouchers PettyCashTransaction[]
   daybookEntries            DaybookEntry[]
 
-  // HR relations
   markedAttendances  DailyAttendance[] @relation("AttendanceMarker")
   approvedLeaves     LeaveRequest[]    @relation("LeaveApprover")
   approvedBonuses    Bonus[]           @relation("BonusApprover")
 
-  // Inventory relations
   stockMovements  StockMovement[]
   purchaseOrders  PurchaseOrder[]
 
-  // Quotation relations
   quotations Quotation[]
 
   createdAt DateTime       @default(now()) @map("created_at")
@@ -63,10 +56,6 @@ model RefreshToken {
 
   @@map("refresh_tokens")
 }
-
-// ============================================================
-// 2. CORE DOUBLE-ENTRY ACCOUNTING & DAYBOOK
-// ============================================================
 
 enum AccountType {
   ASSET
@@ -138,8 +127,6 @@ model JournalEntryLine {
   @@map("journal_entry_lines")
 }
 
-// DAYBOOK (Daily Transaction Log for Sales, Purchases, Receipts, and Payments)
-
 enum DaybookType {
   SALES
   PURCHASE
@@ -173,10 +160,6 @@ model DaybookEntry {
   @@map("daybook_entries")
 }
 
-// ============================================================
-// 3. VAT TRACKING & POSITION
-// ============================================================
-
 enum VatType {
   INPUT
   OUTPUT
@@ -206,10 +189,6 @@ model VatEntry {
 
   @@map("vat_entries")
 }
-
-// ============================================================
-// 4. PETTY CASH MANAGEMENT (Bank, Local Gov / Municipality, Operational)
-// ============================================================
 
 enum PettyCashType {
   TOP_UP
@@ -246,10 +225,6 @@ model PettyCashTransaction {
 
   @@map("petty_cash_transactions")
 }
-
-// ============================================================
-// 5. FIXED ASSETS & VEHICLES (Depreciation Schedule)
-// ============================================================
 
 enum AssetCategory {
   COMPANY_VEHICLE
@@ -306,10 +281,6 @@ model DepreciationSchedule {
   @@map("depreciation_schedules")
 }
 
-// ============================================================
-// 6. PROFESSIONAL EMPLOYEE & PAYROLL DETAILS
-// ============================================================
-
 enum PaymentMethod {
   WPS_BANK_TRANSFER
   CASH
@@ -355,7 +326,6 @@ model Employee {
   joiningDate  DateTime @map("joining_date") @db.Date
   isActive     Boolean  @default(true) @map("is_active")
 
-  // Personal details
   gender          Gender?
   dateOfBirth     DateTime?      @map("date_of_birth") @db.Date
   nationality     String?
@@ -366,7 +336,6 @@ model Employee {
   emergencyContactName  String? @map("emergency_contact_name")
   emergencyContactPhone String? @map("emergency_contact_phone")
 
-  // UAE identification & visa
   emiratesId          String?   @unique @map("emirates_id")
   emiratesIdExpiry     DateTime? @map("emirates_id_expiry") @db.Date
   passportNo          String?   @map("passport_no")
@@ -376,7 +345,6 @@ model Employee {
   visaNumber          String?   @map("visa_number")
   visaExpiry          DateTime? @map("visa_expiry") @db.Date
 
-  // Employment details
   contractType       ContractType     @default(FULL_TIME) @map("contract_type")
   employmentStatus   EmploymentStatus @default(ACTIVE) @map("employment_status")
   probationEndDate   DateTime?        @map("probation_end_date") @db.Date
@@ -386,14 +354,11 @@ model Employee {
   reportsTo          Employee?        @relation("EmployeeHierarchy", fields: [reportsToId], references: [id])
   directReports      Employee[]       @relation("EmployeeHierarchy")
 
-  // Compensation
   basicSalary        Decimal @map("basic_salary") @db.Decimal(12, 2)
   housingAllowance   Decimal @default(0.00) @map("housing_allowance") @db.Decimal(12, 2)
   transportAllowance Decimal @default(0.00) @map("transport_allowance") @db.Decimal(12, 2)
   otherAllowances    Decimal @default(0.00) @map("other_allowances") @db.Decimal(12, 2)
   monthlySalary      Decimal @default(0.00) @map("monthly_salary") @db.Decimal(12, 2)
-  // monthlySalary = basicSalary + all allowances; kept as a stored/denormalized
-  // total so payroll and reports don't need to recompute it every time.
 
   annualLeaveBalance Decimal @default(30.00) @map("annual_leave_balance") @db.Decimal(5, 1)
 
@@ -411,8 +376,6 @@ model Employee {
 
   @@map("employees")
 }
-
-// DAILY ATTENDANCE
 
 enum AttendanceStatus {
   PRESENT
@@ -438,7 +401,7 @@ model DailyAttendance {
   overtimeHours Decimal          @default(0.00) @map("overtime_hours") @db.Decimal(4, 2)
   lateMinutes   Int              @default(0) @map("late_minutes")
 
-  location String? // e.g. site name / project location for on-site staff
+  location String?
   notes    String?
 
   markedBy String? @map("marked_by") @db.Uuid
@@ -450,8 +413,6 @@ model DailyAttendance {
   @@unique([employeeId, attendanceDate])
   @@map("daily_attendance")
 }
-
-// LEAVE MANAGEMENT
 
 enum LeaveType {
   ANNUAL
@@ -491,8 +452,6 @@ model LeaveRequest {
 
   @@map("leave_requests")
 }
-
-// BONUS / INCENTIVE TRACKING
 
 enum BonusType {
   PERFORMANCE
@@ -554,10 +513,6 @@ model PayrollRecord {
   @@map("payroll_records")
 }
 
-// ============================================================
-// 7. PRODUCT INVENTORY SYSTEM
-// ============================================================
-
 model Supplier {
   id            String  @id @default(uuid()) @db.Uuid
   supplierCode  String  @unique @map("supplier_code")
@@ -566,7 +521,7 @@ model Supplier {
   phone         String?
   email         String?
   address       String?
-  trn           String? // Tax Registration Number
+  trn           String?
   isActive      Boolean @default(true) @map("is_active")
 
   products       Product[]
@@ -601,7 +556,6 @@ model ProductCategory {
   parent   ProductCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children ProductCategory[] @relation("CategoryHierarchy")
 
-  // Optional links to accounting for automated inventory/COGS postings
   inventoryAccountId String?         @map("inventory_account_id") @db.Uuid
   inventoryAccount   ChartOfAccount? @relation("InventoryAccount", fields: [inventoryAccountId], references: [id])
   cogsAccountId       String?         @map("cogs_account_id") @db.Uuid
@@ -625,7 +579,7 @@ model Product {
   name        String
   description String?
   type        ProductType @default(RAW_MATERIAL)
-  unit        String      @default("PCS") // PCS, SQM, KG, LTR, BOX, ROLL, etc.
+  unit        String      @default("PCS")
   barcode     String?     @unique
   imageUrl    String?     @map("image_url")
 
@@ -689,7 +643,7 @@ model StockMovement {
 
   quantity        Decimal  @db.Decimal(12, 2)
   unitCost        Decimal? @map("unit_cost") @db.Decimal(12, 2)
-  referenceNumber String?  @map("reference_number") // e.g. PO number, project code
+  referenceNumber String?  @map("reference_number")
   notes           String?
 
   movementDate DateTime @default(now()) @map("movement_date")
@@ -747,10 +701,6 @@ model PurchaseOrderItem {
   @@map("purchase_order_items")
 }
 
-// ============================================================
-// 8. MONTHLY BALANCE SHEET SUMMARY
-// ============================================================
-
 model MonthlyBalanceSheetSummary {
   id    String @id @default(uuid()) @db.Uuid
   year  Int
@@ -768,10 +718,6 @@ model MonthlyBalanceSheetSummary {
   @@map("monthly_balance_sheet_summaries")
 }
 
-// ============================================================
-// 9. COMMERCIAL QUOTATIONS & PROPOSALS
-// ============================================================
-
 enum QuotationStatus {
   DRAFT
   SENT
@@ -786,21 +732,18 @@ model Quotation {
   date        String          @default("")
   validUntil  String          @default("") @map("valid_until")
 
-  // Client Details
   customer    String          @default("")
   attention   String          @default("")
   address     String          @default("")
   trn         String          @default("")
   mobile      String          @default("")
 
-  // Project Details
   project     String          @default("")
   location    String          @default("")
   reference   String          @default("")
   preparedBy  String          @default("") @map("prepared_by")
   contact     String          @default("")
 
-  // Financials
   vatPct      Decimal         @default(5.00) @map("vat_pct") @db.Decimal(5, 2)
   discount    Decimal         @default(0.00) @db.Decimal(15, 2)
   subtotal    Decimal         @default(0.00) @db.Decimal(15, 2)

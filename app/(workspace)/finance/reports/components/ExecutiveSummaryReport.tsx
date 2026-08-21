@@ -149,9 +149,8 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
         </div>
       </div>
 
-      {/* 6 TOP EXECUTIVE KPI CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {/* 1. Revenue */}
+
         <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
@@ -166,7 +165,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
           </p>
         </div>
 
-        {/* 2. Gross Profit */}
         <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
           <div>
             <div className="flex items-center justify-between">
@@ -186,7 +184,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
           </p>
         </div>
 
-        {/* 3. Net Profit */}
         <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 flex flex-col justify-between space-y-2">
           <div>
             <div className="flex items-center justify-between">
@@ -206,7 +203,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
           </p>
         </div>
 
-        {/* 4. Total Assets */}
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-2">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-600">
@@ -219,7 +215,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
           </p>
         </div>
 
-        {/* 5. Total Liabilities */}
         <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-100 flex flex-col justify-between space-y-2">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-rose-800">
@@ -234,7 +229,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
           </p>
         </div>
 
-        {/* 6. Net VAT */}
         <div className="p-4 rounded-2xl bg-slate-900 text-white flex flex-col justify-between space-y-2 shadow-xs">
           <div>
             <div className="flex items-center justify-between">
@@ -255,7 +249,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
         </div>
       </div>
 
-      {/* 3-MONTH GROUP QUARTERLY SUMMARY SECTION */}
       <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div>
@@ -296,7 +289,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
           </div>
         </div>
 
-        {/* 4 QUARTER SUMMARY CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {filteredQuarters.map((q) => (
             <div
