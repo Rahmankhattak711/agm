@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/app/generated/prisma";
 import { getAuthUser } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
@@ -111,7 +112,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Purchase order not found" }, { status: 404 });
     }
 
-    const updated = await prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const updateData: any = {};
       if (status !== undefined) updateData.status = status;
       if (expectedDate !== undefined) updateData.expectedDate = expectedDate ? new Date(expectedDate) : null;

@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/app/generated/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -11,7 +12,6 @@ export async function POST(request: Request) {
     const results: any[] = [];
 
     for (const asset of assets) {
-      
       const agg = await prisma.depreciationSchedule.aggregate({
         where: { assetId: asset.id },
         _sum: { depreciationAmount: true },
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
       if (depreciationAmount <= 0) continue;
 
-      const created = await prisma.$transaction(async (tx) => {
+      const created = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const entryNumber = `DEP-${asset.assetCode}-${fiscalYear || new Date().getFullYear()}`;
         const je = await tx.journalEntry.create({
           data: {

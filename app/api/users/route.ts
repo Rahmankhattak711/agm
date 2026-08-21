@@ -1,4 +1,4 @@
-import type { UserRole } from "@/app/generated/prisma/enums";
+import type { UserRole } from "@/app/generated/prisma";
 import {
   canManageRole,
   forbidden,
@@ -22,15 +22,16 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" },
     });
 
+    type UserItem = (typeof users)[number];
     const stats = {
       total: users.length,
-      active: users.filter((u) => u.isActive).length,
-      inactive: users.filter((u) => !u.isActive).length,
+      active: users.filter((u: UserItem) => u.isActive).length,
+      inactive: users.filter((u: UserItem) => !u.isActive).length,
       byRole: {
-        SUPER_ADMIN: users.filter((u) => u.role === "SUPER_ADMIN").length,
-        ADMIN: users.filter((u) => u.role === "ADMIN").length,
-        ACCOUNTANT: users.filter((u) => u.role === "ACCOUNTANT").length,
-        USER: users.filter((u) => u.role === "USER").length,
+        SUPER_ADMIN: users.filter((u: UserItem) => u.role === "SUPER_ADMIN").length,
+        ADMIN: users.filter((u: UserItem) => u.role === "ADMIN").length,
+        ACCOUNTANT: users.filter((u: UserItem) => u.role === "ACCOUNTANT").length,
+        USER: users.filter((u: UserItem) => u.role === "USER").length,
       },
     };
 

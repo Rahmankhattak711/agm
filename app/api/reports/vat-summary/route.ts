@@ -202,7 +202,7 @@ export async function GET() {
     );
     const netTotalVat = totalOutputVat - totalInputVat;
 
-    const formattedEntries = vatEntries.slice(0, 50).map((e) => ({
+    const formattedEntries = vatEntries.slice(0, 50).map((e: (typeof vatEntries)[number]) => ({
       id: e.id,
       vatType: e.vatType,
       taxableAmount: Number(e.taxableAmount || 0),

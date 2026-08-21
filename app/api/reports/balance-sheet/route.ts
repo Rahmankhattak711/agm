@@ -1,6 +1,9 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+type Account = Awaited<ReturnType<typeof prisma.chartOfAccount.findMany>>[number];
+type BalanceItem = { id: string; section: string; accountCode: string; accountName: string; amount: number };
+
 export async function GET() {
   try {
     const [accounts, lines] = await Promise.all([
@@ -36,9 +39,9 @@ export async function GET() {
 
     const currentYearEarnings = netRevenue - netExpense;
 
-    const assetAccounts = accounts.filter((a) => a.type === "ASSET");
-    const liabilityAccounts = accounts.filter((a) => a.type === "LIABILITY");
-    const equityAccounts = accounts.filter((a) => a.type === "EQUITY");
+    const assetAccounts = accounts.filter((a: Account) => a.type === "ASSET");
+    const liabilityAccounts = accounts.filter((a: Account) => a.type === "LIABILITY");
+    const equityAccounts = accounts.filter((a: Account) => a.type === "EQUITY");
 
     const isFixedAsset = (acc: { accountCode: string; accountName: string }) => {
       const code = parseInt(acc.accountCode, 10);
@@ -57,9 +60,9 @@ export async function GET() {
     };
 
     // Current Assets
-    const currentAssetItems = assetAccounts
-      .filter((acc) => !isFixedAsset(acc))
-      .map((acc) => ({
+    const currentAssetItems: BalanceItem[] = assetAccounts
+      .filter((acc: Account) => !isFixedAsset(acc))
+      .map((acc: Account) => ({
         id: acc.id,
         section: "Current Asset",
         accountCode: acc.accountCode,
@@ -68,9 +71,9 @@ export async function GET() {
       }));
 
     // Fixed Assets
-    const fixedAssetItems = assetAccounts
+    const fixedAssetItems: BalanceItem[] = assetAccounts
       .filter(isFixedAsset)
-      .map((acc) => ({
+      .map((acc: Account) => ({
         id: acc.id,
         section: "Fixed Asset",
         accountCode: acc.accountCode,
@@ -79,7 +82,7 @@ export async function GET() {
       }));
 
     // Current Liabilities
-    const currentLiabilityItems = liabilityAccounts.map((acc) => ({
+    const currentLiabilityItems: BalanceItem[] = liabilityAccounts.map((acc: Account) => ({
       id: acc.id,
       section: "Current Liability",
       accountCode: acc.accountCode,
@@ -88,7 +91,7 @@ export async function GET() {
     }));
 
     // Equity items
-    const equityItems = equityAccounts.map((acc) => {
+    const equityItems: BalanceItem[] = equityAccounts.map((acc: Account) => {
       let amt = balanceMap.get(acc.id) || 0;
       let section = "Capital";
       if (
@@ -109,7 +112,7 @@ export async function GET() {
     });
 
     // If Retained Earnings / Current Year Earnings account isn't explicitly in chart of accounts, append it
-    if (!equityItems.some((e) => e.section === "Retained Earnings")) {
+    if (!equityItems.some((e: BalanceItem) => e.section === "Retained Earnings")) {
       equityItems.push({
         id: "current-year-earnings",
         section: "Retained Earnings",
@@ -119,14 +122,14 @@ export async function GET() {
       });
     }
 
-    const totalCurrentAssets = currentAssetItems.reduce((s, i) => s + i.amount, 0);
-    const totalFixedAssets = fixedAssetItems.reduce((s, i) => s + i.amount, 0);
+    const totalCurrentAssets = currentAssetItems.reduce((s: number, i: BalanceItem) => s + i.amount, 0);
+    const totalFixedAssets = fixedAssetItems.reduce((s: number, i: BalanceItem) => s + i.amount, 0);
     const totalAssets = totalCurrentAssets + totalFixedAssets;
 
-    const totalCurrentLiabilities = currentLiabilityItems.reduce((s, i) => s + i.amount, 0);
+    const totalCurrentLiabilities = currentLiabilityItems.reduce((s: number, i: BalanceItem) => s + i.amount, 0);
     const totalLiabilities = totalCurrentLiabilities;
 
-    const totalEquity = equityItems.reduce((s, i) => s + i.amount, 0);
+    const totalEquity = equityItems.reduce((s: number, i: BalanceItem) => s + i.amount, 0);
     const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
     const balanceCheck = totalAssets - totalLiabilitiesAndEquity;
     const balanced = Math.abs(balanceCheck) < 0.01;
