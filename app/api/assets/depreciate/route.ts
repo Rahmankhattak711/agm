@@ -23,47 +23,49 @@ export async function POST(request: Request) {
 
       if (depreciationAmount <= 0) continue;
 
-      const created = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        const entryNumber = `DEP-${asset.assetCode}-${fiscalYear || new Date().getFullYear()}`;
-        const je = await tx.journalEntry.create({
-          data: {
-            entryNumber,
-            entryDate: new Date(),
-            description: `Depreciation for ${asset.assetName} (${fiscalYear || new Date().getFullYear()})`,
-            createdBy: createdBy || "",
-          },
-        });
+      const created = await prisma.$transaction(
+        async (tx: Prisma.TransactionClient) => {
+          const entryNumber = `DEP-${asset.assetCode}-${fiscalYear || new Date().getFullYear()}`;
+          const je = await tx.journalEntry.create({
+            data: {
+              entryNumber,
+              entryDate: new Date(),
+              description: `Depreciation for ${asset.assetName} (${fiscalYear || new Date().getFullYear()})`,
+              createdBy: createdBy || "",
+            },
+          });
 
-        const lines = [
-          {
-            journalEntryId: je.id,
-            accountId: asset.deprExpenseAccountId,
-            debit: depreciationAmount,
-            credit: 0,
-          },
-          {
-            journalEntryId: je.id,
-            accountId: asset.accumulatedDeprAccountId,
-            debit: 0,
-            credit: depreciationAmount,
-          },
-        ];
+          const lines = [
+            {
+              journalEntryId: je.id,
+              accountId: asset.deprExpenseAccountId,
+              debit: depreciationAmount,
+              credit: 0,
+            },
+            {
+              journalEntryId: je.id,
+              accountId: asset.accumulatedDeprAccountId,
+              debit: 0,
+              credit: depreciationAmount,
+            },
+          ];
 
-        await tx.journalEntryLine.createMany({ data: lines });
+          await tx.journalEntryLine.createMany({ data: lines });
 
-        const schedule = await tx.depreciationSchedule.create({
-          data: {
-            assetId: asset.id,
-            fiscalYear: fiscalYear || new Date().getFullYear(),
-            openingBookValue: openingBookValue,
-            depreciationAmount: depreciationAmount,
-            closingBookValue: openingBookValue - depreciationAmount,
-            journalEntryId: je.id,
-          },
-        });
+          const schedule = await tx.depreciationSchedule.create({
+            data: {
+              assetId: asset.id,
+              fiscalYear: fiscalYear || new Date().getFullYear(),
+              openingBookValue: openingBookValue,
+              depreciationAmount: depreciationAmount,
+              closingBookValue: openingBookValue - depreciationAmount,
+              journalEntryId: je.id,
+            },
+          });
 
-        return { je, schedule };
-      });
+          return { je, schedule };
+        },
+      );
 
       results.push(created);
     }

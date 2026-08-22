@@ -35,7 +35,6 @@ export default function StatCard({
         animationDelay: `${delay}ms`,
       }}
     >
-
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -56,7 +55,6 @@ export default function StatCard({
       />
 
       <div className="relative z-10">
-
         <div className="flex items-start justify-between mb-3.5">
           <div className="w-10.5 h-10.5 rounded-[13px] flex items-center justify-center bg-white/22 shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex-shrink-0">
             {icon}
@@ -75,7 +73,7 @@ export default function StatCard({
           </div>
         ) : (
           <>
-            <p className="text-[1.65rem] font-black text-white leading-none tracking-tight">
+            <p className="text-[1.2rem] font-black text-white leading-none tracking-tight">
               {value}
             </p>
             <p className="text-xs font-semibold text-white/65 mt-1 tracking-wide">

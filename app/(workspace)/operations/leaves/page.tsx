@@ -31,7 +31,11 @@ export default function LeavesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const { data: leaves = [], isLoading, error } = useLeaveRequests({
+  const {
+    data: leaves = [],
+    isLoading,
+    error,
+  } = useLeaveRequests({
     status: statusFilter !== "ALL" ? statusFilter : undefined,
     employeeId: employeeFilter || undefined,
   });
@@ -107,7 +111,8 @@ export default function LeavesPage() {
         cell: ({ row }) => (
           <div>
             <span className="font-bold text-slate-900 block">
-              {row.original.employee?.firstName || ""} {row.original.employee?.lastName || "Staff"}
+              {row.original.employee?.firstName || ""}{" "}
+              {row.original.employee?.lastName || "Staff"}
             </span>
             <span className="font-mono text-[10px] text-slate-400">
               Code: {row.original.employee?.employeeCode || "N/A"}
@@ -145,7 +150,7 @@ export default function LeavesPage() {
         cell: ({ row }) => (
           <span
             className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusBadge(
-              row.original.status
+              row.original.status,
             )}`}
           >
             {row.original.status}
@@ -214,17 +219,19 @@ export default function LeavesPage() {
         },
       },
     ],
-    [deleteLeave, updateStatus]
+    [deleteLeave, updateStatus],
   );
 
   return (
     <div className="space-y-6">
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Leave Management & Approvals</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            Leave Management & Approvals
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Track annual leaves, medical sick leaves, duration calculators, and supervisor authorizations.
+            Track annual leaves, medical sick leaves, duration calculators, and
+            supervisor authorizations.
           </p>
         </div>
 
@@ -239,20 +246,34 @@ export default function LeavesPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pending Review</p>
-          <p className="text-2xl font-black text-amber-600 mt-1">{pendingCount}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Awaiting HR authorization</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Pending Review
+          </p>
+          <p className="text-2xl font-black text-amber-600 mt-1">
+            {pendingCount}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Awaiting HR authorization
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Approved Leaves</p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">{approvedCount}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Approved Leaves
+          </p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">
+            {approvedCount}
+          </p>
           <p className="text-xs text-slate-500 mt-0.5">Granted time off</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Rejected Requests</p>
-          <p className="text-2xl font-black text-rose-800 mt-1">{rejectedCount}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Rejected Requests
+          </p>
+          <p className="text-2xl font-black text-rose-800 mt-1">
+            {rejectedCount}
+          </p>
           <p className="text-xs text-slate-500 mt-0.5">Declined applications</p>
         </div>
       </div>
@@ -301,7 +322,12 @@ export default function LeavesPage() {
         )}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Submit Leave Request" maxWidth="lg">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Submit Leave Request"
+        maxWidth="lg"
+      >
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -319,7 +345,8 @@ export default function LeavesPage() {
           <form.Field
             name="employeeId"
             validators={{
-              onChange: ({ value }) => (!value ? "Employee selection is required" : undefined),
+              onChange: ({ value }) =>
+                !value ? "Employee selection is required" : undefined,
             }}
           >
             {(field) => (
@@ -327,7 +354,8 @@ export default function LeavesPage() {
                 <option value="">-- Select Employee --</option>
                 {employees.map((e) => (
                   <option key={e.id} value={e.id}>
-                    {e.firstName} {e.lastName} ({e.employeeCode}) - Balance: {e.annualLeaveBalance ?? 30} days
+                    {e.firstName} {e.lastName} ({e.employeeCode}) - Balance:{" "}
+                    {e.annualLeaveBalance ?? 30} days
                   </option>
                 ))}
               </FormSelect>
@@ -352,7 +380,8 @@ export default function LeavesPage() {
             <form.Field
               name="startDate"
               validators={{
-                onChange: ({ value }) => (!value ? "Start date is required" : undefined),
+                onChange: ({ value }) =>
+                  !value ? "Start date is required" : undefined,
               }}
             >
               {(field) => (
@@ -368,7 +397,8 @@ export default function LeavesPage() {
             <form.Field
               name="endDate"
               validators={{
-                onChange: ({ value }) => (!value ? "End date is required" : undefined),
+                onChange: ({ value }) =>
+                  !value ? "End date is required" : undefined,
               }}
             >
               {(field) => (
@@ -386,7 +416,9 @@ export default function LeavesPage() {
             name="totalDays"
             validators={{
               onChange: ({ value }) =>
-                !value || Number(value) <= 0 ? "Total days must be greater than 0" : undefined,
+                !value || Number(value) <= 0
+                  ? "Total days must be greater than 0"
+                  : undefined,
             }}
           >
             {(field) => (
@@ -413,13 +445,14 @@ export default function LeavesPage() {
           </form.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+            >
               Cancel
             </Button>
-            <FormSubmit
-              form={form}
-              loading={createLeave.isPending}
-            >
+            <FormSubmit form={form} loading={createLeave.isPending}>
               Submit Request
             </FormSubmit>
           </div>

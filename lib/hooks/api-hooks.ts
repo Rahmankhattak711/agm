@@ -60,14 +60,31 @@ export interface PettyCashTransaction {
   accountId?: string | null;
   approvedBy?: string | null;
   isApproved: boolean;
+  approvedAt?: string | null;
   createdAt: string;
+  approver?: {
+    id: string;
+    fullName: string;
+    email: string;
+  } | null;
+  account?: {
+    id: string;
+    accountCode: string;
+    accountName: string;
+  } | null;
 }
 
 export interface FixedAsset {
   id: string;
   assetCode: string;
   assetName: string;
-  category: "COMPANY_VEHICLE" | "MACHINERY_EQUIPMENT" | "OFFICE_EQUIPMENT" | "FURNITURE_FIXTURES" | "COMPUTER_HARDWARE" | "LEASEHOLD_IMPROVEMENT";
+  category:
+    | "COMPANY_VEHICLE"
+    | "MACHINERY_EQUIPMENT"
+    | "OFFICE_EQUIPMENT"
+    | "FURNITURE_FIXTURES"
+    | "COMPUTER_HARDWARE"
+    | "LEASEHOLD_IMPROVEMENT";
   purchaseDate: string;
   cost: string | number;
   salvageValue: string | number;
@@ -93,12 +110,33 @@ export interface FixedAsset {
 export type Gender = "MALE" | "FEMALE";
 export type MaritalStatus = "SINGLE" | "MARRIED" | "DIVORCED" | "WIDOWED";
 export type ContractType = "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERN";
-export type EmploymentStatus = "ACTIVE" | "ON_LEAVE" | "SUSPENDED" | "TERMINATED" | "RESIGNED";
+export type EmploymentStatus =
+  "ACTIVE" | "ON_LEAVE" | "SUSPENDED" | "TERMINATED" | "RESIGNED";
 export type PaymentMethod = "WPS_BANK_TRANSFER" | "CASH" | "CHEQUE";
-export type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "HALF_DAY" | "ON_LEAVE" | "HOLIDAY" | "WEEKEND";
-export type LeaveType = "ANNUAL" | "SICK" | "UNPAID" | "EMERGENCY" | "MATERNITY" | "PATERNITY" | "OTHER";
+export type AttendanceStatus =
+  | "PRESENT"
+  | "ABSENT"
+  | "LATE"
+  | "HALF_DAY"
+  | "ON_LEAVE"
+  | "HOLIDAY"
+  | "WEEKEND";
+export type LeaveType =
+  | "ANNUAL"
+  | "SICK"
+  | "UNPAID"
+  | "EMERGENCY"
+  | "MATERNITY"
+  | "PATERNITY"
+  | "OTHER";
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
-export type BonusType = "PERFORMANCE" | "FESTIVAL" | "PROJECT_COMPLETION" | "ATTENDANCE" | "REFERRAL" | "OTHER";
+export type BonusType =
+  | "PERFORMANCE"
+  | "FESTIVAL"
+  | "PROJECT_COMPLETION"
+  | "ATTENDANCE"
+  | "REFERRAL"
+  | "OTHER";
 
 export interface Employee {
   id: string;
@@ -136,7 +174,12 @@ export interface Employee {
   contractEndDate?: string | null;
   terminationDate?: string | null;
   reportsToId?: string | null;
-  reportsTo?: { id: string; firstName: string; lastName: string; employeeCode: string } | null;
+  reportsTo?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    employeeCode: string;
+  } | null;
 
   basicSalary: string | number;
   housingAllowance?: string | number;
@@ -229,7 +272,8 @@ export interface Bonus {
   createdAt: string;
 }
 
-export type ProductType = "RAW_MATERIAL" | "FINISHED_GOOD" | "CONSUMABLE" | "TOOL_EQUIPMENT";
+export type ProductType =
+  "RAW_MATERIAL" | "FINISHED_GOOD" | "CONSUMABLE" | "TOOL_EQUIPMENT";
 export type StockMovementType =
   | "PURCHASE_IN"
   | "SALE_OUT"
@@ -241,7 +285,8 @@ export type StockMovementType =
   | "RETURN_OUT"
   | "PROJECT_CONSUMPTION";
 
-export type PurchaseOrderStatus = "DRAFT" | "ORDERED" | "PARTIALLY_RECEIVED" | "RECEIVED" | "CANCELLED";
+export type PurchaseOrderStatus =
+  "DRAFT" | "ORDERED" | "PARTIALLY_RECEIVED" | "RECEIVED" | "CANCELLED";
 
 export interface Supplier {
   id: string;
@@ -284,7 +329,11 @@ export interface ProductCategory {
   parent?: ProductCategory | null;
   children?: ProductCategory[];
   inventoryAccountId?: string | null;
-  inventoryAccount?: { id: string; accountCode: string; accountName: string } | null;
+  inventoryAccount?: {
+    id: string;
+    accountCode: string;
+    accountName: string;
+  } | null;
   cogsAccountId?: string | null;
   cogsAccount?: { id: string; accountCode: string; accountName: string } | null;
   _count?: {
@@ -379,7 +428,13 @@ export interface UserItem {
   id: string;
   email: string;
   fullName: string;
-  role: "SUPER_ADMIN" | "ADMIN" | "ACCOUNTANT" | "HR" | "INVENTORY_MANAGER" | "USER";
+  role:
+    | "SUPER_ADMIN"
+    | "ADMIN"
+    | "ACCOUNTANT"
+    | "HR"
+    | "INVENTORY_MANAGER"
+    | "USER";
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -580,7 +635,11 @@ export function useAccounts() {
 export function useCreateAccount() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { accountCode: string; accountName: string; type: string }) =>
+    mutationFn: (data: {
+      accountCode: string;
+      accountName: string;
+      type: string;
+    }) =>
       fetchJson<ChartOfAccount>("/api/accounts", {
         method: "POST",
         body: JSON.stringify(data),
@@ -688,10 +747,14 @@ export function useCreatePettyCash() {
       transactionDate: string;
       voucherNumber: string;
       category: string;
+      categoryType?: "BANK_CHARGE" | "LOCAL_GOVERNMENT" | "OPERATIONAL_EXPENSE";
       amount: number;
       transactionType: "TOP_UP" | "DISBURSEMENT";
       receiptImageUrl?: string;
+      notes?: string;
+      accountId?: string;
       approvedBy?: string;
+      isApproved?: boolean;
     }) =>
       fetchJson<PettyCashTransaction>("/api/petty-cash", {
         method: "POST",
@@ -699,6 +762,49 @@ export function useCreatePettyCash() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["petty-cash"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+}
+
+export function useUpdatePettyCash() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      id: string;
+      isApproved?: boolean;
+      approvedBy?: string | null;
+      category?: string;
+      categoryType?: "BANK_CHARGE" | "LOCAL_GOVERNMENT" | "OPERATIONAL_EXPENSE";
+      amount?: number;
+      transactionType?: "TOP_UP" | "DISBURSEMENT";
+      receiptImageUrl?: string | null;
+      notes?: string | null;
+      transactionDate?: string;
+      voucherNumber?: string;
+    }) =>
+      fetchJson<PettyCashTransaction>("/api/petty-cash", {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["petty-cash"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+}
+
+export function useDeletePettyCash() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ success: boolean; message: string }>("/api/petty-cash", {
+        method: "DELETE",
+        body: JSON.stringify({ id }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["petty-cash"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
     },
   });
 }
@@ -735,7 +841,11 @@ export function useCreateAsset() {
   });
 }
 
-export function useEmployees(filters?: { department?: string; status?: string; search?: string }) {
+export function useEmployees(filters?: {
+  department?: string;
+  status?: string;
+  search?: string;
+}) {
   const params = new URLSearchParams();
   if (filters?.department) params.append("department", filters.department);
   if (filters?.status) params.append("status", filters.status);
@@ -789,7 +899,12 @@ export function useDeleteEmployee() {
   });
 }
 
-export function useDailyAttendance(filters?: { employeeId?: string; date?: string; month?: number; year?: number }) {
+export function useDailyAttendance(filters?: {
+  employeeId?: string;
+  date?: string;
+  month?: number;
+  year?: number;
+}) {
   const params = new URLSearchParams();
   if (filters?.employeeId) params.append("employeeId", filters.employeeId);
   if (filters?.date) params.append("date", filters.date);
@@ -799,7 +914,8 @@ export function useDailyAttendance(filters?: { employeeId?: string; date?: strin
 
   return useQuery<DailyAttendance[]>({
     queryKey: ["attendance", filters],
-    queryFn: () => fetchJson<DailyAttendance[]>(`/api/employees/attendance${queryStr}`),
+    queryFn: () =>
+      fetchJson<DailyAttendance[]>(`/api/employees/attendance${queryStr}`),
   });
 }
 
@@ -831,7 +947,10 @@ export function useDeleteAttendance() {
   });
 }
 
-export function useLeaveRequests(filters?: { employeeId?: string; status?: string }) {
+export function useLeaveRequests(filters?: {
+  employeeId?: string;
+  status?: string;
+}) {
   const params = new URLSearchParams();
   if (filters?.employeeId) params.append("employeeId", filters.employeeId);
   if (filters?.status) params.append("status", filters.status);
@@ -839,7 +958,8 @@ export function useLeaveRequests(filters?: { employeeId?: string; status?: strin
 
   return useQuery<LeaveRequest[]>({
     queryKey: ["leaves", filters],
-    queryFn: () => fetchJson<LeaveRequest[]>(`/api/employees/leaves${queryStr}`),
+    queryFn: () =>
+      fetchJson<LeaveRequest[]>(`/api/employees/leaves${queryStr}`),
   });
 }
 
@@ -893,7 +1013,11 @@ export function useDeleteLeaveRequest() {
   });
 }
 
-export function useBonuses(filters?: { employeeId?: string; month?: number; year?: number }) {
+export function useBonuses(filters?: {
+  employeeId?: string;
+  month?: number;
+  year?: number;
+}) {
   const params = new URLSearchParams();
   if (filters?.employeeId) params.append("employeeId", filters.employeeId);
   if (filters?.month) params.append("month", filters.month.toString());
@@ -966,7 +1090,12 @@ export function useProductCategories() {
 export function useCreateProductCategory() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name: string; parentId?: string | null; inventoryAccountId?: string | null; cogsAccountId?: string | null }) =>
+    mutationFn: (data: {
+      name: string;
+      parentId?: string | null;
+      inventoryAccountId?: string | null;
+      cogsAccountId?: string | null;
+    }) =>
       fetchJson<ProductCategory>("/api/inventory/categories", {
         method: "POST",
         body: JSON.stringify(data),
@@ -980,7 +1109,13 @@ export function useCreateProductCategory() {
 export function useUpdateProductCategory() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { id: string; name?: string; parentId?: string | null; inventoryAccountId?: string | null; cogsAccountId?: string | null }) =>
+    mutationFn: (data: {
+      id: string;
+      name?: string;
+      parentId?: string | null;
+      inventoryAccountId?: string | null;
+      cogsAccountId?: string | null;
+    }) =>
       fetchJson<ProductCategory>("/api/inventory/categories", {
         method: "PATCH",
         body: JSON.stringify(data),
@@ -1108,7 +1243,12 @@ export function useDeleteWarehouse() {
   });
 }
 
-export function useProducts(filters?: { categoryId?: string; supplierId?: string; type?: string; search?: string }) {
+export function useProducts(filters?: {
+  categoryId?: string;
+  supplierId?: string;
+  type?: string;
+  search?: string;
+}) {
   const params = new URLSearchParams();
   if (filters?.categoryId) params.append("categoryId", filters.categoryId);
   if (filters?.supplierId) params.append("supplierId", filters.supplierId);
@@ -1164,16 +1304,22 @@ export function useDeleteProduct() {
   });
 }
 
-export function useStockMovements(filters?: { productId?: string; warehouseId?: string; movementType?: string }) {
+export function useStockMovements(filters?: {
+  productId?: string;
+  warehouseId?: string;
+  movementType?: string;
+}) {
   const params = new URLSearchParams();
   if (filters?.productId) params.append("productId", filters.productId);
   if (filters?.warehouseId) params.append("warehouseId", filters.warehouseId);
-  if (filters?.movementType) params.append("movementType", filters.movementType);
+  if (filters?.movementType)
+    params.append("movementType", filters.movementType);
   const queryStr = params.toString() ? `?${params.toString()}` : "";
 
   return useQuery<StockMovement[]>({
     queryKey: ["stock-movements", filters],
-    queryFn: () => fetchJson<StockMovement[]>(`/api/inventory/stock-movements${queryStr}`),
+    queryFn: () =>
+      fetchJson<StockMovement[]>(`/api/inventory/stock-movements${queryStr}`),
   });
 }
 
@@ -1202,7 +1348,10 @@ export function useCreateStockMovement() {
   });
 }
 
-export function usePurchaseOrders(filters?: { status?: string; supplierId?: string }) {
+export function usePurchaseOrders(filters?: {
+  status?: string;
+  supplierId?: string;
+}) {
   const params = new URLSearchParams();
   if (filters?.status) params.append("status", filters.status);
   if (filters?.supplierId) params.append("supplierId", filters.supplierId);
@@ -1210,7 +1359,8 @@ export function usePurchaseOrders(filters?: { status?: string; supplierId?: stri
 
   return useQuery<PurchaseOrder[]>({
     queryKey: ["purchase-orders", filters],
-    queryFn: () => fetchJson<PurchaseOrder[]>(`/api/inventory/purchase-orders${queryStr}`),
+    queryFn: () =>
+      fetchJson<PurchaseOrder[]>(`/api/inventory/purchase-orders${queryStr}`),
   });
 }
 
@@ -1268,9 +1418,12 @@ export function useDeletePurchaseOrder() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      fetchJson<{ success: boolean }>(`/api/inventory/purchase-orders?id=${id}`, {
-        method: "DELETE",
-      }),
+      fetchJson<{ success: boolean }>(
+        `/api/inventory/purchase-orders?id=${id}`,
+        {
+          method: "DELETE",
+        },
+      ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["purchase-orders"] });
     },
@@ -1334,7 +1487,8 @@ export function useVatSummary() {
 export function useLedger(accountId: string | null) {
   return useQuery<LedgerReport>({
     queryKey: ["reports", "ledger", accountId],
-    queryFn: () => fetchJson<LedgerReport>(`/api/reports/ledger?accountId=${accountId}`),
+    queryFn: () =>
+      fetchJson<LedgerReport>(`/api/reports/ledger?accountId=${accountId}`),
     enabled: !!accountId,
   });
 }
@@ -1392,7 +1546,8 @@ export function useQuotations(params?: { search?: string; status?: string }) {
 
   return useQuery<QuotationRecord[]>({
     queryKey: ["quotations", params],
-    queryFn: () => fetchJson<QuotationRecord[]>(`/api/finance/quotations${qStr}`),
+    queryFn: () =>
+      fetchJson<QuotationRecord[]>(`/api/finance/quotations${qStr}`),
   });
 }
 

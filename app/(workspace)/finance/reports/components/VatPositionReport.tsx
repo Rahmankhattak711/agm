@@ -51,24 +51,54 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
   const totalInputVat =
     vatSummary?.inputVat !== undefined
       ? Number(vatSummary.inputVat)
-      : monthlyNetData.reduce((s: number, r: VatMonthlyRow) => s + Number(r.inputVat || 0), 0);
+      : monthlyNetData.reduce(
+          (s: number, r: VatMonthlyRow) => s + Number(r.inputVat || 0),
+          0,
+        );
 
   const totalOutputVat =
     vatSummary?.outputVat !== undefined
       ? Number(vatSummary.outputVat)
-      : monthlyNetData.reduce((s: number, r: VatMonthlyRow) => s + Number(r.outputVat || 0), 0);
+      : monthlyNetData.reduce(
+          (s: number, r: VatMonthlyRow) => s + Number(r.outputVat || 0),
+          0,
+        );
 
   const netVat = totalOutputVat - totalInputVat;
 
-  const totalPurchasesTaxable = purchasesData.reduce((s: number, r: VatMonthlyBreakdownRow) => s + Number(r.taxableAmount || 0), 0);
-  const totalPurchasesNonVat = purchasesData.reduce((s: number, r: VatMonthlyBreakdownRow) => s + Number(r.nonVatAmount || 0), 0);
-  const totalPurchasesVat = purchasesData.reduce((s: number, r: VatMonthlyBreakdownRow) => s + Number(r.vatAmount || 0), 0);
-  const totalPurchasesAmount = purchasesData.reduce((s: number, r: VatMonthlyBreakdownRow) => s + Number(r.totalAmount || 0), 0);
+  const totalPurchasesTaxable = purchasesData.reduce(
+    (s: number, r: VatMonthlyBreakdownRow) => s + Number(r.taxableAmount || 0),
+    0,
+  );
+  const totalPurchasesNonVat = purchasesData.reduce(
+    (s: number, r: VatMonthlyBreakdownRow) => s + Number(r.nonVatAmount || 0),
+    0,
+  );
+  const totalPurchasesVat = purchasesData.reduce(
+    (s: number, r: VatMonthlyBreakdownRow) => s + Number(r.vatAmount || 0),
+    0,
+  );
+  const totalPurchasesAmount = purchasesData.reduce(
+    (s: number, r: VatMonthlyBreakdownRow) => s + Number(r.totalAmount || 0),
+    0,
+  );
 
-  const totalIncomeTaxable = incomeData.reduce((s: number, r: VatMonthlyBreakdownRow) => s + Number(r.taxableAmount || 0), 0);
-  const totalIncomeNonVat = incomeData.reduce((s: number, r: VatMonthlyBreakdownRow) => s + Number(r.nonVatAmount || 0), 0);
-  const totalIncomeVat = incomeData.reduce((s: number, r: VatMonthlyBreakdownRow) => s + Number(r.vatAmount || 0), 0);
-  const totalIncomeAmount = incomeData.reduce((s: number, r: VatMonthlyBreakdownRow) => s + Number(r.totalAmount || 0), 0);
+  const totalIncomeTaxable = incomeData.reduce(
+    (s: number, r: VatMonthlyBreakdownRow) => s + Number(r.taxableAmount || 0),
+    0,
+  );
+  const totalIncomeNonVat = incomeData.reduce(
+    (s: number, r: VatMonthlyBreakdownRow) => s + Number(r.nonVatAmount || 0),
+    0,
+  );
+  const totalIncomeVat = incomeData.reduce(
+    (s: number, r: VatMonthlyBreakdownRow) => s + Number(r.vatAmount || 0),
+    0,
+  );
+  const totalIncomeAmount = incomeData.reduce(
+    (s: number, r: VatMonthlyBreakdownRow) => s + Number(r.totalAmount || 0),
+    0,
+  );
 
   return (
     <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6">
@@ -78,7 +108,8 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
             VAT Summary Report & Returns (FTA Form 201 Ready)
           </h3>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Quarterly returns, monthly net tax, purchase expense summary, and sales income VAT breakdown.
+            AGM FITOUT TECHNICAL SERVICES LLC — Quarterly returns, monthly net
+            tax, purchase expense summary, and sales income VAT breakdown.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -103,7 +134,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
         </div>
       ) : (
         <div className="space-y-8">
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4.5 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
               <div>
@@ -177,7 +207,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
             </div>
           </div>
 
-          {/* TABLE 1: QUARTER DETAILS */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs space-y-0">
             <div className="bg-slate-900 text-white p-3.5 flex items-center justify-between">
               <h4 className="font-bold text-xs uppercase tracking-wider text-white">
@@ -194,38 +223,62 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                   Quarter Details
                 </TableHeaderCell>
                 {quartersData.map((q: VatQuarterDetail, idx: number) => (
-                  <TableHeaderCell key={idx} align="right" className="py-2.5 px-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">
+                  <TableHeaderCell
+                    key={idx}
+                    align="right"
+                    className="py-2.5 px-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider"
+                  >
                     {q.quarter}
                   </TableHeaderCell>
                 ))}
               </TableHead>
               <TableBody className="divide-y divide-slate-100 font-medium">
                 <TableRow className="hover:bg-slate-50/50">
-                  <TableCell className="py-2 px-4 font-bold text-slate-700">VAT Rate</TableCell>
+                  <TableCell className="py-2 px-4 font-bold text-slate-700">
+                    VAT Rate
+                  </TableCell>
                   {quartersData.map((q: VatQuarterDetail, idx: number) => (
-                    <TableCell key={idx} align="right" className="py-2 px-4 font-mono font-bold text-slate-800">
+                    <TableCell
+                      key={idx}
+                      align="right"
+                      className="py-2 px-4 font-mono font-bold text-slate-800"
+                    >
                       {q.vatRate || "5%"}
                     </TableCell>
                   ))}
                 </TableRow>
                 <TableRow className="hover:bg-slate-50/50">
-                  <TableCell className="py-2 px-4 font-bold text-slate-700">Total Input VAT</TableCell>
+                  <TableCell className="py-2 px-4 font-bold text-slate-700">
+                    Total Input VAT
+                  </TableCell>
                   {quartersData.map((q: VatQuarterDetail, idx: number) => (
-                    <TableCell key={idx} align="right" className="py-2 px-4 font-mono font-semibold text-emerald-800">
+                    <TableCell
+                      key={idx}
+                      align="right"
+                      className="py-2 px-4 font-mono font-semibold text-emerald-800"
+                    >
                       {formatNumber(q.inputVat)}
                     </TableCell>
                   ))}
                 </TableRow>
                 <TableRow className="hover:bg-slate-50/50">
-                  <TableCell className="py-2 px-4 font-bold text-slate-700">Total Output VAT</TableCell>
+                  <TableCell className="py-2 px-4 font-bold text-slate-700">
+                    Total Output VAT
+                  </TableCell>
                   {quartersData.map((q: VatQuarterDetail, idx: number) => (
-                    <TableCell key={idx} align="right" className="py-2 px-4 font-mono font-semibold text-rose-800">
+                    <TableCell
+                      key={idx}
+                      align="right"
+                      className="py-2 px-4 font-mono font-semibold text-rose-800"
+                    >
                       {formatNumber(q.outputVat)}
                     </TableCell>
                   ))}
                 </TableRow>
                 <TableRow className="bg-slate-50 font-bold">
-                  <TableCell className="py-2.5 px-4 text-slate-900">Net VAT (Output - Input)</TableCell>
+                  <TableCell className="py-2.5 px-4 text-slate-900">
+                    Net VAT (Output - Input)
+                  </TableCell>
                   {quartersData.map((q: VatQuarterDetail, idx: number) => (
                     <TableCell
                       key={idx}
@@ -239,9 +292,15 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                   ))}
                 </TableRow>
                 <TableRow className="hover:bg-slate-50/50">
-                  <TableCell className="py-2 px-4 font-bold text-slate-700">VAT Position</TableCell>
+                  <TableCell className="py-2 px-4 font-bold text-slate-700">
+                    VAT Position
+                  </TableCell>
                   {quartersData.map((q: VatQuarterDetail, idx: number) => (
-                    <TableCell key={idx} align="right" className="py-2 px-4 font-semibold">
+                    <TableCell
+                      key={idx}
+                      align="right"
+                      className="py-2 px-4 font-semibold"
+                    >
                       <span
                         className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${
                           q.position === "VAT Receivable"
@@ -255,9 +314,15 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                   ))}
                 </TableRow>
                 <TableRow className="hover:bg-slate-50/50">
-                  <TableCell className="py-2 px-4 font-bold text-slate-700">Status</TableCell>
+                  <TableCell className="py-2 px-4 font-bold text-slate-700">
+                    Status
+                  </TableCell>
                   {quartersData.map((q: VatQuarterDetail, idx: number) => (
-                    <TableCell key={idx} align="right" className="py-2 px-4 font-mono text-[11px] font-bold text-slate-600">
+                    <TableCell
+                      key={idx}
+                      align="right"
+                      className="py-2 px-4 font-mono text-[11px] font-bold text-slate-600"
+                    >
                       {q.status || "—"}
                     </TableCell>
                   ))}
@@ -266,7 +331,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
             </Table>
           </div>
 
-          {/* TABLE 2: MONTHLY NET VAT SUMMARY */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <div className="bg-slate-900 text-white p-3.5 flex items-center justify-between">
               <h4 className="font-bold text-xs uppercase tracking-wider text-white">
@@ -279,19 +343,47 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
 
             <Table className="w-full text-xs text-left">
               <TableHead className="bg-slate-50 border-b border-slate-200">
-                <TableHeaderCell className="py-2.5 px-4 w-1/4 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Month</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-1/4 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Input VAT (AED)</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-1/4 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Output VAT (AED)</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-1/4 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Net VAT (AED)</TableHeaderCell>
+                <TableHeaderCell className="py-2.5 px-4 w-1/4 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+                  Month
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-1/4 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  Input VAT (AED)
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-1/4 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  Output VAT (AED)
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-1/4 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  Net VAT (AED)
+                </TableHeaderCell>
               </TableHead>
               <TableBody className="divide-y divide-slate-100">
                 {monthlyNetData.map((r: VatMonthlyRow, idx: number) => (
-                  <TableRow key={idx} className="hover:bg-slate-50/50 text-slate-700 transition">
-                    <TableCell className="py-2 px-4 font-bold text-slate-900">{r.month}</TableCell>
-                    <TableCell align="right" className="py-2 px-4 font-mono font-medium text-slate-800">
+                  <TableRow
+                    key={idx}
+                    className="hover:bg-slate-50/50 text-slate-700 transition"
+                  >
+                    <TableCell className="py-2 px-4 font-bold text-slate-900">
+                      {r.month}
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      className="py-2 px-4 font-mono font-medium text-slate-800"
+                    >
                       {formatNumber(r.inputVat)}
                     </TableCell>
-                    <TableCell align="right" className="py-2 px-4 font-mono font-medium text-slate-800">
+                    <TableCell
+                      align="right"
+                      className="py-2 px-4 font-mono font-medium text-slate-800"
+                    >
                       {formatNumber(r.outputVat)}
                     </TableCell>
                     <TableCell
@@ -306,14 +398,25 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                 ))}
 
                 <TableRow className="bg-slate-900 text-white font-black">
-                  <TableCell className="py-3 px-4 uppercase tracking-wider font-bold">TOTAL</TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-black text-sm text-emerald-400">
+                  <TableCell className="py-3 px-4 uppercase tracking-wider font-bold">
+                    TOTAL
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-black text-sm text-emerald-400"
+                  >
                     {formatNumber(totalInputVat)}
                   </TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-black text-sm text-rose-400">
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-black text-sm text-rose-400"
+                  >
                     {formatNumber(totalOutputVat)}
                   </TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-black text-sm text-amber-400">
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-black text-sm text-amber-400"
+                  >
                     {formatNumber(netVat)}
                   </TableCell>
                 </TableRow>
@@ -321,7 +424,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
             </Table>
           </div>
 
-          {/* TABLE 3: MONTHLY PURCHASE/EXPENSE SUMMARY */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <div className="bg-slate-900 text-white p-3.5 flex items-center justify-between">
               <h4 className="font-bold text-xs uppercase tracking-wider text-white">
@@ -334,43 +436,96 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
 
             <Table className="w-full text-xs text-left">
               <TableHead className="bg-slate-50 border-b border-slate-200">
-                <TableHeaderCell className="py-2.5 px-4 w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Month</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Taxable Amount (Excl. VAT)</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Non-VAT Amount</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">VAT Amount (5%)</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Total Amount (AED)</TableHeaderCell>
+                <TableHeaderCell className="py-2.5 px-4 w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+                  Month
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  Taxable Amount (Excl. VAT)
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  Non-VAT Amount
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  VAT Amount (5%)
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  Total Amount (AED)
+                </TableHeaderCell>
               </TableHead>
               <TableBody className="divide-y divide-slate-100">
                 {purchasesData.map((r: VatMonthlyBreakdownRow, idx: number) => (
-                  <TableRow key={idx} className="hover:bg-slate-50/50 text-slate-700 transition">
-                    <TableCell className="py-2 px-4 font-bold text-slate-900">{r.month}</TableCell>
-                    <TableCell align="right" className="py-2 px-4 font-mono font-medium text-slate-800">
+                  <TableRow
+                    key={idx}
+                    className="hover:bg-slate-50/50 text-slate-700 transition"
+                  >
+                    <TableCell className="py-2 px-4 font-bold text-slate-900">
+                      {r.month}
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      className="py-2 px-4 font-mono font-medium text-slate-800"
+                    >
                       {formatNumber(r.taxableAmount)}
                     </TableCell>
-                    <TableCell align="right" className="py-2 px-4 font-mono font-medium text-slate-600">
+                    <TableCell
+                      align="right"
+                      className="py-2 px-4 font-mono font-medium text-slate-600"
+                    >
                       {formatNumber(r.nonVatAmount)}
                     </TableCell>
-                    <TableCell align="right" className="py-2 px-4 font-mono font-bold text-emerald-800">
+                    <TableCell
+                      align="right"
+                      className="py-2 px-4 font-mono font-bold text-emerald-800"
+                    >
                       {formatNumber(r.vatAmount)}
                     </TableCell>
-                    <TableCell align="right" className="py-2 px-4 font-mono font-semibold text-slate-900">
+                    <TableCell
+                      align="right"
+                      className="py-2 px-4 font-mono font-semibold text-slate-900"
+                    >
                       {formatNumber(r.totalAmount)}
                     </TableCell>
                   </TableRow>
                 ))}
 
                 <TableRow className="bg-slate-900 text-white font-black">
-                  <TableCell className="py-3 px-4 uppercase tracking-wider font-bold">TOTAL</TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-black text-sm text-slate-200">
+                  <TableCell className="py-3 px-4 uppercase tracking-wider font-bold">
+                    TOTAL
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-black text-sm text-slate-200"
+                  >
                     {formatNumber(totalPurchasesTaxable)}
                   </TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-bold text-slate-400">
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-bold text-slate-400"
+                  >
                     {formatNumber(totalPurchasesNonVat)}
                   </TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-black text-sm text-emerald-400">
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-black text-sm text-emerald-400"
+                  >
                     {formatNumber(totalPurchasesVat)}
                   </TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-black text-sm text-white">
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-black text-sm text-white"
+                  >
                     {formatNumber(totalPurchasesAmount)}
                   </TableCell>
                 </TableRow>
@@ -378,7 +533,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
             </Table>
           </div>
 
-          {/* TABLE 4: MONTHLY INCOME SUMMARY */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <div className="bg-slate-900 text-white p-3.5 flex items-center justify-between">
               <h4 className="font-bold text-xs uppercase tracking-wider text-white">
@@ -391,43 +545,96 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
 
             <Table className="w-full text-xs text-left">
               <TableHead className="bg-slate-50 border-b border-slate-200">
-                <TableHeaderCell className="py-2.5 px-4 w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Month</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Taxable Amount (Excl. VAT)</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Non-VAT Amount</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">VAT Amount (5%)</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Total Amount (AED)</TableHeaderCell>
+                <TableHeaderCell className="py-2.5 px-4 w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+                  Month
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  Taxable Amount (Excl. VAT)
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  Non-VAT Amount
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  VAT Amount (5%)
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-1/5 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  Total Amount (AED)
+                </TableHeaderCell>
               </TableHead>
               <TableBody className="divide-y divide-slate-100">
                 {incomeData.map((r: VatMonthlyBreakdownRow, idx: number) => (
-                  <TableRow key={idx} className="hover:bg-slate-50/50 text-slate-700 transition">
-                    <TableCell className="py-2 px-4 font-bold text-slate-900">{r.month}</TableCell>
-                    <TableCell align="right" className="py-2 px-4 font-mono font-medium text-slate-800">
+                  <TableRow
+                    key={idx}
+                    className="hover:bg-slate-50/50 text-slate-700 transition"
+                  >
+                    <TableCell className="py-2 px-4 font-bold text-slate-900">
+                      {r.month}
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      className="py-2 px-4 font-mono font-medium text-slate-800"
+                    >
                       {formatNumber(r.taxableAmount)}
                     </TableCell>
-                    <TableCell align="right" className="py-2 px-4 font-mono font-medium text-slate-600">
+                    <TableCell
+                      align="right"
+                      className="py-2 px-4 font-mono font-medium text-slate-600"
+                    >
                       {formatNumber(r.nonVatAmount)}
                     </TableCell>
-                    <TableCell align="right" className="py-2 px-4 font-mono font-bold text-rose-800">
+                    <TableCell
+                      align="right"
+                      className="py-2 px-4 font-mono font-bold text-rose-800"
+                    >
                       {formatNumber(r.vatAmount)}
                     </TableCell>
-                    <TableCell align="right" className="py-2 px-4 font-mono font-semibold text-slate-900">
+                    <TableCell
+                      align="right"
+                      className="py-2 px-4 font-mono font-semibold text-slate-900"
+                    >
                       {formatNumber(r.totalAmount)}
                     </TableCell>
                   </TableRow>
                 ))}
 
                 <TableRow className="bg-slate-900 text-white font-black">
-                  <TableCell className="py-3 px-4 uppercase tracking-wider font-bold">TOTAL</TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-black text-sm text-slate-200">
+                  <TableCell className="py-3 px-4 uppercase tracking-wider font-bold">
+                    TOTAL
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-black text-sm text-slate-200"
+                  >
                     {formatNumber(totalIncomeTaxable)}
                   </TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-bold text-slate-400">
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-bold text-slate-400"
+                  >
                     {formatNumber(totalIncomeNonVat)}
                   </TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-black text-sm text-rose-400">
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-black text-sm text-rose-400"
+                  >
                     {formatNumber(totalIncomeVat)}
                   </TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-black text-sm text-white">
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-black text-sm text-white"
+                  >
                     {formatNumber(totalIncomeAmount)}
                   </TableCell>
                 </TableRow>
@@ -435,7 +642,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
             </Table>
           </div>
 
-          {/* TABLE 5: UAE FTA Form 201 Box Schedule */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <div className="bg-slate-900 text-white p-3.5 flex items-center justify-between">
               <h4 className="font-bold text-xs uppercase tracking-wider text-white">
@@ -448,66 +654,123 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
 
             <Table className="w-full text-xs text-left">
               <TableHead className="bg-slate-50 border-b border-slate-200">
-                <TableHeaderCell className="py-2.5 px-4 w-20 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Box #</TableHeaderCell>
-                <TableHeaderCell className="py-2.5 px-4 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Description</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-44 text-slate-500 font-bold uppercase text-[10px] tracking-wider">Taxable Amount (AED)</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-2.5 px-4 text-right w-44 text-slate-500 font-bold uppercase text-[10px] tracking-wider">VAT Amount (AED)</TableHeaderCell>
+                <TableHeaderCell className="py-2.5 px-4 w-20 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+                  Box #
+                </TableHeaderCell>
+                <TableHeaderCell className="py-2.5 px-4 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+                  Description
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-44 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  Taxable Amount (AED)
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-2.5 px-4 text-right w-44 text-slate-500 font-bold uppercase text-[10px] tracking-wider"
+                >
+                  VAT Amount (AED)
+                </TableHeaderCell>
               </TableHead>
               <TableBody className="divide-y divide-slate-100">
                 <TableRow className="hover:bg-slate-50/50">
-                  <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900">Box 1</TableCell>
+                  <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900">
+                    Box 1
+                  </TableCell>
                   <TableCell className="py-2.5 px-4 font-semibold text-slate-900">
                     Standard rated supplies in Dubai / UAE (Sales & Turnover)
                   </TableCell>
-                  <TableCell align="right" className="py-2.5 px-4 text-right font-mono font-medium text-slate-900">
+                  <TableCell
+                    align="right"
+                    className="py-2.5 px-4 text-right font-mono font-medium text-slate-900"
+                  >
                     {formatNumber(totalIncomeTaxable)}
                   </TableCell>
-                  <TableCell align="right" className="py-2.5 px-4 text-right font-mono font-bold text-rose-700">
+                  <TableCell
+                    align="right"
+                    className="py-2.5 px-4 text-right font-mono font-bold text-rose-700"
+                  >
                     {formatNumber(totalOutputVat)}
                   </TableCell>
                 </TableRow>
 
                 <TableRow className="hover:bg-slate-50/50">
-                  <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900">Box 9</TableCell>
+                  <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900">
+                    Box 9
+                  </TableCell>
                   <TableCell className="py-2.5 px-4 font-semibold text-slate-900">
                     Standard rated expenses & materials (Recoverable Input Tax)
                   </TableCell>
-                  <TableCell align="right" className="py-2.5 px-4 text-right font-mono font-medium text-slate-900">
+                  <TableCell
+                    align="right"
+                    className="py-2.5 px-4 text-right font-mono font-medium text-slate-900"
+                  >
                     {formatNumber(totalPurchasesTaxable)}
                   </TableCell>
-                  <TableCell align="right" className="py-2.5 px-4 text-right font-mono font-bold text-emerald-700">
+                  <TableCell
+                    align="right"
+                    className="py-2.5 px-4 text-right font-mono font-bold text-emerald-700"
+                  >
                     {formatNumber(totalInputVat)}
                   </TableCell>
                 </TableRow>
 
                 <TableRow className="bg-slate-50/80 font-bold text-slate-900">
-                  <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900">Box 11</TableCell>
+                  <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900">
+                    Box 11
+                  </TableCell>
                   <TableCell className="py-2.5 px-4 font-bold text-slate-900">
                     Total value of due tax for the period (Output Tax)
                   </TableCell>
-                  <TableCell align="right" className="py-2.5 px-4 text-right font-mono font-bold text-slate-500">—</TableCell>
-                  <TableCell align="right" className="py-2.5 px-4 text-right font-mono font-black text-rose-800">
+                  <TableCell
+                    align="right"
+                    className="py-2.5 px-4 text-right font-mono font-bold text-slate-500"
+                  >
+                    —
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    className="py-2.5 px-4 text-right font-mono font-black text-rose-800"
+                  >
                     {formatNumber(totalOutputVat)}
                   </TableCell>
                 </TableRow>
 
                 <TableRow className="bg-slate-50/80 font-bold text-slate-900">
-                  <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900">Box 12</TableCell>
+                  <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900">
+                    Box 12
+                  </TableCell>
                   <TableCell className="py-2.5 px-4 font-bold text-slate-900">
                     Total value of recoverable tax for the period (Input Tax)
                   </TableCell>
-                  <TableCell align="right" className="py-2.5 px-4 text-right font-mono font-bold text-slate-500">—</TableCell>
-                  <TableCell align="right" className="py-2.5 px-4 text-right font-mono font-black text-emerald-800">
+                  <TableCell
+                    align="right"
+                    className="py-2.5 px-4 text-right font-mono font-bold text-slate-500"
+                  >
+                    —
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    className="py-2.5 px-4 text-right font-mono font-black text-emerald-800"
+                  >
                     {formatNumber(totalInputVat)}
                   </TableCell>
                 </TableRow>
 
                 <TableRow className="bg-slate-900 text-white font-black">
-                  <TableCell className="py-3 px-4 font-mono font-black text-amber-400">Box 13</TableCell>
+                  <TableCell className="py-3 px-4 font-mono font-black text-amber-400">
+                    Box 13
+                  </TableCell>
                   <TableCell className="py-3 px-4 text-xs uppercase tracking-wider font-bold">
                     PAYABLE TAX FOR THE PERIOD (NET TAX LIABILITY)
                   </TableCell>
-                  <TableCell align="right" className="py-3 px-4 text-right font-mono font-bold text-slate-400">—</TableCell>
+                  <TableCell
+                    align="right"
+                    className="py-3 px-4 text-right font-mono font-bold text-slate-400"
+                  >
+                    —
+                  </TableCell>
                   <TableCell
                     align="right"
                     className={`py-3 px-4 text-right font-mono font-black text-sm ${

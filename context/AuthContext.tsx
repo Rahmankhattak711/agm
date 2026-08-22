@@ -2,7 +2,13 @@
 
 import { authService, User } from "@/lib/auth-service";
 import { useRouter } from "next/navigation";
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface AuthContextType {
   user: User | null;

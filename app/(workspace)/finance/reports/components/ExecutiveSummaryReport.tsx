@@ -150,7 +150,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-
         <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
@@ -369,7 +368,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
           ))}
         </div>
 
-        {/* MASTER 3-MONTH GROUP COMPARISON MATRIX TABLE */}
         <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-xs">
           <div className="bg-slate-900 text-white p-3.5 flex items-center justify-between">
             <h4 className="font-bold text-xs uppercase tracking-wider text-white">
@@ -609,9 +607,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
         </div>
       </div>
 
-      {/* FINANCIAL HEALTH RATIOS & AUDIT CHECKLIST */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* LIQUIDITY & HEALTH RATIOS */}
         <div className="p-5 rounded-2xl border border-slate-200/80 bg-white space-y-4 shadow-xs">
           <h4 className="font-bold text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
             <span>📈</span> Financial Liquidity & Efficiency Ratios
@@ -667,7 +663,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
           </div>
         </div>
 
-        {/* AUDIT & GENERAL LEDGER INTEGRITY CHECKLIST */}
         <div className="p-5 rounded-2xl border border-slate-200/80 bg-white space-y-4 shadow-xs">
           <h4 className="font-bold text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
             <span>🛡️</span> Statutory Accounting Audit & Integrity

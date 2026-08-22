@@ -7,7 +7,9 @@ export async function GET() {
       include: {
         stockLevels: {
           include: {
-            product: { select: { id: true, name: true, sku: true, unit: true } },
+            product: {
+              select: { id: true, name: true, sku: true, unit: true },
+            },
           },
         },
         _count: { select: { stockMovements: true } },
@@ -17,7 +19,10 @@ export async function GET() {
     return NextResponse.json(warehouses);
   } catch (error) {
     console.error("Error fetching warehouses:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -27,7 +32,10 @@ export async function POST(request: Request) {
     const { code, name, location } = body;
 
     if (!code?.trim() || !name?.trim()) {
-      return NextResponse.json({ error: "Warehouse code and name are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Warehouse code and name are required" },
+        { status: 400 },
+      );
     }
 
     const created = await prisma.warehouse.create({
@@ -42,9 +50,15 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Error creating warehouse:", error);
     if (error.code === "P2002") {
-      return NextResponse.json({ error: "A warehouse with this code already exists" }, { status: 409 });
+      return NextResponse.json(
+        { error: "A warehouse with this code already exists" },
+        { status: 409 },
+      );
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -54,7 +68,10 @@ export async function PATCH(request: Request) {
     const { id, ...data } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "Missing warehouse ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing warehouse ID" },
+        { status: 400 },
+      );
     }
 
     if (data.code) data.code = data.code.trim().toUpperCase();
@@ -68,7 +85,10 @@ export async function PATCH(request: Request) {
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error("Error updating warehouse:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -78,13 +98,19 @@ export async function DELETE(request: Request) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json({ error: "Missing warehouse ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing warehouse ID" },
+        { status: 400 },
+      );
     }
 
     await prisma.warehouse.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting warehouse:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

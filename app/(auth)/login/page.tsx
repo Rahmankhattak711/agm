@@ -51,16 +51,58 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen">
-
       <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#1d3345] via-[#243c50] to-[#2c455a] p-12 flex-col justify-between overflow-hidden">
-
         <div className="absolute inset-0 opacity-15 pointer-events-none">
-          <svg aria-hidden="true" viewBox="0 0 1440 900" className="w-full h-full object-cover">
-            <line x1="0" y1="150" x2="1440" y2="750" stroke="#dff7e6" strokeWidth="1.2" strokeDasharray="6 6" />
-            <line x1="0" y1="750" x2="1440" y2="150" stroke="#dff7e6" strokeWidth="1.2" strokeDasharray="6 6" />
-            <rect x="200" y="100" width="400" height="700" fill="none" stroke="#dff7e6" strokeWidth="1" />
-            <rect x="840" y="100" width="400" height="700" fill="none" stroke="#dff7e6" strokeWidth="1" />
-            <circle cx="720" cy="450" r="320" fill="none" stroke="#dff7e6" strokeWidth="1" opacity="0.6" />
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 1440 900"
+            className="w-full h-full object-cover"
+          >
+            <line
+              x1="0"
+              y1="150"
+              x2="1440"
+              y2="750"
+              stroke="#dff7e6"
+              strokeWidth="1.2"
+              strokeDasharray="6 6"
+            />
+            <line
+              x1="0"
+              y1="750"
+              x2="1440"
+              y2="150"
+              stroke="#dff7e6"
+              strokeWidth="1.2"
+              strokeDasharray="6 6"
+            />
+            <rect
+              x="200"
+              y="100"
+              width="400"
+              height="700"
+              fill="none"
+              stroke="#dff7e6"
+              strokeWidth="1"
+            />
+            <rect
+              x="840"
+              y="100"
+              width="400"
+              height="700"
+              fill="none"
+              stroke="#dff7e6"
+              strokeWidth="1"
+            />
+            <circle
+              cx="720"
+              cy="450"
+              r="320"
+              fill="none"
+              stroke="#dff7e6"
+              strokeWidth="1"
+              opacity="0.6"
+            />
           </svg>
         </div>
 
@@ -76,7 +118,9 @@ export default function LoginPage() {
             Interior Fitout & Project Accounting Suite
           </h1>
           <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-            Sign in to access real-time financial reporting, double-entry ledgers, inventory tracking, daily attendance, and statutory UAE VAT returns.
+            Sign in to access real-time financial reporting, double-entry
+            ledgers, inventory tracking, daily attendance, and statutory UAE VAT
+            returns.
           </p>
         </div>
 
@@ -123,8 +167,8 @@ export default function LoginPage() {
                   !value
                     ? "Email is required"
                     : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-                    ? "Invalid email address"
-                    : undefined,
+                      ? "Invalid email address"
+                      : undefined,
               }}
             >
               {(field) => {
@@ -152,12 +196,16 @@ export default function LoginPage() {
                         onChange={(e) => field.handleChange(e.target.value)}
                         disabled={mutation.isPending}
                         className={`w-full rounded-xl border ${
-                          error ? "border-rose-400 bg-rose-50/30" : "border-slate-200 bg-slate-50/50"
+                          error
+                            ? "border-rose-400 bg-rose-50/30"
+                            : "border-slate-200 bg-slate-50/50"
                         } pl-10 pr-3.5 py-2.5 text-xs font-medium text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition`}
                       />
                     </div>
                     {error && (
-                      <p className="text-[11px] text-rose-600 mt-1 font-medium">{String(error)}</p>
+                      <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                        {String(error)}
+                      </p>
                     )}
                   </div>
                 );
@@ -167,7 +215,8 @@ export default function LoginPage() {
             <form.Field
               name="password"
               validators={{
-                onChange: ({ value }) => (!value ? "Password is required" : undefined),
+                onChange: ({ value }) =>
+                  !value ? "Password is required" : undefined,
               }}
             >
               {(field) => {
@@ -197,7 +246,9 @@ export default function LoginPage() {
                         onChange={(e) => field.handleChange(e.target.value)}
                         disabled={mutation.isPending}
                         className={`w-full rounded-xl border ${
-                          error ? "border-rose-400 bg-rose-50/30" : "border-slate-200 bg-slate-50/50"
+                          error
+                            ? "border-rose-400 bg-rose-50/30"
+                            : "border-slate-200 bg-slate-50/50"
                         } pl-10 pr-10 py-2.5 text-xs font-medium text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition`}
                       />
                       <button
@@ -213,7 +264,9 @@ export default function LoginPage() {
                       </button>
                     </div>
                     {error && (
-                      <p className="text-[11px] text-rose-600 mt-1 font-medium">{String(error)}</p>
+                      <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                        {String(error)}
+                      </p>
                     )}
                   </div>
                 );

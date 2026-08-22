@@ -1,7 +1,8 @@
 import { SpinnerIcon } from "@/components/icons";
 import React, { ButtonHTMLAttributes } from "react";
 
-export type ButtonVariant = "primary" | "secondary" | "danger" | "outline" | "ghost" | "dark";
+export type ButtonVariant =
+  "primary" | "secondary" | "danger" | "outline" | "ghost" | "dark";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

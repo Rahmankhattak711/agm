@@ -19,11 +19,9 @@ export const Table: React.FC<TableProps> = ({
   );
 };
 
-export const TableHead: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({
-  children,
-  className = "",
-  ...props
-}) => {
+export const TableHead: React.FC<
+  React.HTMLAttributes<HTMLTableSectionElement>
+> = ({ children, className = "", ...props }) => {
   return (
     <thead className={className} {...props}>
       <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-wider font-semibold">
@@ -34,10 +32,16 @@ export const TableHead: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> 
 };
 
 export const TableHeaderCell: React.FC<
-  React.ThHTMLAttributes<HTMLTableCellElement> & { align?: "left" | "center" | "right" }
+  React.ThHTMLAttributes<HTMLTableCellElement> & {
+    align?: "left" | "center" | "right";
+  }
 > = ({ children, align = "left", className = "", ...props }) => {
   const alignClass =
-    align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left";
+    align === "center"
+      ? "text-center"
+      : align === "right"
+        ? "text-right"
+        : "text-left";
   return (
     <th className={`pb-3 px-3 ${alignClass} ${className}`} {...props}>
       {children}
@@ -45,11 +49,9 @@ export const TableHeaderCell: React.FC<
   );
 };
 
-export const TableBody: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({
-  children,
-  className = "",
-  ...props
-}) => {
+export const TableBody: React.FC<
+  React.HTMLAttributes<HTMLTableSectionElement>
+> = ({ children, className = "", ...props }) => {
   return (
     <tbody className={`divide-y divide-slate-100 ${className}`} {...props}>
       {children}
@@ -63,17 +65,26 @@ export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({
   ...props
 }) => {
   return (
-    <tr className={`hover:bg-slate-50/70 transition-colors ${className}`} {...props}>
+    <tr
+      className={`hover:bg-slate-50/70 transition-colors ${className}`}
+      {...props}
+    >
       {children}
     </tr>
   );
 };
 
 export const TableCell: React.FC<
-  React.TdHTMLAttributes<HTMLTableCellElement> & { align?: "left" | "center" | "right" }
+  React.TdHTMLAttributes<HTMLTableCellElement> & {
+    align?: "left" | "center" | "right";
+  }
 > = ({ children, align = "left", className = "", ...props }) => {
   const alignClass =
-    align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left";
+    align === "center"
+      ? "text-center"
+      : align === "right"
+        ? "text-right"
+        : "text-left";
   return (
     <td className={`py-3 px-3 ${alignClass} ${className}`} {...props}>
       {children}
@@ -102,7 +113,10 @@ export const TableLoading: React.FC<{
 }> = ({ message = "Loading records...", colSpan = 8 }) => {
   return (
     <tr>
-      <td colSpan={colSpan} className="py-12 text-center text-xs text-slate-400 animate-pulse">
+      <td
+        colSpan={colSpan}
+        className="py-12 text-center text-xs text-slate-400 animate-pulse"
+      >
         {message}
       </td>
     </tr>

@@ -1,8 +1,18 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-type Account = Awaited<ReturnType<typeof prisma.chartOfAccount.findMany>>[number];
-type TrialRow = { accountId: string; accountCode: string; accountName: string; type: string; debit: number; credit: number; netBalance: number };
+type Account = Awaited<
+  ReturnType<typeof prisma.chartOfAccount.findMany>
+>[number];
+type TrialRow = {
+  accountId: string;
+  accountCode: string;
+  accountName: string;
+  type: string;
+  debit: number;
+  credit: number;
+  netBalance: number;
+};
 
 export async function GET() {
   try {
@@ -41,7 +51,10 @@ export async function GET() {
     });
 
     const totalDebit = rows.reduce((s: number, r: TrialRow) => s + r.debit, 0);
-    const totalCredit = rows.reduce((s: number, r: TrialRow) => s + r.credit, 0);
+    const totalCredit = rows.reduce(
+      (s: number, r: TrialRow) => s + r.credit,
+      0,
+    );
     const difference = Math.abs(totalDebit - totalCredit);
     const isBalanced = difference < 0.01;
 

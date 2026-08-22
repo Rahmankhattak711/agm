@@ -57,79 +57,86 @@ export async function POST(request: Request) {
       }
     }
 
-    const created = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const je = await tx.journalEntry.create({
-        data: {
-          entryNumber,
-          entryDate: new Date(entryDate),
-          description: description || null,
-          reference: reference || null,
-          createdBy: resolvedCreatedBy,
-        },
-      });
-
-      for (const l of lines) {
-        const debit = Number(l.debit || 0);
-        const credit = Number(l.credit || 0);
-        const lineRecord = await tx.journalEntryLine.create({
+    const created = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const je = await tx.journalEntry.create({
           data: {
-            journalEntryId: je.id,
-            accountId: l.accountId,
-            debit,
-            credit,
+            entryNumber,
+            entryDate: new Date(entryDate),
+            description: description || null,
+            reference: reference || null,
+            createdBy: resolvedCreatedBy,
           },
-          include: { account: true },
         });
 
-        let vatType: "INPUT" | "OUTPUT" | null = l.vatType || null;
-        let vatAmount = Number(l.vatAmount || 0);
-        let taxableAmount = Number(l.taxableAmount || 0);
+        for (const l of lines) {
+          const debit = Number(l.debit || 0);
+          const credit = Number(l.credit || 0);
+          const lineRecord = await tx.journalEntryLine.create({
+            data: {
+              journalEntryId: je.id,
+              accountId: l.accountId,
+              debit,
+              credit,
+            },
+            include: { account: true },
+          });
 
-        if (!vatType && lineRecord.account) {
-          if (
-            lineRecord.account.accountCode === "2200" ||
-            lineRecord.account.accountName.toLowerCase().includes("vat input")
-          ) {
-            vatType = "INPUT";
-            vatAmount = vatAmount || debit;
-            taxableAmount = taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
-          } else if (
-            lineRecord.account.accountCode === "2210" ||
-            lineRecord.account.accountName.toLowerCase().includes("vat output")
-          ) {
-            vatType = "OUTPUT";
-            vatAmount = vatAmount || credit;
-            taxableAmount = taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+          let vatType: "INPUT" | "OUTPUT" | null = l.vatType || null;
+          let vatAmount = Number(l.vatAmount || 0);
+          let taxableAmount = Number(l.taxableAmount || 0);
+
+          if (!vatType && lineRecord.account) {
+            if (
+              lineRecord.account.accountCode === "2200" ||
+              lineRecord.account.accountName.toLowerCase().includes("vat input")
+            ) {
+              vatType = "INPUT";
+              vatAmount = vatAmount || debit;
+              taxableAmount =
+                taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+            } else if (
+              lineRecord.account.accountCode === "2210" ||
+              lineRecord.account.accountName
+                .toLowerCase()
+                .includes("vat output")
+            ) {
+              vatType = "OUTPUT";
+              vatAmount = vatAmount || credit;
+              taxableAmount =
+                taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+            }
+          }
+
+          if (vatType && vatAmount > 0) {
+            await tx.vatEntry.create({
+              data: {
+                journalEntryLineId: lineRecord.id,
+                taxableAmount:
+                  taxableAmount > 0 ? taxableAmount : vatAmount / 0.05,
+                vatAmount,
+                vatType,
+              },
+            });
           }
         }
 
-        if (vatType && vatAmount > 0) {
-          await tx.vatEntry.create({
-            data: {
-              journalEntryLineId: lineRecord.id,
-              taxableAmount: taxableAmount > 0 ? taxableAmount : vatAmount / 0.05,
-              vatAmount,
-              vatType,
+        return tx.journalEntry.findUnique({
+          where: { id: je.id },
+          include: {
+            lines: {
+              include: {
+                account: true,
+                vatEntry: true,
+              },
             },
-          });
-        }
-      }
-
-      return tx.journalEntry.findUnique({
-        where: { id: je.id },
-        include: {
-          lines: {
-            include: {
-              account: true,
-              vatEntry: true,
+            user: {
+              select: { fullName: true },
             },
           },
-          user: {
-            select: { fullName: true },
-          },
-        },
-      });
-    });
+        });
+      },
+    );
 
     return NextResponse.json(created, { status: 201 });
   } catch (error: any) {
@@ -169,7 +176,15 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    const { id, entryNumber, entryDate, description, reference, isPosted, lines } = body;
+    const {
+      id,
+      entryNumber,
+      entryDate,
+      description,
+      reference,
+      isPosted,
+      lines,
+    } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -196,87 +211,96 @@ export async function PATCH(request: Request) {
       }
     }
 
-    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const updateData: any = {};
-      if (entryNumber) updateData.entryNumber = entryNumber;
-      if (entryDate) updateData.entryDate = new Date(entryDate);
-      if (description !== undefined) updateData.description = description;
-      if (reference !== undefined) updateData.reference = reference;
-      if (typeof isPosted === "boolean") updateData.isPosted = isPosted;
+    const updated = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const updateData: any = {};
+        if (entryNumber) updateData.entryNumber = entryNumber;
+        if (entryDate) updateData.entryDate = new Date(entryDate);
+        if (description !== undefined) updateData.description = description;
+        if (reference !== undefined) updateData.reference = reference;
+        if (typeof isPosted === "boolean") updateData.isPosted = isPosted;
 
-      await tx.journalEntry.update({
-        where: { id },
-        data: updateData,
-      });
-
-      if (Array.isArray(lines) && lines.length > 0) {
-        await tx.journalEntryLine.deleteMany({
-          where: { journalEntryId: id },
+        await tx.journalEntry.update({
+          where: { id },
+          data: updateData,
         });
 
-        for (const l of lines) {
-          const debit = Number(l.debit || 0);
-          const credit = Number(l.credit || 0);
-          const lineRecord = await tx.journalEntryLine.create({
-            data: {
-              journalEntryId: id,
-              accountId: l.accountId,
-              debit,
-              credit,
-            },
-            include: { account: true },
+        if (Array.isArray(lines) && lines.length > 0) {
+          await tx.journalEntryLine.deleteMany({
+            where: { journalEntryId: id },
           });
 
-          let vatType: "INPUT" | "OUTPUT" | null = l.vatType || null;
-          let vatAmount = Number(l.vatAmount || 0);
-          let taxableAmount = Number(l.taxableAmount || 0);
+          for (const l of lines) {
+            const debit = Number(l.debit || 0);
+            const credit = Number(l.credit || 0);
+            const lineRecord = await tx.journalEntryLine.create({
+              data: {
+                journalEntryId: id,
+                accountId: l.accountId,
+                debit,
+                credit,
+              },
+              include: { account: true },
+            });
 
-          if (!vatType && lineRecord.account) {
-            if (
-              lineRecord.account.accountCode === "2200" ||
-              lineRecord.account.accountName.toLowerCase().includes("vat input")
-            ) {
-              vatType = "INPUT";
-              vatAmount = vatAmount || debit;
-              taxableAmount = taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
-            } else if (
-              lineRecord.account.accountCode === "2210" ||
-              lineRecord.account.accountName.toLowerCase().includes("vat output")
-            ) {
-              vatType = "OUTPUT";
-              vatAmount = vatAmount || credit;
-              taxableAmount = taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+            let vatType: "INPUT" | "OUTPUT" | null = l.vatType || null;
+            let vatAmount = Number(l.vatAmount || 0);
+            let taxableAmount = Number(l.taxableAmount || 0);
+
+            if (!vatType && lineRecord.account) {
+              if (
+                lineRecord.account.accountCode === "2200" ||
+                lineRecord.account.accountName
+                  .toLowerCase()
+                  .includes("vat input")
+              ) {
+                vatType = "INPUT";
+                vatAmount = vatAmount || debit;
+                taxableAmount =
+                  taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+              } else if (
+                lineRecord.account.accountCode === "2210" ||
+                lineRecord.account.accountName
+                  .toLowerCase()
+                  .includes("vat output")
+              ) {
+                vatType = "OUTPUT";
+                vatAmount = vatAmount || credit;
+                taxableAmount =
+                  taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+              }
+            }
+
+            if (vatType && vatAmount > 0) {
+              await tx.vatEntry.create({
+                data: {
+                  journalEntryLineId: lineRecord.id,
+                  taxableAmount:
+                    taxableAmount > 0 ? taxableAmount : vatAmount / 0.05,
+                  vatAmount,
+                  vatType,
+                },
+              });
             }
           }
-
-          if (vatType && vatAmount > 0) {
-            await tx.vatEntry.create({
-              data: {
-                journalEntryLineId: lineRecord.id,
-                taxableAmount: taxableAmount > 0 ? taxableAmount : vatAmount / 0.05,
-                vatAmount,
-                vatType,
-              },
-            });
-          }
         }
-      }
 
-      return tx.journalEntry.findUnique({
-        where: { id },
-        include: {
-          lines: {
-            include: {
-              account: true,
-              vatEntry: true,
+        return tx.journalEntry.findUnique({
+          where: { id },
+          include: {
+            lines: {
+              include: {
+                account: true,
+                vatEntry: true,
+              },
+            },
+            user: {
+              select: { fullName: true },
             },
           },
-          user: {
-            select: { fullName: true },
-          },
-        },
-      });
-    });
+        });
+      },
+    );
 
     return NextResponse.json(updated);
   } catch (error: any) {

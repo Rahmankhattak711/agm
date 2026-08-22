@@ -16,7 +16,13 @@ export function FieldInfo({ field, className = "" }: FieldInfoProps) {
 
   return (
     <p className={`text-[11px] text-red-600 mt-1 font-medium ${className}`}>
-      {errors.map((err) => (typeof err === "object" && err !== null && "message" in err ? (err as any).message : String(err))).join(", ")}
+      {errors
+        .map((err) =>
+          typeof err === "object" && err !== null && "message" in err
+            ? (err as any).message
+            : String(err),
+        )
+        .join(", ")}
     </p>
   );
 }

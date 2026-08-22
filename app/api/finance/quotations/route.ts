@@ -46,7 +46,7 @@ export async function GET(request: Request) {
     console.error("GET /api/finance/quotations error:", error);
     return NextResponse.json(
       { error: "Failed to fetch quotations", details: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -81,143 +81,148 @@ export async function POST(request: Request) {
     if (!quotationNo) {
       return NextResponse.json(
         { error: "Quotation number is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const computedSubtotal = items.reduce(
-      (sum: number, it: any) => {
-        if (it.isFree || String(it.qty).toLowerCase() === "free" || String(it.rate).toLowerCase() === "free") {
-          return sum;
-        }
-        return sum + Number(it.quantity || it.qty || 0) * Number(it.unitRate || it.rate || 0);
-      },
-      0
-    );
+    const computedSubtotal = items.reduce((sum: number, it: any) => {
+      if (
+        it.isFree ||
+        String(it.qty).toLowerCase() === "free" ||
+        String(it.rate).toLowerCase() === "free"
+      ) {
+        return sum;
+      }
+      return (
+        sum +
+        Number(it.quantity || it.qty || 0) * Number(it.unitRate || it.rate || 0)
+      );
+    }, 0);
     const computedVat = (computedSubtotal * Number(vatPct || 0)) / 100;
-    const computedTotal = computedSubtotal + computedVat - Number(discount || 0);
+    const computedTotal =
+      computedSubtotal + computedVat - Number(discount || 0);
 
-    const quotation = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-
-      const existing = await tx.quotation.findUnique({
-        where: { quotationNo },
-      });
-
-      let qId: string;
-
-      if (existing) {
-
-        await tx.quotationItem.deleteMany({
-          where: { quotationId: existing.id },
+    const quotation = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const existing = await tx.quotation.findUnique({
+          where: { quotationNo },
         });
 
-        const updated = await tx.quotation.update({
-          where: { id: existing.id },
-          data: {
-            date: date || "",
-            validUntil: validUntil || "",
-            customer: customer || "",
-            attention: attention || "",
-            address: address || "",
-            trn: trn || "",
-            mobile: mobile || "",
-            project: project || "",
-            location: location || "",
-            reference: reference || "",
-            preparedBy: preparedBy || "",
-            contact: contact || "",
-            vatPct: Number(vatPct || 0),
-            discount: Number(discount || 0),
-            subtotal: computedSubtotal,
-            vatAmount: computedVat,
-            totalAmount: computedTotal,
-            status: status as any,
-            notes: notes || null,
-            terms: terms || null,
-            paymentTerms: paymentTerms || null,
-            createdById: createdById || null,
+        let qId: string;
+
+        if (existing) {
+          await tx.quotationItem.deleteMany({
+            where: { quotationId: existing.id },
+          });
+
+          const updated = await tx.quotation.update({
+            where: { id: existing.id },
+            data: {
+              date: date || "",
+              validUntil: validUntil || "",
+              customer: customer || "",
+              attention: attention || "",
+              address: address || "",
+              trn: trn || "",
+              mobile: mobile || "",
+              project: project || "",
+              location: location || "",
+              reference: reference || "",
+              preparedBy: preparedBy || "",
+              contact: contact || "",
+              vatPct: Number(vatPct || 0),
+              discount: Number(discount || 0),
+              subtotal: computedSubtotal,
+              vatAmount: computedVat,
+              totalAmount: computedTotal,
+              status: status as any,
+              notes: notes || null,
+              terms: terms || null,
+              paymentTerms: paymentTerms || null,
+              createdById: createdById || null,
+            },
+          });
+          qId = updated.id;
+        } else {
+          const created = await tx.quotation.create({
+            data: {
+              quotationNo,
+              date: date || "",
+              validUntil: validUntil || "",
+              customer: customer || "",
+              attention: attention || "",
+              address: address || "",
+              trn: trn || "",
+              mobile: mobile || "",
+              project: project || "",
+              location: location || "",
+              reference: reference || "",
+              preparedBy: preparedBy || "",
+              contact: contact || "",
+              vatPct: Number(vatPct || 0),
+              discount: Number(discount || 0),
+              subtotal: computedSubtotal,
+              vatAmount: computedVat,
+              totalAmount: computedTotal,
+              status: status as any,
+              notes: notes || null,
+              terms: terms || null,
+              paymentTerms: paymentTerms || null,
+              createdById: createdById || null,
+            },
+          });
+          qId = created.id;
+        }
+
+        if (Array.isArray(items) && items.length > 0) {
+          const itemRows = items.map((it: any, index: number) => {
+            const isItemFree = Boolean(
+              it.isFree ||
+              String(it.qty).toLowerCase() === "free" ||
+              String(it.rate).toLowerCase() === "free",
+            );
+
+            return {
+              quotationId: qId,
+              productId: it.productId || null,
+              section: it.section || "",
+              itemOrder: index + 1,
+              description: it.description || it.desc || "",
+              quantity: isItemFree ? 0 : Number(it.quantity || it.qty || 1),
+              unit: it.unit || "SQM",
+              unitRate: isItemFree ? 0 : Number(it.unitRate || it.rate || 0),
+              totalAmount: isItemFree
+                ? 0
+                : Number(it.quantity || it.qty || 1) *
+                  Number(it.unitRate || it.rate || 0),
+              isFree: isItemFree,
+            };
+          });
+
+          await tx.quotationItem.createMany({
+            data: itemRows,
+          });
+        }
+
+        return tx.quotation.findUnique({
+          where: { id: qId },
+          include: {
+            items: {
+              orderBy: { itemOrder: "asc" },
+              include: { product: true },
+            },
+            createdBy: true,
           },
         });
-        qId = updated.id;
-      } else {
-
-        const created = await tx.quotation.create({
-          data: {
-            quotationNo,
-            date: date || "",
-            validUntil: validUntil || "",
-            customer: customer || "",
-            attention: attention || "",
-            address: address || "",
-            trn: trn || "",
-            mobile: mobile || "",
-            project: project || "",
-            location: location || "",
-            reference: reference || "",
-            preparedBy: preparedBy || "",
-            contact: contact || "",
-            vatPct: Number(vatPct || 0),
-            discount: Number(discount || 0),
-            subtotal: computedSubtotal,
-            vatAmount: computedVat,
-            totalAmount: computedTotal,
-            status: status as any,
-            notes: notes || null,
-            terms: terms || null,
-            paymentTerms: paymentTerms || null,
-            createdById: createdById || null,
-          },
-        });
-        qId = created.id;
-      }
-
-      if (Array.isArray(items) && items.length > 0) {
-        const itemRows = items.map((it: any, index: number) => {
-          const isItemFree = Boolean(
-            it.isFree ||
-            String(it.qty).toLowerCase() === "free" ||
-            String(it.rate).toLowerCase() === "free"
-          );
-
-          return {
-            quotationId: qId,
-            productId: it.productId || null,
-            section: it.section || "",
-            itemOrder: index + 1,
-            description: it.description || it.desc || "",
-            quantity: isItemFree ? 0 : Number(it.quantity || it.qty || 1),
-            unit: it.unit || "SQM",
-            unitRate: isItemFree ? 0 : Number(it.unitRate || it.rate || 0),
-            totalAmount: isItemFree
-              ? 0
-              : Number(it.quantity || it.qty || 1) * Number(it.unitRate || it.rate || 0),
-            isFree: isItemFree,
-          };
-        });
-
-        await tx.quotationItem.createMany({
-          data: itemRows,
-        });
-      }
-
-      return tx.quotation.findUnique({
-        where: { id: qId },
-        include: {
-          items: {
-            orderBy: { itemOrder: "asc" },
-            include: { product: true },
-          },
-          createdBy: true,
-        },
-      });
-    });
+      },
+    );
 
     return NextResponse.json(quotation, { status: 201 });
   } catch (error: any) {
     console.error("POST /api/finance/quotations error:", error);
     return NextResponse.json(
       { error: "Failed to save quotation", details: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

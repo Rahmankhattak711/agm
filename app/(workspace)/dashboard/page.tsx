@@ -1,6 +1,6 @@
 "use client";
 
-import { useBalanceSheet, useEmployees, useJournalEntries, usePettyCash, useProfitLoss, useVatSummary } from "@/lib/hooks/api-hooks";
+import BarChart from "@/components/BarChart";
 import {
   EmployeesIcon,
   JournalEntriesIcon,
@@ -9,9 +9,15 @@ import {
   ProductsIcon,
   ReportsIcon,
 } from "@/components/icons";
-import BarChart from "@/components/BarChart";
-import QuotationTemplate from "@/components/QuotationTemplate";
 import StatCard from "@/components/StatCard";
+import {
+  useBalanceSheet,
+  useEmployees,
+  useJournalEntries,
+  usePettyCash,
+  useProfitLoss,
+  useVatSummary,
+} from "@/lib/hooks/api-hooks";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -27,16 +33,29 @@ export default function DashboardPage() {
     return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const revenue = typeof profitLoss?.revenue === "number" ? profitLoss.revenue : Number(profitLoss?.totalIncome || 0);
-  const expenses = typeof profitLoss?.expenses === "number" ? profitLoss.expenses : Number(profitLoss?.totalExpenses || 0);
-  const netIncome = typeof profitLoss?.netIncome === "number" ? profitLoss.netIncome : Number(profitLoss?.netProfit || 0);
-  const totalAssets = Number(balanceSheet?.totalAssets ?? balanceSheet?.assets ?? 0);
-  const totalLiabilities = Number(balanceSheet?.totalLiabilities ?? balanceSheet?.liabilities ?? 0);
+  const revenue =
+    typeof profitLoss?.revenue === "number"
+      ? profitLoss.revenue
+      : Number(profitLoss?.totalIncome || 0);
+  const expenses =
+    typeof profitLoss?.expenses === "number"
+      ? profitLoss.expenses
+      : Number(profitLoss?.totalExpenses || 0);
+  const netIncome =
+    typeof profitLoss?.netIncome === "number"
+      ? profitLoss.netIncome
+      : Number(profitLoss?.netProfit || 0);
+  const totalAssets = Number(
+    balanceSheet?.totalAssets ?? balanceSheet?.assets ?? 0,
+  );
+  const totalLiabilities = Number(
+    balanceSheet?.totalLiabilities ?? balanceSheet?.liabilities ?? 0,
+  );
   const totalEquity = Number(
     balanceSheet?.totalEquity ??
       (typeof balanceSheet?.equityAmount === "number"
         ? balanceSheet.equityAmount
-        : 0)
+        : 0),
   );
   const isBalanced = Boolean(balanceSheet?.balanced);
 
@@ -50,7 +69,11 @@ export default function DashboardPage() {
   const comparisonChartData = [
     { label: "Revenue", value: revenue, color: "#2e7d32" },
     { label: "Expenses", value: expenses, color: "#d32f2f" },
-    { label: "Net Profit", value: netIncome, color: netIncome >= 0 ? "#1976d2" : "#f57c00" },
+    {
+      label: "Net Profit",
+      value: netIncome,
+      color: netIncome >= 0 ? "#1976d2" : "#f57c00",
+    },
   ];
 
   const bsChartData = [
@@ -61,25 +84,37 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-[#284257] to-[#1c3243] text-white shadow-lg">
         <div>
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-300">Live Enterprise Accounting</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-300">
+              Live Enterprise Accounting
+            </span>
           </div>
-          <h2 className="text-xl font-black mt-1">Financial & Operations Command Center</h2>
-          <p className="text-xs text-white/70 mt-0.5">Real-time balances, general ledger updates, and operational performance.</p>
+          <h2 className="text-xl font-black mt-1">
+            Financial & Operations Command Center
+          </h2>
+          <p className="text-xs text-white/70 mt-0.5">
+            Real-time balances, general ledger updates, and operational
+            performance.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 ${
-            isBalanced
-              ? "bg-emerald-500/15 border-emerald-400/30 text-emerald-200"
-              : "bg-amber-500/15 border-amber-400/30 text-amber-200"
-          }`}>
-            <span className={`h-2 w-2 rounded-full ${isBalanced ? "bg-emerald-400" : "bg-amber-400"}`} />
-            {isBalanced ? "Balance Sheet: Balanced" : "Balance Sheet: Action Required"}
+          <div
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 ${
+              isBalanced
+                ? "bg-emerald-500/15 border-emerald-400/30 text-emerald-200"
+                : "bg-amber-500/15 border-amber-400/30 text-amber-200"
+            }`}
+          >
+            <span
+              className={`h-2 w-2 rounded-full ${isBalanced ? "bg-emerald-400" : "bg-amber-400"}`}
+            />
+            {isBalanced
+              ? "Balance Sheet: Balanced"
+              : "Balance Sheet: Action Required"}
           </div>
 
           <Link
@@ -100,7 +135,13 @@ export default function DashboardPage() {
           subtitle="Operating Income"
           gradient="bg-gradient-to-br from-[#215a36] via-[#1b4b2d] to-[#123620]"
           loading={plLoading}
-          icon={<ReportsIcon size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
+          icon={
+            <ReportsIcon
+              size={20}
+              className="w-5 h-5 text-white"
+              strokeWidth={2}
+            />
+          }
           trend={{ label: "Active Fiscal Year", up: true }}
           sparkline={[20, 35, 45, 60, 80, 95]}
         />
@@ -112,8 +153,17 @@ export default function DashboardPage() {
           subtitle={netIncome >= 0 ? "Positive Net Margin" : "Net Deficit"}
           gradient="bg-gradient-to-br from-[#2a4d69] via-[#213f56] to-[#172c3d]"
           loading={plLoading}
-          icon={<JournalEntriesIcon size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
-          trend={{ label: `${((netIncome / (revenue || 1)) * 100).toFixed(1)}% margin`, up: netIncome >= 0 }}
+          icon={
+            <JournalEntriesIcon
+              size={20}
+              className="w-5 h-5 text-white"
+              strokeWidth={2}
+            />
+          }
+          trend={{
+            label: `${((netIncome / (revenue || 1)) * 100).toFixed(1)}% margin`,
+            up: netIncome >= 0,
+          }}
           sparkline={[10, 25, 30, 45, 55, 70]}
         />
 
@@ -124,7 +174,13 @@ export default function DashboardPage() {
           subtitle="Current & Fixed Assets"
           gradient="bg-gradient-to-br from-[#3b5368] via-[#2d4052] to-[#202f3d]"
           loading={bsLoading}
-          icon={<ProductsIcon size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
+          icon={
+            <ProductsIcon
+              size={20}
+              className="w-5 h-5 text-white"
+              strokeWidth={2}
+            />
+          }
           sparkline={[40, 50, 60, 65, 80, 85]}
         />
 
@@ -135,7 +191,13 @@ export default function DashboardPage() {
           subtitle="UAE WPS Payroll Ready"
           gradient="bg-gradient-to-br from-[#4a6b57] via-[#365241] to-[#24382c]"
           loading={empLoading}
-          icon={<EmployeesIcon size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
+          icon={
+            <EmployeesIcon
+              size={20}
+              className="w-5 h-5 text-white"
+              strokeWidth={2}
+            />
+          }
           sparkline={[5, 10, 15, 20, 25, activeEmployees * 5 || 30]}
         />
       </div>
@@ -143,9 +205,15 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Petty Cash Disbursed</p>
-            <p className="text-lg font-black text-slate-800 mt-0.5">{pcLoading ? "..." : formatCurrency(totalPettyCashOut)}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{pettyCash?.length || 0} vouchers recorded</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Petty Cash Disbursed
+            </p>
+            <p className="text-lg font-black text-slate-800 mt-0.5">
+              {pcLoading ? "..." : formatCurrency(totalPettyCashOut)}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {pettyCash?.length || 0} vouchers recorded
+            </p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700">
             <PettyCashIcon className="w-5 h-5" strokeWidth={2} />
@@ -154,9 +222,16 @@ export default function DashboardPage() {
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">VAT Net Position</p>
-            <p className="text-lg font-black text-slate-800 mt-0.5">{vatLoading ? "..." : formatCurrency(vatSummary?.net || 0)}</p>
-            <p className="text-xs text-slate-500 mt-0.5">Output: {formatCurrency(vatSummary?.outputVat || 0)} | Input: {formatCurrency(vatSummary?.inputVat || 0)}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              VAT Net Position
+            </p>
+            <p className="text-lg font-black text-slate-800 mt-0.5">
+              {vatLoading ? "..." : formatCurrency(vatSummary?.net || 0)}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Output: {formatCurrency(vatSummary?.outputVat || 0)} | Input:{" "}
+              {formatCurrency(vatSummary?.inputVat || 0)}
+            </p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-700">
             <ReportsIcon className="w-5 h-5" strokeWidth={2} />
@@ -165,9 +240,15 @@ export default function DashboardPage() {
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Journal Entries</p>
-            <p className="text-lg font-black text-slate-800 mt-0.5">{jeLoading ? "..." : (journalEntries?.length || 0)}</p>
-            <p className="text-xs text-slate-500 mt-0.5">Double-entry audit trail synced</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Total Journal Entries
+            </p>
+            <p className="text-lg font-black text-slate-800 mt-0.5">
+              {jeLoading ? "..." : journalEntries?.length || 0}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Double-entry audit trail synced
+            </p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/60 flex items-center justify-center text-blue-700">
             <JournalEntriesIcon className="w-5 h-5" strokeWidth={2} />
@@ -198,11 +279,14 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
           <div>
-            <h3 className="font-bold text-sm text-slate-900">Quick Navigation</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Fast shortcuts to core operational modules.</p>
+            <h3 className="font-bold text-sm text-slate-900">
+              Quick Navigation
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Fast shortcuts to core operational modules.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-2">
@@ -215,11 +299,17 @@ export default function DashboardPage() {
                   COA
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Chart of Accounts</p>
-                  <p className="text-[11px] text-slate-500">Asset, Liability, Equity & Ledger</p>
+                  <p className="text-xs font-bold text-slate-800">
+                    Chart of Accounts
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Asset, Liability, Equity & Ledger
+                  </p>
                 </div>
               </div>
-              <span className="text-slate-400 group-hover:text-slate-700 text-xs font-bold">→</span>
+              <span className="text-slate-400 group-hover:text-slate-700 text-xs font-bold">
+                →
+              </span>
             </Link>
 
             <Link
@@ -231,11 +321,17 @@ export default function DashboardPage() {
                   PC
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Petty Cash Vouchers</p>
-                  <p className="text-[11px] text-slate-500">Daily expenses & approvals</p>
+                  <p className="text-xs font-bold text-slate-800">
+                    Petty Cash Vouchers
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Daily expenses & approvals
+                  </p>
                 </div>
               </div>
-              <span className="text-slate-400 group-hover:text-slate-700 text-xs font-bold">→</span>
+              <span className="text-slate-400 group-hover:text-slate-700 text-xs font-bold">
+                →
+              </span>
             </Link>
 
             <Link
@@ -247,11 +343,17 @@ export default function DashboardPage() {
                   HR
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Employees & Payroll</p>
-                  <p className="text-[11px] text-slate-500">Staff directory & salaries</p>
+                  <p className="text-xs font-bold text-slate-800">
+                    Employees & Payroll
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Staff directory & salaries
+                  </p>
                 </div>
               </div>
-              <span className="text-slate-400 group-hover:text-slate-700 text-xs font-bold">→</span>
+              <span className="text-slate-400 group-hover:text-slate-700 text-xs font-bold">
+                →
+              </span>
             </Link>
 
             <Link
@@ -263,11 +365,17 @@ export default function DashboardPage() {
                   FA
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Fixed Assets</p>
-                  <p className="text-[11px] text-slate-500">Vehicles & depreciation</p>
+                  <p className="text-xs font-bold text-slate-800">
+                    Fixed Assets
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    Vehicles & depreciation
+                  </p>
                 </div>
               </div>
-              <span className="text-slate-400 group-hover:text-slate-700 text-xs font-bold">→</span>
+              <span className="text-slate-400 group-hover:text-slate-700 text-xs font-bold">
+                →
+              </span>
             </Link>
 
             <Link
@@ -279,11 +387,17 @@ export default function DashboardPage() {
                   REP
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Financial Reports</p>
-                  <p className="text-[11px] text-slate-500">P&L, Balance Sheet, Trial Balance</p>
+                  <p className="text-xs font-bold text-slate-800">
+                    Financial Reports
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    P&L, Balance Sheet, Trial Balance
+                  </p>
                 </div>
               </div>
-              <span className="text-slate-400 group-hover:text-slate-700 text-xs font-bold">→</span>
+              <span className="text-slate-400 group-hover:text-slate-700 text-xs font-bold">
+                →
+              </span>
             </Link>
           </div>
         </div>
@@ -291,8 +405,12 @@ export default function DashboardPage() {
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-sm text-slate-900">Recent Journal Entries</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Latest posted and draft transactions</p>
+              <h3 className="font-bold text-sm text-slate-900">
+                Recent Journal Entries
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Latest posted and draft transactions
+              </p>
             </div>
             <Link
               href="/finance/journal-entries"
@@ -303,12 +421,22 @@ export default function DashboardPage() {
           </div>
 
           {jeLoading ? (
-            <div className="py-8 text-center text-xs text-slate-400 animate-pulse">Loading journal entries...</div>
+            <div className="py-8 text-center text-xs text-slate-400 animate-pulse">
+              Loading journal entries...
+            </div>
           ) : recentEntries.length === 0 ? (
             <div className="py-10 text-center text-slate-400">
-              <JournalEntriesIcon className="w-8 h-8 mx-auto mb-2 opacity-50" strokeWidth={1.5} />
-              <p className="text-xs font-medium">No journal entries recorded yet.</p>
-              <Link href="/finance/journal-entries" className="text-xs font-bold text-emerald-600 hover:underline mt-1 inline-block">
+              <JournalEntriesIcon
+                className="w-8 h-8 mx-auto mb-2 opacity-50"
+                strokeWidth={1.5}
+              />
+              <p className="text-xs font-medium">
+                No journal entries recorded yet.
+              </p>
+              <Link
+                href="/finance/journal-entries"
+                className="text-xs font-bold text-emerald-600 hover:underline mt-1 inline-block"
+              >
                 Create first entry
               </Link>
             </div>
@@ -326,25 +454,41 @@ export default function DashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {recentEntries.map((je) => {
-                    const totalDebit = (je.lines || []).reduce((s, l) => s + Number(l.debit || 0), 0);
+                    const totalDebit = (je.lines || []).reduce(
+                      (s, l) => s + Number(l.debit || 0),
+                      0,
+                    );
                     return (
-                      <tr key={je.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3 font-bold text-slate-800">{je.entryNumber}</td>
-                        <td className="py-3 text-slate-600">
-                          {new Date(je.entryDate).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                      <tr
+                        key={je.id}
+                        className="hover:bg-slate-50/80 transition-colors"
+                      >
+                        <td className="py-3 font-bold text-slate-800">
+                          {je.entryNumber}
                         </td>
-                        <td className="py-3 text-slate-600 max-w-[200px] truncate" title={je.description || "General Entry"}>
+                        <td className="py-3 text-slate-600">
+                          {new Date(je.entryDate).toLocaleDateString(
+                            undefined,
+                            { month: "short", day: "numeric", year: "numeric" },
+                          )}
+                        </td>
+                        <td
+                          className="py-3 text-slate-600 max-w-[200px] truncate"
+                          title={je.description || "General Entry"}
+                        >
                           {je.description || "General Entry"}
                         </td>
                         <td className="py-3 text-right font-semibold text-slate-800">
                           {formatCurrency(totalDebit)}
                         </td>
                         <td className="py-3 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            je.isPosted
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-slate-100 text-slate-700"
-                          }`}>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              je.isPosted
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-slate-100 text-slate-700"
+                            }`}
+                          >
                             {je.isPosted ? "Posted" : "Draft"}
                           </span>
                         </td>

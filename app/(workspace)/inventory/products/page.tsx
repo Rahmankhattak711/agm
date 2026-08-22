@@ -33,10 +33,16 @@ export default function ProductsPage() {
   const [selectedType, setSelectedType] = useState<string>("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [adjustStockProduct, setAdjustStockProduct] = useState<Product | null>(null);
+  const [adjustStockProduct, setAdjustStockProduct] = useState<Product | null>(
+    null,
+  );
   const [formError, setFormError] = useState("");
 
-  const { data: products = [], isLoading, error } = useProducts({
+  const {
+    data: products = [],
+    isLoading,
+    error,
+  } = useProducts({
     categoryId: selectedCategory !== "ALL" ? selectedCategory : undefined,
     type: selectedType !== "ALL" ? selectedType : undefined,
     search: search || undefined,
@@ -57,11 +63,14 @@ export default function ProductsPage() {
   };
 
   const totalProducts = products.length;
-  const totalStockItems = products.reduce((acc, p) => acc + (p.totalOnHand || 0), 0);
+  const totalStockItems = products.reduce(
+    (acc, p) => acc + (p.totalOnHand || 0),
+    0,
+  );
   const lowStockCount = products.filter((p) => p.isLowStock).length;
   const totalInventoryValue = products.reduce(
     (acc, p) => acc + (p.totalOnHand || 0) * Number(p.costPrice || 0),
-    0
+    0,
   );
 
   const productForm = useForm({
@@ -129,7 +138,8 @@ export default function ProductsPage() {
   const adjustForm = useForm({
     defaultValues: {
       warehouseId: "",
-      movementType: "ADJUSTMENT_IN" as "ADJUSTMENT_IN" | "ADJUSTMENT_OUT" | "PROJECT_CONSUMPTION",
+      movementType: "ADJUSTMENT_IN" as
+        "ADJUSTMENT_IN" | "ADJUSTMENT_OUT" | "PROJECT_CONSUMPTION",
       quantity: "1",
       notes: "",
     },
@@ -219,7 +229,9 @@ export default function ProductsPage() {
         header: "Product Name",
         cell: ({ row }) => (
           <div>
-            <div className="font-semibold text-slate-900">{row.original.name}</div>
+            <div className="font-semibold text-slate-900">
+              {row.original.name}
+            </div>
             {row.original.barcode && (
               <span className="text-[10px] text-slate-400 font-mono">
                 [{row.original.barcode}]
@@ -268,7 +280,9 @@ export default function ProductsPage() {
             <span className="font-bold text-slate-900 font-mono text-sm">
               {row.original.totalOnHand ?? 0}
             </span>{" "}
-            <span className="text-[10px] text-slate-400">{row.original.unit}</span>
+            <span className="text-[10px] text-slate-400">
+              {row.original.unit}
+            </span>
           </div>
         ),
       },
@@ -324,17 +338,19 @@ export default function ProductsPage() {
         ),
       },
     ],
-    [deleteProduct]
+    [deleteProduct],
   );
 
   return (
     <div className="space-y-6">
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Product & Raw Materials Catalog</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            Product & Raw Materials Catalog
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage inventory SKUs, technical fitout supplies, unit costs, and reorder levels.
+            Manage inventory SKUs, technical fitout supplies, unit costs, and
+            reorder levels.
           </p>
         </div>
 
@@ -349,27 +365,51 @@ export default function ProductsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total SKUs</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{totalProducts}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Registered catalogue lines</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Total SKUs
+          </p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {totalProducts}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Registered catalogue lines
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Units in Stock</p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">{totalStockItems.toLocaleString()}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Across all registered warehouses</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Total Units in Stock
+          </p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">
+            {totalStockItems.toLocaleString()}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Across all registered warehouses
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Low Stock Warnings</p>
-          <p className="text-2xl font-black text-amber-600 mt-1">{lowStockCount}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Below reorder trigger level</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Low Stock Warnings
+          </p>
+          <p className="text-2xl font-black text-amber-600 mt-1">
+            {lowStockCount}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Below reorder trigger level
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Inventory Valuation</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{formatCurrency(totalInventoryValue)}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Cost price holding value</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Inventory Valuation
+          </p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {formatCurrency(totalInventoryValue)}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Cost price holding value
+          </p>
         </div>
       </div>
 
@@ -413,7 +453,9 @@ export default function ProductsPage() {
         </div>
 
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">Error loading catalog: {(error as any).message}</div>
+          <div className="py-8 text-center text-xs text-red-500">
+            Error loading catalog: {(error as any).message}
+          </div>
         ) : (
           <DataTable
             columns={columns}
@@ -428,7 +470,9 @@ export default function ProductsPage() {
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        title={editingProduct ? "Edit Product Details" : "Add New SKU to Inventory"}
+        title={
+          editingProduct ? "Edit Product Details" : "Add New SKU to Inventory"
+        }
         maxWidth="lg"
       >
         <form
@@ -449,7 +493,8 @@ export default function ProductsPage() {
             <productForm.Field
               name="sku"
               validators={{
-                onChange: ({ value }) => (!value.trim() ? "SKU is required" : undefined),
+                onChange: ({ value }) =>
+                  !value.trim() ? "SKU is required" : undefined,
               }}
             >
               {(field) => (
@@ -466,7 +511,8 @@ export default function ProductsPage() {
             <productForm.Field
               name="name"
               validators={{
-                onChange: ({ value }) => (!value.trim() ? "Product name is required" : undefined),
+                onChange: ({ value }) =>
+                  !value.trim() ? "Product name is required" : undefined,
               }}
             >
               {(field) => (
@@ -579,7 +625,9 @@ export default function ProductsPage() {
 
           {!editingProduct && warehouses.length > 0 && (
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-              <span className="text-[11px] font-bold text-slate-700 uppercase block">Opening Stock (Optional)</span>
+              <span className="text-[11px] font-bold text-slate-700 uppercase block">
+                Opening Stock (Optional)
+              </span>
               <div className="grid grid-cols-2 gap-2">
                 <productForm.Field name="initialWarehouseId">
                   {(field) => (
@@ -608,7 +656,11 @@ export default function ProductsPage() {
           )}
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-            <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsCreateOpen(false)}
+            >
               Cancel
             </Button>
             <FormSubmit
@@ -638,7 +690,8 @@ export default function ProductsPage() {
           <adjustForm.Field
             name="warehouseId"
             validators={{
-              onChange: ({ value }) => (!value ? "Warehouse is required" : undefined),
+              onChange: ({ value }) =>
+                !value ? "Warehouse is required" : undefined,
             }}
           >
             {(field) => (
@@ -658,7 +711,9 @@ export default function ProductsPage() {
               <FormSelect field={field} label="Movement Type">
                 <option value="ADJUSTMENT_IN">Stock In / Audit (+)</option>
                 <option value="ADJUSTMENT_OUT">Stock Out / Damage (-)</option>
-                <option value="PROJECT_CONSUMPTION">Project Site Consumption (-)</option>
+                <option value="PROJECT_CONSUMPTION">
+                  Project Site Consumption (-)
+                </option>
               </FormSelect>
             )}
           </adjustForm.Field>
@@ -667,7 +722,9 @@ export default function ProductsPage() {
             name="quantity"
             validators={{
               onChange: ({ value }) =>
-                !value || Number(value) <= 0 ? "Quantity must be greater than 0" : undefined,
+                !value || Number(value) <= 0
+                  ? "Quantity must be greater than 0"
+                  : undefined,
             }}
           >
             {(field) => (
@@ -693,13 +750,14 @@ export default function ProductsPage() {
           </adjustForm.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-            <Button type="button" variant="outline" onClick={() => setAdjustStockProduct(null)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setAdjustStockProduct(null)}
+            >
               Cancel
             </Button>
-            <FormSubmit
-              form={adjustForm}
-              loading={createMovement.isPending}
-            >
+            <FormSubmit form={adjustForm} loading={createMovement.isPending}>
               Confirm Movement
             </FormSubmit>
           </div>

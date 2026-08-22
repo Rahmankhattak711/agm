@@ -37,10 +37,12 @@ export async function GET(request: Request) {
 
     const transformed = products.map((p: (typeof products)[number]) => {
       const totalOnHand = p.stockLevels.reduce(
-        (acc: number, sl: (typeof p.stockLevels)[number]) => acc + Number(sl.quantityOnHand),
-        0
+        (acc: number, sl: (typeof p.stockLevels)[number]) =>
+          acc + Number(sl.quantityOnHand),
+        0,
       );
-      const isLowStock = Number(p.reorderLevel) > 0 && totalOnHand <= Number(p.reorderLevel);
+      const isLowStock =
+        Number(p.reorderLevel) > 0 && totalOnHand <= Number(p.reorderLevel);
       return {
         ...p,
         totalOnHand,
@@ -51,7 +53,10 @@ export async function GET(request: Request) {
     return NextResponse.json(transformed);
   } catch (error) {
     console.error("Error fetching products:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -77,7 +82,10 @@ export async function POST(request: Request) {
     } = body;
 
     if (!sku?.trim() || !name?.trim()) {
-      return NextResponse.json({ error: "SKU and Product Name are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "SKU and Product Name are required" },
+        { status: 400 },
+      );
     }
 
     const created = await prisma.product.create({
@@ -130,9 +138,15 @@ export async function POST(request: Request) {
     console.error("Error creating product:", error);
     if (error.code === "P2002") {
       const field = error.meta?.target?.[0] || "SKU / Barcode";
-      return NextResponse.json({ error: `A product with this ${field} already exists` }, { status: 409 });
+      return NextResponse.json(
+        { error: `A product with this ${field} already exists` },
+        { status: 409 },
+      );
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -142,15 +156,21 @@ export async function PATCH(request: Request) {
     const { id, ...data } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "Missing product ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing product ID" },
+        { status: 400 },
+      );
     }
 
     if (data.sku) data.sku = data.sku.trim().toUpperCase();
     if (data.name) data.name = data.name.trim();
     if (data.costPrice !== undefined) data.costPrice = Number(data.costPrice);
-    if (data.sellingPrice !== undefined) data.sellingPrice = Number(data.sellingPrice);
-    if (data.reorderLevel !== undefined) data.reorderLevel = Number(data.reorderLevel);
-    if (data.reorderQty !== undefined) data.reorderQty = Number(data.reorderQty);
+    if (data.sellingPrice !== undefined)
+      data.sellingPrice = Number(data.sellingPrice);
+    if (data.reorderLevel !== undefined)
+      data.reorderLevel = Number(data.reorderLevel);
+    if (data.reorderQty !== undefined)
+      data.reorderQty = Number(data.reorderQty);
 
     const updated = await prisma.product.update({
       where: { id },
@@ -165,7 +185,10 @@ export async function PATCH(request: Request) {
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error("Error updating product:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -175,13 +198,19 @@ export async function DELETE(request: Request) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json({ error: "Missing product ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing product ID" },
+        { status: 400 },
+      );
     }
 
     await prisma.product.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting product:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

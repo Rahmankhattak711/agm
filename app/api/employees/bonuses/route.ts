@@ -34,7 +34,10 @@ export async function GET(request: Request) {
     return NextResponse.json(bonuses);
   } catch (error) {
     console.error("Error fetching bonuses:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -44,7 +47,10 @@ export async function POST(request: Request) {
     const { employeeId, type, amount, month, year, reason } = body;
 
     if (!employeeId || amount === undefined) {
-      return NextResponse.json({ error: "Employee ID and Amount are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Employee ID and Amount are required" },
+        { status: 400 },
+      );
     }
 
     const created = await prisma.bonus.create({
@@ -64,7 +70,10 @@ export async function POST(request: Request) {
     return NextResponse.json(created, { status: 201 });
   } catch (error: any) {
     console.error("Error creating bonus:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -74,7 +83,8 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const { id, isApproved, isPaid, paidDate, amount, type, reason } = body;
 
-    if (!id) return NextResponse.json({ error: "Missing bonus ID" }, { status: 400 });
+    if (!id)
+      return NextResponse.json({ error: "Missing bonus ID" }, { status: 400 });
 
     const data: any = {};
     if (amount !== undefined) data.amount = Number(amount);
@@ -86,7 +96,11 @@ export async function PATCH(request: Request) {
     }
     if (isPaid !== undefined) {
       data.isPaid = Boolean(isPaid);
-      data.paidDate = isPaid ? (paidDate ? new Date(paidDate) : new Date()) : null;
+      data.paidDate = isPaid
+        ? paidDate
+          ? new Date(paidDate)
+          : new Date()
+        : null;
     }
 
     const updated = await prisma.bonus.update({
@@ -101,7 +115,10 @@ export async function PATCH(request: Request) {
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error("Error updating bonus:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -110,12 +127,16 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
-    if (!id) return NextResponse.json({ error: "Missing bonus ID" }, { status: 400 });
+    if (!id)
+      return NextResponse.json({ error: "Missing bonus ID" }, { status: 400 });
 
     await prisma.bonus.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting bonus:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

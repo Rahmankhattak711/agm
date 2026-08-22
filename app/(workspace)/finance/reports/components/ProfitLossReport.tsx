@@ -11,7 +11,10 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui";
-import { ProfitLossReport as ProfitLossData, ProfitLossItem } from "@/lib/hooks/api-hooks";
+import {
+  ProfitLossReport as ProfitLossData,
+  ProfitLossItem,
+} from "@/lib/hooks/api-hooks";
 import { formatCurrency, formatNumber } from "./types";
 
 interface ProfitLossReportProps {
@@ -26,19 +29,29 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
   const incomeRows: ProfitLossItem[] =
     profitLoss?.income && profitLoss.income.length > 0 ? profitLoss.income : [];
   const directExpenseRows: ProfitLossItem[] =
-    profitLoss?.directExpenses && profitLoss.directExpenses.length > 0 ? profitLoss.directExpenses : [];
+    profitLoss?.directExpenses && profitLoss.directExpenses.length > 0
+      ? profitLoss.directExpenses
+      : [];
   const operatingExpenseRows: ProfitLossItem[] =
-    profitLoss?.operatingExpenses && profitLoss.operatingExpenses.length > 0 ? profitLoss.operatingExpenses : [];
+    profitLoss?.operatingExpenses && profitLoss.operatingExpenses.length > 0
+      ? profitLoss.operatingExpenses
+      : [];
 
   const totalIncome =
     profitLoss?.totalIncome !== undefined
       ? profitLoss.totalIncome
-      : incomeRows.reduce((s: number, i: ProfitLossItem) => s + Number(i.amount || 0), 0);
+      : incomeRows.reduce(
+          (s: number, i: ProfitLossItem) => s + Number(i.amount || 0),
+          0,
+        );
 
   const totalDirectExpenses =
     profitLoss?.totalDirectExpenses !== undefined
       ? profitLoss.totalDirectExpenses
-      : directExpenseRows.reduce((s: number, i: ProfitLossItem) => s + Number(i.amount || 0), 0);
+      : directExpenseRows.reduce(
+          (s: number, i: ProfitLossItem) => s + Number(i.amount || 0),
+          0,
+        );
 
   const grossProfit =
     profitLoss?.grossProfit !== undefined
@@ -48,7 +61,10 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
   const totalExpenses =
     profitLoss?.totalExpenses !== undefined
       ? profitLoss.totalExpenses
-      : operatingExpenseRows.reduce((s: number, i: ProfitLossItem) => s + Number(i.amount || 0), 0);
+      : operatingExpenseRows.reduce(
+          (s: number, i: ProfitLossItem) => s + Number(i.amount || 0),
+          0,
+        );
 
   const netProfit =
     profitLoss?.netProfit !== undefined
@@ -65,7 +81,8 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
             Statement of Profit & Loss (Income Statement)
           </h3>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Summary of earned revenue, direct costs, and operational overhead.
+            AGM FITOUT TECHNICAL SERVICES LLC — Summary of earned revenue,
+            direct costs, and operational overhead.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -90,7 +107,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
         </div>
       ) : (
         <div className="space-y-6">
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4.5 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
               <div>
@@ -112,7 +128,8 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                   2. Gross Profit
                 </p>
                 <p className="text-xs text-blue-700 mt-0.5">
-                  After direct materials (AED {formatNumber(totalDirectExpenses)})
+                  After direct materials (AED{" "}
+                  {formatNumber(totalDirectExpenses)})
                 </p>
               </div>
               <p className="text-xl font-black text-blue-900 font-mono">
@@ -167,110 +184,180 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                 <TableHeaderCell className="py-3 px-5 w-1/2 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
                   Account Name
                 </TableHeaderCell>
-                <TableHeaderCell align="right" className="py-3 px-5 text-right w-1/4 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
+                <TableHeaderCell
+                  align="right"
+                  className="py-3 px-5 text-right w-1/4 text-slate-500 font-bold uppercase text-[11px] tracking-wider"
+                >
                   Amount (AED)
                 </TableHeaderCell>
               </TableHead>
               <TableBody className="divide-y divide-slate-100">
-                {/* SECTION 1: INCOME */}
                 <TableRow className="bg-emerald-50/40 font-bold text-emerald-900">
-                  <TableCell colSpan={3} className="py-2.5 px-5 text-[11px] uppercase tracking-wider">
+                  <TableCell
+                    colSpan={3}
+                    className="py-2.5 px-5 text-[11px] uppercase tracking-wider"
+                  >
                     INCOME
                   </TableCell>
                 </TableRow>
                 {incomeRows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-3 px-5 text-center text-slate-400 italic">
+                    <TableCell
+                      colSpan={3}
+                      className="py-3 px-5 text-center text-slate-400 italic"
+                    >
                       No income accounts recorded
                     </TableCell>
                   </TableRow>
                 ) : (
                   incomeRows.map((item: ProfitLossItem, idx: number) => (
-                    <TableRow key={`inc-${idx}`} className="hover:bg-slate-50/50 text-slate-700 transition">
-                      <TableCell className="py-2 px-5 text-slate-500">{item.section || "Income"}</TableCell>
-                      <TableCell className="py-2 px-5 font-semibold text-slate-900">{item.accountName}</TableCell>
-                      <TableCell align="right" className="py-2 px-5 text-right font-mono font-medium text-slate-800">
+                    <TableRow
+                      key={`inc-${idx}`}
+                      className="hover:bg-slate-50/50 text-slate-700 transition"
+                    >
+                      <TableCell className="py-2 px-5 text-slate-500">
+                        {item.section || "Income"}
+                      </TableCell>
+                      <TableCell className="py-2 px-5 font-semibold text-slate-900">
+                        {item.accountName}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className="py-2 px-5 text-right font-mono font-medium text-slate-800"
+                      >
                         {formatNumber(item.amount)}
                       </TableCell>
                     </TableRow>
                   ))
                 )}
                 <TableRow className="bg-emerald-100/60 font-bold text-emerald-950 border-t border-b border-emerald-200">
-                  <TableCell colSpan={2} className="py-2.5 px-5 text-emerald-900 font-bold">
+                  <TableCell
+                    colSpan={2}
+                    className="py-2.5 px-5 text-emerald-900 font-bold"
+                  >
                     Total Income
                   </TableCell>
-                  <TableCell align="right" className="py-2.5 px-5 text-right font-mono font-black text-emerald-900 text-sm">
+                  <TableCell
+                    align="right"
+                    className="py-2.5 px-5 text-right font-mono font-black text-emerald-900 text-sm"
+                  >
                     {formatNumber(totalIncome)}
                   </TableCell>
                 </TableRow>
 
-                {/* SECTION 2: DIRECT EXPENSE */}
                 <TableRow className="bg-blue-50/40 font-bold text-blue-900">
-                  <TableCell colSpan={3} className="py-2.5 px-5 text-[11px] uppercase tracking-wider">
+                  <TableCell
+                    colSpan={3}
+                    className="py-2.5 px-5 text-[11px] uppercase tracking-wider"
+                  >
                     Direct Expense
                   </TableCell>
                 </TableRow>
                 {directExpenseRows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-3 px-5 text-center text-slate-400 italic">
+                    <TableCell
+                      colSpan={3}
+                      className="py-3 px-5 text-center text-slate-400 italic"
+                    >
                       No direct expense accounts recorded
                     </TableCell>
                   </TableRow>
                 ) : (
                   directExpenseRows.map((item: ProfitLossItem, idx: number) => (
-                    <TableRow key={`dir-${idx}`} className="hover:bg-slate-50/50 text-slate-700 transition">
-                      <TableCell className="py-2 px-5 text-slate-500">{item.section || "Direct Material Expense"}</TableCell>
-                      <TableCell className="py-2 px-5 font-semibold text-slate-900">{item.accountName}</TableCell>
-                      <TableCell align="right" className="py-2 px-5 text-right font-mono font-medium text-slate-800">
+                    <TableRow
+                      key={`dir-${idx}`}
+                      className="hover:bg-slate-50/50 text-slate-700 transition"
+                    >
+                      <TableCell className="py-2 px-5 text-slate-500">
+                        {item.section || "Direct Material Expense"}
+                      </TableCell>
+                      <TableCell className="py-2 px-5 font-semibold text-slate-900">
+                        {item.accountName}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className="py-2 px-5 text-right font-mono font-medium text-slate-800"
+                      >
                         {formatNumber(item.amount)}
                       </TableCell>
                     </TableRow>
                   ))
                 )}
                 <TableRow className="bg-blue-100/60 font-bold text-blue-950 border-t border-b border-blue-200">
-                  <TableCell colSpan={2} className="py-2.5 px-5 text-blue-900 font-bold">
+                  <TableCell
+                    colSpan={2}
+                    className="py-2.5 px-5 text-blue-900 font-bold"
+                  >
                     Gross Profit /loss
                   </TableCell>
-                  <TableCell align="right" className="py-2.5 px-5 text-right font-mono font-black text-blue-900 text-sm">
+                  <TableCell
+                    align="right"
+                    className="py-2.5 px-5 text-right font-mono font-black text-blue-900 text-sm"
+                  >
                     {formatNumber(grossProfit)}
                   </TableCell>
                 </TableRow>
 
-                {/* SECTION 3: OPERATING EXPENSE */}
                 <TableRow className="bg-rose-50/30 font-bold text-rose-900">
-                  <TableCell colSpan={3} className="py-2.5 px-5 text-[11px] uppercase tracking-wider">
+                  <TableCell
+                    colSpan={3}
+                    className="py-2.5 px-5 text-[11px] uppercase tracking-wider"
+                  >
                     Operating Expense
                   </TableCell>
                 </TableRow>
                 {operatingExpenseRows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-3 px-5 text-center text-slate-400 italic">
+                    <TableCell
+                      colSpan={3}
+                      className="py-3 px-5 text-center text-slate-400 italic"
+                    >
                       No operating expense accounts recorded
                     </TableCell>
                   </TableRow>
                 ) : (
-                  operatingExpenseRows.map((item: ProfitLossItem, idx: number) => (
-                    <TableRow key={`op-${idx}`} className="hover:bg-slate-50/50 text-slate-700 transition">
-                      <TableCell className="py-2 px-5 text-slate-500">{item.section || "Operating Expense"}</TableCell>
-                      <TableCell className="py-2 px-5 font-semibold text-slate-900">{item.accountName}</TableCell>
-                      <TableCell align="right" className="py-2 px-5 text-right font-mono font-medium text-slate-800">
-                        {formatNumber(item.amount)}
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  operatingExpenseRows.map(
+                    (item: ProfitLossItem, idx: number) => (
+                      <TableRow
+                        key={`op-${idx}`}
+                        className="hover:bg-slate-50/50 text-slate-700 transition"
+                      >
+                        <TableCell className="py-2 px-5 text-slate-500">
+                          {item.section || "Operating Expense"}
+                        </TableCell>
+                        <TableCell className="py-2 px-5 font-semibold text-slate-900">
+                          {item.accountName}
+                        </TableCell>
+                        <TableCell
+                          align="right"
+                          className="py-2 px-5 text-right font-mono font-medium text-slate-800"
+                        >
+                          {formatNumber(item.amount)}
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )
                 )}
                 <TableRow className="bg-rose-100/60 font-bold text-rose-950 border-t border-b border-rose-200">
-                  <TableCell colSpan={2} className="py-2.5 px-5 text-rose-900 font-bold">
+                  <TableCell
+                    colSpan={2}
+                    className="py-2.5 px-5 text-rose-900 font-bold"
+                  >
                     Total Expenses
                   </TableCell>
-                  <TableCell align="right" className="py-2.5 px-5 text-right font-mono font-black text-rose-900 text-sm">
+                  <TableCell
+                    align="right"
+                    className="py-2.5 px-5 text-right font-mono font-black text-rose-900 text-sm"
+                  >
                     {formatNumber(totalExpenses)}
                   </TableCell>
                 </TableRow>
 
-                {/* FINAL NET PROFIT / (LOSS) ROW */}
                 <TableRow className="bg-slate-900 text-white font-black">
-                  <TableCell colSpan={2} className="py-3.5 px-5 text-xs uppercase tracking-wider font-bold">
+                  <TableCell
+                    colSpan={2}
+                    className="py-3.5 px-5 text-xs uppercase tracking-wider font-bold"
+                  >
                     Net Profit / (Loss)
                   </TableCell>
                   <TableCell

@@ -35,11 +35,11 @@ export const authService = {
     localStorage.setItem("agm_refresh_token", refreshToken);
 
     document.cookie = `agm_access_token=${encodeURIComponent(
-      accessToken
+      accessToken,
     )}; path=/; max-age=604800; SameSite=Lax`;
     if (user.role) {
       document.cookie = `agm_user_role=${encodeURIComponent(
-        user.role
+        user.role,
       )}; path=/; max-age=604800; SameSite=Lax`;
     }
   },

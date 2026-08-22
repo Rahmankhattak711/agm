@@ -1,17 +1,34 @@
 import React from "react";
-import { Input, InputProps, Select, SelectProps, Textarea, TextareaProps } from "../Input";
+import {
+  Input,
+  InputProps,
+  Select,
+  SelectProps,
+  Textarea,
+  TextareaProps,
+} from "../Input";
 import { Button, ButtonProps } from "../Button";
 
-export interface FormInputProps extends Omit<InputProps, "value" | "onChange" | "onBlur" | "error"> {
+export interface FormInputProps extends Omit<
+  InputProps,
+  "value" | "onChange" | "onBlur" | "error"
+> {
   field: any;
 }
 
 export function FormInput({ field, ...props }: FormInputProps) {
   const isTouched = field.state.meta.isTouched;
   const errors = field.state.meta.errors;
-  const errorMessage = isTouched && errors && errors.length > 0
-    ? errors.map((err: any) => (typeof err === "object" && err !== null && "message" in err ? err.message : String(err))).join(", ")
-    : undefined;
+  const errorMessage =
+    isTouched && errors && errors.length > 0
+      ? errors
+          .map((err: any) =>
+            typeof err === "object" && err !== null && "message" in err
+              ? err.message
+              : String(err),
+          )
+          .join(", ")
+      : undefined;
 
   return (
     <Input
@@ -25,16 +42,31 @@ export function FormInput({ field, ...props }: FormInputProps) {
   );
 }
 
-export interface FormSelectProps extends Omit<SelectProps, "value" | "onChange" | "onBlur" | "error"> {
+export interface FormSelectProps extends Omit<
+  SelectProps,
+  "value" | "onChange" | "onBlur" | "error"
+> {
   field: any;
 }
 
-export function FormSelect({ field, children, options, ...props }: FormSelectProps) {
+export function FormSelect({
+  field,
+  children,
+  options,
+  ...props
+}: FormSelectProps) {
   const isTouched = field.state.meta.isTouched;
   const errors = field.state.meta.errors;
-  const errorMessage = isTouched && errors && errors.length > 0
-    ? errors.map((err: any) => (typeof err === "object" && err !== null && "message" in err ? err.message : String(err))).join(", ")
-    : undefined;
+  const errorMessage =
+    isTouched && errors && errors.length > 0
+      ? errors
+          .map((err: any) =>
+            typeof err === "object" && err !== null && "message" in err
+              ? err.message
+              : String(err),
+          )
+          .join(", ")
+      : undefined;
 
   return (
     <Select
@@ -51,16 +83,26 @@ export function FormSelect({ field, children, options, ...props }: FormSelectPro
   );
 }
 
-export interface FormTextareaProps extends Omit<TextareaProps, "value" | "onChange" | "onBlur" | "error"> {
+export interface FormTextareaProps extends Omit<
+  TextareaProps,
+  "value" | "onChange" | "onBlur" | "error"
+> {
   field: any;
 }
 
 export function FormTextarea({ field, ...props }: FormTextareaProps) {
   const isTouched = field.state.meta.isTouched;
   const errors = field.state.meta.errors;
-  const errorMessage = isTouched && errors && errors.length > 0
-    ? errors.map((err: any) => (typeof err === "object" && err !== null && "message" in err ? err.message : String(err))).join(", ")
-    : undefined;
+  const errorMessage =
+    isTouched && errors && errors.length > 0
+      ? errors
+          .map((err: any) =>
+            typeof err === "object" && err !== null && "message" in err
+              ? err.message
+              : String(err),
+          )
+          .join(", ")
+      : undefined;
 
   return (
     <Textarea
@@ -79,7 +121,13 @@ export interface FormSubmitProps extends Omit<ButtonProps, "type" | "form"> {
   children: React.ReactNode;
 }
 
-export function FormSubmit({ form, children, disabled, loading, ...props }: FormSubmitProps) {
+export function FormSubmit({
+  form,
+  children,
+  disabled,
+  loading,
+  ...props
+}: FormSubmitProps) {
   return (
     <form.Subscribe
       selector={(state: any) => [state.canSubmit, state.isSubmitting]}

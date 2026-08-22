@@ -35,8 +35,9 @@ export default function SuppliersPage() {
     (s) =>
       s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.supplierCode.toLowerCase().includes(search.toLowerCase()) ||
-      (s.contactPerson && s.contactPerson.toLowerCase().includes(search.toLowerCase())) ||
-      (s.trn && s.trn.includes(search))
+      (s.contactPerson &&
+        s.contactPerson.toLowerCase().includes(search.toLowerCase())) ||
+      (s.trn && s.trn.includes(search)),
   );
 
   const form = useForm({
@@ -144,7 +145,9 @@ export default function SuppliersPage() {
         header: "Contact Person",
         cell: ({ row }) => (
           <span className="text-slate-700">
-            {row.original.contactPerson || <span className="text-slate-300">-</span>}
+            {row.original.contactPerson || (
+              <span className="text-slate-300">-</span>
+            )}
           </span>
         ),
       },
@@ -217,17 +220,19 @@ export default function SuppliersPage() {
         ),
       },
     ],
-    [deleteSupplier]
+    [deleteSupplier],
   );
 
   return (
     <div className="space-y-6">
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Suppliers & Vendor Management</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            Suppliers & Vendor Management
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Vendor master registry, Tax Registration Numbers (TRN), and procurement contacts.
+            Vendor master registry, Tax Registration Numbers (TRN), and
+            procurement contacts.
           </p>
         </div>
 
@@ -242,25 +247,40 @@ export default function SuppliersPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Suppliers</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{suppliers.length}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Approved vendor network</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Total Suppliers
+          </p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {suppliers.length}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Approved vendor network
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Tax Registered (TRN)</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Tax Registered (TRN)
+          </p>
           <p className="text-2xl font-black text-emerald-800 mt-1">
             {suppliers.filter((s) => s.trn).length}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">VAT compliant invoices</p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            VAT compliant invoices
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active Supply Lines</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {suppliers.reduce((acc, s) => acc + (s._count?.products || 0), 0)} SKUs
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Active Supply Lines
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">Supplied materials catalog</p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {suppliers.reduce((acc, s) => acc + (s._count?.products || 0), 0)}{" "}
+            SKUs
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Supplied materials catalog
+          </p>
         </div>
       </div>
 
@@ -277,7 +297,9 @@ export default function SuppliersPage() {
         </div>
 
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">Error loading suppliers: {(error as any).message}</div>
+          <div className="py-8 text-center text-xs text-red-500">
+            Error loading suppliers: {(error as any).message}
+          </div>
         ) : (
           <DataTable
             columns={columns}
@@ -313,7 +335,8 @@ export default function SuppliersPage() {
             <form.Field
               name="supplierCode"
               validators={{
-                onChange: ({ value }) => (!value.trim() ? "Supplier code is required" : undefined),
+                onChange: ({ value }) =>
+                  !value.trim() ? "Supplier code is required" : undefined,
               }}
             >
               {(field) => (
@@ -329,7 +352,8 @@ export default function SuppliersPage() {
             <form.Field
               name="name"
               validators={{
-                onChange: ({ value }) => (!value.trim() ? "Company name is required" : undefined),
+                onChange: ({ value }) =>
+                  !value.trim() ? "Company name is required" : undefined,
               }}
             >
               {(field) => (
@@ -399,7 +423,11 @@ export default function SuppliersPage() {
           </form.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+            >
               Cancel
             </Button>
             <FormSubmit

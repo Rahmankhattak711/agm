@@ -3,8 +3,19 @@ import { Prisma } from "@/app/generated/prisma";
 import { getAuthUser } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
-const INCOMING_TYPES = ["PURCHASE_IN", "ADJUSTMENT_IN", "TRANSFER_IN", "RETURN_IN"];
-const OUTGOING_TYPES = ["SALE_OUT", "ADJUSTMENT_OUT", "TRANSFER_OUT", "RETURN_OUT", "PROJECT_CONSUMPTION"];
+const INCOMING_TYPES = [
+  "PURCHASE_IN",
+  "ADJUSTMENT_IN",
+  "TRANSFER_IN",
+  "RETURN_IN",
+];
+const OUTGOING_TYPES = [
+  "SALE_OUT",
+  "ADJUSTMENT_OUT",
+  "TRANSFER_OUT",
+  "RETURN_OUT",
+  "PROJECT_CONSUMPTION",
+];
 
 export async function GET(request: Request) {
   try {
@@ -31,7 +42,10 @@ export async function GET(request: Request) {
     return NextResponse.json(movements);
   } catch (error) {
     console.error("Error fetching stock movements:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -52,73 +66,83 @@ export async function POST(request: Request) {
 
     if (!productId || !warehouseId || !movementType || !quantity) {
       return NextResponse.json(
-        { error: "Product, Warehouse, Movement Type, and Quantity are required" },
-        { status: 400 }
+        {
+          error: "Product, Warehouse, Movement Type, and Quantity are required",
+        },
+        { status: 400 },
       );
     }
 
     const qty = Number(quantity);
     if (qty <= 0) {
-      return NextResponse.json({ error: "Quantity must be greater than 0" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Quantity must be greater than 0" },
+        { status: 400 },
+      );
     }
 
-    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const movement = await tx.stockMovement.create({
-        data: {
-          productId,
-          warehouseId,
-          movementType,
-          quantity: qty,
-          unitCost: unitCost !== undefined ? Number(unitCost) : null,
-          referenceNumber: referenceNumber?.trim() || null,
-          notes: notes?.trim() || null,
-          movementDate: movementDate ? new Date(movementDate) : new Date(),
-          createdBy: user?.id || null,
-        },
-        include: {
-          product: true,
-          warehouse: true,
-        },
-      });
-
-      const existingLevel = await tx.stockLevel.findUnique({
-        where: {
-          productId_warehouseId: {
-            productId,
-            warehouseId,
-          },
-        },
-      });
-
-      const isIncoming = INCOMING_TYPES.includes(movementType);
-      const isOutgoing = OUTGOING_TYPES.includes(movementType);
-
-      let delta = 0;
-      if (isIncoming) delta = qty;
-      if (isOutgoing) delta = -qty;
-
-      if (existingLevel) {
-        const newQty = Number(existingLevel.quantityOnHand) + delta;
-        await tx.stockLevel.update({
-          where: { id: existingLevel.id },
-          data: { quantityOnHand: newQty },
-        });
-      } else {
-        await tx.stockLevel.create({
+    const result = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const movement = await tx.stockMovement.create({
           data: {
             productId,
             warehouseId,
-            quantityOnHand: Math.max(0, delta),
+            movementType,
+            quantity: qty,
+            unitCost: unitCost !== undefined ? Number(unitCost) : null,
+            referenceNumber: referenceNumber?.trim() || null,
+            notes: notes?.trim() || null,
+            movementDate: movementDate ? new Date(movementDate) : new Date(),
+            createdBy: user?.id || null,
+          },
+          include: {
+            product: true,
+            warehouse: true,
           },
         });
-      }
 
-      return movement;
-    });
+        const existingLevel = await tx.stockLevel.findUnique({
+          where: {
+            productId_warehouseId: {
+              productId,
+              warehouseId,
+            },
+          },
+        });
+
+        const isIncoming = INCOMING_TYPES.includes(movementType);
+        const isOutgoing = OUTGOING_TYPES.includes(movementType);
+
+        let delta = 0;
+        if (isIncoming) delta = qty;
+        if (isOutgoing) delta = -qty;
+
+        if (existingLevel) {
+          const newQty = Number(existingLevel.quantityOnHand) + delta;
+          await tx.stockLevel.update({
+            where: { id: existingLevel.id },
+            data: { quantityOnHand: newQty },
+          });
+        } else {
+          await tx.stockLevel.create({
+            data: {
+              productId,
+              warehouseId,
+              quantityOnHand: Math.max(0, delta),
+            },
+          });
+        }
+
+        return movement;
+      },
+    );
 
     return NextResponse.json(result, { status: 201 });
   } catch (error: any) {
     console.error("Error creating stock movement:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

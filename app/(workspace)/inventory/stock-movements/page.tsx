@@ -32,7 +32,11 @@ export default function StockMovementsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const { data: movements = [], isLoading, error } = useStockMovements({
+  const {
+    data: movements = [],
+    isLoading,
+    error,
+  } = useStockMovements({
     productId: selectedProduct || undefined,
     warehouseId: selectedWarehouse || undefined,
     movementType: selectedType !== "ALL" ? selectedType : undefined,
@@ -51,18 +55,24 @@ export default function StockMovementsPage() {
         m.product?.sku?.toLowerCase().includes(q) ||
         m.warehouse?.name?.toLowerCase().includes(q) ||
         m.referenceNumber?.toLowerCase().includes(q) ||
-        m.notes?.toLowerCase().includes(q)
+        m.notes?.toLowerCase().includes(q),
     );
   }, [movements, search]);
 
   const totalMovements = movements.length;
   const inMovements = movements.filter((m) =>
-    ["PURCHASE_IN", "ADJUSTMENT_IN", "TRANSFER_IN", "RETURN_IN"].includes(m.movementType)
+    ["PURCHASE_IN", "ADJUSTMENT_IN", "TRANSFER_IN", "RETURN_IN"].includes(
+      m.movementType,
+    ),
   ).length;
   const outMovements = movements.filter((m) =>
-    ["SALE_OUT", "ADJUSTMENT_OUT", "TRANSFER_OUT", "RETURN_OUT", "PROJECT_CONSUMPTION"].includes(
-      m.movementType
-    )
+    [
+      "SALE_OUT",
+      "ADJUSTMENT_OUT",
+      "TRANSFER_OUT",
+      "RETURN_OUT",
+      "PROJECT_CONSUMPTION",
+    ].includes(m.movementType),
   ).length;
 
   const form = useForm({
@@ -182,7 +192,7 @@ export default function StockMovementsPage() {
         cell: ({ row }) => (
           <span
             className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getBadge(
-              row.original.movementType
+              row.original.movementType,
             )}`}
           >
             {row.original.movementType.replace(/_/g, " ")}
@@ -205,7 +215,8 @@ export default function StockMovementsPage() {
                 isIn ? "text-emerald-700" : "text-rose-700"
               }`}
             >
-              {isIn ? "+" : "-"} {Number(row.original.quantity).toLocaleString()}{" "}
+              {isIn ? "+" : "-"}{" "}
+              {Number(row.original.quantity).toLocaleString()}{" "}
               <span className="text-[10px] text-slate-400 font-normal">
                 {row.original.product?.unit || "PCS"}
               </span>
@@ -218,7 +229,9 @@ export default function StockMovementsPage() {
         header: "Reference / Project",
         cell: ({ row }) => (
           <span className="font-mono text-xs font-semibold text-slate-700">
-            {row.original.referenceNumber || <span className="text-slate-300 font-normal">—</span>}
+            {row.original.referenceNumber || (
+              <span className="text-slate-300 font-normal">—</span>
+            )}
           </span>
         ),
       },
@@ -232,16 +245,19 @@ export default function StockMovementsPage() {
         ),
       },
     ],
-    []
+    [],
   );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Stock Movements & Audit Ledger</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            Stock Movements & Audit Ledger
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Immutable physical inventory log for warehouse adjustments, site deliveries, and material receipts.
+            Immutable physical inventory log for warehouse adjustments, site
+            deliveries, and material receipts.
           </p>
         </div>
 
@@ -256,21 +272,39 @@ export default function StockMovementsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Transactions</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{totalMovements}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Logged inventory transfers</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Total Transactions
+          </p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {totalMovements}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Logged inventory transfers
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Inbound Inflow (+)</p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">{inMovements}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Purchases, audits, returns in</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Inbound Inflow (+)
+          </p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">
+            {inMovements}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Purchases, audits, returns in
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Outbound Consumption (-)</p>
-          <p className="text-2xl font-black text-rose-800 mt-1">{outMovements}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Site usage, sales, write-offs</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Outbound Consumption (-)
+          </p>
+          <p className="text-2xl font-black text-rose-800 mt-1">
+            {outMovements}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Site usage, sales, write-offs
+          </p>
         </div>
       </div>
 
@@ -281,7 +315,12 @@ export default function StockMovementsPage() {
               placeholder="Search product, SKU, reference..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              leftIcon={<SearchIcon className="w-4 h-4 text-slate-400" strokeWidth={2} />}
+              leftIcon={
+                <SearchIcon
+                  className="w-4 h-4 text-slate-400"
+                  strokeWidth={2}
+                />
+              }
             />
           </div>
 
@@ -319,7 +358,9 @@ export default function StockMovementsPage() {
             >
               <option value="ALL">All Types</option>
               <option value="PURCHASE_IN">Purchase In (+)</option>
-              <option value="PROJECT_CONSUMPTION">Project Consumption (-)</option>
+              <option value="PROJECT_CONSUMPTION">
+                Project Consumption (-)
+              </option>
               <option value="SALE_OUT">Sale Out (-)</option>
               <option value="ADJUSTMENT_IN">Adjustment In (+)</option>
               <option value="ADJUSTMENT_OUT">Adjustment Out (-)</option>
@@ -367,7 +408,8 @@ export default function StockMovementsPage() {
           <form.Field
             name="productId"
             validators={{
-              onChange: ({ value }) => (!value ? "Product selection is required" : undefined),
+              onChange: ({ value }) =>
+                !value ? "Product selection is required" : undefined,
             }}
           >
             {(field) => (
@@ -386,7 +428,8 @@ export default function StockMovementsPage() {
             <form.Field
               name="warehouseId"
               validators={{
-                onChange: ({ value }) => (!value ? "Warehouse selection is required" : undefined),
+                onChange: ({ value }) =>
+                  !value ? "Warehouse selection is required" : undefined,
               }}
             >
               {(field) => (
@@ -405,7 +448,9 @@ export default function StockMovementsPage() {
               {(field) => (
                 <FormSelect field={field} label="Movement Type *">
                   <option value="PURCHASE_IN">Purchase In (+)</option>
-                  <option value="PROJECT_CONSUMPTION">Project Site Consumption (-)</option>
+                  <option value="PROJECT_CONSUMPTION">
+                    Project Site Consumption (-)
+                  </option>
                   <option value="SALE_OUT">Sale Out (-)</option>
                   <option value="ADJUSTMENT_IN">Adjustment In (+)</option>
                   <option value="ADJUSTMENT_OUT">Adjustment Out (-)</option>
@@ -421,7 +466,9 @@ export default function StockMovementsPage() {
               name="quantity"
               validators={{
                 onChange: ({ value }) =>
-                  !value || Number(value) <= 0 ? "Quantity must be greater than 0" : undefined,
+                  !value || Number(value) <= 0
+                    ? "Quantity must be greater than 0"
+                    : undefined,
               }}
             >
               {(field) => (
@@ -472,13 +519,14 @@ export default function StockMovementsPage() {
           </form.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+            >
               Cancel
             </Button>
-            <FormSubmit
-              form={form}
-              loading={createMovement.isPending}
-            >
+            <FormSubmit form={form} loading={createMovement.isPending}>
               Confirm Movement
             </FormSubmit>
           </div>
