@@ -104,7 +104,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
         </div>
       ) : (
         <div className="space-y-6">
-          {/* 4 KPI Top Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4.5 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
               <div>
@@ -178,7 +177,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
             </div>
           </div>
 
-          {/* Filter and Search Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden">
             <div className="max-w-sm flex-1">
               <Input
@@ -218,7 +216,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
             </div>
           </div>
 
-          {/* Detailed Statement Table */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <Table className="w-full text-xs text-left">
               <TableHead className="bg-slate-50/90 border-b border-slate-200">
@@ -304,7 +301,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                   })
                 )}
 
-                {/* SUMMARY TOTALS ROW */}
                 <TableRow className="bg-slate-900 text-white font-black">
                   <TableCell
                     colSpan={3}
@@ -326,7 +322,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* AUDIT STATUS ROW */}
                 <TableRow
                   className={`font-black ${
                     isBalanced

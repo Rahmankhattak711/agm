@@ -22,7 +22,6 @@ export const QuotationDocTitleBar: React.FC<QuotationDocTitleBarProps> = ({
   return (
     <div className="px-10 py-4 w-full border-b border-slate-100 bg-slate-50/50">
       <div className="flex items-start justify-between gap-8">
-        {/* Left Side: Document Title */}
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             {docType === "TAX_INVOICE" ? "TAX INVOICE" : "QUOTATION"}
@@ -34,7 +33,6 @@ export const QuotationDocTitleBar: React.FC<QuotationDocTitleBarProps> = ({
           )}
         </div>
 
-        {/* Right Side: Quotation / Invoice Number, Date, AND Payment Terms */}
         <div className="w-[360px] space-y-2">
           <div className="text-[12px] space-y-1">
             <div className="flex items-center justify-between">
@@ -64,7 +62,6 @@ export const QuotationDocTitleBar: React.FC<QuotationDocTitleBarProps> = ({
             </div>
           </div>
 
-          {/* Payment Terms directly under Quotation No & Date on the right */}
           <div className="border border-agm-box-border bg-white/95 rounded-xl p-2.5 shadow-2xs">
             <div className="text-[10.5px] font-bold text-agm-green uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>

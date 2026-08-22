@@ -129,7 +129,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
         </div>
       ) : (
         <div className="space-y-6">
-          {/* 4 KPI Top Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4.5 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
               <div>
@@ -226,7 +225,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                 </TableHeaderCell>
               </TableHead>
               <TableBody className="divide-y divide-slate-100">
-                {/* SECTION 1: ASSETS */}
                 <TableRow className="bg-blue-50/70 font-bold text-blue-950">
                   <TableCell
                     colSpan={3}
@@ -236,7 +234,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* Current Assets */}
                 <TableRow className="bg-slate-50/60 font-semibold text-slate-700">
                   <TableCell
                     colSpan={3}
@@ -292,7 +289,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* Fixed Assets */}
                 <TableRow className="bg-slate-50/60 font-semibold text-slate-700">
                   <TableCell
                     colSpan={3}
@@ -346,7 +342,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* TOTAL ASSETS ROW */}
                 <TableRow className="bg-blue-100/70 font-bold text-blue-950 border-t-2 border-b-2 border-blue-200">
                   <TableCell
                     colSpan={2}
@@ -362,7 +357,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* SECTION 2: LIABILITIES */}
                 <TableRow className="bg-orange-50/70 font-bold text-orange-950">
                   <TableCell
                     colSpan={3}
@@ -372,7 +366,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* Current Liabilities */}
                 <TableRow className="bg-slate-50/60 font-semibold text-slate-700">
                   <TableCell
                     colSpan={3}
@@ -428,7 +421,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* TOTAL LIABILITIES ROW */}
                 <TableRow className="bg-orange-100/70 font-bold text-orange-950 border-t-2 border-b-2 border-orange-200">
                   <TableCell
                     colSpan={2}
@@ -444,7 +436,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* SECTION 3: EQUITY */}
                 <TableRow className="bg-purple-50/70 font-bold text-purple-950">
                   <TableCell
                     colSpan={3}
@@ -498,7 +489,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* TOTAL LIABILITIES + EQUITY ROW */}
                 <TableRow className="bg-slate-100 font-bold text-slate-900 border-t-2 border-b-2 border-slate-300">
                   <TableCell
                     colSpan={2}
@@ -514,7 +504,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* BALANCE CHECK ROW */}
                 <TableRow
                   className={`font-black ${
                     Math.abs(balanceCheck) < 0.01

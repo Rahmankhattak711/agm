@@ -186,7 +186,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
             </div>
           </div>
 
-          {/* Account Details Header */}
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <span className="font-mono text-sm font-black px-2.5 py-1 rounded-lg bg-slate-900 text-white">
@@ -206,7 +205,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
             </span>
           </div>
 
-          {/* Ledger Lines Table with Running Balance */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <Table className="w-full text-xs text-left">
               <TableHead className="bg-slate-50/90 border-b border-slate-200">
@@ -284,7 +282,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                   </TableRow>
                 ))}
 
-                {/* SUMMARY TOTALS ROW */}
                 <TableRow className="bg-slate-900 text-white font-black">
                   <TableCell
                     colSpan={4}

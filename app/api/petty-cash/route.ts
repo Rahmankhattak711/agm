@@ -175,9 +175,7 @@ export async function DELETE(request: Request) {
       try {
         const body = await request.json();
         id = body?.id;
-      } catch (e) {
-        // body may be empty
-      }
+      } catch (e) {}
     }
 
     if (!id) {

@@ -580,7 +580,6 @@ export default function JournalEntriesPage() {
             </div>
           )}
 
-          {/* Transaction Type Selector: Non-VAT vs 5% VAT Transaction */}
           <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80">
             <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
               Transaction Classification
@@ -613,7 +612,6 @@ export default function JournalEntriesPage() {
             </div>
           </div>
 
-          {/* 5% VAT Transaction Generator Assistant */}
           {transactionType === "VAT_5" && (
             <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200/60 pb-2.5">
@@ -719,7 +717,6 @@ export default function JournalEntriesPage() {
                 </div>
               </div>
 
-              {/* Calculation Breakdown & Generator Button */}
               {Number(vatBaseAmount) > 0 && (
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-white/90 border border-emerald-200">
                   <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
@@ -765,7 +762,6 @@ export default function JournalEntriesPage() {
                         vatBalancingAccount || accounts?.[1]?.id || "";
 
                       if (vatNature === "OUTPUT") {
-                        // Sales: Debit AR/Bank (Gross), Credit Sales (Base), Credit VAT Output (VAT)
                         form.setFieldValue("lines", [
                           { accountId: balAccId, debit: gross, credit: 0 },
                           { accountId: primAccId, debit: 0, credit: base },
@@ -779,7 +775,6 @@ export default function JournalEntriesPage() {
                           },
                         ]);
                       } else {
-                        // Purchases: Debit Expense (Base), Debit VAT Input (VAT), Credit AP/Bank (Gross)
                         form.setFieldValue("lines", [
                           { accountId: primAccId, debit: base, credit: 0 },
                           {
@@ -934,7 +929,6 @@ export default function JournalEntriesPage() {
               };
 
               const addVatLine = () => {
-                // Find first non-zero line to calculate 5%
                 const sourceLine = currentLines.find(
                   (l) => Number(l.debit) > 0 || Number(l.credit) > 0,
                 );

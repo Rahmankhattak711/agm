@@ -501,7 +501,6 @@ export default function PettyCashPage() {
         )}
       </div>
 
-      {/* Record Petty Cash Voucher Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -709,7 +708,6 @@ export default function PettyCashPage() {
         </form>
       </Modal>
 
-      {/* Voucher Details & Approval Modal */}
       <Modal
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}

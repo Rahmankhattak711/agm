@@ -192,7 +192,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                 </TableHeaderCell>
               </TableHead>
               <TableBody className="divide-y divide-slate-100">
-                {/* SECTION 1: INCOME */}
                 <TableRow className="bg-emerald-50/40 font-bold text-emerald-900">
                   <TableCell
                     colSpan={3}
@@ -246,7 +245,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* SECTION 2: DIRECT EXPENSE */}
                 <TableRow className="bg-blue-50/40 font-bold text-blue-900">
                   <TableCell
                     colSpan={3}
@@ -300,7 +298,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* SECTION 3: OPERATING EXPENSE */}
                 <TableRow className="bg-rose-50/30 font-bold text-rose-900">
                   <TableCell
                     colSpan={3}
@@ -356,7 +353,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                   </TableCell>
                 </TableRow>
 
-                {/* FINAL NET PROFIT / (LOSS) ROW */}
                 <TableRow className="bg-slate-900 text-white font-black">
                   <TableCell
                     colSpan={2}

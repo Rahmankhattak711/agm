@@ -207,7 +207,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
             </div>
           </div>
 
-          {/* TABLE 1: QUARTER DETAILS */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs space-y-0">
             <div className="bg-slate-900 text-white p-3.5 flex items-center justify-between">
               <h4 className="font-bold text-xs uppercase tracking-wider text-white">
@@ -332,7 +331,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
             </Table>
           </div>
 
-          {/* TABLE 2: MONTHLY NET VAT SUMMARY */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <div className="bg-slate-900 text-white p-3.5 flex items-center justify-between">
               <h4 className="font-bold text-xs uppercase tracking-wider text-white">
@@ -426,7 +424,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
             </Table>
           </div>
 
-          {/* TABLE 3: MONTHLY PURCHASE/EXPENSE SUMMARY */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <div className="bg-slate-900 text-white p-3.5 flex items-center justify-between">
               <h4 className="font-bold text-xs uppercase tracking-wider text-white">
@@ -536,7 +533,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
             </Table>
           </div>
 
-          {/* TABLE 4: MONTHLY INCOME SUMMARY */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <div className="bg-slate-900 text-white p-3.5 flex items-center justify-between">
               <h4 className="font-bold text-xs uppercase tracking-wider text-white">
@@ -646,7 +642,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
             </Table>
           </div>
 
-          {/* TABLE 5: UAE FTA Form 201 Box Schedule */}
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <div className="bg-slate-900 text-white p-3.5 flex items-center justify-between">
               <h4 className="font-bold text-xs uppercase tracking-wider text-white">
