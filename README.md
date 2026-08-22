@@ -194,17 +194,17 @@ agm/
 
 ## 📜 Available Scripts
 
-| Command                | Description                                         |
-| :--------------------- | :-------------------------------------------------- |
-| `pnpm dev`             | Starts the Next.js development server on port 3000  |
-| `pnpm build`           | Compiles the production build (runs Prisma generate)|
-| `pnpm start`           | Runs the compiled production application            |
-| `pnpm lint`            | Runs ESLint checks                                  |
-| `pnpm format`          | Formats the entire codebase with Prettier           |
-| `pnpm format:check`    | Checks formatting without modifying files           |
-| `pnpm prisma:generate` | Generates the Prisma Client                         |
-| `pnpm prisma:migrate`  | Runs database migrations                            |
-| `pnpm prisma:studio`   | Launches visual Prisma Studio database manager      |
+| Command                | Description                                          |
+| :--------------------- | :--------------------------------------------------- |
+| `pnpm dev`             | Starts the Next.js development server on port 3000   |
+| `pnpm build`           | Compiles the production build (runs Prisma generate) |
+| `pnpm start`           | Runs the compiled production application             |
+| `pnpm lint`            | Runs ESLint checks                                   |
+| `pnpm format`          | Formats the entire codebase with Prettier            |
+| `pnpm format:check`    | Checks formatting without modifying files            |
+| `pnpm prisma:generate` | Generates the Prisma Client                          |
+| `pnpm prisma:migrate`  | Runs database migrations                             |
+| `pnpm prisma:studio`   | Launches visual Prisma Studio database manager       |
 
 ---
 

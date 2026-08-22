@@ -92,7 +92,8 @@ body {
   }
 
   #printable-voucher,
-  #printable-statement {
+  #printable-statement,
+  #printable-po {
     background: white !important;
     color: black !important;
     padding: 0 !important;
