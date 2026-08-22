@@ -34,17 +34,24 @@ export async function GET(request: Request) {
     return NextResponse.json(leaves);
   } catch (error) {
     console.error("Error fetching leave requests:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { employeeId, leaveType, startDate, endDate, totalDays, reason } = body;
+    const { employeeId, leaveType, startDate, endDate, totalDays, reason } =
+      body;
 
     if (!employeeId || !leaveType || !startDate || !endDate || !totalDays) {
-      return NextResponse.json({ error: "Missing required leave fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required leave fields" },
+        { status: 400 },
+      );
     }
 
     const created = await prisma.leaveRequest.create({
@@ -65,7 +72,10 @@ export async function POST(request: Request) {
     return NextResponse.json(created, { status: 201 });
   } catch (error: any) {
     console.error("Error creating leave request:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -76,7 +86,10 @@ export async function PATCH(request: Request) {
     const { id, status } = body;
 
     if (!id || !status) {
-      return NextResponse.json({ error: "Leave ID and Status are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Leave ID and Status are required" },
+        { status: 400 },
+      );
     }
 
     const existing = await prisma.leaveRequest.findUnique({
@@ -85,49 +98,64 @@ export async function PATCH(request: Request) {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Leave request not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Leave request not found" },
+        { status: 404 },
+      );
     }
 
-    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const updated = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        if (
+          status === "APPROVED" &&
+          existing.status !== "APPROVED" &&
+          existing.leaveType === "ANNUAL"
+        ) {
+          const days = Number(existing.totalDays);
+          const currentBalance = Number(existing.employee.annualLeaveBalance);
+          await tx.employee.update({
+            where: { id: existing.employeeId },
+            data: { annualLeaveBalance: Math.max(0, currentBalance - days) },
+          });
+        }
 
-      if (status === "APPROVED" && existing.status !== "APPROVED" && existing.leaveType === "ANNUAL") {
-        const days = Number(existing.totalDays);
-        const currentBalance = Number(existing.employee.annualLeaveBalance);
-        await tx.employee.update({
-          where: { id: existing.employeeId },
-          data: { annualLeaveBalance: Math.max(0, currentBalance - days) },
+        if (
+          existing.status === "APPROVED" &&
+          status !== "APPROVED" &&
+          existing.leaveType === "ANNUAL"
+        ) {
+          const days = Number(existing.totalDays);
+          const currentBalance = Number(existing.employee.annualLeaveBalance);
+          await tx.employee.update({
+            where: { id: existing.employeeId },
+            data: { annualLeaveBalance: currentBalance + days },
+          });
+        }
+
+        const leave = await tx.leaveRequest.update({
+          where: { id },
+          data: {
+            status,
+            approvedBy: status === "APPROVED" ? user?.id || null : null,
+            approvedAt: status === "APPROVED" ? new Date() : null,
+          },
+          include: {
+            employee: true,
+            approver: true,
+          },
         });
-      }
 
-      if (existing.status === "APPROVED" && status !== "APPROVED" && existing.leaveType === "ANNUAL") {
-        const days = Number(existing.totalDays);
-        const currentBalance = Number(existing.employee.annualLeaveBalance);
-        await tx.employee.update({
-          where: { id: existing.employeeId },
-          data: { annualLeaveBalance: currentBalance + days },
-        });
-      }
-
-      const leave = await tx.leaveRequest.update({
-        where: { id },
-        data: {
-          status,
-          approvedBy: status === "APPROVED" ? user?.id || null : null,
-          approvedAt: status === "APPROVED" ? new Date() : null,
-        },
-        include: {
-          employee: true,
-          approver: true,
-        },
-      });
-
-      return leave;
-    });
+        return leave;
+      },
+    );
 
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error("Error updating leave request:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -136,12 +164,16 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
-    if (!id) return NextResponse.json({ error: "Missing leave ID" }, { status: 400 });
+    if (!id)
+      return NextResponse.json({ error: "Missing leave ID" }, { status: 400 });
 
     await prisma.leaveRequest.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting leave request:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

@@ -30,19 +30,32 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
           </div>
           <div className="space-y-1 text-slate-700 font-medium">
             <div>
-              Company: <strong className="text-slate-900">A G M FITOUT TECHNICAL SERVICES LLC</strong>
+              Company:{" "}
+              <strong className="text-slate-900">
+                A G M FITOUT TECHNICAL SERVICES LLC
+              </strong>
             </div>
             <div>
-              Bank: <strong className="text-slate-900">The National Bank of Ras Al Khaimah (RAKBANK)</strong>
+              Bank:{" "}
+              <strong className="text-slate-900">
+                The National Bank of Ras Al Khaimah (RAKBANK)
+              </strong>
             </div>
             <div>
-              Account (AED): <strong className="text-slate-900 font-mono">0323111672001</strong>
+              Account (AED):{" "}
+              <strong className="text-slate-900 font-mono">
+                0323111672001
+              </strong>
             </div>
             <div>
-              IBAN: <strong className="text-slate-900 font-mono">AE44 0400 0003 2311 1672 001</strong>
+              IBAN:{" "}
+              <strong className="text-slate-900 font-mono">
+                AE44 0400 0003 2311 1672 001
+              </strong>
             </div>
             <div>
-              SWIFT Code: <strong className="text-slate-900 font-mono">NRAKAEAK</strong>
+              SWIFT Code:{" "}
+              <strong className="text-slate-900 font-mono">NRAKAEAK</strong>
             </div>
           </div>
         </div>

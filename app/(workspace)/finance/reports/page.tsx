@@ -141,24 +141,15 @@ export default function ReportsPage() {
       )}
 
       {activeTab === "profit-loss" && (
-        <ProfitLossReport
-          profitLoss={profitLoss}
-          isLoading={plLoading}
-        />
+        <ProfitLossReport profitLoss={profitLoss} isLoading={plLoading} />
       )}
 
       {activeTab === "balance-sheet" && (
-        <BalanceSheetReport
-          balanceSheet={balanceSheet}
-          isLoading={bsLoading}
-        />
+        <BalanceSheetReport balanceSheet={balanceSheet} isLoading={bsLoading} />
       )}
 
       {activeTab === "trial-balance" && (
-        <TrialBalanceReport
-          trialBalance={trialBalance}
-          isLoading={tbLoading}
-        />
+        <TrialBalanceReport trialBalance={trialBalance} isLoading={tbLoading} />
       )}
 
       {activeTab === "ledger" && (
@@ -173,10 +164,7 @@ export default function ReportsPage() {
       )}
 
       {activeTab === "vat-summary" && (
-        <VatPositionReport
-          vatSummary={vatSummary}
-          isLoading={vatLoading}
-        />
+        <VatPositionReport vatSummary={vatSummary} isLoading={vatLoading} />
       )}
 
       <QuotationPrintModal

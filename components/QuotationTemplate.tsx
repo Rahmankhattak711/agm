@@ -60,7 +60,9 @@ export default function QuotationTemplate({
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string>("");
   const [ledgerPostedMsg, setLedgerPostedMsg] = useState<string>("");
   const [isPostingLedger, setIsPostingLedger] = useState<boolean>(false);
-  const [docType, setDocType] = useState<"QUOTATION" | "TAX_INVOICE">("QUOTATION");
+  const [docType, setDocType] = useState<"QUOTATION" | "TAX_INVOICE">(
+    "QUOTATION",
+  );
   const [status, setStatus] = useState<
     "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "EXPIRED"
   >("DRAFT");
@@ -80,7 +82,9 @@ export default function QuotationTemplate({
     date: initialMeta?.date || new Date().toLocaleDateString("en-GB"),
     validUntil:
       initialMeta?.validUntil ||
-      new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString("en-GB"),
+      new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString(
+        "en-GB",
+      ),
     customer: initialMeta?.customer || "Brian Berthelsen",
     attention: initialMeta?.attention || "",
     address: initialMeta?.address || "Dubai, UAE",
@@ -94,12 +98,12 @@ export default function QuotationTemplate({
   });
 
   const [items, setItems] = useState<QuotationItem[]>(
-    initialItems && initialItems.length > 0
-      ? initialItems
-      : SAMPLE_SCOPE_ITEMS
+    initialItems && initialItems.length > 0 ? initialItems : SAMPLE_SCOPE_ITEMS,
   );
 
-  const [paymentTerms, setPaymentTerms] = useState<string[]>(DEFAULT_PAYMENT_TERMS);
+  const [paymentTerms, setPaymentTerms] = useState<string[]>(
+    DEFAULT_PAYMENT_TERMS,
+  );
   const [vatPct, setVatPct] = useState<number | string>(5);
   const [discount, setDiscount] = useState<number | string>(0);
 
@@ -134,8 +138,8 @@ export default function QuotationTemplate({
                 desc: `${selected.name} (${selected.sku})${selected.description ? ` - ${selected.description}` : ""}`,
                 rate: Number(selected.sellingPrice || selected.costPrice || 0),
               }
-            : it
-        )
+            : it,
+        ),
       );
     }
   };
@@ -145,7 +149,9 @@ export default function QuotationTemplate({
       ...its,
       {
         id: Date.now() + Math.random(),
-        section: sectionName || (its.length > 0 ? its[its.length - 1].section || "" : ""),
+        section:
+          sectionName ||
+          (its.length > 0 ? its[its.length - 1].section || "" : ""),
         desc: "",
         qty: 1,
         rate: 0,
@@ -153,7 +159,9 @@ export default function QuotationTemplate({
     ]);
 
   const removeItem = (id: number | string) =>
-    setItems((its) => (its.length > 1 ? its.filter((it) => it.id !== id) : its));
+    setItems((its) =>
+      its.length > 1 ? its.filter((it) => it.id !== id) : its,
+    );
 
   const loadSamplePdfPreset = () => {
     setMeta({
@@ -180,7 +188,11 @@ export default function QuotationTemplate({
   };
 
   const calculateRowTotal = (it: QuotationItem): number => {
-    if (it.isFree || String(it.qty).toLowerCase() === "free" || String(it.rate).toLowerCase() === "free") {
+    if (
+      it.isFree ||
+      String(it.qty).toLowerCase() === "free" ||
+      String(it.rate).toLowerCase() === "free"
+    ) {
       return 0;
     }
     const q = Number(it.qty || 0);
@@ -215,7 +227,7 @@ export default function QuotationTemplate({
           const isFree = Boolean(
             it.isFree ||
             String(it.qty).toLowerCase() === "free" ||
-            String(it.rate).toLowerCase() === "free"
+            String(it.rate).toLowerCase() === "free",
           );
           return {
             productId: it.productId || null,
@@ -271,7 +283,7 @@ export default function QuotationTemplate({
           qty: item.isFree ? "Free" : Number(item.quantity || 1),
           rate: item.isFree ? "Free" : Number(item.unitRate || 0),
           isFree: item.isFree,
-        }))
+        })),
       );
     }
     setIsSavedDrawerOpen(false);
@@ -310,7 +322,7 @@ export default function QuotationTemplate({
           `• Debit Accounts Receivable: AED ${formatCurrency(total)}\n` +
           `• Credit Fitout Revenue: AED ${formatCurrency(subtotal - Number(discount || 0))}\n` +
           `• Credit UAE VAT Output (5%): AED ${formatCurrency(vatAmt)}\n\n` +
-          `This will record turnover in Profit & Loss and update the VAT Return!`
+          `This will record turnover in Profit & Loss and update the VAT Return!`,
       )
     ) {
       return;
@@ -320,7 +332,11 @@ export default function QuotationTemplate({
     try {
       const arAccount =
         accountsList.find((a) => a.accountCode === "1200") ||
-        accountsList.find((a) => a.type === "ASSET" && a.accountName.toLowerCase().includes("receivable")) ||
+        accountsList.find(
+          (a) =>
+            a.type === "ASSET" &&
+            a.accountName.toLowerCase().includes("receivable"),
+        ) ||
         accountsList.find((a) => a.accountCode === "1020") ||
         accountsList[0];
       const revAccount =
@@ -329,11 +345,15 @@ export default function QuotationTemplate({
         accountsList[1];
       const vatOutAccount =
         accountsList.find((a) => a.accountCode === "2210") ||
-        accountsList.find((a) => a.accountName.toLowerCase().includes("vat output")) ||
+        accountsList.find((a) =>
+          a.accountName.toLowerCase().includes("vat output"),
+        ) ||
         accountsList[2];
 
       if (!arAccount || !revAccount || !vatOutAccount) {
-        alert("Chart of accounts not found for AR (1200), Revenue (4000), or VAT Output (2210).");
+        alert(
+          "Chart of accounts not found for AR (1200), Revenue (4000), or VAT Output (2210).",
+        );
         setIsPostingLedger(false);
         return;
       }
@@ -368,10 +388,14 @@ export default function QuotationTemplate({
       };
 
       await createJournalEntryMutation.mutateAsync(payload);
-      setLedgerPostedMsg(`Posted to General Ledger as ${entryNumber}! P&L & VAT updated.`);
+      setLedgerPostedMsg(
+        `Posted to General Ledger as ${entryNumber}! P&L & VAT updated.`,
+      );
       setTimeout(() => setLedgerPostedMsg(""), 6000);
     } catch (err: any) {
-      alert("Error posting invoice to ledger: " + (err.message || "Unknown error"));
+      alert(
+        "Error posting invoice to ledger: " + (err.message || "Unknown error"),
+      );
     } finally {
       setIsPostingLedger(false);
     }
@@ -384,7 +408,7 @@ export default function QuotationTemplate({
       quotationNo: `AGM-QTN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
       date: new Date().toLocaleDateString("en-GB"),
       validUntil: new Date(
-        Date.now() + 15 * 24 * 60 * 60 * 1000
+        Date.now() + 15 * 24 * 60 * 60 * 1000,
       ).toLocaleDateString("en-GB"),
       customer: "",
       attention: "",
@@ -414,7 +438,8 @@ export default function QuotationTemplate({
 
   const handleDeleteQuotation = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this saved quotation?")) return;
+    if (!confirm("Are you sure you want to delete this saved quotation?"))
+      return;
     try {
       await deleteQuotationMutation.mutateAsync(id);
       if (selectedQuotationId === id) {
@@ -442,7 +467,11 @@ export default function QuotationTemplate({
               size="sm"
               onClick={() => setDocType("QUOTATION")}
               icon={<FileText size={13} />}
-              className={docType === "QUOTATION" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500"}
+              className={
+                docType === "QUOTATION"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-500"
+              }
             >
               Quotation
             </Button>
@@ -452,7 +481,11 @@ export default function QuotationTemplate({
               size="sm"
               onClick={() => setDocType("TAX_INVOICE")}
               icon={<FileCheck size={13} />}
-              className={docType === "TAX_INVOICE" ? "bg-slate-900 text-white shadow-xs" : "text-slate-500"}
+              className={
+                docType === "TAX_INVOICE"
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "text-slate-500"
+              }
             >
               Tax Invoice
             </Button>
@@ -612,10 +645,7 @@ export default function QuotationTemplate({
                   onUpdatePaymentTerm={updatePaymentTerm}
                 />
 
-                <QuotationDetailsCards
-                  meta={meta}
-                  onUpdateMeta={updateMeta}
-                />
+                <QuotationDetailsCards meta={meta} onUpdateMeta={updateMeta} />
 
                 <QuotationItemsTable
                   items={items}
@@ -637,9 +667,7 @@ export default function QuotationTemplate({
                   onUpdateDiscount={(val) => setDiscount(val)}
                 />
 
-                <QuotationTerms
-                  termsList={DEFAULT_TERMS_AND_CONDITIONS}
-                />
+                <QuotationTerms termsList={DEFAULT_TERMS_AND_CONDITIONS} />
 
                 <QuotationSignatures />
               </td>

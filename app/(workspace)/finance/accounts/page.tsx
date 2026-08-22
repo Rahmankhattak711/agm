@@ -3,7 +3,11 @@
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
-import { useAccounts, useCreateAccount, ChartOfAccount } from "@/lib/hooks/api-hooks";
+import {
+  useAccounts,
+  useCreateAccount,
+  ChartOfAccount,
+} from "@/lib/hooks/api-hooks";
 import { PlusIcon } from "@/components/icons";
 import {
   Button,
@@ -16,11 +20,31 @@ import {
 } from "@/components/ui";
 
 const ACCOUNT_TYPES = [
-  { value: "ASSET", label: "Asset", color: "bg-blue-50 text-blue-700 border-blue-200" },
-  { value: "LIABILITY", label: "Liability", color: "bg-orange-50 text-orange-700 border-orange-200" },
-  { value: "EQUITY", label: "Equity", color: "bg-purple-50 text-purple-700 border-purple-200" },
-  { value: "REVENUE", label: "Revenue", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  { value: "EXPENSE", label: "Expense", color: "bg-rose-50 text-rose-700 border-rose-200" },
+  {
+    value: "ASSET",
+    label: "Asset",
+    color: "bg-blue-50 text-blue-700 border-blue-200",
+  },
+  {
+    value: "LIABILITY",
+    label: "Liability",
+    color: "bg-orange-50 text-orange-700 border-orange-200",
+  },
+  {
+    value: "EQUITY",
+    label: "Equity",
+    color: "bg-purple-50 text-purple-700 border-purple-200",
+  },
+  {
+    value: "REVENUE",
+    label: "Revenue",
+    color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  {
+    value: "EXPENSE",
+    label: "Expense",
+    color: "bg-rose-50 text-rose-700 border-rose-200",
+  },
 ];
 
 export default function AccountsPage() {
@@ -91,14 +115,18 @@ export default function AccountsPage() {
         accessorKey: "accountName",
         header: "Account Name",
         cell: ({ row }) => (
-          <span className="font-semibold text-slate-900">{row.original.accountName}</span>
+          <span className="font-semibold text-slate-900">
+            {row.original.accountName}
+          </span>
         ),
       },
       {
         accessorKey: "type",
         header: "Type",
         cell: ({ row }) => {
-          const typeObj = ACCOUNT_TYPES.find((t) => t.value === row.original.type);
+          const typeObj = ACCOUNT_TYPES.find(
+            (t) => t.value === row.original.type,
+          );
           return (
             <span
               className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
@@ -138,17 +166,19 @@ export default function AccountsPage() {
         ),
       },
     ],
-    []
+    [],
   );
 
   return (
     <div className="space-y-6">
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">General Ledger & Accounts</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            General Ledger & Accounts
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage your Chart of Accounts across standard accounting classification hierarchies.
+            Manage your Chart of Accounts across standard accounting
+            classification hierarchies.
           </p>
         </div>
 
@@ -176,8 +206,12 @@ export default function AccountsPage() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700">{t.label}</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${t.color}`}>
+                <span className="text-xs font-bold text-slate-700">
+                  {t.label}
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${t.color}`}
+                >
                   {count}
                 </span>
               </div>
@@ -234,7 +268,8 @@ export default function AccountsPage() {
           <form.Field
             name="accountCode"
             validators={{
-              onChange: ({ value }) => (!value.trim() ? "Account code is required" : undefined),
+              onChange: ({ value }) =>
+                !value.trim() ? "Account code is required" : undefined,
             }}
           >
             {(field) => (
@@ -250,7 +285,8 @@ export default function AccountsPage() {
           <form.Field
             name="accountName"
             validators={{
-              onChange: ({ value }) => (!value.trim() ? "Account name is required" : undefined),
+              onChange: ({ value }) =>
+                !value.trim() ? "Account name is required" : undefined,
             }}
           >
             {(field) => (
@@ -268,7 +304,10 @@ export default function AccountsPage() {
               <FormSelect
                 field={field}
                 label="Account Type"
-                options={ACCOUNT_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+                options={ACCOUNT_TYPES.map((t) => ({
+                  value: t.value,
+                  label: t.label,
+                }))}
               />
             )}
           </form.Field>

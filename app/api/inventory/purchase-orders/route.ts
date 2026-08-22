@@ -30,7 +30,10 @@ export async function GET(request: Request) {
     return NextResponse.json(purchaseOrders);
   } catch (error) {
     console.error("Error fetching purchase orders:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -38,12 +41,29 @@ export async function POST(request: Request) {
   try {
     const user = await getAuthUser(request);
     const body = await request.json();
-    const { poNumber, supplierId, orderDate, expectedDate, status, notes, items } = body;
+    const {
+      poNumber,
+      supplierId,
+      orderDate,
+      expectedDate,
+      status,
+      notes,
+      items,
+    } = body;
 
-    if (!poNumber?.trim() || !supplierId || !orderDate || !Array.isArray(items) || items.length === 0) {
+    if (
+      !poNumber?.trim() ||
+      !supplierId ||
+      !orderDate ||
+      !Array.isArray(items) ||
+      items.length === 0
+    ) {
       return NextResponse.json(
-        { error: "PO Number, Supplier, Order Date, and at least one item are required" },
-        { status: 400 }
+        {
+          error:
+            "PO Number, Supplier, Order Date, and at least one item are required",
+        },
+        { status: 400 },
       );
     }
 
@@ -51,7 +71,7 @@ export async function POST(request: Request) {
     const validatedItems = items.map((item: any) => {
       const quantityOrdered = Number(item.quantityOrdered || 1);
       const unitCost = Number(item.unitCost || 0);
-      const totalCost = Number(item.totalCost || (quantityOrdered * unitCost));
+      const totalCost = Number(item.totalCost || quantityOrdered * unitCost);
       totalAmount += totalCost;
       return {
         productId: item.productId,
@@ -88,19 +108,29 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Error creating purchase order:", error);
     if (error.code === "P2002") {
-      return NextResponse.json({ error: "A purchase order with this PO Number already exists" }, { status: 409 });
+      return NextResponse.json(
+        { error: "A purchase order with this PO Number already exists" },
+        { status: 409 },
+      );
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    const { id, status, expectedDate, notes, items, warehouseIdToReceive } = body;
+    const { id, status, expectedDate, notes, items, warehouseIdToReceive } =
+      body;
 
     if (!id) {
-      return NextResponse.json({ error: "Missing purchase order ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing purchase order ID" },
+        { status: 400 },
+      );
     }
 
     const existing = await prisma.purchaseOrder.findUnique({
@@ -109,78 +139,95 @@ export async function PATCH(request: Request) {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Purchase order not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Purchase order not found" },
+        { status: 404 },
+      );
     }
 
-    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const updateData: any = {};
-      if (status !== undefined) updateData.status = status;
-      if (expectedDate !== undefined) updateData.expectedDate = expectedDate ? new Date(expectedDate) : null;
-      if (notes !== undefined) updateData.notes = notes?.trim() || null;
+    const updated = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const updateData: any = {};
+        if (status !== undefined) updateData.status = status;
+        if (expectedDate !== undefined)
+          updateData.expectedDate = expectedDate
+            ? new Date(expectedDate)
+            : null;
+        if (notes !== undefined) updateData.notes = notes?.trim() || null;
 
-      if (status === "RECEIVED" && warehouseIdToReceive && existing.status !== "RECEIVED") {
-        for (const item of existing.items) {
-          const qty = Number(item.quantityOrdered);
+        if (
+          status === "RECEIVED" &&
+          warehouseIdToReceive &&
+          existing.status !== "RECEIVED"
+        ) {
+          for (const item of existing.items) {
+            const qty = Number(item.quantityOrdered);
 
-          await tx.purchaseOrderItem.update({
-            where: { id: item.id },
-            data: { quantityReceived: qty },
-          });
-
-          await tx.stockMovement.create({
-            data: {
-              productId: item.productId,
-              warehouseId: warehouseIdToReceive,
-              movementType: "PURCHASE_IN",
-              quantity: qty,
-              unitCost: item.unitCost,
-              referenceNumber: existing.poNumber,
-              notes: `Received from PO ${existing.poNumber}`,
-            },
-          });
-
-          const existingLevel = await tx.stockLevel.findUnique({
-            where: {
-              productId_warehouseId: {
-                productId: item.productId,
-                warehouseId: warehouseIdToReceive,
-              },
-            },
-          });
-
-          if (existingLevel) {
-            await tx.stockLevel.update({
-              where: { id: existingLevel.id },
-              data: { quantityOnHand: Number(existingLevel.quantityOnHand) + qty },
+            await tx.purchaseOrderItem.update({
+              where: { id: item.id },
+              data: { quantityReceived: qty },
             });
-          } else {
-            await tx.stockLevel.create({
+
+            await tx.stockMovement.create({
               data: {
                 productId: item.productId,
                 warehouseId: warehouseIdToReceive,
-                quantityOnHand: qty,
+                movementType: "PURCHASE_IN",
+                quantity: qty,
+                unitCost: item.unitCost,
+                referenceNumber: existing.poNumber,
+                notes: `Received from PO ${existing.poNumber}`,
               },
             });
+
+            const existingLevel = await tx.stockLevel.findUnique({
+              where: {
+                productId_warehouseId: {
+                  productId: item.productId,
+                  warehouseId: warehouseIdToReceive,
+                },
+              },
+            });
+
+            if (existingLevel) {
+              await tx.stockLevel.update({
+                where: { id: existingLevel.id },
+                data: {
+                  quantityOnHand: Number(existingLevel.quantityOnHand) + qty,
+                },
+              });
+            } else {
+              await tx.stockLevel.create({
+                data: {
+                  productId: item.productId,
+                  warehouseId: warehouseIdToReceive,
+                  quantityOnHand: qty,
+                },
+              });
+            }
           }
         }
-      }
 
-      const po = await tx.purchaseOrder.update({
-        where: { id },
-        data: updateData,
-        include: {
-          supplier: true,
-          items: { include: { product: true } },
-        },
-      });
+        const po = await tx.purchaseOrder.update({
+          where: { id },
+          data: updateData,
+          include: {
+            supplier: true,
+            items: { include: { product: true } },
+          },
+        });
 
-      return po;
-    });
+        return po;
+      },
+    );
 
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error("Error updating purchase order:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -190,13 +237,19 @@ export async function DELETE(request: Request) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json({ error: "Missing purchase order ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing purchase order ID" },
+        { status: 400 },
+      );
     }
 
     await prisma.purchaseOrder.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting purchase order:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

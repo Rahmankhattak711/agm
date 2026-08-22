@@ -18,10 +18,22 @@ import {
 } from "@/components/ui";
 
 const ROLES = [
-  { value: "SUPER_ADMIN", label: "Super Admin", color: "bg-purple-100 text-purple-800" },
+  {
+    value: "SUPER_ADMIN",
+    label: "Super Admin",
+    color: "bg-purple-100 text-purple-800",
+  },
   { value: "ADMIN", label: "Admin", color: "bg-blue-100 text-blue-800" },
-  { value: "ACCOUNTANT", label: "Accountant", color: "bg-emerald-100 text-emerald-800" },
-  { value: "USER", label: "Standard User", color: "bg-slate-100 text-slate-700" },
+  {
+    value: "ACCOUNTANT",
+    label: "Accountant",
+    color: "bg-emerald-100 text-emerald-800",
+  },
+  {
+    value: "USER",
+    label: "Standard User",
+    color: "bg-slate-100 text-slate-700",
+  },
 ];
 
 export default function UsersPage() {
@@ -93,7 +105,9 @@ export default function UsersPage() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#4c8b60] to-[#25533d] text-white flex items-center justify-center font-bold text-[10px]">
               {row.original.fullName.slice(0, 2).toUpperCase()}
             </div>
-            <span className="font-semibold text-slate-900">{row.original.fullName}</span>
+            <span className="font-semibold text-slate-900">
+              {row.original.fullName}
+            </span>
           </div>
         ),
       },
@@ -101,7 +115,9 @@ export default function UsersPage() {
         accessorKey: "email",
         header: "Email Address",
         cell: ({ row }) => (
-          <span className="font-mono text-slate-600 text-xs">{row.original.email}</span>
+          <span className="font-mono text-slate-600 text-xs">
+            {row.original.email}
+          </span>
         ),
       },
       {
@@ -110,7 +126,9 @@ export default function UsersPage() {
         cell: ({ row }) => {
           const roleObj = ROLES.find((r) => r.value === row.original.role);
           return (
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${roleObj?.color || "bg-slate-100"}`}>
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${roleObj?.color || "bg-slate-100"}`}
+            >
               {roleObj?.label || row.original.role}
             </span>
           );
@@ -123,10 +141,14 @@ export default function UsersPage() {
           <div className="text-center">
             <span
               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                row.original.isActive ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-100 text-slate-500"
+                row.original.isActive
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-slate-100 text-slate-500"
               }`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${row.original.isActive ? "bg-emerald-500" : "bg-slate-400"}`} />
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${row.original.isActive ? "bg-emerald-500" : "bg-slate-400"}`}
+              />
               {row.original.isActive ? "Active" : "Disabled"}
             </span>
           </div>
@@ -142,17 +164,19 @@ export default function UsersPage() {
         ),
       },
     ],
-    []
+    [],
   );
 
   return (
     <div className="space-y-6">
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">User & Access Management</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            User & Access Management
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Role-based permissions, credentials management, and ERP access control.
+            Role-based permissions, credentials management, and ERP access
+            control.
           </p>
         </div>
         {isAdmin && (
@@ -170,27 +194,51 @@ export default function UsersPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Users</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{stats?.total ?? users.length}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Registered ERP user accounts</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Total Users
+          </p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {stats?.total ?? users.length}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Registered ERP user accounts
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-purple-600">Super Admins</p>
-          <p className="text-2xl font-black text-purple-950 mt-1">{stats?.byRole?.SUPER_ADMIN || 0}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Full system superusers</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-purple-600">
+            Super Admins
+          </p>
+          <p className="text-2xl font-black text-purple-950 mt-1">
+            {stats?.byRole?.SUPER_ADMIN || 0}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Full system superusers
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Accountants</p>
-          <p className="text-2xl font-black text-emerald-950 mt-1">{stats?.byRole?.ACCOUNTANT || 0}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Ledger & reporting access</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">
+            Accountants
+          </p>
+          <p className="text-2xl font-black text-emerald-950 mt-1">
+            {stats?.byRole?.ACCOUNTANT || 0}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Ledger & reporting access
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Active Status</p>
-          <p className="text-2xl font-black text-blue-950 mt-1">{stats?.active ?? users.filter((u) => u.isActive).length}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Operational active logins</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
+            Active Status
+          </p>
+          <p className="text-2xl font-black text-blue-950 mt-1">
+            {stats?.active ?? users.filter((u) => u.isActive).length}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Operational active logins
+          </p>
         </div>
       </div>
 
@@ -246,7 +294,8 @@ export default function UsersPage() {
           <form.Field
             name="fullName"
             validators={{
-              onChange: ({ value }) => (!value.trim() ? "Full name is required" : undefined),
+              onChange: ({ value }) =>
+                !value.trim() ? "Full name is required" : undefined,
             }}
           >
             {(field) => (
@@ -266,8 +315,8 @@ export default function UsersPage() {
                 !value.trim()
                   ? "Email is required"
                   : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-                  ? "Invalid email format"
-                  : undefined,
+                    ? "Invalid email format"
+                    : undefined,
             }}
           >
             {(field) => (
@@ -285,7 +334,11 @@ export default function UsersPage() {
             name="password"
             validators={{
               onChange: ({ value }) =>
-                !value ? "Temporary password is required" : value.length < 6 ? "Password must be at least 6 characters" : undefined,
+                !value
+                  ? "Temporary password is required"
+                  : value.length < 6
+                    ? "Password must be at least 6 characters"
+                    : undefined,
             }}
           >
             {(field) => (
@@ -305,9 +358,18 @@ export default function UsersPage() {
                 field={field}
                 label="Access Role"
                 options={[
-                  { value: "SUPER_ADMIN", label: "Super Admin (All permissions)" },
-                  { value: "ADMIN", label: "Admin (Manage operations & finance)" },
-                  { value: "ACCOUNTANT", label: "Accountant (General Ledger & Reports)" },
+                  {
+                    value: "SUPER_ADMIN",
+                    label: "Super Admin (All permissions)",
+                  },
+                  {
+                    value: "ADMIN",
+                    label: "Admin (Manage operations & finance)",
+                  },
+                  {
+                    value: "ACCOUNTANT",
+                    label: "Accountant (General Ledger & Reports)",
+                  },
                   { value: "USER", label: "User (Standard submitter)" },
                 ]}
               />

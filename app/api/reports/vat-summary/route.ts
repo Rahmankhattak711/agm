@@ -72,7 +72,7 @@ export async function GET() {
         : null;
       if (!entryDate) continue;
 
-      const mIdx = entryDate.getMonth(); 
+      const mIdx = entryDate.getMonth();
       const mName = [
         "JANUARY",
         "FEBRUARY",
@@ -109,7 +109,6 @@ export async function GET() {
           monthlyData[mName].incomeVat += vatAmt;
         }
       } else {
-
         if (type === "EXPENSE" && debit > 0) {
           monthlyData[mName].purchaseNonVat += debit;
         } else if (type === "REVENUE" && credit > 0) {
@@ -157,10 +156,24 @@ export async function GET() {
     const q3Months = ["AUGUST", "SEPTEMBER", "OCTOBER"];
     const q4Months = ["NOVEMBER", "DECEMBER", "JANUARY"];
 
-    const calcQuarter = (title: string, months: string[], quarterKey: string) => {
-      const sales = months.reduce((s, m) => s + monthlyData[m].incomeTaxable + monthlyData[m].incomeNonVat, 0);
-      const purchases = months.reduce((s, m) => s + monthlyData[m].purchaseTaxable, 0);
-      const nonVatExpenses = months.reduce((s, m) => s + monthlyData[m].purchaseNonVat, 0);
+    const calcQuarter = (
+      title: string,
+      months: string[],
+      quarterKey: string,
+    ) => {
+      const sales = months.reduce(
+        (s, m) =>
+          s + monthlyData[m].incomeTaxable + monthlyData[m].incomeNonVat,
+        0,
+      );
+      const purchases = months.reduce(
+        (s, m) => s + monthlyData[m].purchaseTaxable,
+        0,
+      );
+      const nonVatExpenses = months.reduce(
+        (s, m) => s + monthlyData[m].purchaseNonVat,
+        0,
+      );
       const grossProfit = sales - purchases;
       const inVat = months.reduce((s, m) => s + monthlyData[m].purchaseVat, 0);
       const outVat = months.reduce((s, m) => s + monthlyData[m].incomeVat, 0);
@@ -193,7 +206,8 @@ export async function GET() {
     let totalOutputVat = 0;
     for (const s of sums) {
       if (s.vatType === "INPUT") totalInputVat = Number(s._sum.vatAmount || 0);
-      if (s.vatType === "OUTPUT") totalOutputVat = Number(s._sum.vatAmount || 0);
+      if (s.vatType === "OUTPUT")
+        totalOutputVat = Number(s._sum.vatAmount || 0);
     }
 
     const totalTaxablePurchases = monthlyPurchases.reduce(
@@ -206,29 +220,31 @@ export async function GET() {
     );
     const netTotalVat = totalOutputVat - totalInputVat;
 
-    const formattedEntries = vatEntries.slice(0, 50).map((e: (typeof vatEntries)[number]) => ({
-      id: e.id,
-      vatType: e.vatType,
-      taxableAmount: Number(e.taxableAmount || 0),
-      vatRate: Number(e.vatRate?.rate || 5),
-      vatAmount: Number(e.vatAmount || 0),
-      createdAt:
-        e.journalEntryLine?.journalEntry?.createdAt ||
-        e.journalEntryLine?.journalEntry?.entryDate ||
-        new Date().toISOString(),
-      entryNumber: e.journalEntryLine?.journalEntry?.entryNumber || "—",
-      entryDate:
-        e.journalEntryLine?.journalEntry?.entryDate ||
-        new Date().toISOString(),
-      description:
-        e.journalEntryLine?.journalEntry?.description || "VAT Transaction",
-      accountName:
-        e.journalEntryLine?.account?.accountName ||
-        (e.vatType === "INPUT" ? "VAT Input Tax" : "VAT Output Tax"),
-      accountCode:
-        e.journalEntryLine?.account?.accountCode ||
-        (e.vatType === "INPUT" ? "2200" : "2210"),
-    }));
+    const formattedEntries = vatEntries
+      .slice(0, 50)
+      .map((e: (typeof vatEntries)[number]) => ({
+        id: e.id,
+        vatType: e.vatType,
+        taxableAmount: Number(e.taxableAmount || 0),
+        vatRate: Number(e.vatRate?.rate || 5),
+        vatAmount: Number(e.vatAmount || 0),
+        createdAt:
+          e.journalEntryLine?.journalEntry?.createdAt ||
+          e.journalEntryLine?.journalEntry?.entryDate ||
+          new Date().toISOString(),
+        entryNumber: e.journalEntryLine?.journalEntry?.entryNumber || "—",
+        entryDate:
+          e.journalEntryLine?.journalEntry?.entryDate ||
+          new Date().toISOString(),
+        description:
+          e.journalEntryLine?.journalEntry?.description || "VAT Transaction",
+        accountName:
+          e.journalEntryLine?.account?.accountName ||
+          (e.vatType === "INPUT" ? "VAT Input Tax" : "VAT Output Tax"),
+        accountCode:
+          e.journalEntryLine?.account?.accountCode ||
+          (e.vatType === "INPUT" ? "2200" : "2210"),
+      }));
 
     return NextResponse.json({
       companyName: "AGM FITOUT TECHNICAL SERVICES LLC",

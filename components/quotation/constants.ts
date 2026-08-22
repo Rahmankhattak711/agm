@@ -130,7 +130,8 @@ export const DEFAULT_TERMS_AND_CONDITIONS = [
   },
   {
     id: 19,
-    title: "Any materials or equipment supplied or stored at the work site by the Client",
+    title:
+      "Any materials or equipment supplied or stored at the work site by the Client",
     text: "that are unrelated to the scope of work agreed upon in this contract fall under the sole responsibility of the Client. Our company is not responsible for protecting these materials against loss, theft, damage, or any harm that may befall them.",
   },
   {

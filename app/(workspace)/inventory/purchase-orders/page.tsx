@@ -45,10 +45,16 @@ export default function PurchaseOrdersPage() {
   const [supplierFilter, setSupplierFilter] = useState<string>("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
-  const [receiveModalPO, setReceiveModalPO] = useState<PurchaseOrder | null>(null);
+  const [receiveModalPO, setReceiveModalPO] = useState<PurchaseOrder | null>(
+    null,
+  );
   const [formError, setFormError] = useState("");
 
-  const { data: purchaseOrders = [], isLoading, error } = usePurchaseOrders({
+  const {
+    data: purchaseOrders = [],
+    isLoading,
+    error,
+  } = usePurchaseOrders({
     status: statusFilter !== "ALL" ? statusFilter : undefined,
     supplierId: supplierFilter || undefined,
   });
@@ -74,14 +80,18 @@ export default function PurchaseOrdersPage() {
         p.poNumber?.toLowerCase().includes(q) ||
         p.supplier?.name?.toLowerCase().includes(q) ||
         p.supplier?.trn?.toLowerCase().includes(q) ||
-        p.notes?.toLowerCase().includes(q)
+        p.notes?.toLowerCase().includes(q),
     );
   }, [purchaseOrders, search]);
 
   const totalPOs = purchaseOrders.length;
   const draftCount = purchaseOrders.filter((p) => p.status === "DRAFT").length;
-  const orderedCount = purchaseOrders.filter((p) => p.status === "ORDERED").length;
-  const receivedCount = purchaseOrders.filter((p) => p.status === "RECEIVED").length;
+  const orderedCount = purchaseOrders.filter(
+    (p) => p.status === "ORDERED",
+  ).length;
+  const receivedCount = purchaseOrders.filter(
+    (p) => p.status === "RECEIVED",
+  ).length;
   const totalPurchasesValue = purchaseOrders
     .filter((p) => p.status !== "CANCELLED")
     .reduce((acc, p) => acc + Number(p.totalAmount || 0), 0);
@@ -93,11 +103,17 @@ export default function PurchaseOrdersPage() {
       orderDate: new Date().toISOString().split("T")[0],
       expectedDate: "",
       notes: "",
-      items: [{ productId: "", quantityOrdered: "1", unitCost: "0" }] as ItemRow[],
+      items: [
+        { productId: "", quantityOrdered: "1", unitCost: "0" },
+      ] as ItemRow[],
     },
     onSubmit: async ({ value }) => {
       setFormError("");
-      if (!value.poNumber.trim() || !value.supplierId || value.items.length === 0) {
+      if (
+        !value.poNumber.trim() ||
+        !value.supplierId ||
+        value.items.length === 0
+      ) {
         setFormError("PO number, supplier, and items are required.");
         return;
       }
@@ -305,7 +321,11 @@ export default function PurchaseOrdersPage() {
                   variant="danger"
                   size="sm"
                   onClick={async () => {
-                    if (confirm(`Cancel and delete PO "${row.original.poNumber}"?`)) {
+                    if (
+                      confirm(
+                        `Cancel and delete PO "${row.original.poNumber}"?`,
+                      )
+                    ) {
                       await deletePO.mutateAsync(row.original.id);
                     }
                   }}
@@ -318,16 +338,19 @@ export default function PurchaseOrdersPage() {
         },
       },
     ],
-    [deletePO, updatePO]
+    [deletePO, updatePO],
   );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Purchase Orders & Procurement</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            Purchase Orders & Procurement
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage vendor purchase requisitions, approval pipelines, and shipment receiving audits.
+            Manage vendor purchase requisitions, approval pipelines, and
+            shipment receiving audits.
           </p>
         </div>
 
@@ -342,27 +365,49 @@ export default function PurchaseOrdersPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Purchase Orders</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Total Purchase Orders
+          </p>
           <p className="text-2xl font-black text-slate-900 mt-1">{totalPOs}</p>
-          <p className="text-xs text-slate-500 mt-0.5">All created procurement orders</p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            All created procurement orders
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Draft POs</p>
-          <p className="text-2xl font-black text-amber-600 mt-1">{draftCount}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Awaiting supplier issuance</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Draft POs
+          </p>
+          <p className="text-2xl font-black text-amber-600 mt-1">
+            {draftCount}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Awaiting supplier issuance
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pending Deliveries</p>
-          <p className="text-2xl font-black text-blue-700 mt-1">{orderedCount}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Awaiting warehouse receipt</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Pending Deliveries
+          </p>
+          <p className="text-2xl font-black text-blue-700 mt-1">
+            {orderedCount}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Awaiting warehouse receipt
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Procurement Commitments</p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">{formatCurrency(totalPurchasesValue)}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Cumulative purchase volume</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Procurement Commitments
+          </p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">
+            {formatCurrency(totalPurchasesValue)}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Cumulative purchase volume
+          </p>
         </div>
       </div>
 
@@ -373,7 +418,12 @@ export default function PurchaseOrdersPage() {
               placeholder="Search PO number, supplier, TRN..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              leftIcon={<SearchIcon className="w-4 h-4 text-slate-400" strokeWidth={2} />}
+              leftIcon={
+                <SearchIcon
+                  className="w-4 h-4 text-slate-400"
+                  strokeWidth={2}
+                />
+              }
             />
           </div>
 
@@ -406,7 +456,9 @@ export default function PurchaseOrdersPage() {
         </div>
 
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">Error loading POs: {(error as any).message}</div>
+          <div className="py-8 text-center text-xs text-red-500">
+            Error loading POs: {(error as any).message}
+          </div>
         ) : (
           <DataTable
             columns={columns}
@@ -442,7 +494,8 @@ export default function PurchaseOrdersPage() {
             <poForm.Field
               name="poNumber"
               validators={{
-                onChange: ({ value }) => (!value.trim() ? "PO number is required" : undefined),
+                onChange: ({ value }) =>
+                  !value.trim() ? "PO number is required" : undefined,
               }}
             >
               {(field) => (
@@ -458,7 +511,8 @@ export default function PurchaseOrdersPage() {
             <poForm.Field
               name="supplierId"
               validators={{
-                onChange: ({ value }) => (!value ? "Supplier is required" : undefined),
+                onChange: ({ value }) =>
+                  !value ? "Supplier is required" : undefined,
               }}
             >
               {(field) => (
@@ -476,7 +530,8 @@ export default function PurchaseOrdersPage() {
             <poForm.Field
               name="orderDate"
               validators={{
-                onChange: ({ value }) => (!value ? "Order date is required" : undefined),
+                onChange: ({ value }) =>
+                  !value ? "Order date is required" : undefined,
               }}
             >
               {(field) => (
@@ -503,11 +558,17 @@ export default function PurchaseOrdersPage() {
 
               const removeItem = (index: number) => {
                 if (currentItems.length > 1) {
-                  itemsField.handleChange(currentItems.filter((_, i) => i !== index));
+                  itemsField.handleChange(
+                    currentItems.filter((_, i) => i !== index),
+                  );
                 }
               };
 
-              const updateItem = (index: number, key: keyof ItemRow, val: string) => {
+              const updateItem = (
+                index: number,
+                key: keyof ItemRow,
+                val: string,
+              ) => {
                 const next = [...currentItems];
                 next[index] = { ...next[index], [key]: val };
                 if (key === "productId") {
@@ -520,13 +581,18 @@ export default function PurchaseOrdersPage() {
               };
 
               const totalAmount = currentItems.reduce((acc, it) => {
-                return acc + Number(it.quantityOrdered || 0) * Number(it.unitCost || 0);
+                return (
+                  acc +
+                  Number(it.quantityOrdered || 0) * Number(it.unitCost || 0)
+                );
               }, 0);
 
               return (
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-700 uppercase">PO Line Items</span>
+                    <span className="text-[11px] font-bold text-slate-700 uppercase">
+                      PO Line Items
+                    </span>
                     <button
                       type="button"
                       onClick={addItem}
@@ -537,11 +603,16 @@ export default function PurchaseOrdersPage() {
                   </div>
 
                   {currentItems.map((row, idx) => (
-                    <div key={idx} className="flex flex-col sm:flex-row items-center gap-2 bg-white p-2 rounded-lg border border-slate-200">
+                    <div
+                      key={idx}
+                      className="flex flex-col sm:flex-row items-center gap-2 bg-white p-2 rounded-lg border border-slate-200"
+                    >
                       <Select
                         required
                         value={row.productId}
-                        onChange={(e) => updateItem(idx, "productId", e.target.value)}
+                        onChange={(e) =>
+                          updateItem(idx, "productId", e.target.value)
+                        }
                         className="w-full sm:flex-1 py-1.5"
                       >
                         <option value="">-- Select Product --</option>
@@ -558,7 +629,9 @@ export default function PurchaseOrdersPage() {
                         placeholder="Qty"
                         required
                         value={row.quantityOrdered}
-                        onChange={(e) => updateItem(idx, "quantityOrdered", e.target.value)}
+                        onChange={(e) =>
+                          updateItem(idx, "quantityOrdered", e.target.value)
+                        }
                         className="w-full sm:w-20 py-1.5"
                       />
 
@@ -568,12 +641,18 @@ export default function PurchaseOrdersPage() {
                         placeholder="Cost"
                         required
                         value={row.unitCost}
-                        onChange={(e) => updateItem(idx, "unitCost", e.target.value)}
+                        onChange={(e) =>
+                          updateItem(idx, "unitCost", e.target.value)
+                        }
                         className="w-full sm:w-24 py-1.5"
                       />
 
                       <div className="w-20 text-right font-mono font-bold text-xs text-slate-800">
-                        AED {(Number(row.quantityOrdered || 0) * Number(row.unitCost || 0)).toFixed(2)}
+                        AED{" "}
+                        {(
+                          Number(row.quantityOrdered || 0) *
+                          Number(row.unitCost || 0)
+                        ).toFixed(2)}
                       </div>
 
                       <button
@@ -607,13 +686,14 @@ export default function PurchaseOrdersPage() {
           </poForm.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-            <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsCreateOpen(false)}
+            >
               Cancel
             </Button>
-            <FormSubmit
-              form={poForm}
-              loading={createPO.isPending}
-            >
+            <FormSubmit form={poForm} loading={createPO.isPending}>
               Save Purchase Order
             </FormSubmit>
           </div>
@@ -637,11 +717,16 @@ export default function PurchaseOrdersPage() {
           <receiveForm.Field
             name="receiveWarehouseId"
             validators={{
-              onChange: ({ value }) => (!value ? "Destination warehouse is required" : undefined),
+              onChange: ({ value }) =>
+                !value ? "Destination warehouse is required" : undefined,
             }}
           >
             {(field) => (
-              <FormSelect field={field} label="Destination Warehouse *" required>
+              <FormSelect
+                field={field}
+                label="Destination Warehouse *"
+                required
+              >
                 {warehouses.map((w) => (
                   <option key={w.id} value={w.id}>
                     {w.name} ({w.code})
@@ -653,24 +738,32 @@ export default function PurchaseOrdersPage() {
 
           {receiveModalPO && (
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
-              <span className="font-bold text-slate-700 block">Items in this shipment:</span>
+              <span className="font-bold text-slate-700 block">
+                Items in this shipment:
+              </span>
               {receiveModalPO.items.map((it) => (
-                <div key={it.id} className="flex justify-between text-slate-600">
+                <div
+                  key={it.id}
+                  className="flex justify-between text-slate-600"
+                >
                   <span>{it.product?.name}</span>
-                  <span className="font-mono font-semibold">{it.quantityOrdered} {it.product?.unit}</span>
+                  <span className="font-mono font-semibold">
+                    {it.quantityOrdered} {it.product?.unit}
+                  </span>
                 </div>
               ))}
             </div>
           )}
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-            <Button type="button" variant="outline" onClick={() => setReceiveModalPO(null)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setReceiveModalPO(null)}
+            >
               Cancel
             </Button>
-            <FormSubmit
-              form={receiveForm}
-              loading={updatePO.isPending}
-            >
+            <FormSubmit form={receiveForm} loading={updatePO.isPending}>
               Confirm & Update Stock
             </FormSubmit>
           </div>
@@ -680,29 +773,46 @@ export default function PurchaseOrdersPage() {
       <Modal
         isOpen={!!selectedPO}
         onClose={() => setSelectedPO(null)}
-        title={selectedPO ? `Purchase Order Details - ${selectedPO.poNumber}` : ""}
+        title={
+          selectedPO ? `Purchase Order Details - ${selectedPO.poNumber}` : ""
+        }
         maxWidth="xl"
       >
         {selectedPO && (
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 className="font-bold text-base text-slate-900">{selectedPO.poNumber}</h3>
-                <p className="text-[11px] text-slate-400">Order Date: {new Date(selectedPO.orderDate).toLocaleDateString()}</p>
+                <h3 className="font-bold text-base text-slate-900">
+                  {selectedPO.poNumber}
+                </h3>
+                <p className="text-[11px] text-slate-400">
+                  Order Date:{" "}
+                  {new Date(selectedPO.orderDate).toLocaleDateString()}
+                </p>
               </div>
               <div>{getStatusBadge(selectedPO.status)}</div>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Supplier</span>
-                <span className="font-bold text-slate-800">{selectedPO.supplier?.name}</span>
-                <span className="text-slate-400 block">TRN: {selectedPO.supplier?.trn || "N/A"}</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase block">
+                  Supplier
+                </span>
+                <span className="font-bold text-slate-800">
+                  {selectedPO.supplier?.name}
+                </span>
+                <span className="text-slate-400 block">
+                  TRN: {selectedPO.supplier?.trn || "N/A"}
+                </span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Expected Date</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase block">
+                  Expected Date
+                </span>
                 <span className="font-medium text-slate-700">
-                  {selectedPO.expectedDate ? new Date(selectedPO.expectedDate).toLocaleDateString() : "Not specified"}
+                  {selectedPO.expectedDate
+                    ? new Date(selectedPO.expectedDate).toLocaleDateString()
+                    : "Not specified"}
                 </span>
               </div>
             </div>
@@ -718,25 +828,37 @@ export default function PurchaseOrdersPage() {
               <TableBody>
                 {selectedPO.items.map((it) => (
                   <TableRow key={it.id}>
-                    <TableCell className="font-medium text-slate-800">{it.product?.name}</TableCell>
+                    <TableCell className="font-medium text-slate-800">
+                      {it.product?.name}
+                    </TableCell>
                     <TableCell align="center">{it.quantityOrdered}</TableCell>
                     <TableCell align="center">{it.quantityReceived}</TableCell>
-                    <TableCell align="right" className="font-mono">{Number(it.unitCost).toFixed(2)}</TableCell>
-                    <TableCell align="right" className="font-mono font-bold">{Number(it.totalCost).toFixed(2)}</TableCell>
+                    <TableCell align="right" className="font-mono">
+                      {Number(it.unitCost).toFixed(2)}
+                    </TableCell>
+                    <TableCell align="right" className="font-mono font-bold">
+                      {Number(it.totalCost).toFixed(2)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
 
             <div className="flex justify-between items-center pt-3 border-t border-slate-100">
-              <span className="text-xs text-slate-400">{selectedPO.notes || ""}</span>
+              <span className="text-xs text-slate-400">
+                {selectedPO.notes || ""}
+              </span>
               <span className="text-sm font-black text-slate-900 font-mono">
                 Total: AED {Number(selectedPO.totalAmount).toFixed(2)}
               </span>
             </div>
 
             <div className="flex justify-end pt-2">
-              <Button variant="dark" size="md" onClick={() => setSelectedPO(null)}>
+              <Button
+                variant="dark"
+                size="md"
+                onClick={() => setSelectedPO(null)}
+              >
                 Close
               </Button>
             </div>

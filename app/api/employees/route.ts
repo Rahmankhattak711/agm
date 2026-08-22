@@ -13,7 +13,6 @@ export async function GET(request: Request) {
     });
 
     for (const u of users) {
-
       if (u.email) {
         const existing = await prisma.employee.findUnique({
           where: { email: u.email },
@@ -61,9 +60,7 @@ export async function GET(request: Request) {
                 annualLeaveBalance: 30,
               },
             });
-          } catch (e) {
-
-          }
+          } catch (e) {}
         }
       }
     }
@@ -84,7 +81,14 @@ export async function GET(request: Request) {
     const employees = await prisma.employee.findMany({
       where,
       include: {
-        reportsTo: { select: { id: true, firstName: true, lastName: true, employeeCode: true } },
+        reportsTo: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            employeeCode: true,
+          },
+        },
         _count: {
           select: {
             attendances: true,
@@ -99,7 +103,10 @@ export async function GET(request: Request) {
     return NextResponse.json(employees);
   } catch (error) {
     console.error("Error fetching employees:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -146,8 +153,17 @@ export async function POST(request: Request) {
       iban,
     } = body;
 
-    if (!employeeCode?.trim() || !firstName?.trim() || !lastName?.trim() || !joiningDate || basicSalary === undefined) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (
+      !employeeCode?.trim() ||
+      !firstName?.trim() ||
+      !lastName?.trim() ||
+      !joiningDate ||
+      basicSalary === undefined
+    ) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 },
+      );
     }
 
     const basic = Number(basicSalary || 0);
@@ -192,7 +208,8 @@ export async function POST(request: Request) {
         transportAllowance: transport,
         otherAllowances: other,
         monthlySalary,
-        annualLeaveBalance: annualLeaveBalance !== undefined ? Number(annualLeaveBalance) : 30.0,
+        annualLeaveBalance:
+          annualLeaveBalance !== undefined ? Number(annualLeaveBalance) : 30.0,
         paymentMethod: paymentMethod || "WPS_BANK_TRANSFER",
         bankName: bankName?.trim() || null,
         iban: iban?.trim() || null,
@@ -207,9 +224,15 @@ export async function POST(request: Request) {
     console.error("Error creating employee:", error);
     if (error.code === "P2002") {
       const field = error.meta?.target?.[0] || "Code/Email/Emirates ID";
-      return NextResponse.json({ error: `An employee with this ${field} already exists` }, { status: 409 });
+      return NextResponse.json(
+        { error: `An employee with this ${field} already exists` },
+        { status: 409 },
+      );
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -218,24 +241,40 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const { id, ...data } = body;
 
-    if (!id) return NextResponse.json({ error: "Missing employee ID" }, { status: 400 });
+    if (!id)
+      return NextResponse.json(
+        { error: "Missing employee ID" },
+        { status: 400 },
+      );
 
-    if (data.employeeCode) data.employeeCode = data.employeeCode.trim().toUpperCase();
+    if (data.employeeCode)
+      data.employeeCode = data.employeeCode.trim().toUpperCase();
     if (data.joiningDate) data.joiningDate = new Date(data.joiningDate);
     if (data.dateOfBirth) data.dateOfBirth = new Date(data.dateOfBirth);
-    if (data.emiratesIdExpiry) data.emiratesIdExpiry = new Date(data.emiratesIdExpiry);
-    if (data.passportExpiry) data.passportExpiry = new Date(data.passportExpiry);
-    if (data.laborCardExpiry) data.laborCardExpiry = new Date(data.laborCardExpiry);
+    if (data.emiratesIdExpiry)
+      data.emiratesIdExpiry = new Date(data.emiratesIdExpiry);
+    if (data.passportExpiry)
+      data.passportExpiry = new Date(data.passportExpiry);
+    if (data.laborCardExpiry)
+      data.laborCardExpiry = new Date(data.laborCardExpiry);
     if (data.visaExpiry) data.visaExpiry = new Date(data.visaExpiry);
-    if (data.probationEndDate) data.probationEndDate = new Date(data.probationEndDate);
-    if (data.contractEndDate) data.contractEndDate = new Date(data.contractEndDate);
-    if (data.terminationDate) data.terminationDate = new Date(data.terminationDate);
+    if (data.probationEndDate)
+      data.probationEndDate = new Date(data.probationEndDate);
+    if (data.contractEndDate)
+      data.contractEndDate = new Date(data.contractEndDate);
+    if (data.terminationDate)
+      data.terminationDate = new Date(data.terminationDate);
 
-    if (data.basicSalary !== undefined) data.basicSalary = Number(data.basicSalary);
-    if (data.housingAllowance !== undefined) data.housingAllowance = Number(data.housingAllowance);
-    if (data.transportAllowance !== undefined) data.transportAllowance = Number(data.transportAllowance);
-    if (data.otherAllowances !== undefined) data.otherAllowances = Number(data.otherAllowances);
-    if (data.annualLeaveBalance !== undefined) data.annualLeaveBalance = Number(data.annualLeaveBalance);
+    if (data.basicSalary !== undefined)
+      data.basicSalary = Number(data.basicSalary);
+    if (data.housingAllowance !== undefined)
+      data.housingAllowance = Number(data.housingAllowance);
+    if (data.transportAllowance !== undefined)
+      data.transportAllowance = Number(data.transportAllowance);
+    if (data.otherAllowances !== undefined)
+      data.otherAllowances = Number(data.otherAllowances);
+    if (data.annualLeaveBalance !== undefined)
+      data.annualLeaveBalance = Number(data.annualLeaveBalance);
 
     if (
       data.basicSalary !== undefined ||
@@ -245,10 +284,22 @@ export async function PATCH(request: Request) {
     ) {
       const current = await prisma.employee.findUnique({ where: { id } });
       if (current) {
-        const basic = data.basicSalary !== undefined ? data.basicSalary : Number(current.basicSalary);
-        const housing = data.housingAllowance !== undefined ? data.housingAllowance : Number(current.housingAllowance);
-        const transport = data.transportAllowance !== undefined ? data.transportAllowance : Number(current.transportAllowance);
-        const other = data.otherAllowances !== undefined ? data.otherAllowances : Number(current.otherAllowances);
+        const basic =
+          data.basicSalary !== undefined
+            ? data.basicSalary
+            : Number(current.basicSalary);
+        const housing =
+          data.housingAllowance !== undefined
+            ? data.housingAllowance
+            : Number(current.housingAllowance);
+        const transport =
+          data.transportAllowance !== undefined
+            ? data.transportAllowance
+            : Number(current.transportAllowance);
+        const other =
+          data.otherAllowances !== undefined
+            ? data.otherAllowances
+            : Number(current.otherAllowances);
         data.monthlySalary = basic + housing + transport + other;
       }
     }
@@ -261,7 +312,10 @@ export async function PATCH(request: Request) {
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error("Error updating employee:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -269,12 +323,19 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
-    if (!id) return NextResponse.json({ error: "Missing employee ID" }, { status: 400 });
+    if (!id)
+      return NextResponse.json(
+        { error: "Missing employee ID" },
+        { status: 400 },
+      );
 
     await prisma.employee.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Error deleting employee:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

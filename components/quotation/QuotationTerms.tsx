@@ -25,7 +25,9 @@ export const QuotationTerms: React.FC<QuotationTermsProps> = ({
             size="sm"
             onClick={() => setShowAllTerms(!showAllTerms)}
             className="print:hidden text-[11px] text-emerald-800 hover:text-emerald-900 hover:bg-emerald-100/60 font-bold"
-            icon={showAllTerms ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            icon={
+              showAllTerms ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+            }
           >
             {showAllTerms ? "Collapse View" : "Expand All 20 Terms"}
           </Button>

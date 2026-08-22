@@ -31,13 +31,17 @@ export default function JournalEntriesPage() {
   const deleteJournalEntryMutation = useDeleteJournalEntry();
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "POSTED" | "DRAFT">("ALL");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "POSTED" | "DRAFT">(
+    "ALL",
+  );
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
 
-  const [transactionType, setTransactionType] = useState<"NON_VAT" | "VAT_5">("NON_VAT");
+  const [transactionType, setTransactionType] = useState<"NON_VAT" | "VAT_5">(
+    "NON_VAT",
+  );
   const [vatNature, setVatNature] = useState<"OUTPUT" | "INPUT">("OUTPUT");
   const [vatBaseAmount, setVatBaseAmount] = useState<string>("");
   const [vatPrimaryAccount, setVatPrimaryAccount] = useState<string>("");
@@ -55,7 +59,7 @@ export default function JournalEntriesPage() {
         (a) =>
           a.accountCode === "2200" ||
           a.accountName.toLowerCase().includes("vat input") ||
-          a.accountName.toLowerCase().includes("input tax")
+          a.accountName.toLowerCase().includes("input tax"),
       );
       return match?.id || accounts[0]?.id || "";
     } else {
@@ -63,7 +67,7 @@ export default function JournalEntriesPage() {
         (a) =>
           a.accountCode === "2210" ||
           a.accountName.toLowerCase().includes("vat output") ||
-          a.accountName.toLowerCase().includes("output tax")
+          a.accountName.toLowerCase().includes("output tax"),
       );
       return match?.id || accounts[0]?.id || "";
     }
@@ -94,12 +98,18 @@ export default function JournalEntriesPage() {
         return;
       }
 
-      const totalDebits = value.lines.reduce((s, l) => s + (Number(l.debit) || 0), 0);
-      const totalCredits = value.lines.reduce((s, l) => s + (Number(l.credit) || 0), 0);
+      const totalDebits = value.lines.reduce(
+        (s, l) => s + (Number(l.debit) || 0),
+        0,
+      );
+      const totalCredits = value.lines.reduce(
+        (s, l) => s + (Number(l.credit) || 0),
+        0,
+      );
 
       if (Math.abs(totalDebits - totalCredits) >= 0.001 || totalDebits <= 0) {
         setFormError(
-          `Debits (${totalDebits.toFixed(2)}) must exactly equal Credits (${totalCredits.toFixed(2)}) and be greater than zero.`
+          `Debits (${totalDebits.toFixed(2)}) must exactly equal Credits (${totalCredits.toFixed(2)}) and be greater than zero.`,
         );
         return;
       }
@@ -165,8 +175,17 @@ export default function JournalEntriesPage() {
     setTransactionType("NON_VAT");
     setVatNature("OUTPUT");
     setVatBaseAmount("");
-    setVatPrimaryAccount(accounts?.find((a) => a.type === "REVENUE")?.id || accounts?.[0]?.id || "");
-    setVatBalancingAccount(accounts?.find((a) => a.accountCode === "1200" || a.type === "ASSET")?.id || accounts?.[1]?.id || "");
+    setVatPrimaryAccount(
+      accounts?.find((a) => a.type === "REVENUE")?.id ||
+        accounts?.[0]?.id ||
+        "",
+    );
+    setVatBalancingAccount(
+      accounts?.find((a) => a.accountCode === "1200" || a.type === "ASSET")
+        ?.id ||
+        accounts?.[1]?.id ||
+        "",
+    );
 
     form.reset({
       entryNumber: `JE-${Date.now().toString().slice(-6)}`,
@@ -192,7 +211,7 @@ export default function JournalEntriesPage() {
         l.vatEntry ||
         l.account?.accountCode === "2200" ||
         l.account?.accountCode === "2210" ||
-        l.account?.accountName?.toLowerCase().includes("vat")
+        l.account?.accountName?.toLowerCase().includes("vat"),
     );
 
     setTransactionType(hasVatLines ? "VAT_5" : "NON_VAT");
@@ -256,12 +275,14 @@ export default function JournalEntriesPage() {
 
   return (
     <div className="space-y-6">
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Journal Entries & Daybook</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            Journal Entries & Daybook
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Double-entry ledger transaction logs, manual journals, and audit batches.
+            Double-entry ledger transaction logs, manual journals, and audit
+            batches.
           </p>
         </div>
 
@@ -277,25 +298,37 @@ export default function JournalEntriesPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Entries</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{journalEntries?.length || 0}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Total Entries
+          </p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {journalEntries?.length || 0}
+          </p>
           <p className="text-xs text-slate-500 mt-0.5">All ledger vouchers</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Posted Entries</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Posted Entries
+          </p>
           <p className="text-2xl font-black text-emerald-800 mt-1">
             {journalEntries?.filter((j) => j.isPosted).length || 0}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">Active in general ledger</p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Active in general ledger
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Draft Entries</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Draft Entries
+          </p>
           <p className="text-2xl font-black text-amber-600 mt-1">
             {journalEntries?.filter((j) => !j.isPosted).length || 0}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">Pending posting review</p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Pending posting review
+          </p>
         </div>
       </div>
 
@@ -338,14 +371,19 @@ export default function JournalEntriesPage() {
           </div>
         ) : filteredEntries.length === 0 ? (
           <div className="py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
-            <p className="text-sm font-semibold text-slate-600">No journal entries found</p>
-            <p className="text-xs mt-1">Click &quot;New Journal Entry&quot; to log your first transaction.</p>
+            <p className="text-sm font-semibold text-slate-600">
+              No journal entries found
+            </p>
+            <p className="text-xs mt-1">
+              Click &quot;New Journal Entry&quot; to log your first transaction.
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
             {filteredEntries.map((je) => {
               const isExpanded = expandedId === je.id;
-              const totalDebit = je.lines?.reduce((s, l) => s + Number(l.debit || 0), 0) || 0;
+              const totalDebit =
+                je.lines?.reduce((s, l) => s + Number(l.debit || 0), 0) || 0;
 
               return (
                 <div
@@ -395,7 +433,10 @@ export default function JournalEntriesPage() {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="flex items-center gap-1.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <button
                           type="button"
                           onClick={(e) => handleToggleStatus(je, e)}
@@ -417,7 +458,9 @@ export default function JournalEntriesPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={(e) => handleDelete(je.id, je.entryNumber, e)}
+                          onClick={(e) =>
+                            handleDelete(je.id, je.entryNumber, e)
+                          }
                           className="p-1 text-slate-400 hover:text-red-600 rounded-lg hover:bg-slate-100 cursor-pointer"
                           title="Delete"
                         >
@@ -430,7 +473,9 @@ export default function JournalEntriesPage() {
                   {isExpanded && (
                     <div className="border-t border-slate-100 bg-slate-50/60 p-4 sm:p-5">
                       <div className="flex items-center justify-between mb-3 text-xs">
-                        <span className="font-bold text-slate-700">Line Items Breakdown</span>
+                        <span className="font-bold text-slate-700">
+                          Line Items Breakdown
+                        </span>
                         <span className="text-slate-500">
                           Created by:{" "}
                           <span className="font-semibold text-slate-700">
@@ -453,7 +498,9 @@ export default function JournalEntriesPage() {
                               line.vatEntry ||
                               line.account?.accountCode === "2200" ||
                               line.account?.accountCode === "2210" ||
-                              line.account?.accountName?.toLowerCase().includes("vat");
+                              line.account?.accountName
+                                ?.toLowerCase()
+                                .includes("vat");
 
                             return (
                               <tr key={line.id} className="text-slate-700">
@@ -461,7 +508,10 @@ export default function JournalEntriesPage() {
                                   <span className="font-mono font-bold text-slate-900 mr-2">
                                     {line.account?.accountCode || "N/A"}
                                   </span>
-                                  <span>{line.account?.accountName || "Account Line"}</span>
+                                  <span>
+                                    {line.account?.accountName ||
+                                      "Account Line"}
+                                  </span>
                                   {isVatLine && (
                                     <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-100 text-emerald-800 uppercase tracking-wider">
                                       5% VAT
@@ -572,7 +622,8 @@ export default function JournalEntriesPage() {
                     <span>⚡</span> 5% UAE VAT Entry Assistant
                   </h4>
                   <p className="text-[11px] text-emerald-700 mt-0.5">
-                    Automatically generate 3-line balanced entry with 5% VAT calculation.
+                    Automatically generate 3-line balanced entry with 5% VAT
+                    calculation.
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 bg-emerald-100/80 p-1 rounded-xl">
@@ -618,7 +669,9 @@ export default function JournalEntriesPage() {
 
                 <div>
                   <label className="block text-[11px] font-bold text-emerald-900 mb-1">
-                    {vatNature === "OUTPUT" ? "Sales / Revenue Account" : "Expense / Asset Account"}
+                    {vatNature === "OUTPUT"
+                      ? "Sales / Revenue Account"
+                      : "Expense / Asset Account"}
                   </label>
                   <select
                     value={vatPrimaryAccount}
@@ -627,7 +680,11 @@ export default function JournalEntriesPage() {
                   >
                     <option value="">Select Account...</option>
                     {accounts
-                      ?.filter((a) => (vatNature === "OUTPUT" ? a.type === "REVENUE" : a.type === "EXPENSE" || a.type === "ASSET"))
+                      ?.filter((a) =>
+                        vatNature === "OUTPUT"
+                          ? a.type === "REVENUE"
+                          : a.type === "EXPENSE" || a.type === "ASSET",
+                      )
                       .map((acc) => (
                         <option key={acc.id} value={acc.id}>
                           {acc.accountCode} - {acc.accountName}
@@ -643,7 +700,9 @@ export default function JournalEntriesPage() {
 
                 <div>
                   <label className="block text-[11px] font-bold text-emerald-900 mb-1">
-                    {vatNature === "OUTPUT" ? "Receivable / Bank Account" : "Payable / Cash / Bank Account"}
+                    {vatNature === "OUTPUT"
+                      ? "Receivable / Bank Account"
+                      : "Payable / Cash / Bank Account"}
                   </label>
                   <select
                     value={vatBalancingAccount}
@@ -665,18 +724,30 @@ export default function JournalEntriesPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-white/90 border border-emerald-200">
                   <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
                     <div>
-                      <span className="text-slate-500 text-[10px] block font-sans">Base Amount</span>
-                      <span className="font-bold text-slate-800">{formatCurrency(Number(vatBaseAmount))}</span>
+                      <span className="text-slate-500 text-[10px] block font-sans">
+                        Base Amount
+                      </span>
+                      <span className="font-bold text-slate-800">
+                        {formatCurrency(Number(vatBaseAmount))}
+                      </span>
                     </div>
                     <div className="text-emerald-700 font-bold">+</div>
                     <div>
-                      <span className="text-emerald-700 text-[10px] block font-sans">5% UAE VAT</span>
-                      <span className="font-bold text-emerald-800">{formatCurrency(Number(vatBaseAmount) * 0.05)}</span>
+                      <span className="text-emerald-700 text-[10px] block font-sans">
+                        5% UAE VAT
+                      </span>
+                      <span className="font-bold text-emerald-800">
+                        {formatCurrency(Number(vatBaseAmount) * 0.05)}
+                      </span>
                     </div>
                     <div className="text-slate-400">=</div>
                     <div>
-                      <span className="text-slate-500 text-[10px] block font-sans">Gross Total</span>
-                      <span className="font-black text-slate-900">{formatCurrency(Number(vatBaseAmount) * 1.05)}</span>
+                      <span className="text-slate-500 text-[10px] block font-sans">
+                        Gross Total
+                      </span>
+                      <span className="font-black text-slate-900">
+                        {formatCurrency(Number(vatBaseAmount) * 1.05)}
+                      </span>
                     </div>
                   </div>
 
@@ -688,8 +759,10 @@ export default function JournalEntriesPage() {
                       const vat = Number((base * 0.05).toFixed(2));
                       const gross = Number((base + vat).toFixed(2));
                       const vatAccId = getVatAccount(vatNature);
-                      const primAccId = vatPrimaryAccount || accounts?.[0]?.id || "";
-                      const balAccId = vatBalancingAccount || accounts?.[1]?.id || "";
+                      const primAccId =
+                        vatPrimaryAccount || accounts?.[0]?.id || "";
+                      const balAccId =
+                        vatBalancingAccount || accounts?.[1]?.id || "";
 
                       if (vatNature === "OUTPUT") {
                         // Sales: Debit AR/Bank (Gross), Credit Sales (Base), Credit VAT Output (VAT)
@@ -734,11 +807,13 @@ export default function JournalEntriesPage() {
             <form.Field
               name="entryNumber"
               validators={{
-                onChange: ({ value }) => (!value.trim() ? "Entry number is required" : undefined),
+                onChange: ({ value }) =>
+                  !value.trim() ? "Entry number is required" : undefined,
               }}
             >
               {(field) => {
-                const error = field.state.meta.isTouched && field.state.meta.errors[0];
+                const error =
+                  field.state.meta.isTouched && field.state.meta.errors[0];
                 return (
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -750,10 +825,16 @@ export default function JournalEntriesPage() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className={`w-full px-3 py-2 text-xs rounded-xl border ${
-                        error ? "border-rose-400 bg-rose-50/20" : "border-slate-200"
+                        error
+                          ? "border-rose-400 bg-rose-50/20"
+                          : "border-slate-200"
                       } focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono`}
                     />
-                    {error && <p className="text-[11px] text-rose-600 mt-1 font-medium">{String(error)}</p>}
+                    {error && (
+                      <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                        {String(error)}
+                      </p>
+                    )}
                   </div>
                 );
               }}
@@ -762,7 +843,8 @@ export default function JournalEntriesPage() {
             <form.Field
               name="entryDate"
               validators={{
-                onChange: ({ value }) => (!value ? "Date is required" : undefined),
+                onChange: ({ value }) =>
+                  !value ? "Date is required" : undefined,
               }}
             >
               {(field) => (
@@ -789,7 +871,9 @@ export default function JournalEntriesPage() {
                   </label>
                   <select
                     value={field.state.value ? "POSTED" : "DRAFT"}
-                    onChange={(e) => field.handleChange(e.target.value === "POSTED")}
+                    onChange={(e) =>
+                      field.handleChange(e.target.value === "POSTED")
+                    }
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white font-semibold"
                   >
                     <option value="POSTED">Posted (General Ledger)</option>
@@ -851,9 +935,15 @@ export default function JournalEntriesPage() {
 
               const addVatLine = () => {
                 // Find first non-zero line to calculate 5%
-                const sourceLine = currentLines.find((l) => Number(l.debit) > 0 || Number(l.credit) > 0);
+                const sourceLine = currentLines.find(
+                  (l) => Number(l.debit) > 0 || Number(l.credit) > 0,
+                );
                 const hasDebit = sourceLine && Number(sourceLine.debit) > 0;
-                const baseVal = sourceLine ? (hasDebit ? Number(sourceLine.debit) : Number(sourceLine.credit)) : 0;
+                const baseVal = sourceLine
+                  ? hasDebit
+                    ? Number(sourceLine.debit)
+                    : Number(sourceLine.credit)
+                  : 0;
                 const vatAmount = Number((baseVal * 0.05).toFixed(2));
                 const vatType = hasDebit ? "INPUT" : "OUTPUT";
                 const vatAccId = getVatAccount(vatType);
@@ -873,18 +963,31 @@ export default function JournalEntriesPage() {
 
               const removeLine = (idx: number) => {
                 if (currentLines.length <= 2) return;
-                linesField.handleChange(currentLines.filter((_, i) => i !== idx));
+                linesField.handleChange(
+                  currentLines.filter((_, i) => i !== idx),
+                );
               };
 
-              const updateLine = (idx: number, fieldName: keyof JournalLineFormItem, val: any) => {
+              const updateLine = (
+                idx: number,
+                fieldName: keyof JournalLineFormItem,
+                val: any,
+              ) => {
                 const next = [...currentLines];
                 next[idx] = { ...next[idx], [fieldName]: val };
                 linesField.handleChange(next);
               };
 
-              const totalDebits = currentLines.reduce((s, l) => s + (Number(l.debit) || 0), 0);
-              const totalCredits = currentLines.reduce((s, l) => s + (Number(l.credit) || 0), 0);
-              const isBalanced = Math.abs(totalDebits - totalCredits) < 0.001 && totalDebits > 0;
+              const totalDebits = currentLines.reduce(
+                (s, l) => s + (Number(l.debit) || 0),
+                0,
+              );
+              const totalCredits = currentLines.reduce(
+                (s, l) => s + (Number(l.credit) || 0),
+                0,
+              );
+              const isBalanced =
+                Math.abs(totalDebits - totalCredits) < 0.001 && totalDebits > 0;
 
               return (
                 <div className="space-y-2 pt-2 border-t border-slate-100">
@@ -913,11 +1016,15 @@ export default function JournalEntriesPage() {
 
                   <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                     {currentLines.map((line, idx) => {
-                      const selectedAccount = accounts?.find((a) => a.id === line.accountId);
+                      const selectedAccount = accounts?.find(
+                        (a) => a.id === line.accountId,
+                      );
                       const isVatAccount =
                         selectedAccount?.accountCode === "2200" ||
                         selectedAccount?.accountCode === "2210" ||
-                        selectedAccount?.accountName?.toLowerCase().includes("vat") ||
+                        selectedAccount?.accountName
+                          ?.toLowerCase()
+                          .includes("vat") ||
                         line.vatType;
 
                       return (
@@ -933,13 +1040,16 @@ export default function JournalEntriesPage() {
                             <div className="flex items-center gap-1.5">
                               <select
                                 value={line.accountId}
-                                onChange={(e) => updateLine(idx, "accountId", e.target.value)}
+                                onChange={(e) =>
+                                  updateLine(idx, "accountId", e.target.value)
+                                }
                                 className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none"
                               >
                                 <option value="">Select Account...</option>
                                 {accounts?.map((acc) => (
                                   <option key={acc.id} value={acc.id}>
-                                    {acc.accountCode} - {acc.accountName} ({acc.type})
+                                    {acc.accountCode} - {acc.accountName} (
+                                    {acc.type})
                                   </option>
                                 ))}
                               </select>
@@ -958,7 +1068,11 @@ export default function JournalEntriesPage() {
                               placeholder="Debit"
                               value={line.debit || ""}
                               onChange={(e) =>
-                                updateLine(idx, "debit", parseFloat(e.target.value) || 0)
+                                updateLine(
+                                  idx,
+                                  "debit",
+                                  parseFloat(e.target.value) || 0,
+                                )
                               }
                               className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono text-right"
                             />
@@ -971,40 +1085,50 @@ export default function JournalEntriesPage() {
                               placeholder="Credit"
                               value={line.credit || ""}
                               onChange={(e) =>
-                                updateLine(idx, "credit", parseFloat(e.target.value) || 0)
+                                updateLine(
+                                  idx,
+                                  "credit",
+                                  parseFloat(e.target.value) || 0,
+                                )
                               }
                               className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono text-right"
                             />
                           </div>
 
-                          {(Number(line.debit) > 0 || Number(line.credit) > 0) && !isVatAccount && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const isDeb = Number(line.debit) > 0;
-                                const baseAmt = isDeb ? Number(line.debit) : Number(line.credit);
-                                const vatVal = Number((baseAmt * 0.05).toFixed(2));
-                                const vatType = isDeb ? "INPUT" : "OUTPUT";
-                                const vatAccId = getVatAccount(vatType);
+                          {(Number(line.debit) > 0 ||
+                            Number(line.credit) > 0) &&
+                            !isVatAccount && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const isDeb = Number(line.debit) > 0;
+                                  const baseAmt = isDeb
+                                    ? Number(line.debit)
+                                    : Number(line.credit);
+                                  const vatVal = Number(
+                                    (baseAmt * 0.05).toFixed(2),
+                                  );
+                                  const vatType = isDeb ? "INPUT" : "OUTPUT";
+                                  const vatAccId = getVatAccount(vatType);
 
-                                linesField.handleChange([
-                                  ...currentLines,
-                                  {
-                                    accountId: vatAccId,
-                                    debit: isDeb ? vatVal : 0,
-                                    credit: !isDeb ? vatVal : 0,
-                                    vatType,
-                                    taxableAmount: baseAmt,
-                                    vatAmount: vatVal,
-                                  },
-                                ]);
-                              }}
-                              className="px-2 py-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/80 hover:bg-emerald-200 border border-emerald-300 rounded-md cursor-pointer transition whitespace-nowrap"
-                              title="Generate 5% VAT line for this item"
-                            >
-                              +5% VAT
-                            </button>
-                          )}
+                                  linesField.handleChange([
+                                    ...currentLines,
+                                    {
+                                      accountId: vatAccId,
+                                      debit: isDeb ? vatVal : 0,
+                                      credit: !isDeb ? vatVal : 0,
+                                      vatType,
+                                      taxableAmount: baseAmt,
+                                      vatAmount: vatVal,
+                                    },
+                                  ]);
+                                }}
+                                className="px-2 py-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/80 hover:bg-emerald-200 border border-emerald-300 rounded-md cursor-pointer transition whitespace-nowrap"
+                                title="Generate 5% VAT line for this item"
+                              >
+                                +5% VAT
+                              </button>
+                            )}
 
                           <button
                             type="button"
@@ -1025,7 +1149,11 @@ export default function JournalEntriesPage() {
                       <span
                         className={`w-2 h-2 rounded-full ${isBalanced ? "bg-emerald-500" : "bg-red-500"}`}
                       />
-                      <span className={isBalanced ? "text-emerald-800" : "text-red-700"}>
+                      <span
+                        className={
+                          isBalanced ? "text-emerald-800" : "text-red-700"
+                        }
+                      >
                         {isBalanced
                           ? "Balanced"
                           : `Out of balance: ${(totalDebits - totalCredits).toFixed(2)}`}

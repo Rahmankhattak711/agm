@@ -61,7 +61,6 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-3">
-
       <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white shadow-xs">
         <table className="w-full text-left text-xs">
           <thead>
@@ -78,14 +77,19 @@ export function DataTable<TData, TValue>({
                     <th
                       key={header.id}
                       className={`py-3 px-4 ${
-                        canSort ? "cursor-pointer select-none hover:text-slate-900 transition-colors" : ""
+                        canSort
+                          ? "cursor-pointer select-none hover:text-slate-900 transition-colors"
+                          : ""
                       }`}
                       onClick={header.column.getToggleSortingHandler()}
                     >
                       <div className="flex items-center gap-1.5">
                         {header.isPlaceholder
                           ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
 
                         {canSort && (
                           <span className="text-[10px] text-slate-400">
@@ -94,7 +98,9 @@ export function DataTable<TData, TValue>({
                             ) : sortDirection === "desc" ? (
                               "▼"
                             ) : (
-                              <span className="opacity-0 hover:opacity-100">↕</span>
+                              <span className="opacity-0 hover:opacity-100">
+                                ↕
+                              </span>
                             )}
                           </span>
                         )}
@@ -118,9 +124,18 @@ export function DataTable<TData, TValue>({
               </tr>
             ) : table.getRowModel().rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="py-14 text-center text-slate-400">
-                  <p className="text-sm font-bold text-slate-700">{emptyTitle}</p>
-                  {emptyMessage && <p className="text-xs text-slate-400 mt-1">{emptyMessage}</p>}
+                <td
+                  colSpan={columns.length}
+                  className="py-14 text-center text-slate-400"
+                >
+                  <p className="text-sm font-bold text-slate-700">
+                    {emptyTitle}
+                  </p>
+                  {emptyMessage && (
+                    <p className="text-xs text-slate-400 mt-1">
+                      {emptyMessage}
+                    </p>
+                  )}
                 </td>
               </tr>
             ) : (
@@ -134,7 +149,10 @@ export function DataTable<TData, TValue>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="py-3 px-4 text-slate-800">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </td>
                   ))}
                 </tr>
@@ -149,16 +167,21 @@ export function DataTable<TData, TValue>({
           <div>
             Showing{" "}
             <span className="font-semibold text-slate-800">
-              {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}
+              {table.getState().pagination.pageIndex *
+                table.getState().pagination.pageSize +
+                1}
             </span>{" "}
             to{" "}
             <span className="font-semibold text-slate-800">
               {Math.min(
-                (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-                data.length
+                (table.getState().pagination.pageIndex + 1) *
+                  table.getState().pagination.pageSize,
+                data.length,
               )}
             </span>{" "}
-            of <span className="font-semibold text-slate-800">{data.length}</span> entries
+            of{" "}
+            <span className="font-semibold text-slate-800">{data.length}</span>{" "}
+            entries
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -171,7 +194,8 @@ export function DataTable<TData, TValue>({
               Previous
             </Button>
             <span className="px-2 font-semibold text-slate-700">
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()}
             </span>
             <Button
               variant="outline"

@@ -1,8 +1,16 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-type Account = Awaited<ReturnType<typeof prisma.chartOfAccount.findMany>>[number];
-type ProfitItem = { id: string; section: string; accountCode: string; accountName: string; amount: number };
+type Account = Awaited<
+  ReturnType<typeof prisma.chartOfAccount.findMany>
+>[number];
+type ProfitItem = {
+  id: string;
+  section: string;
+  accountCode: string;
+  accountName: string;
+  amount: number;
+};
 
 export async function GET() {
   try {
@@ -32,8 +40,12 @@ export async function GET() {
       }
     }
 
-    const incomeAccounts = accounts.filter((a: Account) => a.type === "REVENUE");
-    const expenseAccounts = accounts.filter((a: Account) => a.type === "EXPENSE");
+    const incomeAccounts = accounts.filter(
+      (a: Account) => a.type === "REVENUE",
+    );
+    const expenseAccounts = accounts.filter(
+      (a: Account) => a.type === "EXPENSE",
+    );
 
     const isDirectExpense = (acc: {
       accountCode: string;
@@ -78,7 +90,10 @@ export async function GET() {
         amount: balanceMap.get(acc.id) || 0,
       }));
 
-    const totalIncome = incomeItems.reduce((s: number, i: ProfitItem) => s + i.amount, 0);
+    const totalIncome = incomeItems.reduce(
+      (s: number, i: ProfitItem) => s + i.amount,
+      0,
+    );
     const totalDirectExpenses = directExpenseItems.reduce(
       (s: number, i: ProfitItem) => s + i.amount,
       0,

@@ -25,13 +25,21 @@ import {
 } from "@/components/ui";
 
 export default function BonusesPage() {
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number>(
+    new Date().getMonth() + 1,
+  );
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear(),
+  );
   const [employeeFilter, setEmployeeFilter] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const { data: bonuses = [], isLoading, error } = useBonuses({
+  const {
+    data: bonuses = [],
+    isLoading,
+    error,
+  } = useBonuses({
     month: selectedMonth || undefined,
     year: selectedYear || undefined,
     employeeId: employeeFilter || undefined,
@@ -102,7 +110,8 @@ export default function BonusesPage() {
         cell: ({ row }) => (
           <div>
             <span className="font-bold text-slate-900 block">
-              {row.original.employee?.firstName || ""} {row.original.employee?.lastName || "Staff"}
+              {row.original.employee?.firstName || ""}{" "}
+              {row.original.employee?.lastName || "Staff"}
             </span>
             <span className="font-mono text-[10px] text-slate-400">
               Code: {row.original.employee?.employeeCode || "N/A"}
@@ -210,17 +219,19 @@ export default function BonusesPage() {
         },
       },
     ],
-    [deleteBonus, updateBonus]
+    [deleteBonus, updateBonus],
   );
 
   return (
     <div className="space-y-6">
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Bonuses & Performance Incentives</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            Bonuses & Performance Incentives
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Commission allocations, project milestones, festival rewards, and management approvals.
+            Commission allocations, project milestones, festival rewards, and
+            management approvals.
           </p>
         </div>
 
@@ -235,21 +246,39 @@ export default function BonusesPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Granted Bonuses</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{totalBonusesCount}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Performance awards logged</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Total Granted Bonuses
+          </p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {totalBonusesCount}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Performance awards logged
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Approved Pool Total</p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">{formatCurrency(approvedTotal)}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Ready for payroll disbursement</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Approved Pool Total
+          </p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">
+            {formatCurrency(approvedTotal)}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Ready for payroll disbursement
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pending Approvals</p>
-          <p className="text-2xl font-black text-amber-600 mt-1">{pendingApprovals}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Awaiting management signoff</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Pending Approvals
+          </p>
+          <p className="text-2xl font-black text-amber-600 mt-1">
+            {pendingApprovals}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Awaiting management signoff
+          </p>
         </div>
       </div>
 
@@ -310,7 +339,12 @@ export default function BonusesPage() {
         )}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Award Incentive / Bonus" maxWidth="lg">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Award Incentive / Bonus"
+        maxWidth="lg"
+      >
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -328,7 +362,8 @@ export default function BonusesPage() {
           <form.Field
             name="employeeId"
             validators={{
-              onChange: ({ value }) => (!value ? "Employee selection is required" : undefined),
+              onChange: ({ value }) =>
+                !value ? "Employee selection is required" : undefined,
             }}
           >
             {(field) => (
@@ -361,7 +396,9 @@ export default function BonusesPage() {
               name="amount"
               validators={{
                 onChange: ({ value }) =>
-                  !value || Number(value) <= 0 ? "Amount must be greater than 0" : undefined,
+                  !value || Number(value) <= 0
+                    ? "Amount must be greater than 0"
+                    : undefined,
               }}
             >
               {(field) => (
@@ -392,11 +429,7 @@ export default function BonusesPage() {
 
             <form.Field name="year">
               {(field) => (
-                <FormInput
-                  field={field}
-                  label="Year"
-                  type="number"
-                />
+                <FormInput field={field} label="Year" type="number" />
               )}
             </form.Field>
           </div>
@@ -413,13 +446,14 @@ export default function BonusesPage() {
           </form.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+            >
               Cancel
             </Button>
-            <FormSubmit
-              form={form}
-              loading={createBonus.isPending}
-            >
+            <FormSubmit form={form} loading={createBonus.isPending}>
               Award Bonus
             </FormSubmit>
           </div>

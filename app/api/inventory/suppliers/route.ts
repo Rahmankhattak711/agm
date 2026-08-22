@@ -17,17 +17,24 @@ export async function GET() {
     return NextResponse.json(suppliers);
   } catch (error) {
     console.error("Error fetching suppliers:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { supplierCode, name, contactPerson, phone, email, address, trn } = body;
+    const { supplierCode, name, contactPerson, phone, email, address, trn } =
+      body;
 
     if (!supplierCode?.trim() || !name?.trim()) {
-      return NextResponse.json({ error: "Supplier code and name are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Supplier code and name are required" },
+        { status: 400 },
+      );
     }
 
     const created = await prisma.supplier.create({
@@ -46,9 +53,15 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Error creating supplier:", error);
     if (error.code === "P2002") {
-      return NextResponse.json({ error: "A supplier with this code already exists" }, { status: 409 });
+      return NextResponse.json(
+        { error: "A supplier with this code already exists" },
+        { status: 409 },
+      );
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -58,10 +71,14 @@ export async function PATCH(request: Request) {
     const { id, ...data } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "Missing supplier ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing supplier ID" },
+        { status: 400 },
+      );
     }
 
-    if (data.supplierCode) data.supplierCode = data.supplierCode.trim().toUpperCase();
+    if (data.supplierCode)
+      data.supplierCode = data.supplierCode.trim().toUpperCase();
     if (data.name) data.name = data.name.trim();
 
     const updated = await prisma.supplier.update({
@@ -72,7 +89,10 @@ export async function PATCH(request: Request) {
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error("Error updating supplier:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -82,13 +102,19 @@ export async function DELETE(request: Request) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json({ error: "Missing supplier ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing supplier ID" },
+        { status: 400 },
+      );
     }
 
     await prisma.supplier.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting supplier:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

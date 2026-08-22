@@ -33,7 +33,11 @@ export default function EmployeesPage() {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formError, setFormError] = useState("");
 
-  const { data: employees = [], isLoading, error } = useEmployees({
+  const {
+    data: employees = [],
+    isLoading,
+    error,
+  } = useEmployees({
     department: departmentFilter !== "ALL" ? departmentFilter : undefined,
     status: statusFilter !== "ALL" ? statusFilter : undefined,
     search: search || undefined,
@@ -43,7 +47,9 @@ export default function EmployeesPage() {
   const deleteEmployeeMutation = useDeleteEmployee();
 
   const totalWorkforce = employees.length;
-  const activeStaff = employees.filter((e) => e.employmentStatus === "ACTIVE").length;
+  const activeStaff = employees.filter(
+    (e) => e.employmentStatus === "ACTIVE",
+  ).length;
   const totalMonthlyPayroll = employees
     .filter((e) => e.employmentStatus === "ACTIVE")
     .reduce(
@@ -53,11 +59,11 @@ export default function EmployeesPage() {
         Number(e.housingAllowance || 0) +
         Number(e.transportAllowance || 0) +
         Number(e.otherAllowances || 0),
-      0
+      0,
     );
 
   const departments = Array.from(
-    new Set(employees.map((e) => e.department).filter(Boolean))
+    new Set(employees.map((e) => e.department).filter(Boolean)),
   );
 
   const form = useForm({
@@ -119,7 +125,8 @@ export default function EmployeesPage() {
           visaNumber: value.visaNumber.trim() || undefined,
           visaExpiry: value.visaExpiry || undefined,
           emergencyContactName: value.emergencyContactName.trim() || undefined,
-          emergencyContactPhone: value.emergencyContactPhone.trim() || undefined,
+          emergencyContactPhone:
+            value.emergencyContactPhone.trim() || undefined,
           contractType: value.contractType,
           employmentStatus: value.employmentStatus,
           basicSalary: Number(value.basicSalary),
@@ -154,13 +161,21 @@ export default function EmployeesPage() {
       gender: emp.gender || "MALE",
       nationality: emp.nationality || "UAE",
       emiratesId: emp.emiratesId || "",
-      emiratesIdExpiry: emp.emiratesIdExpiry ? new Date(emp.emiratesIdExpiry).toISOString().split("T")[0] : "",
+      emiratesIdExpiry: emp.emiratesIdExpiry
+        ? new Date(emp.emiratesIdExpiry).toISOString().split("T")[0]
+        : "",
       passportNo: emp.passportNo || "",
-      passportExpiry: emp.passportExpiry ? new Date(emp.passportExpiry).toISOString().split("T")[0] : "",
+      passportExpiry: emp.passportExpiry
+        ? new Date(emp.passportExpiry).toISOString().split("T")[0]
+        : "",
       laborCardNo: emp.laborCardNo || "",
-      laborCardExpiry: emp.laborCardExpiry ? new Date(emp.laborCardExpiry).toISOString().split("T")[0] : "",
+      laborCardExpiry: emp.laborCardExpiry
+        ? new Date(emp.laborCardExpiry).toISOString().split("T")[0]
+        : "",
       visaNumber: emp.visaNumber || "",
-      visaExpiry: emp.visaExpiry ? new Date(emp.visaExpiry).toISOString().split("T")[0] : "",
+      visaExpiry: emp.visaExpiry
+        ? new Date(emp.visaExpiry).toISOString().split("T")[0]
+        : "",
       emergencyContactName: emp.emergencyContactName || "",
       emergencyContactPhone: emp.emergencyContactPhone || "",
       contractType: emp.contractType || "FULL_TIME",
@@ -232,8 +247,12 @@ export default function EmployeesPage() {
         header: "Contact Details",
         cell: ({ row }) => (
           <div className="text-xs">
-            <span className="text-slate-700 block">{row.original.phone || "-"}</span>
-            <span className="text-slate-400 font-mono text-[10px]">{row.original.email || "-"}</span>
+            <span className="text-slate-700 block">
+              {row.original.phone || "-"}
+            </span>
+            <span className="text-slate-400 font-mono text-[10px]">
+              {row.original.email || "-"}
+            </span>
           </div>
         ),
       },
@@ -284,7 +303,7 @@ export default function EmployeesPage() {
         cell: ({ row }) => (
           <span
             className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusBadge(
-              row.original.employmentStatus
+              row.original.employmentStatus,
             )}`}
           >
             {row.original.employmentStatus.replace("_", " ")}
@@ -307,7 +326,11 @@ export default function EmployeesPage() {
               variant="danger"
               size="sm"
               onClick={async () => {
-                if (confirm(`Delete employee record for ${row.original.firstName} ${row.original.lastName}?`)) {
+                if (
+                  confirm(
+                    `Delete employee record for ${row.original.firstName} ${row.original.lastName}?`,
+                  )
+                ) {
                   await deleteEmployeeMutation.mutateAsync(row.original.id);
                 }
               }}
@@ -318,38 +341,54 @@ export default function EmployeesPage() {
         ),
       },
     ],
-    [deleteEmployeeMutation]
+    [deleteEmployeeMutation],
   );
 
   return (
     <div className="space-y-6">
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Workforce & Human Capital Directory</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            Workforce & Human Capital Directory
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage employee master data, UAE visa dates, labor cards, salary packages, and WPS details.
+            Manage employee master data, UAE visa dates, labor cards, salary
+            packages, and WPS details.
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Workforce</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{totalWorkforce}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Total Workforce
+          </p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {totalWorkforce}
+          </p>
           <p className="text-xs text-slate-500 mt-0.5">Registered personnel</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active Staff</p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">{activeStaff}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Active Staff
+          </p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">
+            {activeStaff}
+          </p>
           <p className="text-xs text-slate-500 mt-0.5">On-duty workforce</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Monthly Payroll Commitment</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{formatCurrency(totalMonthlyPayroll)}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Basic + allowances (WPS)</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Monthly Payroll Commitment
+          </p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {formatCurrency(totalMonthlyPayroll)}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Basic + allowances (WPS)
+          </p>
         </div>
       </div>
 
@@ -393,7 +432,9 @@ export default function EmployeesPage() {
         </div>
 
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">Error loading employees: {(error as any).message}</div>
+          <div className="py-8 text-center text-xs text-red-500">
+            Error loading employees: {(error as any).message}
+          </div>
         ) : (
           <DataTable
             columns={columns}
@@ -408,7 +449,11 @@ export default function EmployeesPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingEmployee ? `Edit ${editingEmployee.firstName} ${editingEmployee.lastName}` : "Edit Employee"}
+        title={
+          editingEmployee
+            ? `Edit ${editingEmployee.firstName} ${editingEmployee.lastName}`
+            : "Edit Employee"
+        }
         maxWidth="2xl"
       >
         {formError && (
@@ -442,60 +487,40 @@ export default function EmployeesPage() {
             <form.Field
               name="firstName"
               validators={{
-                onChange: ({ value }) => (!value.trim() ? "First name is required" : undefined),
+                onChange: ({ value }) =>
+                  !value.trim() ? "First name is required" : undefined,
               }}
             >
               {(field) => (
-                <FormInput
-                  field={field}
-                  label="First Name *"
-                  required
-                />
+                <FormInput field={field} label="First Name *" required />
               )}
             </form.Field>
 
             <form.Field
               name="lastName"
               validators={{
-                onChange: ({ value }) => (!value.trim() ? "Last name is required" : undefined),
+                onChange: ({ value }) =>
+                  !value.trim() ? "Last name is required" : undefined,
               }}
             >
               {(field) => (
-                <FormInput
-                  field={field}
-                  label="Last Name *"
-                  required
-                />
+                <FormInput field={field} label="Last Name *" required />
               )}
             </form.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <form.Field name="department">
-              {(field) => (
-                <FormInput
-                  field={field}
-                  label="Department"
-                />
-              )}
+              {(field) => <FormInput field={field} label="Department" />}
             </form.Field>
 
             <form.Field name="designation">
-              {(field) => (
-                <FormInput
-                  field={field}
-                  label="Designation"
-                />
-              )}
+              {(field) => <FormInput field={field} label="Designation" />}
             </form.Field>
 
             <form.Field name="joiningDate">
               {(field) => (
-                <FormInput
-                  field={field}
-                  label="Joining Date"
-                  type="date"
-                />
+                <FormInput field={field} label="Joining Date" type="date" />
               )}
             </form.Field>
           </div>
@@ -527,21 +552,12 @@ export default function EmployeesPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <form.Field name="passportNo">
-              {(field) => (
-                <FormInput
-                  field={field}
-                  label="Passport Number"
-                />
-              )}
+              {(field) => <FormInput field={field} label="Passport Number" />}
             </form.Field>
 
             <form.Field name="visaExpiry">
               {(field) => (
-                <FormInput
-                  field={field}
-                  label="Visa Expiry Date"
-                  type="date"
-                />
+                <FormInput field={field} label="Visa Expiry Date" type="date" />
               )}
             </form.Field>
           </div>
@@ -554,7 +570,9 @@ export default function EmployeesPage() {
               name="basicSalary"
               validators={{
                 onChange: ({ value }) =>
-                  !value || Number(value) <= 0 ? "Valid basic salary is required" : undefined,
+                  !value || Number(value) <= 0
+                    ? "Valid basic salary is required"
+                    : undefined,
               }}
             >
               {(field) => (
@@ -569,21 +587,13 @@ export default function EmployeesPage() {
 
             <form.Field name="housingAllowance">
               {(field) => (
-                <FormInput
-                  field={field}
-                  label="Housing"
-                  type="number"
-                />
+                <FormInput field={field} label="Housing" type="number" />
               )}
             </form.Field>
 
             <form.Field name="transportAllowance">
               {(field) => (
-                <FormInput
-                  field={field}
-                  label="Transport"
-                  type="number"
-                />
+                <FormInput field={field} label="Transport" type="number" />
               )}
             </form.Field>
 
@@ -638,10 +648,7 @@ export default function EmployeesPage() {
             >
               Cancel
             </Button>
-            <FormSubmit
-              form={form}
-              loading={updateEmployeeMutation.isPending}
-            >
+            <FormSubmit form={form} loading={updateEmployeeMutation.isPending}>
               Save Details
             </FormSubmit>
           </div>

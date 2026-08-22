@@ -1,8 +1,16 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-type Account = Awaited<ReturnType<typeof prisma.chartOfAccount.findMany>>[number];
-type BalanceItem = { id: string; section: string; accountCode: string; accountName: string; amount: number };
+type Account = Awaited<
+  ReturnType<typeof prisma.chartOfAccount.findMany>
+>[number];
+type BalanceItem = {
+  id: string;
+  section: string;
+  accountCode: string;
+  accountName: string;
+  amount: number;
+};
 
 export async function GET() {
   try {
@@ -39,10 +47,15 @@ export async function GET() {
     const currentYearEarnings = netRevenue - netExpense;
 
     const assetAccounts = accounts.filter((a: Account) => a.type === "ASSET");
-    const liabilityAccounts = accounts.filter((a: Account) => a.type === "LIABILITY");
+    const liabilityAccounts = accounts.filter(
+      (a: Account) => a.type === "LIABILITY",
+    );
     const equityAccounts = accounts.filter((a: Account) => a.type === "EQUITY");
 
-    const isFixedAsset = (acc: { accountCode: string; accountName: string }) => {
+    const isFixedAsset = (acc: {
+      accountCode: string;
+      accountName: string;
+    }) => {
       const code = parseInt(acc.accountCode, 10);
       const name = acc.accountName.toLowerCase();
       return (
@@ -78,13 +91,15 @@ export async function GET() {
         amount: balanceMap.get(acc.id) || 0,
       }));
 
-    const currentLiabilityItems: BalanceItem[] = liabilityAccounts.map((acc: Account) => ({
-      id: acc.id,
-      section: "Current Liability",
-      accountCode: acc.accountCode,
-      accountName: acc.accountName,
-      amount: balanceMap.get(acc.id) || 0,
-    }));
+    const currentLiabilityItems: BalanceItem[] = liabilityAccounts.map(
+      (acc: Account) => ({
+        id: acc.id,
+        section: "Current Liability",
+        accountCode: acc.accountCode,
+        accountName: acc.accountName,
+        amount: balanceMap.get(acc.id) || 0,
+      }),
+    );
 
     const equityItems: BalanceItem[] = equityAccounts.map((acc: Account) => {
       let amt = balanceMap.get(acc.id) || 0;
@@ -106,7 +121,9 @@ export async function GET() {
       };
     });
 
-    if (!equityItems.some((e: BalanceItem) => e.section === "Retained Earnings")) {
+    if (
+      !equityItems.some((e: BalanceItem) => e.section === "Retained Earnings")
+    ) {
       equityItems.push({
         id: "current-year-earnings",
         section: "Retained Earnings",
@@ -116,14 +133,26 @@ export async function GET() {
       });
     }
 
-    const totalCurrentAssets = currentAssetItems.reduce((s: number, i: BalanceItem) => s + i.amount, 0);
-    const totalFixedAssets = fixedAssetItems.reduce((s: number, i: BalanceItem) => s + i.amount, 0);
+    const totalCurrentAssets = currentAssetItems.reduce(
+      (s: number, i: BalanceItem) => s + i.amount,
+      0,
+    );
+    const totalFixedAssets = fixedAssetItems.reduce(
+      (s: number, i: BalanceItem) => s + i.amount,
+      0,
+    );
     const totalAssets = totalCurrentAssets + totalFixedAssets;
 
-    const totalCurrentLiabilities = currentLiabilityItems.reduce((s: number, i: BalanceItem) => s + i.amount, 0);
+    const totalCurrentLiabilities = currentLiabilityItems.reduce(
+      (s: number, i: BalanceItem) => s + i.amount,
+      0,
+    );
     const totalLiabilities = totalCurrentLiabilities;
 
-    const totalEquity = equityItems.reduce((s: number, i: BalanceItem) => s + i.amount, 0);
+    const totalEquity = equityItems.reduce(
+      (s: number, i: BalanceItem) => s + i.amount,
+      0,
+    );
     const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
     const balanceCheck = totalAssets - totalLiabilitiesAndEquity;
     const balanced = Math.abs(balanceCheck) < 0.01;

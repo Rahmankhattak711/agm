@@ -21,7 +21,8 @@ export const QuotationHeader: React.FC = () => {
           A G M FITOUT TECHNICAL SERVICES L.L.C
         </div>
         <div>
-          Sheikh Zayed Road, near Oasis Centre, Office No. 13-11 Building: Adel Mohammed Ali Jassim Al Marzouqi, Al Quoz First 1, Dubai, UAE
+          Sheikh Zayed Road, near Oasis Centre, Office No. 13-11 Building: Adel
+          Mohammed Ali Jassim Al Marzouqi, Al Quoz First 1, Dubai, UAE
         </div>
         <div>
           Tel: +971 48 749839 | Mob: +971 50 340 7300 | TRN: 104094432200003

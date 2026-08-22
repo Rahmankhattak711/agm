@@ -55,7 +55,7 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
               align="left"
               className="py-2.5 px-3 font-bold border border-agm-box-border text-white"
             >
-             DISC
+              DISC
             </TableHeaderCell>
             <TableHeaderCell
               align="center"

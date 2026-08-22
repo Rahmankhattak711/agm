@@ -30,7 +30,10 @@ export async function POST(request: Request) {
     }
 
     if (!user.isActive) {
-      return NextResponse.json({ error: "Account is deactivated" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Account is deactivated" },
+        { status: 403 },
+      );
     }
 
     const accessToken = signAccessToken({ userId: user.id, role: user.role });

@@ -7,8 +7,12 @@ export async function GET() {
       include: {
         parent: true,
         children: true,
-        inventoryAccount: { select: { id: true, accountCode: true, accountName: true } },
-        cogsAccount: { select: { id: true, accountCode: true, accountName: true } },
+        inventoryAccount: {
+          select: { id: true, accountCode: true, accountName: true },
+        },
+        cogsAccount: {
+          select: { id: true, accountCode: true, accountName: true },
+        },
         _count: { select: { products: true } },
       },
       orderBy: { name: "asc" },
@@ -16,7 +20,10 @@ export async function GET() {
     return NextResponse.json(categories);
   } catch (error) {
     console.error("Error fetching categories:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -26,7 +33,10 @@ export async function POST(request: Request) {
     const { name, parentId, inventoryAccountId, cogsAccountId } = body;
 
     if (!name?.trim()) {
-      return NextResponse.json({ error: "Category name is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Category name is required" },
+        { status: 400 },
+      );
     }
 
     const created = await prisma.productCategory.create({
@@ -47,9 +57,15 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Error creating category:", error);
     if (error.code === "P2002") {
-      return NextResponse.json({ error: "A category with this name already exists" }, { status: 409 });
+      return NextResponse.json(
+        { error: "A category with this name already exists" },
+        { status: 409 },
+      );
     }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -59,13 +75,17 @@ export async function PATCH(request: Request) {
     const { id, name, parentId, inventoryAccountId, cogsAccountId } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "Missing category ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing category ID" },
+        { status: 400 },
+      );
     }
 
     const data: any = {};
     if (name !== undefined) data.name = name.trim();
     if (parentId !== undefined) data.parentId = parentId || null;
-    if (inventoryAccountId !== undefined) data.inventoryAccountId = inventoryAccountId || null;
+    if (inventoryAccountId !== undefined)
+      data.inventoryAccountId = inventoryAccountId || null;
     if (cogsAccountId !== undefined) data.cogsAccountId = cogsAccountId || null;
 
     const updated = await prisma.productCategory.update({
@@ -81,7 +101,10 @@ export async function PATCH(request: Request) {
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error("Error updating category:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -91,13 +114,19 @@ export async function DELETE(request: Request) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json({ error: "Missing category ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing category ID" },
+        { status: 400 },
+      );
     }
 
     await prisma.productCategory.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting category:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

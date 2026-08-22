@@ -133,10 +133,13 @@ export async function PATCH(request: Request) {
     if (category !== undefined) dataToUpdate.category = category;
     if (categoryType !== undefined) dataToUpdate.categoryType = categoryType;
     if (amount !== undefined) dataToUpdate.amount = Number(amount);
-    if (transactionType !== undefined) dataToUpdate.transactionType = transactionType;
-    if (receiptImageUrl !== undefined) dataToUpdate.receiptImageUrl = receiptImageUrl || null;
+    if (transactionType !== undefined)
+      dataToUpdate.transactionType = transactionType;
+    if (receiptImageUrl !== undefined)
+      dataToUpdate.receiptImageUrl = receiptImageUrl || null;
     if (notes !== undefined) dataToUpdate.notes = notes || null;
-    if (transactionDate !== undefined) dataToUpdate.transactionDate = new Date(transactionDate);
+    if (transactionDate !== undefined)
+      dataToUpdate.transactionDate = new Date(transactionDate);
     if (voucherNumber !== undefined) dataToUpdate.voucherNumber = voucherNumber;
 
     const updated = await prisma.pettyCashTransaction.update({

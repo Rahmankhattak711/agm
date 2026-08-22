@@ -1,7 +1,9 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-type JournalLine = Awaited<ReturnType<typeof prisma.journalEntryLine.findMany>>[number];
+type JournalLine = Awaited<
+  ReturnType<typeof prisma.journalEntryLine.findMany>
+>[number];
 
 export async function GET(request: Request) {
   try {
@@ -27,10 +29,7 @@ export async function GET(request: Request) {
             },
           },
         },
-        orderBy: [
-          { journalEntry: { entryDate: "asc" } },
-          { id: "asc" },
-        ],
+        orderBy: [{ journalEntry: { entryDate: "asc" } }, { id: "asc" }],
       }),
     ]);
 
@@ -60,13 +59,20 @@ export async function GET(request: Request) {
           entryDate: (l as any).journalEntry?.entryDate || "",
           description: (l as any).journalEntry?.description || "—",
           reference: (l as any).journalEntry?.reference || "—",
-          createdByName: (l as any).journalEntry?.user?.fullName || "Accountant",
+          createdByName:
+            (l as any).journalEntry?.user?.fullName || "Accountant",
         },
       };
     });
 
-    const totalDebit = lines.reduce((s: number, l: JournalLine) => s + Number(l.debit || 0), 0);
-    const totalCredit = lines.reduce((s: number, l: JournalLine) => s + Number(l.credit || 0), 0);
+    const totalDebit = lines.reduce(
+      (s: number, l: JournalLine) => s + Number(l.debit || 0),
+      0,
+    );
+    const totalCredit = lines.reduce(
+      (s: number, l: JournalLine) => s + Number(l.credit || 0),
+      0,
+    );
     const netBalance = isDebitNormal
       ? totalDebit - totalCredit
       : totalCredit - totalDebit;

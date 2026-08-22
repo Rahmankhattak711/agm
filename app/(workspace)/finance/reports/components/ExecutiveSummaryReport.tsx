@@ -150,7 +150,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-
         <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">

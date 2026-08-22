@@ -25,13 +25,17 @@ import {
 
 export default function AttendancePage() {
   const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [employeeFilter, setEmployeeFilter] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const { data: records = [], isLoading, error } = useDailyAttendance({
+  const {
+    data: records = [],
+    isLoading,
+    error,
+  } = useDailyAttendance({
     date: selectedDate,
     employeeId: employeeFilter || undefined,
   });
@@ -44,7 +48,10 @@ export default function AttendancePage() {
   const lateCount = records.filter((r) => r.status === "LATE").length;
   const absentCount = records.filter((r) => r.status === "ABSENT").length;
   const onLeaveCount = records.filter((r) => r.status === "ON_LEAVE").length;
-  const totalOvertime = records.reduce((acc, r) => acc + Number(r.overtimeHours || 0), 0);
+  const totalOvertime = records.reduce(
+    (acc, r) => acc + Number(r.overtimeHours || 0),
+    0,
+  );
 
   const form = useForm({
     defaultValues: {
@@ -63,8 +70,12 @@ export default function AttendancePage() {
       setFormError("");
       try {
         const baseDate = value.attendanceDate;
-        const checkInDateTime = value.checkInTime ? `${baseDate}T${value.checkInTime}:00` : undefined;
-        const checkOutDateTime = value.checkOutTime ? `${baseDate}T${value.checkOutTime}:00` : undefined;
+        const checkInDateTime = value.checkInTime
+          ? `${baseDate}T${value.checkInTime}:00`
+          : undefined;
+        const checkOutDateTime = value.checkOutTime
+          ? `${baseDate}T${value.checkOutTime}:00`
+          : undefined;
 
         await recordAttendance.mutateAsync({
           employeeId: value.employeeId,
@@ -72,7 +83,9 @@ export default function AttendancePage() {
           checkInTime: checkInDateTime,
           checkOutTime: checkOutDateTime,
           status: value.status,
-          workingHours: value.workingHours ? Number(value.workingHours) : undefined,
+          workingHours: value.workingHours
+            ? Number(value.workingHours)
+            : undefined,
           overtimeHours: value.overtimeHours ? Number(value.overtimeHours) : 0,
           lateMinutes: value.lateMinutes ? Number(value.lateMinutes) : 0,
           location: value.location.trim() || undefined,
@@ -128,7 +141,8 @@ export default function AttendancePage() {
         cell: ({ row }) => (
           <div>
             <div className="font-bold text-slate-900">
-              {row.original.employee?.firstName || ""} {row.original.employee?.lastName || "Staff"}
+              {row.original.employee?.firstName || ""}{" "}
+              {row.original.employee?.lastName || "Staff"}
             </div>
             <span className="font-mono text-[10px] text-slate-400">
               Code: {row.original.employee?.employeeCode || "N/A"}
@@ -142,7 +156,7 @@ export default function AttendancePage() {
         cell: ({ row }) => (
           <span
             className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusBadge(
-              row.original.status
+              row.original.status,
             )}`}
           >
             {row.original.status.replace("_", " ")}
@@ -183,7 +197,9 @@ export default function AttendancePage() {
         header: "Logged Hours",
         cell: ({ row }) => (
           <span className="font-mono text-xs font-bold text-slate-900">
-            {row.original.workingHours ? `${row.original.workingHours} hrs` : "-"}
+            {row.original.workingHours
+              ? `${row.original.workingHours} hrs`
+              : "-"}
           </span>
         ),
       },
@@ -244,17 +260,19 @@ export default function AttendancePage() {
         ),
       },
     ],
-    [deleteAttendance]
+    [deleteAttendance],
   );
 
   return (
     <div className="space-y-6">
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Daily Attendance & Timesheets</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            Daily Attendance & Timesheets
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Real-time site punch logs, overtime calculations, late arrival tracking, and duty logs.
+            Real-time site punch logs, overtime calculations, late arrival
+            tracking, and duty logs.
           </p>
         </div>
 
@@ -271,27 +289,45 @@ export default function AttendancePage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Present Today</p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">{presentCount}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Present Today
+          </p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">
+            {presentCount}
+          </p>
           <p className="text-xs text-slate-500 mt-0.5">On-site and working</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Late Arrivals</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Late Arrivals
+          </p>
           <p className="text-2xl font-black text-amber-600 mt-1">{lateCount}</p>
           <p className="text-xs text-slate-500 mt-0.5">Delayed check-ins</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Absent / Leave</p>
-          <p className="text-2xl font-black text-rose-800 mt-1">{absentCount + onLeaveCount}</p>
-          <p className="text-xs text-slate-500 mt-0.5">{onLeaveCount} on approved leave</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Absent / Leave
+          </p>
+          <p className="text-2xl font-black text-rose-800 mt-1">
+            {absentCount + onLeaveCount}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {onLeaveCount} on approved leave
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Overtime</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{totalOvertime} hrs</p>
-          <p className="text-xs text-slate-500 mt-0.5">Calculated extra hours</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Total Overtime
+          </p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {totalOvertime} hrs
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Calculated extra hours
+          </p>
         </div>
       </div>
 
@@ -323,7 +359,9 @@ export default function AttendancePage() {
         </div>
 
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">Error loading attendance: {(error as any).message}</div>
+          <div className="py-8 text-center text-xs text-red-500">
+            Error loading attendance: {(error as any).message}
+          </div>
         ) : (
           <DataTable
             columns={columns}
@@ -335,7 +373,12 @@ export default function AttendancePage() {
         )}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Record Daily Attendance" maxWidth="lg">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Record Daily Attendance"
+        maxWidth="lg"
+      >
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -353,7 +396,8 @@ export default function AttendancePage() {
           <form.Field
             name="employeeId"
             validators={{
-              onChange: ({ value }) => (!value ? "Employee is required" : undefined),
+              onChange: ({ value }) =>
+                !value ? "Employee is required" : undefined,
             }}
           >
             {(field) => (
@@ -372,16 +416,12 @@ export default function AttendancePage() {
             <form.Field
               name="attendanceDate"
               validators={{
-                onChange: ({ value }) => (!value ? "Date is required" : undefined),
+                onChange: ({ value }) =>
+                  !value ? "Date is required" : undefined,
               }}
             >
               {(field) => (
-                <FormInput
-                  field={field}
-                  label="Date *"
-                  type="date"
-                  required
-                />
+                <FormInput field={field} label="Date *" type="date" required />
               )}
             </form.Field>
 
@@ -401,21 +441,13 @@ export default function AttendancePage() {
           <div className="grid grid-cols-2 gap-3">
             <form.Field name="checkInTime">
               {(field) => (
-                <FormInput
-                  field={field}
-                  label="Check-in Time"
-                  type="time"
-                />
+                <FormInput field={field} label="Check-in Time" type="time" />
               )}
             </form.Field>
 
             <form.Field name="checkOutTime">
               {(field) => (
-                <FormInput
-                  field={field}
-                  label="Check-out Time"
-                  type="time"
-                />
+                <FormInput field={field} label="Check-out Time" type="time" />
               )}
             </form.Field>
           </div>
@@ -468,13 +500,14 @@ export default function AttendancePage() {
           </form.Field>
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+            >
               Cancel
             </Button>
-            <FormSubmit
-              form={form}
-              loading={recordAttendance.isPending}
-            >
+            <FormSubmit form={form} loading={recordAttendance.isPending}>
               Save Entry
             </FormSubmit>
           </div>

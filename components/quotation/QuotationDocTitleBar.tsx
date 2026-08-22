@@ -72,7 +72,10 @@ export const QuotationDocTitleBar: React.FC<QuotationDocTitleBarProps> = ({
             </div>
             <div className="space-y-1">
               {paymentTerms.map((term, idx) => (
-                <div key={idx} className="flex items-center gap-1.5 text-[11px]">
+                <div
+                  key={idx}
+                  className="flex items-center gap-1.5 text-[11px]"
+                >
                   <span className="text-agm-green font-bold text-[10px] select-none">
                     •
                   </span>

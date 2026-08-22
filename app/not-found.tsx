@@ -8,12 +8,10 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <main className="relative min-h-screen flex items-center justify-center bg-[#f6f5f0] px-4 py-12 font-sans overflow-hidden">
-
       <div className="pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-slate-900/5 blur-3xl" />
 
       <div className="relative w-full max-w-lg rounded-3xl border border-slate-200/80 bg-white p-8 sm:p-10 text-center shadow-xl shadow-slate-900/5">
-
         <div className="flex justify-center mb-6">
           <AgmLogo size="md" collapsed={false} />
         </div>
@@ -47,7 +45,8 @@ export default function NotFound() {
           Lost in the Workspace?
         </h1>
         <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-slate-500 max-w-sm mx-auto">
-          The ERP module, financial statement, or page you requested could not be located or has been relocated.
+          The ERP module, financial statement, or page you requested could not
+          be located or has been relocated.
         </p>
 
         <div className="mt-6 pt-5 border-t border-slate-100 grid grid-cols-2 gap-2 text-left">
@@ -57,9 +56,13 @@ export default function NotFound() {
           >
             <p className="text-[11px] font-bold text-slate-800 group-hover:text-emerald-800 flex items-center justify-between">
               Main Dashboard
-              <span className="text-slate-400 group-hover:text-emerald-700">→</span>
+              <span className="text-slate-400 group-hover:text-emerald-700">
+                →
+              </span>
             </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Overview & key metrics</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              Overview & key metrics
+            </p>
           </Link>
 
           <Link
@@ -68,9 +71,13 @@ export default function NotFound() {
           >
             <p className="text-[11px] font-bold text-slate-800 group-hover:text-emerald-800 flex items-center justify-between">
               Quotations & Reports
-              <span className="text-slate-400 group-hover:text-emerald-700">→</span>
+              <span className="text-slate-400 group-hover:text-emerald-700">
+                →
+              </span>
             </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Financial statements</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              Financial statements
+            </p>
           </Link>
 
           <Link
@@ -79,9 +86,13 @@ export default function NotFound() {
           >
             <p className="text-[11px] font-bold text-slate-800 group-hover:text-emerald-800 flex items-center justify-between">
               Daily Attendance
-              <span className="text-slate-400 group-hover:text-emerald-700">→</span>
+              <span className="text-slate-400 group-hover:text-emerald-700">
+                →
+              </span>
             </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Staff timesheets</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              Staff timesheets
+            </p>
           </Link>
 
           <Link
@@ -90,9 +101,13 @@ export default function NotFound() {
           >
             <p className="text-[11px] font-bold text-slate-800 group-hover:text-emerald-800 flex items-center justify-between">
               Product Catalog
-              <span className="text-slate-400 group-hover:text-emerald-700">→</span>
+              <span className="text-slate-400 group-hover:text-emerald-700">
+                →
+              </span>
             </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Inventory & items</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              Inventory & items
+            </p>
           </Link>
         </div>
 

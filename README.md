@@ -7,6 +7,7 @@ An enterprise-grade ERP, accounting, inventory, and operations management platfo
 ## 🌟 Key Features
 
 ### 1. 💼 Financial Accounting & Statutory Reports (`/finance`)
+
 - **Chart of Accounts**: Full double-entry general ledger with Assets, Liabilities, Equity, Revenue, and Expense hierarchies.
 - **Journal Entries & Daybook**: Double-entry transaction batches, posting controls, and balanced audit lines.
 - **Financial Statements**: Real-time Statement of Profit & Loss (Income Statement), Balance Sheet, and Trial Balance matrix.
@@ -15,6 +16,7 @@ An enterprise-grade ERP, accounting, inventory, and operations management platfo
 - **Commercial Quotation & Proposal Generator**: Interactive quotation builder with live product catalog synchronization, dynamic 5% VAT calculations, discount fields, amount in words in AED, and official pixel-perfect A4 print layouts.
 
 ### 2. 📦 Inventory & Procurement (`/inventory`)
+
 - **Products & Raw Materials**: SKU catalog, category classification, unit measurements (PCS, SQM, MTR, LOT, KG), reorder alert thresholds, and pricing.
 - **Warehouses & Storage Locations**: Multi-warehouse capacity tracking, manager assignment, and zone locations across UAE.
 - **Stock Movements & Transfers**: IN, OUT, and TRANSFER transaction auditing with balance updates.
@@ -22,12 +24,14 @@ An enterprise-grade ERP, accounting, inventory, and operations management platfo
 - **Vendors & Suppliers**: Vendor registry, Tax Registration Numbers (TRN), contact management, and catalog lines.
 
 ### 3. 👥 Human Capital & Workforce Operations (`/operations`)
+
 - **Employee Master Directory**: Automatically synchronized with registered user accounts, UAE labor compliance, Emirates ID tracking, visa expiries, and WPS bank details (IBAN/CBUAE SIF ready).
 - **Daily Attendance & Timesheets**: Check-in / check-out timestamps, working hours, overtime tracking, site notes, and one-click `Mark All Present` batch actions.
 - **Leave Management**: Annual, Sick, Unpaid, and Emergency leave balances, duration calculators, and approval pipelines.
 - **Bonuses & Performance Incentives**: Commission and performance bonus approvals and payout tracking.
 
 ### 4. 🛡️ Role-Based Access Control & Administration (`/administration`)
+
 - **User Management**: JWT authentication with refresh token rotation.
 - **Roles**: `SUPER_ADMIN`, `ADMIN`, `ACCOUNTANT`, `HR`, `INVENTORY_MANAGER`, and `USER`.
 
@@ -48,11 +52,13 @@ An enterprise-grade ERP, accounting, inventory, and operations management platfo
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - **Node.js**: v18.18.0 or later
 - **pnpm**: v9 or later (or npm / yarn)
 - **PostgreSQL**: Running locally or via Docker / Supabase / Neon
 
 ### 1. Clone & Install Dependencies
+
 ```bash
 # Clone the repository
 git clone <repo-url>
@@ -63,7 +69,9 @@ pnpm install
 ```
 
 ### 2. Configure Environment Variables
+
 Create a `.env` file in the project root:
+
 ```env
 # PostgreSQL Database URL
 DATABASE_URL="postgresql://postgres:password@localhost:5432/agm_db?schema=public"
@@ -77,6 +85,7 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
 ### 3. Setup Database Schema
+
 ```bash
 # Push schema to PostgreSQL database
 npx prisma db push
@@ -86,9 +95,11 @@ pnpm prisma:studio
 ```
 
 ### 4. Run Development Server
+
 ```bash
 pnpm dev
 ```
+
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
@@ -139,17 +150,18 @@ agm/
 
 ## 📜 Available Scripts
 
-| Command | Description |
-| :--- | :--- |
-| `pnpm dev` | Starts the Next.js development server on port 3000 |
-| `pnpm build` | Compiles the production build |
-| `pnpm start` | Runs the compiled production application |
-| `pnpm lint` | Runs ESLint checks |
-| `pnpm prisma:generate` | Generates the Prisma Client |
-| `pnpm prisma:migrate` | Runs database migrations |
-| `pnpm prisma:studio` | Launches visual Prisma Studio database manager |
+| Command                | Description                                        |
+| :--------------------- | :------------------------------------------------- |
+| `pnpm dev`             | Starts the Next.js development server on port 3000 |
+| `pnpm build`           | Compiles the production build                      |
+| `pnpm start`           | Runs the compiled production application           |
+| `pnpm lint`            | Runs ESLint checks                                 |
+| `pnpm prisma:generate` | Generates the Prisma Client                        |
+| `pnpm prisma:migrate`  | Runs database migrations                           |
+| `pnpm prisma:studio`   | Launches visual Prisma Studio database manager     |
 
 ---
 
 ## 📄 License
+
 Private & Proprietary. All rights reserved by **AGM Aesthetic House Fitout Technical Services L.L.C**, Dubai, UAE.

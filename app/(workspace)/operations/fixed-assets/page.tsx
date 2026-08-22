@@ -3,7 +3,12 @@
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
-import { useAccounts, useAssets, useCreateAsset, FixedAsset } from "@/lib/hooks/api-hooks";
+import {
+  useAccounts,
+  useAssets,
+  useCreateAsset,
+  FixedAsset,
+} from "@/lib/hooks/api-hooks";
 import { PlusIcon } from "@/components/icons";
 import {
   Button,
@@ -40,7 +45,10 @@ export default function FixedAssetsPage() {
     return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const totalAssetCost = (assets || []).reduce((s, a) => s + Number(a.cost || 0), 0);
+  const totalAssetCost = (assets || []).reduce(
+    (s, a) => s + Number(a.cost || 0),
+    0,
+  );
 
   const filteredAssets = useMemo(() => {
     return (assets || []).filter((a) => {
@@ -48,7 +56,8 @@ export default function FixedAssetsPage() {
       const matchesSearch =
         a.assetCode.toLowerCase().includes(q) ||
         a.assetName.toLowerCase().includes(q);
-      const matchesCat = selectedCategory === "ALL" || a.category === selectedCategory;
+      const matchesCat =
+        selectedCategory === "ALL" || a.category === selectedCategory;
       return matchesSearch && matchesCat;
     });
   }, [assets, search, selectedCategory]);
@@ -90,9 +99,19 @@ export default function FixedAssetsPage() {
   });
 
   const handleOpenModal = () => {
-    const assetAcct = accounts?.find((a) => a.accountCode.startsWith("15") || a.type === "ASSET");
-    const accumAcct = accounts?.find((a) => a.accountName.toLowerCase().includes("accumulated") || a.type === "ASSET");
-    const expAcct = accounts?.find((a) => a.accountName.toLowerCase().includes("depreciation") || a.type === "EXPENSE");
+    const assetAcct = accounts?.find(
+      (a) => a.accountCode.startsWith("15") || a.type === "ASSET",
+    );
+    const accumAcct = accounts?.find(
+      (a) =>
+        a.accountName.toLowerCase().includes("accumulated") ||
+        a.type === "ASSET",
+    );
+    const expAcct = accounts?.find(
+      (a) =>
+        a.accountName.toLowerCase().includes("depreciation") ||
+        a.type === "EXPENSE",
+    );
 
     setFormError("");
     form.reset({
@@ -125,14 +144,18 @@ export default function FixedAssetsPage() {
         accessorKey: "assetName",
         header: "Asset Name",
         cell: ({ row }) => (
-          <span className="font-semibold text-slate-900">{row.original.assetName}</span>
+          <span className="font-semibold text-slate-900">
+            {row.original.assetName}
+          </span>
         ),
       },
       {
         accessorKey: "category",
         header: "Category",
         cell: ({ row }) => {
-          const cat = ASSET_CATEGORIES.find((c) => c.value === row.original.category);
+          const cat = ASSET_CATEGORIES.find(
+            (c) => c.value === row.original.category,
+          );
           return (
             <span className="text-xs text-slate-600 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
               {cat?.label || row.original.category}
@@ -168,17 +191,19 @@ export default function FixedAssetsPage() {
         ),
       },
     ],
-    []
+    [],
   );
 
   return (
     <div className="space-y-6">
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Fixed Assets & Vehicles</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            Fixed Assets & Vehicles
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Register and manage capital equipment, tools, company vehicles, and automated depreciation schedules.
+            Register and manage capital equipment, tools, company vehicles, and
+            automated depreciation schedules.
           </p>
         </div>
 
@@ -193,20 +218,36 @@ export default function FixedAssetsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Fixed Assets</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{assets.length}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Registered property & plant items</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Total Fixed Assets
+          </p>
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {assets.length}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Registered property & plant items
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Gross Asset Value</p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">{formatCurrency(totalAssetCost)}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Historical acquisition cost</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Gross Asset Value
+          </p>
+          <p className="text-2xl font-black text-emerald-800 mt-1">
+            {formatCurrency(totalAssetCost)}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Historical acquisition cost
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Asset Categories</p>
-          <p className="text-2xl font-black text-blue-700 mt-1">{ASSET_CATEGORIES.length}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Asset Categories
+          </p>
+          <p className="text-2xl font-black text-blue-700 mt-1">
+            {ASSET_CATEGORIES.length}
+          </p>
           <p className="text-xs text-slate-500 mt-0.5">Classes configured</p>
         </div>
       </div>
@@ -225,7 +266,10 @@ export default function FixedAssetsPage() {
             <Select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              options={[{ value: "ALL", label: "All Categories" }, ...ASSET_CATEGORIES]}
+              options={[
+                { value: "ALL", label: "All Categories" },
+                ...ASSET_CATEGORIES,
+              ]}
             />
           </div>
         </div>
@@ -269,7 +313,8 @@ export default function FixedAssetsPage() {
             <form.Field
               name="assetCode"
               validators={{
-                onChange: ({ value }) => (!value.trim() ? "Asset code is required" : undefined),
+                onChange: ({ value }) =>
+                  !value.trim() ? "Asset code is required" : undefined,
               }}
             >
               {(field) => (
@@ -285,7 +330,8 @@ export default function FixedAssetsPage() {
             <form.Field
               name="assetName"
               validators={{
-                onChange: ({ value }) => (!value.trim() ? "Asset name is required" : undefined),
+                onChange: ({ value }) =>
+                  !value.trim() ? "Asset name is required" : undefined,
               }}
             >
               {(field) => (
@@ -313,7 +359,8 @@ export default function FixedAssetsPage() {
             <form.Field
               name="purchaseDate"
               validators={{
-                onChange: ({ value }) => (!value ? "Purchase date is required" : undefined),
+                onChange: ({ value }) =>
+                  !value ? "Purchase date is required" : undefined,
               }}
             >
               {(field) => (
@@ -332,7 +379,9 @@ export default function FixedAssetsPage() {
               name="cost"
               validators={{
                 onChange: ({ value }) =>
-                  !value || Number(value) <= 0 ? "Valid cost is required" : undefined,
+                  !value || Number(value) <= 0
+                    ? "Valid cost is required"
+                    : undefined,
               }}
             >
               {(field) => (
@@ -361,7 +410,9 @@ export default function FixedAssetsPage() {
               name="depreciationRate"
               validators={{
                 onChange: ({ value }) =>
-                  !value || Number(value) < 0 ? "Valid rate is required" : undefined,
+                  !value || Number(value) < 0
+                    ? "Valid rate is required"
+                    : undefined,
               }}
             >
               {(field) => (

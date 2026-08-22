@@ -36,7 +36,8 @@ export const QuotationSavedModal: React.FC<QuotationSavedModalProps> = ({
           </div>
         ) : savedQuotations.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-500">
-            No quotations stored in the database yet. Create one and click &quot;Save to DB&quot;.
+            No quotations stored in the database yet. Create one and click
+            &quot;Save to DB&quot;.
           </div>
         ) : (
           savedQuotations.map((q) => (
@@ -64,8 +65,10 @@ export const QuotationSavedModal: React.FC<QuotationSavedModalProps> = ({
                 </p>
                 <p className="text-[11px] text-slate-400">
                   Date: {q.date || "N/A"} | Total:{" "}
-                  <strong>AED {formatCurrency(Number(q.totalAmount || 0))}</strong> |
-                  Items: {q.items?.length || 0}
+                  <strong>
+                    AED {formatCurrency(Number(q.totalAmount || 0))}
+                  </strong>{" "}
+                  | Items: {q.items?.length || 0}
                 </p>
               </div>
 

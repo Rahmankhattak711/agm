@@ -33,9 +33,11 @@ export function middleware(request: NextRequest) {
     request.headers.get("authorization")?.replace("Bearer ", "");
 
   const isProtectedPath = PROTECTED_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
+    pathname.startsWith(prefix),
   );
-  const isAuthPath = AUTH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  const isAuthPath = AUTH_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix),
+  );
 
   if (isProtectedPath && !token) {
     const loginUrl = new URL("/login", request.url);
@@ -58,7 +60,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

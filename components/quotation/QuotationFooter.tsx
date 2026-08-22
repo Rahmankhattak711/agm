@@ -11,14 +11,8 @@ export const QuotationFooter: React.FC = () => {
         preserveAspectRatio="none"
         className="w-full h-full block"
       >
-        <polygon
-          points="0,0 150,0 90,100 0,100"
-          fill="var(--agm-charcoal)"
-        />
-        <polygon
-          points="166,0 850,0 790,100 106,100"
-          fill="var(--agm-green)"
-        />
+        <polygon points="0,0 150,0 90,100 0,100" fill="var(--agm-charcoal)" />
+        <polygon points="166,0 850,0 790,100 106,100" fill="var(--agm-green)" />
         <polygon
           points="866,0 1000,0 1000,100 806,100"
           fill="var(--agm-charcoal)"
@@ -33,7 +27,9 @@ export const QuotationFooter: React.FC = () => {
 
         <div className="flex items-center justify-center whitespace-nowrap">
           <span>AC no: 0323111672001</span>
-          <span className="mx-8">Iban : AE44 0400 0003 2311 1672 001 RAK Bank</span>
+          <span className="mx-8">
+            Iban : AE44 0400 0003 2311 1672 001 RAK Bank
+          </span>
         </div>
       </div>
     </div>

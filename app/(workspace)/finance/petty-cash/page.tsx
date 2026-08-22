@@ -43,7 +43,8 @@ export default function PettyCashPage() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<string>("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedVoucher, setSelectedVoucher] = useState<PettyCashTransaction | null>(null);
+  const [selectedVoucher, setSelectedVoucher] =
+    useState<PettyCashTransaction | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [formError, setFormError] = useState("");
   const [actionSuccessMsg, setActionSuccessMsg] = useState("");
@@ -66,7 +67,7 @@ export default function PettyCashPage() {
       (transactions || [])
         .filter((t) => t.transactionType === "TOP_UP")
         .reduce((s, t) => s + Number(t.amount || 0), 0),
-    [transactions]
+    [transactions],
   );
 
   const totalDisbursements = useMemo(
@@ -74,17 +75,17 @@ export default function PettyCashPage() {
       (transactions || [])
         .filter((t) => t.transactionType === "DISBURSEMENT")
         .reduce((s, t) => s + Number(t.amount || 0), 0),
-    [transactions]
+    [transactions],
   );
 
   const pendingCount = useMemo(
     () => (transactions || []).filter((t) => !t.isApproved).length,
-    [transactions]
+    [transactions],
   );
 
   const approvedCount = useMemo(
     () => (transactions || []).filter((t) => t.isApproved).length,
-    [transactions]
+    [transactions],
   );
 
   const netBalance = totalTopUps - totalDisbursements;
@@ -101,7 +102,8 @@ export default function PettyCashPage() {
       if (!matchesSearch) return false;
 
       if (filterType === "ALL") return true;
-      if (filterType === "DISBURSEMENT") return tx.transactionType === "DISBURSEMENT";
+      if (filterType === "DISBURSEMENT")
+        return tx.transactionType === "DISBURSEMENT";
       if (filterType === "TOP_UP") return tx.transactionType === "TOP_UP";
       if (filterType === "PENDING") return !tx.isApproved;
       if (filterType === "APPROVED") return tx.isApproved;
@@ -109,7 +111,10 @@ export default function PettyCashPage() {
     });
   }, [transactions, search, filterType]);
 
-  const handleToggleApproval = async (voucher: PettyCashTransaction, e?: React.MouseEvent) => {
+  const handleToggleApproval = async (
+    voucher: PettyCashTransaction,
+    e?: React.MouseEvent,
+  ) => {
     if (e) e.stopPropagation();
     try {
       const nextStatus = !voucher.isApproved;
@@ -120,24 +125,37 @@ export default function PettyCashPage() {
       showNotification(
         nextStatus
           ? `Voucher ${voucher.voucherNumber} marked as Approved!`
-          : `Voucher ${voucher.voucherNumber} set to Pending.`
+          : `Voucher ${voucher.voucherNumber} set to Pending.`,
       );
       if (selectedVoucher?.id === voucher.id) {
-        setSelectedVoucher((prev) => (prev ? { ...prev, isApproved: nextStatus } : null));
+        setSelectedVoucher((prev) =>
+          prev ? { ...prev, isApproved: nextStatus } : null,
+        );
       }
     } catch (err: any) {
-      alert("Error updating approval status: " + (err.message || "Unknown error"));
+      alert(
+        "Error updating approval status: " + (err.message || "Unknown error"),
+      );
     }
   };
 
-  const handleDelete = async (voucher: PettyCashTransaction, e?: React.MouseEvent) => {
+  const handleDelete = async (
+    voucher: PettyCashTransaction,
+    e?: React.MouseEvent,
+  ) => {
     if (e) e.stopPropagation();
-    if (!confirm(`Are you sure you want to delete Voucher ${voucher.voucherNumber}?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete Voucher ${voucher.voucherNumber}?`,
+      )
+    ) {
       return;
     }
     try {
       await deletePettyCashMutation.mutateAsync(voucher.id);
-      showNotification(`Voucher ${voucher.voucherNumber} deleted successfully.`);
+      showNotification(
+        `Voucher ${voucher.voucherNumber} deleted successfully.`,
+      );
       if (selectedVoucher?.id === voucher.id) {
         setIsDetailsOpen(false);
       }
@@ -156,7 +174,8 @@ export default function PettyCashPage() {
       voucherNumber: `PCV-${Date.now().toString().slice(-5)}`,
       transactionDate: new Date().toISOString().split("T")[0],
       category: "Operational Expense",
-      categoryType: "OPERATIONAL_EXPENSE" as "OPERATIONAL_EXPENSE" | "LOCAL_GOVERNMENT" | "BANK_CHARGE",
+      categoryType: "OPERATIONAL_EXPENSE" as
+        "OPERATIONAL_EXPENSE" | "LOCAL_GOVERNMENT" | "BANK_CHARGE",
       amount: "",
       transactionType: "DISBURSEMENT" as "DISBURSEMENT" | "TOP_UP",
       notes: "",
@@ -178,7 +197,9 @@ export default function PettyCashPage() {
           isApproved: value.isApproved,
         });
         setIsModalOpen(false);
-        showNotification(`Voucher ${value.voucherNumber.trim()} created successfully!`);
+        showNotification(
+          `Voucher ${value.voucherNumber.trim()} created successfully!`,
+        );
       } catch (err: any) {
         setFormError(err.message || "Failed to record petty cash voucher");
       }
@@ -291,7 +312,8 @@ export default function PettyCashPage() {
               >
                 {isAppr ? (
                   <>
-                    <CheckCircle2 size={12} className="text-emerald-600" /> Approved
+                    <CheckCircle2 size={12} className="text-emerald-600" />{" "}
+                    Approved
                   </>
                 ) : (
                   <>
@@ -345,16 +367,19 @@ export default function PettyCashPage() {
         ),
       },
     ],
-    []
+    [],
   );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Petty Cash Management</h2>
+          <h2 className="text-xl font-black text-slate-900">
+            Petty Cash Management
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Track daily disbursements, operational cash expenses, voucher approvals, and float replenishment.
+            Track daily disbursements, operational cash expenses, voucher
+            approvals, and float replenishment.
           </p>
         </div>
 
@@ -403,7 +428,9 @@ export default function PettyCashPage() {
           <p className="text-2xl font-black text-blue-700 mt-1">
             {formatCurrency(totalTopUps)}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">Replenishments credited</p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Replenishments credited
+          </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
@@ -411,10 +438,16 @@ export default function PettyCashPage() {
             Approval Queue
           </p>
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-black text-amber-600">{pendingCount}</span>
-            <span className="text-xs font-semibold text-slate-500">Pending</span>
+            <span className="text-2xl font-black text-amber-600">
+              {pendingCount}
+            </span>
+            <span className="text-xs font-semibold text-slate-500">
+              Pending
+            </span>
             <span className="text-slate-300">/</span>
-            <span className="text-xs font-bold text-emerald-700">{approvedCount} Approved</span>
+            <span className="text-xs font-bold text-emerald-700">
+              {approvedCount} Approved
+            </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">Voucher compliance</p>
         </div>
@@ -498,11 +531,7 @@ export default function PettyCashPage() {
               }}
             >
               {(field) => (
-                <FormInput
-                  field={field}
-                  label="Voucher Number *"
-                  required
-                />
+                <FormInput field={field} label="Voucher Number *" required />
               )}
             </form.Field>
 
@@ -514,12 +543,7 @@ export default function PettyCashPage() {
               }}
             >
               {(field) => (
-                <FormInput
-                  field={field}
-                  type="date"
-                  label="Date *"
-                  required
-                />
+                <FormInput field={field} type="date" label="Date *" required />
               )}
             </form.Field>
           </div>
@@ -610,8 +634,12 @@ export default function PettyCashPage() {
                     onChange={(e) => field.handleChange(e.target.value as any)}
                     className="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-600"
                   >
-                    <option value="OPERATIONAL_EXPENSE">Operational Expense</option>
-                    <option value="LOCAL_GOVERNMENT">Local Government / Municipal</option>
+                    <option value="OPERATIONAL_EXPENSE">
+                      Operational Expense
+                    </option>
+                    <option value="LOCAL_GOVERNMENT">
+                      Local Government / Municipal
+                    </option>
                     <option value="BANK_CHARGE">Bank / Courier Charge</option>
                   </select>
                 </div>
@@ -709,11 +737,13 @@ export default function PettyCashPage() {
                 >
                   {selectedVoucher.isApproved ? (
                     <>
-                      <CheckCircle2 size={14} className="text-emerald-600" /> Approved
+                      <CheckCircle2 size={14} className="text-emerald-600" />{" "}
+                      Approved
                     </>
                   ) : (
                     <>
-                      <Clock size={14} className="text-amber-600" /> Pending Approval
+                      <Clock size={14} className="text-amber-600" /> Pending
+                      Approval
                     </>
                   )}
                 </span>
@@ -721,20 +751,30 @@ export default function PettyCashPage() {
 
               <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-200/60">
                 <div>
-                  <span className="text-slate-400 font-medium">Transaction Date:</span>
+                  <span className="text-slate-400 font-medium">
+                    Transaction Date:
+                  </span>
                   <p className="font-bold text-slate-800">
-                    {new Date(selectedVoucher.transactionDate).toLocaleDateString("en-GB")}
+                    {new Date(
+                      selectedVoucher.transactionDate,
+                    ).toLocaleDateString("en-GB")}
                   </p>
                 </div>
                 <div>
-                  <span className="text-slate-400 font-medium">Transaction Type:</span>
+                  <span className="text-slate-400 font-medium">
+                    Transaction Type:
+                  </span>
                   <p className="font-bold text-slate-800">
-                    {selectedVoucher.transactionType === "TOP_UP" ? "Top-Up (Float Credit)" : "Disbursement (Expense)"}
+                    {selectedVoucher.transactionType === "TOP_UP"
+                      ? "Top-Up (Float Credit)"
+                      : "Disbursement (Expense)"}
                   </p>
                 </div>
                 <div>
                   <span className="text-slate-400 font-medium">Category:</span>
-                  <p className="font-bold text-slate-800">{selectedVoucher.category}</p>
+                  <p className="font-bold text-slate-800">
+                    {selectedVoucher.category}
+                  </p>
                 </div>
                 <div>
                   <span className="text-slate-400 font-medium">Amount:</span>
@@ -747,13 +787,17 @@ export default function PettyCashPage() {
               {selectedVoucher.notes && (
                 <div className="pt-2 border-t border-slate-200/60 text-xs">
                   <span className="text-slate-400 font-medium">Notes:</span>
-                  <p className="text-slate-700 mt-0.5">{selectedVoucher.notes}</p>
+                  <p className="text-slate-700 mt-0.5">
+                    {selectedVoucher.notes}
+                  </p>
                 </div>
               )}
 
               {selectedVoucher.receiptImageUrl && (
                 <div className="pt-2 border-t border-slate-200/60 text-xs">
-                  <span className="text-slate-400 font-medium">Receipt / Attachment:</span>
+                  <span className="text-slate-400 font-medium">
+                    Receipt / Attachment:
+                  </span>
                   <div className="mt-1">
                     <a
                       href={selectedVoucher.receiptImageUrl}
@@ -769,8 +813,13 @@ export default function PettyCashPage() {
 
               {selectedVoucher.approver && (
                 <div className="pt-2 border-t border-slate-200/60 text-xs">
-                  <span className="text-slate-400 font-medium">Approved By:</span>
-                  <p className="text-slate-800 font-bold">{selectedVoucher.approver.fullName} ({selectedVoucher.approver.email})</p>
+                  <span className="text-slate-400 font-medium">
+                    Approved By:
+                  </span>
+                  <p className="text-slate-800 font-bold">
+                    {selectedVoucher.approver.fullName} (
+                    {selectedVoucher.approver.email})
+                  </p>
                 </div>
               )}
             </div>
@@ -792,9 +841,17 @@ export default function PettyCashPage() {
                   variant={selectedVoucher.isApproved ? "secondary" : "primary"}
                   size="sm"
                   onClick={() => handleToggleApproval(selectedVoucher)}
-                  icon={selectedVoucher.isApproved ? <RotateCcw size={14} /> : <ShieldCheck size={14} />}
+                  icon={
+                    selectedVoucher.isApproved ? (
+                      <RotateCcw size={14} />
+                    ) : (
+                      <ShieldCheck size={14} />
+                    )
+                  }
                 >
-                  {selectedVoucher.isApproved ? "Mark as Pending" : "Approve Voucher"}
+                  {selectedVoucher.isApproved
+                    ? "Mark as Pending"
+                    : "Approve Voucher"}
                 </Button>
                 <Button
                   type="button"

@@ -8,10 +8,10 @@
   --agm-green-soft: #e8f0e8;
   --agm-ivory: #f8f7f2;
   --agm-sidebar: #22394c;
-  --agm-sidebar-border: rgba(255,255,255,0.06);
+  --agm-sidebar-border: rgba(255, 255, 255, 0.06);
   --agm-bg: #f6f5f0;
   --agm-card: #ffffff;
-  --agm-border: rgba(17,24,39,0.07);
+  --agm-border: rgba(17, 24, 39, 0.07);
   --agm-text: #263b4d;
   --agm-muted: #657484;
   --agm-subtle: #90a0ad;
@@ -105,7 +105,6 @@ body {
     display: block !important;
   }
 
-
   /* Table structure for repeating header & footer across all printed pages */
   .print-page-table {
     width: 100% !important;
@@ -139,5 +138,3 @@ body {
     page-break-inside: avoid !important;
   }
 }
-
-

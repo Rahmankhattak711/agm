@@ -28,9 +28,11 @@ export async function GET(request: Request) {
       active: users.filter((u: UserItem) => u.isActive).length,
       inactive: users.filter((u: UserItem) => !u.isActive).length,
       byRole: {
-        SUPER_ADMIN: users.filter((u: UserItem) => u.role === "SUPER_ADMIN").length,
+        SUPER_ADMIN: users.filter((u: UserItem) => u.role === "SUPER_ADMIN")
+          .length,
         ADMIN: users.filter((u: UserItem) => u.role === "ADMIN").length,
-        ACCOUNTANT: users.filter((u: UserItem) => u.role === "ACCOUNTANT").length,
+        ACCOUNTANT: users.filter((u: UserItem) => u.role === "ACCOUNTANT")
+          .length,
         USER: users.filter((u: UserItem) => u.role === "USER").length,
       },
     };

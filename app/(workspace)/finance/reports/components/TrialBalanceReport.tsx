@@ -12,7 +12,10 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui";
-import { TrialBalanceReport as TrialBalanceData, TrialBalanceRow } from "@/lib/hooks/api-hooks";
+import {
+  TrialBalanceReport as TrialBalanceData,
+  TrialBalanceRow,
+} from "@/lib/hooks/api-hooks";
 import { formatCurrency, formatNumber } from "./types";
 
 interface TrialBalanceReportProps {
@@ -33,10 +36,13 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
     return allRows.filter((r: TrialBalanceRow) => {
       const matchesSearch =
         !tbSearch ||
-        (r.accountName && r.accountName.toLowerCase().includes(tbSearch.toLowerCase())) ||
-        (r.accountCode && r.accountCode.toLowerCase().includes(tbSearch.toLowerCase()));
+        (r.accountName &&
+          r.accountName.toLowerCase().includes(tbSearch.toLowerCase())) ||
+        (r.accountCode &&
+          r.accountCode.toLowerCase().includes(tbSearch.toLowerCase()));
       const matchesType =
-        tbTypeFilter === "ALL" || (r.type && r.type.toUpperCase() === tbTypeFilter);
+        tbTypeFilter === "ALL" ||
+        (r.type && r.type.toUpperCase() === tbTypeFilter);
       return matchesSearch && matchesType;
     });
   }, [allRows, tbSearch, tbTypeFilter]);
@@ -44,11 +50,17 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
   const totalDebit =
     trialBalance?.totalDebit !== undefined
       ? trialBalance.totalDebit
-      : allRows.reduce((s: number, r: TrialBalanceRow) => s + Number(r.debit || 0), 0);
+      : allRows.reduce(
+          (s: number, r: TrialBalanceRow) => s + Number(r.debit || 0),
+          0,
+        );
   const totalCredit =
     trialBalance?.totalCredit !== undefined
       ? trialBalance.totalCredit
-      : allRows.reduce((s: number, r: TrialBalanceRow) => s + Number(r.credit || 0), 0);
+      : allRows.reduce(
+          (s: number, r: TrialBalanceRow) => s + Number(r.credit || 0),
+          0,
+        );
   const difference = Math.abs(totalDebit - totalCredit);
   const isBalanced = difference < 0.01;
 
@@ -60,7 +72,8 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
             Trial Balance Summary
           </h3>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Comprehensive debit and credit audit across active general ledger accounts.
+            AGM FITOUT TECHNICAL SERVICES LLC — Comprehensive debit and credit
+            audit across active general ledger accounts.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -172,13 +185,25 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                 placeholder="Search accounts by name or code..."
                 value={tbSearch}
                 onChange={(e) => setTbSearch(e.target.value)}
-                leftIcon={<SearchIcon className="w-4 h-4 text-slate-400" strokeWidth={2} />}
+                leftIcon={
+                  <SearchIcon
+                    className="w-4 h-4 text-slate-400"
+                    strokeWidth={2}
+                  />
+                }
                 className="bg-slate-50 border-slate-200 text-xs"
               />
             </div>
 
             <div className="flex flex-wrap gap-1.5">
-              {["ALL", "ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"].map((type) => (
+              {[
+                "ALL",
+                "ASSET",
+                "LIABILITY",
+                "EQUITY",
+                "REVENUE",
+                "EXPENSE",
+              ].map((type) => (
                 <Button
                   key={type}
                   type="button"
@@ -197,16 +222,35 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <Table className="w-full text-xs text-left">
               <TableHead className="bg-slate-50/90 border-b border-slate-200">
-                <TableHeaderCell className="py-3 px-5 w-24 text-slate-500 font-bold uppercase text-[11px] tracking-wider">Code</TableHeaderCell>
-                <TableHeaderCell className="py-3 px-5 text-slate-500 font-bold uppercase text-[11px] tracking-wider">Account Name</TableHeaderCell>
-                <TableHeaderCell className="py-3 px-5 w-32 text-slate-500 font-bold uppercase text-[11px] tracking-wider">Type</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-3 px-5 text-right w-36 text-slate-500 font-bold uppercase text-[11px] tracking-wider">Debit (AED)</TableHeaderCell>
-                <TableHeaderCell align="right" className="py-3 px-5 text-right w-36 text-slate-500 font-bold uppercase text-[11px] tracking-wider">Credit (AED)</TableHeaderCell>
+                <TableHeaderCell className="py-3 px-5 w-24 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
+                  Code
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-5 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
+                  Account Name
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-5 w-32 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
+                  Type
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-3 px-5 text-right w-36 text-slate-500 font-bold uppercase text-[11px] tracking-wider"
+                >
+                  Debit (AED)
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-3 px-5 text-right w-36 text-slate-500 font-bold uppercase text-[11px] tracking-wider"
+                >
+                  Credit (AED)
+                </TableHeaderCell>
               </TableHead>
               <TableBody className="divide-y divide-slate-100">
                 {filteredRows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-8 text-center text-slate-400">
+                    <TableCell
+                      colSpan={5}
+                      className="py-8 text-center text-slate-400"
+                    >
                       No accounts match the current filter criteria.
                     </TableCell>
                   </TableRow>
@@ -214,14 +258,19 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                   filteredRows.map((r: TrialBalanceRow) => {
                     const typeColors: Record<string, string> = {
                       ASSET: "bg-blue-50 text-blue-700 border-blue-200",
-                      LIABILITY: "bg-orange-50 text-orange-700 border-orange-200",
+                      LIABILITY:
+                        "bg-orange-50 text-orange-700 border-orange-200",
                       EQUITY: "bg-purple-50 text-purple-700 border-purple-200",
-                      REVENUE: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                      REVENUE:
+                        "bg-emerald-50 text-emerald-700 border-emerald-200",
                       EXPENSE: "bg-rose-50 text-rose-700 border-rose-200",
                     };
 
                     return (
-                      <TableRow key={r.accountId} className="hover:bg-slate-50/50 text-slate-700 transition">
+                      <TableRow
+                        key={r.accountId}
+                        className="hover:bg-slate-50/50 text-slate-700 transition"
+                      >
                         <TableCell className="py-2.5 px-5 font-mono font-bold text-slate-900">
                           {r.accountCode || "—"}
                         </TableCell>
@@ -231,16 +280,23 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                         <TableCell className="py-2.5 px-5">
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${
-                              typeColors[r.type || ""] || "bg-slate-50 text-slate-600 border-slate-200"
+                              typeColors[r.type || ""] ||
+                              "bg-slate-50 text-slate-600 border-slate-200"
                             }`}
                           >
                             {r.type || "OTHER"}
                           </span>
                         </TableCell>
-                        <TableCell align="right" className="py-2.5 px-5 text-right font-mono font-semibold text-slate-900">
+                        <TableCell
+                          align="right"
+                          className="py-2.5 px-5 text-right font-mono font-semibold text-slate-900"
+                        >
                           {r.debit > 0 ? formatNumber(r.debit) : "—"}
                         </TableCell>
-                        <TableCell align="right" className="py-2.5 px-5 text-right font-mono font-semibold text-slate-900">
+                        <TableCell
+                          align="right"
+                          className="py-2.5 px-5 text-right font-mono font-semibold text-slate-900"
+                        >
                           {r.credit > 0 ? formatNumber(r.credit) : "—"}
                         </TableCell>
                       </TableRow>
@@ -250,13 +306,22 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
 
                 {/* SUMMARY TOTALS ROW */}
                 <TableRow className="bg-slate-900 text-white font-black">
-                  <TableCell colSpan={3} className="py-3.5 px-5 text-xs uppercase tracking-wider font-bold">
+                  <TableCell
+                    colSpan={3}
+                    className="py-3.5 px-5 text-xs uppercase tracking-wider font-bold"
+                  >
                     TOTAL TRIAL BALANCE
                   </TableCell>
-                  <TableCell align="right" className="py-3.5 px-5 text-right font-mono font-black text-sm text-emerald-400">
+                  <TableCell
+                    align="right"
+                    className="py-3.5 px-5 text-right font-mono font-black text-sm text-emerald-400"
+                  >
                     {formatNumber(totalDebit)}
                   </TableCell>
-                  <TableCell align="right" className="py-3.5 px-5 text-right font-mono font-black text-sm text-emerald-400">
+                  <TableCell
+                    align="right"
+                    className="py-3.5 px-5 text-right font-mono font-black text-sm text-emerald-400"
+                  >
                     {formatNumber(totalCredit)}
                   </TableCell>
                 </TableRow>
@@ -269,7 +334,10 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       : "bg-amber-50 text-amber-950"
                   }`}
                 >
-                  <TableCell colSpan={3} className="py-3 px-5 text-xs uppercase tracking-wider font-bold">
+                  <TableCell
+                    colSpan={3}
+                    className="py-3 px-5 text-xs uppercase tracking-wider font-bold"
+                  >
                     DIFFERENCE / VARIANCE (DEBITS - CREDITS)
                   </TableCell>
                   <TableCell
@@ -279,7 +347,9 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       isBalanced ? "text-emerald-700" : "text-amber-700"
                     }`}
                   >
-                    {isBalanced ? "0.00 (In Balance)" : formatNumber(difference)}
+                    {isBalanced
+                      ? "0.00 (In Balance)"
+                      : formatNumber(difference)}
                   </TableCell>
                 </TableRow>
               </TableBody>
