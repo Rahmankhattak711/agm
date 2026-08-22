@@ -14,7 +14,8 @@ import {
   PurchaseOrder,
   PurchaseOrderStatus,
 } from "@/lib/hooks/api-hooks";
-import { PlusIcon, SearchIcon } from "@/components/icons";
+import { PlusIcon, SearchIcon, PrintIcon } from "@/components/icons";
+import { PurchaseOrderPrintModal } from "./PurchaseOrderPrintModal";
 import {
   Button,
   Input,
@@ -45,6 +46,7 @@ export default function PurchaseOrdersPage() {
   const [supplierFilter, setSupplierFilter] = useState<string>("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
+  const [printModalPO, setPrintModalPO] = useState<PurchaseOrder | null>(null);
   const [receiveModalPO, setReceiveModalPO] = useState<PurchaseOrder | null>(
     null,
   );
@@ -287,6 +289,16 @@ export default function PurchaseOrdersPage() {
                 onClick={() => setSelectedPO(row.original)}
               >
                 View
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-slate-700 hover:bg-slate-50"
+                icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
+                onClick={() => setPrintModalPO(row.original)}
+              >
+                Print
               </Button>
 
               {isDraft && (
@@ -853,18 +865,34 @@ export default function PurchaseOrdersPage() {
               </span>
             </div>
 
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end items-center gap-2 pt-3 border-t border-slate-100">
               <Button
-                variant="dark"
+                variant="outline"
                 size="md"
                 onClick={() => setSelectedPO(null)}
               >
                 Close
               </Button>
+              <Button
+                variant="primary"
+                size="md"
+                icon={<PrintIcon className="w-4 h-4" strokeWidth={2} />}
+                onClick={() => {
+                  setPrintModalPO(selectedPO);
+                }}
+              >
+                Print / Save PDF
+              </Button>
             </div>
           </div>
         )}
       </Modal>
+
+      <PurchaseOrderPrintModal
+        isOpen={!!printModalPO}
+        onClose={() => setPrintModalPO(null)}
+        po={printModalPO}
+      />
     </div>
   );
 }
