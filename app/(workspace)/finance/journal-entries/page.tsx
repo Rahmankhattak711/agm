@@ -100,11 +100,58 @@ export default function JournalEntriesPage() {
         return;
       }
 
-      const totalDebit = value.lines.reduce(
+      // Compute payload lines including auto-generated 5% VAT ledger lines if VAT is selected
+      const payloadLines: Array<{
+        accountId: string;
+        debit: number;
+        credit: number;
+        vatType?: "INPUT" | "OUTPUT" | null;
+        taxableAmount?: number;
+        vatAmount?: number;
+      }> = [];
+
+      for (const l of value.lines) {
+        const isDeb = Number(l.debit) > 0;
+        const isCred = Number(l.credit) > 0;
+        const baseAmt = isDeb ? Number(l.debit) : Number(l.credit);
+        const hasVat = !!l.vatType && baseAmt > 0;
+        const vatVal = hasVat ? Number((baseAmt * 0.05).toFixed(2)) : 0;
+
+        payloadLines.push({
+          accountId: l.accountId,
+          debit: Number(l.debit) || 0,
+          credit: Number(l.credit) || 0,
+          vatType: l.vatType || null,
+          taxableAmount: hasVat ? baseAmt : undefined,
+          vatAmount: hasVat ? vatVal : undefined,
+        });
+
+        if (hasVat && vatVal > 0) {
+          const vatType = l.vatType || (isDeb ? "INPUT" : "OUTPUT");
+          const vatAccId = getVatAccount(vatType);
+          const alreadyHasVat = value.lines.some(
+            (other) =>
+              other.accountId === vatAccId &&
+              (isDeb ? Number(other.debit) === vatVal : Number(other.credit) === vatVal)
+          );
+          if (!alreadyHasVat && vatAccId) {
+            payloadLines.push({
+              accountId: vatAccId,
+              debit: isDeb ? vatVal : 0,
+              credit: isCred ? vatVal : 0,
+              vatType,
+              taxableAmount: baseAmt,
+              vatAmount: vatVal,
+            });
+          }
+        }
+      }
+
+      const totalDebit = payloadLines.reduce(
         (s, l) => s + (Number(l.debit) || 0),
         0,
       );
-      const totalCredit = value.lines.reduce(
+      const totalCredit = payloadLines.reduce(
         (s, l) => s + (Number(l.credit) || 0),
         0,
       );
@@ -130,14 +177,7 @@ export default function JournalEntriesPage() {
             description: value.description,
             reference: value.reference,
             isPosted: value.isPosted,
-            lines: value.lines.map((l) => ({
-              accountId: l.accountId,
-              debit: Number(l.debit) || 0,
-              credit: Number(l.credit) || 0,
-              vatType: l.vatType,
-              taxableAmount: l.taxableAmount,
-              vatAmount: l.vatAmount,
-            })),
+            lines: payloadLines,
           });
         } else {
           await createJournalEntryMutation.mutateAsync({
@@ -147,14 +187,7 @@ export default function JournalEntriesPage() {
             reference: value.reference,
             isPosted: value.isPosted,
             createdBy: user?.id,
-            lines: value.lines.map((l) => ({
-              accountId: l.accountId,
-              debit: Number(l.debit) || 0,
-              credit: Number(l.credit) || 0,
-              vatType: l.vatType,
-              taxableAmount: l.taxableAmount,
-              vatAmount: l.vatAmount,
-            })),
+            lines: payloadLines,
           });
         }
 
@@ -515,12 +548,11 @@ export default function JournalEntriesPage() {
                                     </span>
                                     <span>{line.account?.accountName}</span>
                                     {line.vatEntry && (
-                                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
-                                        5% {line.vatEntry.vatType} VAT (AED{" "}
-                                        {Number(
-                                          line.vatEntry.vatAmount || 0,
-                                        ).toFixed(2)}
-                                        )
+                                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">
+                                        5% {line.vatEntry.vatType} VAT · Base: AED{" "}
+                                        {Number(line.vatEntry.taxableAmount || (Number(line.vatEntry.vatAmount || 0) / 0.05)).toFixed(2)} + VAT: AED{" "}
+                                        {Number(line.vatEntry.vatAmount || 0).toFixed(2)} = Total: AED{" "}
+                                        {(Number(line.vatEntry.taxableAmount || (Number(line.vatEntry.vatAmount || 0) / 0.05)) + Number(line.vatEntry.vatAmount || 0)).toFixed(2)}
                                       </span>
                                     )}
                                   </div>
@@ -684,33 +716,6 @@ export default function JournalEntriesPage() {
                 ]);
               };
 
-              const addVatLine = () => {
-                const sourceLine = currentLines.find(
-                  (l) => Number(l.debit) > 0 || Number(l.credit) > 0,
-                );
-                const hasDebit = sourceLine && Number(sourceLine.debit) > 0;
-                const baseVal = sourceLine
-                  ? hasDebit
-                    ? Number(sourceLine.debit)
-                    : Number(sourceLine.credit)
-                  : 0;
-                const vatAmount = Number((baseVal * 0.05).toFixed(2));
-                const vatType = hasDebit ? "INPUT" : "OUTPUT";
-                const vatAccId = getVatAccount(vatType);
-
-                linesField.handleChange([
-                  ...currentLines,
-                  {
-                    accountId: vatAccId,
-                    debit: hasDebit ? vatAmount : 0,
-                    credit: !hasDebit ? vatAmount : 0,
-                    vatType,
-                    taxableAmount: baseVal,
-                    vatAmount,
-                  },
-                ]);
-              };
-
               const removeLine = (idx: number) => {
                 if (currentLines.length <= 2) return;
                 linesField.handleChange(
@@ -728,14 +733,18 @@ export default function JournalEntriesPage() {
                 linesField.handleChange(next);
               };
 
-              const totalDebits = currentLines.reduce(
-                (s, l) => s + (Number(l.debit) || 0),
-                0,
-              );
-              const totalCredits = currentLines.reduce(
-                (s, l) => s + (Number(l.credit) || 0),
-                0,
-              );
+              const totalDebits = currentLines.reduce((s, l) => {
+                const isDeb = Number(l.debit) > 0;
+                const vat = l.vatType && isDeb ? Number((Number(l.debit) * 0.05).toFixed(2)) : 0;
+                return s + (Number(l.debit) || 0) + vat;
+              }, 0);
+
+              const totalCredits = currentLines.reduce((s, l) => {
+                const isCred = Number(l.credit) > 0;
+                const vat = l.vatType && isCred ? Number((Number(l.credit) * 0.05).toFixed(2)) : 0;
+                return s + (Number(l.credit) || 0) + vat;
+              }, 0);
+
               const isBalanced =
                 Math.abs(totalDebits - totalCredits) < 0.001 && totalDebits > 0;
 
@@ -745,30 +754,35 @@ export default function JournalEntriesPage() {
                     <h4 className="text-xs font-bold text-slate-800">
                       Transaction Lines
                     </h4>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={addVatLine}
-                        title="Calculate 5% UAE VAT line from existing line amounts"
-                      >
-                        <span>🇦🇪</span> + 5% VAT Line
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="primary"
-                        onClick={addLine}
-                        icon={<PlusIcon size={13} strokeWidth={2.2} />}
-                      >
-                        Add Line
-                      </Button>
-                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="primary"
+                      onClick={addLine}
+                      icon={<PlusIcon size={13} strokeWidth={2.2} />}
+                    >
+                      Add Line
+                    </Button>
+                  </div>
+
+                  {/* Column Headers for larger screens */}
+                  <div className="hidden sm:flex items-center gap-2 px-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <span className="flex-1">Account</span>
+                    <span className="w-20 sm:w-24 text-right">Debit</span>
+                    <span className="w-20 sm:w-24 text-right">Credit</span>
+                    <span className="w-28 sm:w-32">VAT / Tax</span>
+                    <span className="w-24 sm:w-28 text-right">Line Total</span>
+                    <span className="w-7"></span>
                   </div>
 
                   <div className="space-y-2">
                     {currentLines.map((line, idx) => {
+                      const isDeb = Number(line.debit) > 0;
+                      const isCred = Number(line.credit) > 0;
+                      const baseAmt = isDeb ? Number(line.debit) : Number(line.credit);
+                      const vatAmt = line.vatType ? Number((baseAmt * 0.05).toFixed(2)) : 0;
+                      const totalWithVat = Number((baseAmt + vatAmt).toFixed(2));
+
                       const isLineVat =
                         line.vatType ||
                         accounts
@@ -779,13 +793,14 @@ export default function JournalEntriesPage() {
                       return (
                         <div
                           key={idx}
-                          className={`p-2.5 rounded-xl border flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition ${
+                          className={`p-2 sm:p-2.5 rounded-xl border flex items-center gap-2 transition ${
                             isLineVat
-                              ? "bg-emerald-50/40 border-emerald-200"
-                              : "bg-slate-50/60 border-slate-200"
+                              ? "bg-emerald-50/50 border-emerald-300"
+                              : "bg-slate-50/70 border-slate-200"
                           }`}
                         >
-                          <div className="flex-1">
+                          {/* Account Selection */}
+                          <div className="flex-1 min-w-[120px]">
                             <select
                               value={line.accountId}
                               onChange={(e) =>
@@ -793,131 +808,124 @@ export default function JournalEntriesPage() {
                                   accountId: e.target.value,
                                 })
                               }
-                              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-700 font-medium cursor-pointer"
+                              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-700 font-medium cursor-pointer truncate"
                             >
                               <option value="">Select Account...</option>
                               {accounts?.map((acc) => (
                                 <option key={acc.id} value={acc.id}>
-                                  {acc.accountCode} - {acc.accountName} (
-                                  {acc.type})
+                                  {acc.accountCode} - {acc.accountName} ({acc.type})
                                 </option>
                               ))}
                             </select>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <div className="w-24">
-                              <input
-                                type="number"
-                                step="any"
-                                placeholder="Debit"
-                                value={line.debit === 0 ? "" : line.debit}
-                                onChange={(e) => {
-                                  const raw = e.target.value;
-                                  const num = raw === "" ? 0 : parseFloat(raw);
-                                  const debVal = isNaN(num) ? 0 : num;
-                                  updateLineFields(idx, {
-                                    debit: debVal,
-                                    credit: debVal > 0 ? 0 : line.credit,
-                                  });
-                                }}
-                                className="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono text-right focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                              />
-                            </div>
-
-                            <div className="w-24">
-                              <input
-                                type="number"
-                                step="any"
-                                placeholder="Credit"
-                                value={line.credit === 0 ? "" : line.credit}
-                                onChange={(e) => {
-                                  const raw = e.target.value;
-                                  const num = raw === "" ? 0 : parseFloat(raw);
-                                  const credVal = isNaN(num) ? 0 : num;
-                                  updateLineFields(idx, {
-                                    credit: credVal,
-                                    debit: credVal > 0 ? 0 : line.debit,
-                                  });
-                                }}
-                                className="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono text-right focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                              />
-                            </div>
-
-                            <div className="w-28">
-                              <select
-                                value={line.vatType || ""}
-                                onChange={(e) =>
-                                  updateLineFields(idx, {
-                                    vatType: (e.target.value as any) || null,
-                                  })
-                                }
-                                className="w-full px-1.5 py-1.5 text-[11px] rounded-lg border border-slate-200 bg-white font-medium text-slate-600 focus:outline-none cursor-pointer"
-                              >
-                                <option value="">No VAT</option>
-                                <option value="OUTPUT">5% Output (Sale)</option>
-                                <option value="INPUT">5% Input (Pur)</option>
-                              </select>
-                            </div>
-
-                            {!line.vatType &&
-                              (Number(line.debit) > 0 ||
-                                Number(line.credit) > 0) && (
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="secondary"
-                                  onClick={() => {
-                                    const isDeb = Number(line.debit) > 0;
-                                    const baseAmt = isDeb
-                                      ? Number(line.debit)
-                                      : Number(line.credit);
-                                    const vatVal = Number(
-                                      (baseAmt * 0.05).toFixed(2),
-                                    );
-                                    const vatType = isDeb ? "INPUT" : "OUTPUT";
-                                    const vatAccId = getVatAccount(vatType);
-
-                                    linesField.handleChange([
-                                      ...currentLines,
-                                      {
-                                        accountId: vatAccId,
-                                        debit: isDeb ? vatVal : 0,
-                                        credit: !isDeb ? vatVal : 0,
-                                        vatType,
-                                        taxableAmount: baseAmt,
-                                        vatAmount: vatVal,
-                                      },
-                                    ]);
-                                  }}
-                                  className="text-[10px] whitespace-nowrap"
-                                  title="Generate 5% VAT line for this item"
-                                >
-                                  +5% VAT
-                                </Button>
-                              )}
-
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => removeLine(idx)}
-                              disabled={currentLines.length <= 2}
-                              className="w-7 h-7 !p-0 text-slate-400 hover:text-red-600 disabled:opacity-30"
-                              title="Remove line"
-                            >
-                              <CloseIcon size={13} />
-                            </Button>
+                          {/* Debit Input */}
+                          <div className="w-20 sm:w-24">
+                            <input
+                              type="number"
+                              step="any"
+                              placeholder="Debit"
+                              value={line.debit === 0 ? "" : line.debit}
+                              onChange={(e) => {
+                                const raw = e.target.value;
+                                const num = raw === "" ? 0 : parseFloat(raw);
+                                const debVal = isNaN(num) ? 0 : num;
+                                const calculatedVat = line.vatType ? Number((debVal * 0.05).toFixed(2)) : 0;
+                                updateLineFields(idx, {
+                                  debit: debVal,
+                                  credit: debVal > 0 ? 0 : line.credit,
+                                  taxableAmount: line.vatType ? debVal : 0,
+                                  vatAmount: calculatedVat,
+                                });
+                              }}
+                              className="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono text-right focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                            />
                           </div>
+
+                          {/* Credit Input */}
+                          <div className="w-20 sm:w-24">
+                            <input
+                              type="number"
+                              step="any"
+                              placeholder="Credit"
+                              value={line.credit === 0 ? "" : line.credit}
+                              onChange={(e) => {
+                                const raw = e.target.value;
+                                const num = raw === "" ? 0 : parseFloat(raw);
+                                const credVal = isNaN(num) ? 0 : num;
+                                const calculatedVat = line.vatType ? Number((credVal * 0.05).toFixed(2)) : 0;
+                                updateLineFields(idx, {
+                                  credit: credVal,
+                                  debit: credVal > 0 ? 0 : line.debit,
+                                  taxableAmount: line.vatType ? credVal : 0,
+                                  vatAmount: calculatedVat,
+                                });
+                              }}
+                              className="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono text-right focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                            />
+                          </div>
+
+                          {/* VAT Selection in Same Row */}
+                          {/* VAT Selection in Same Row (Only Non-VAT 0% and VAT 5%) */}
+                          <div className="w-28 sm:w-32">
+                            <select
+                              value={line.vatType ? "VAT_5" : ""}
+                              onChange={(e) => {
+                                const isVat = e.target.value === "VAT_5";
+                                const currentBase = isDeb ? Number(line.debit) : Number(line.credit);
+                                const calculatedVat = isVat ? Number((currentBase * 0.05).toFixed(2)) : 0;
+                                const resolvedType = isVat ? (isDeb ? "INPUT" : "OUTPUT") : null;
+                                updateLineFields(idx, {
+                                  vatType: resolvedType,
+                                  taxableAmount: isVat ? currentBase : 0,
+                                  vatAmount: calculatedVat,
+                                });
+                              }}
+                              className={`w-full px-2 py-1.5 text-[11px] rounded-lg border font-semibold focus:outline-none cursor-pointer transition ${
+                                line.vatType
+                                  ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                                  : "border-slate-200 bg-white text-slate-600"
+                              }`}
+                            >
+                              <option value="">Non-VAT (0%)</option>
+                              <option value="VAT_5">VAT (5%)</option>
+                            </select>
+                          </div>
+
+                          {/* Line Total in Same Row (e.g. 1000 + 5% = 1050) */}
+                          <div
+                            className={`w-24 sm:w-28 px-2 py-1.5 text-xs rounded-lg border font-mono font-bold text-right truncate ${
+                              line.vatType
+                                ? "bg-emerald-100/70 border-emerald-300 text-emerald-950"
+                                : "bg-slate-100 border-slate-200 text-slate-700"
+                            }`}
+                            title={`Base: ${baseAmt.toFixed(2)} | VAT: ${vatAmt.toFixed(2)} | Gross: ${totalWithVat.toFixed(2)}`}
+                          >
+                            {totalWithVat > 0 ? formatCurrency(totalWithVat) : "AED 0.00"}
+                          </div>
+
+                          {/* Remove Button */}
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeLine(idx)}
+                            disabled={currentLines.length <= 2}
+                            className="w-7 h-7 !p-0 text-slate-400 hover:text-red-600 disabled:opacity-30 flex-shrink-0"
+                            title="Remove line"
+                          >
+                            <CloseIcon size={13} />
+                          </Button>
                         </div>
                       );
                     })}
                   </div>
 
-                  <div className="p-3 rounded-xl bg-slate-100 flex items-center justify-between text-xs font-bold">
+                  {/* Summary Bar */}
+                  <div className="p-3 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-between text-xs font-bold">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`w-2 h-2 rounded-full ${isBalanced ? "bg-emerald-500" : "bg-red-500"}`}
+                        className={`w-2.5 h-2.5 rounded-full ${isBalanced ? "bg-emerald-500" : "bg-red-500"}`}
                       />
                       <span
                         className={
@@ -926,7 +934,7 @@ export default function JournalEntriesPage() {
                       >
                         {isBalanced
                           ? "Balanced"
-                          : `Out of balance: ${(totalDebits - totalCredits).toFixed(2)}`}
+                          : `Out of balance: ${(totalDebits - totalCredits).toFixed(2)} AED`}
                       </span>
                     </div>
                     <div className="flex gap-4 font-mono">
