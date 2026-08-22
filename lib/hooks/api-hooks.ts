@@ -60,7 +60,18 @@ export interface PettyCashTransaction {
   accountId?: string | null;
   approvedBy?: string | null;
   isApproved: boolean;
+  approvedAt?: string | null;
   createdAt: string;
+  approver?: {
+    id: string;
+    fullName: string;
+    email: string;
+  } | null;
+  account?: {
+    id: string;
+    accountCode: string;
+    accountName: string;
+  } | null;
 }
 
 export interface FixedAsset {
@@ -688,10 +699,14 @@ export function useCreatePettyCash() {
       transactionDate: string;
       voucherNumber: string;
       category: string;
+      categoryType?: "BANK_CHARGE" | "LOCAL_GOVERNMENT" | "OPERATIONAL_EXPENSE";
       amount: number;
       transactionType: "TOP_UP" | "DISBURSEMENT";
       receiptImageUrl?: string;
+      notes?: string;
+      accountId?: string;
       approvedBy?: string;
+      isApproved?: boolean;
     }) =>
       fetchJson<PettyCashTransaction>("/api/petty-cash", {
         method: "POST",
@@ -699,6 +714,49 @@ export function useCreatePettyCash() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["petty-cash"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+}
+
+export function useUpdatePettyCash() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      id: string;
+      isApproved?: boolean;
+      approvedBy?: string | null;
+      category?: string;
+      categoryType?: "BANK_CHARGE" | "LOCAL_GOVERNMENT" | "OPERATIONAL_EXPENSE";
+      amount?: number;
+      transactionType?: "TOP_UP" | "DISBURSEMENT";
+      receiptImageUrl?: string | null;
+      notes?: string | null;
+      transactionDate?: string;
+      voucherNumber?: string;
+    }) =>
+      fetchJson<PettyCashTransaction>("/api/petty-cash", {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["petty-cash"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+}
+
+export function useDeletePettyCash() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ success: boolean; message: string }>("/api/petty-cash", {
+        method: "DELETE",
+        body: JSON.stringify({ id }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["petty-cash"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
     },
   });
 }
