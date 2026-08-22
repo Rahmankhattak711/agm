@@ -4,7 +4,7 @@ export const QuotationFooter: React.FC = () => {
   return (
     <div
       className="mt-8 relative w-full bg-white print-avoid-break"
-      style={{ height: 64 }}
+      style={{ height: 80 }}
     >
       <svg
         viewBox="0 0 1000 100"
@@ -22,14 +22,11 @@ export const QuotationFooter: React.FC = () => {
       <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-[11px] font-semibold leading-5 text-center">
         <div className="flex items-center justify-center whitespace-nowrap">
           <span>VAT: 104094432200003</span>
-          <span className="mx-8">AC Name : AGM Fitout Technical Services</span>
+          <span className="mx-8">Company Name : AGM Fitout Technical Services</span>
         </div>
 
         <div className="flex items-center justify-center whitespace-nowrap">
-          <span>AC no: 0323111672001</span>
-          <span className="mx-8">
-            Iban : AE44 0400 0003 2311 1672 001 RAK Bank
-          </span>
+          Sheikh Zayed Road, near Oasis Centre Office No. 13-11 Building: Adel Mohammed Ali Jassim <br /> Al Marzouqi Al Goze First 1 – Dubai, United Arab Emirates
         </div>
       </div>
     </div>
