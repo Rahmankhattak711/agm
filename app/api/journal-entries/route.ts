@@ -79,14 +79,16 @@ export async function POST(request: Request) {
         ) {
           vatType = "INPUT";
           vatAmount = vatAmount || debit;
-          taxableAmount = taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+          taxableAmount =
+            taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
         } else if (
           acc.accountCode === "2210" ||
           acc.accountName.toLowerCase().includes("vat output")
         ) {
           vatType = "OUTPUT";
           vatAmount = vatAmount || credit;
-          taxableAmount = taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
+          taxableAmount =
+            taxableAmount || (vatAmount > 0 ? vatAmount / 0.05 : 0);
         }
       }
 
@@ -259,7 +261,9 @@ async function handleUpdate(request: Request) {
                       vatEntry: {
                         create: {
                           taxableAmount:
-                            taxableAmount > 0 ? taxableAmount : vatAmount / 0.05,
+                            taxableAmount > 0
+                              ? taxableAmount
+                              : vatAmount / 0.05,
                           vatAmount,
                           vatType,
                         },
