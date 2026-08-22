@@ -10,13 +10,7 @@ import {
   useJournalEntries,
   useUpdateJournalEntry,
 } from "@/lib/hooks/api-hooks";
-import {
-  Button,
-  Input,
-  Modal,
-  Select,
-  Textarea,
-} from "@/components/ui";
+import { Button, Input, Modal, Select, Textarea } from "@/components/ui";
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -795,7 +789,9 @@ export default function JournalEntriesPage() {
                             <select
                               value={line.accountId}
                               onChange={(e) =>
-                                updateLineFields(idx, { accountId: e.target.value })
+                                updateLineFields(idx, {
+                                  accountId: e.target.value,
+                                })
                               }
                               className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-700 font-medium cursor-pointer"
                             >
