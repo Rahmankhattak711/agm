@@ -8,6 +8,8 @@
     "build": "prisma generate --config prisma.config.ts && next build",
     "start": "next start",
     "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "postinstall": "prisma generate --config prisma.config.ts",
     "prisma:generate": "prisma generate --config prisma.config.ts",
     "prisma:migrate": "prisma migrate dev --config prisma.config.ts",
@@ -40,6 +42,7 @@
     "@types/react-dom": "^19.1.0",
     "eslint": "^9.26.0",
     "eslint-config-next": "^15.4.6",
+    "prettier": "^3.9.6",
     "prisma": "^6.13.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.8.3"
