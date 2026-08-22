@@ -132,7 +132,9 @@ export default function JournalEntriesPage() {
           const alreadyHasVat = value.lines.some(
             (other) =>
               other.accountId === vatAccId &&
-              (isDeb ? Number(other.debit) === vatVal : Number(other.credit) === vatVal)
+              (isDeb
+                ? Number(other.debit) === vatVal
+                : Number(other.credit) === vatVal),
           );
           if (!alreadyHasVat && vatAccId) {
             payloadLines.push({
@@ -549,10 +551,28 @@ export default function JournalEntriesPage() {
                                     <span>{line.account?.accountName}</span>
                                     {line.vatEntry && (
                                       <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">
-                                        5% {line.vatEntry.vatType} VAT · Base: AED{" "}
-                                        {Number(line.vatEntry.taxableAmount || (Number(line.vatEntry.vatAmount || 0) / 0.05)).toFixed(2)} + VAT: AED{" "}
-                                        {Number(line.vatEntry.vatAmount || 0).toFixed(2)} = Total: AED{" "}
-                                        {(Number(line.vatEntry.taxableAmount || (Number(line.vatEntry.vatAmount || 0) / 0.05)) + Number(line.vatEntry.vatAmount || 0)).toFixed(2)}
+                                        5% {line.vatEntry.vatType} VAT · Base:
+                                        AED{" "}
+                                        {Number(
+                                          line.vatEntry.taxableAmount ||
+                                            Number(
+                                              line.vatEntry.vatAmount || 0,
+                                            ) / 0.05,
+                                        ).toFixed(2)}{" "}
+                                        + VAT: AED{" "}
+                                        {Number(
+                                          line.vatEntry.vatAmount || 0,
+                                        ).toFixed(2)}{" "}
+                                        = Total: AED{" "}
+                                        {(
+                                          Number(
+                                            line.vatEntry.taxableAmount ||
+                                              Number(
+                                                line.vatEntry.vatAmount || 0,
+                                              ) / 0.05,
+                                          ) +
+                                          Number(line.vatEntry.vatAmount || 0)
+                                        ).toFixed(2)}
                                       </span>
                                     )}
                                   </div>
@@ -735,13 +755,19 @@ export default function JournalEntriesPage() {
 
               const totalDebits = currentLines.reduce((s, l) => {
                 const isDeb = Number(l.debit) > 0;
-                const vat = l.vatType && isDeb ? Number((Number(l.debit) * 0.05).toFixed(2)) : 0;
+                const vat =
+                  l.vatType && isDeb
+                    ? Number((Number(l.debit) * 0.05).toFixed(2))
+                    : 0;
                 return s + (Number(l.debit) || 0) + vat;
               }, 0);
 
               const totalCredits = currentLines.reduce((s, l) => {
                 const isCred = Number(l.credit) > 0;
-                const vat = l.vatType && isCred ? Number((Number(l.credit) * 0.05).toFixed(2)) : 0;
+                const vat =
+                  l.vatType && isCred
+                    ? Number((Number(l.credit) * 0.05).toFixed(2))
+                    : 0;
                 return s + (Number(l.credit) || 0) + vat;
               }, 0);
 
@@ -779,9 +805,15 @@ export default function JournalEntriesPage() {
                     {currentLines.map((line, idx) => {
                       const isDeb = Number(line.debit) > 0;
                       const isCred = Number(line.credit) > 0;
-                      const baseAmt = isDeb ? Number(line.debit) : Number(line.credit);
-                      const vatAmt = line.vatType ? Number((baseAmt * 0.05).toFixed(2)) : 0;
-                      const totalWithVat = Number((baseAmt + vatAmt).toFixed(2));
+                      const baseAmt = isDeb
+                        ? Number(line.debit)
+                        : Number(line.credit);
+                      const vatAmt = line.vatType
+                        ? Number((baseAmt * 0.05).toFixed(2))
+                        : 0;
+                      const totalWithVat = Number(
+                        (baseAmt + vatAmt).toFixed(2),
+                      );
 
                       const isLineVat =
                         line.vatType ||
@@ -813,7 +845,8 @@ export default function JournalEntriesPage() {
                               <option value="">Select Account...</option>
                               {accounts?.map((acc) => (
                                 <option key={acc.id} value={acc.id}>
-                                  {acc.accountCode} - {acc.accountName} ({acc.type})
+                                  {acc.accountCode} - {acc.accountName} (
+                                  {acc.type})
                                 </option>
                               ))}
                             </select>
@@ -830,7 +863,9 @@ export default function JournalEntriesPage() {
                                 const raw = e.target.value;
                                 const num = raw === "" ? 0 : parseFloat(raw);
                                 const debVal = isNaN(num) ? 0 : num;
-                                const calculatedVat = line.vatType ? Number((debVal * 0.05).toFixed(2)) : 0;
+                                const calculatedVat = line.vatType
+                                  ? Number((debVal * 0.05).toFixed(2))
+                                  : 0;
                                 updateLineFields(idx, {
                                   debit: debVal,
                                   credit: debVal > 0 ? 0 : line.credit,
@@ -853,7 +888,9 @@ export default function JournalEntriesPage() {
                                 const raw = e.target.value;
                                 const num = raw === "" ? 0 : parseFloat(raw);
                                 const credVal = isNaN(num) ? 0 : num;
-                                const calculatedVat = line.vatType ? Number((credVal * 0.05).toFixed(2)) : 0;
+                                const calculatedVat = line.vatType
+                                  ? Number((credVal * 0.05).toFixed(2))
+                                  : 0;
                                 updateLineFields(idx, {
                                   credit: credVal,
                                   debit: credVal > 0 ? 0 : line.debit,
@@ -872,9 +909,17 @@ export default function JournalEntriesPage() {
                               value={line.vatType ? "VAT_5" : ""}
                               onChange={(e) => {
                                 const isVat = e.target.value === "VAT_5";
-                                const currentBase = isDeb ? Number(line.debit) : Number(line.credit);
-                                const calculatedVat = isVat ? Number((currentBase * 0.05).toFixed(2)) : 0;
-                                const resolvedType = isVat ? (isDeb ? "INPUT" : "OUTPUT") : null;
+                                const currentBase = isDeb
+                                  ? Number(line.debit)
+                                  : Number(line.credit);
+                                const calculatedVat = isVat
+                                  ? Number((currentBase * 0.05).toFixed(2))
+                                  : 0;
+                                const resolvedType = isVat
+                                  ? isDeb
+                                    ? "INPUT"
+                                    : "OUTPUT"
+                                  : null;
                                 updateLineFields(idx, {
                                   vatType: resolvedType,
                                   taxableAmount: isVat ? currentBase : 0,
@@ -901,7 +946,9 @@ export default function JournalEntriesPage() {
                             }`}
                             title={`Base: ${baseAmt.toFixed(2)} | VAT: ${vatAmt.toFixed(2)} | Gross: ${totalWithVat.toFixed(2)}`}
                           >
-                            {totalWithVat > 0 ? formatCurrency(totalWithVat) : "AED 0.00"}
+                            {totalWithVat > 0
+                              ? formatCurrency(totalWithVat)
+                              : "AED 0.00"}
                           </div>
 
                           {/* Remove Button */}
