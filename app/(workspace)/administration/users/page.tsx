@@ -3,7 +3,13 @@
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
-import { useCreateUser, useUsers, UserItem } from "@/lib/hooks/api-hooks";
+import {
+  useCreateUser,
+  useUpdateUser,
+  useDeleteUser,
+  useUsers,
+  UserItem,
+} from "@/lib/hooks/api-hooks";
 import { useAuth } from "@/context/AuthContext";
 import { PlusIcon } from "@/components/icons";
 import {
@@ -16,35 +22,55 @@ import {
   FormSelect,
   FormSubmit,
 } from "@/components/ui";
+import { Trash2, Edit3 } from "lucide-react";
 
 const ROLES = [
   {
     value: "SUPER_ADMIN",
     label: "Super Admin",
-    color: "bg-purple-100 text-purple-800",
+    color: "bg-purple-100 text-purple-800 border border-purple-200",
   },
-  { value: "ADMIN", label: "Admin", color: "bg-blue-100 text-blue-800" },
+  {
+    value: "ADMIN",
+    label: "Admin",
+    color: "bg-blue-100 text-blue-800 border border-blue-200",
+  },
   {
     value: "ACCOUNTANT",
     label: "Accountant",
-    color: "bg-emerald-100 text-emerald-800",
+    color: "bg-emerald-100 text-emerald-800 border border-emerald-200",
+  },
+  {
+    value: "HR",
+    label: "HR Specialist",
+    color: "bg-pink-100 text-pink-800 border border-pink-200",
+  },
+  {
+    value: "INVENTORY_MANAGER",
+    label: "Inventory Manager",
+    color: "bg-amber-100 text-amber-800 border border-amber-200",
   },
   {
     value: "USER",
     label: "Standard User",
-    color: "bg-slate-100 text-slate-700",
+    color: "bg-slate-100 text-slate-700 border border-slate-200",
   },
 ];
 
 export default function UsersPage() {
   const { data: usersData, isLoading, error } = useUsers();
-  const { isAdmin } = useAuth();
+  const { user: currentUser, isSuperAdmin, isAdmin } = useAuth();
   const createUserMutation = useCreateUser();
+  const updateUserMutation = useUpdateUser();
+  const deleteUserMutation = useDeleteUser();
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserItem | null>(null);
   const [formError, setFormError] = useState("");
+  const [editFormError, setEditFormError] = useState("");
 
   const users = usersData?.users || [];
   const stats = usersData?.stats;
@@ -60,12 +86,12 @@ export default function UsersPage() {
     });
   }, [users, search, roleFilter]);
 
-  const form = useForm({
+  const createForm = useForm({
     defaultValues: {
       fullName: "",
       email: "",
       password: "",
-      role: "ACCOUNTANT",
+      role: "USER",
     },
     onSubmit: async ({ value }) => {
       setFormError("");
@@ -84,15 +110,91 @@ export default function UsersPage() {
     },
   });
 
-  const handleOpenModal = () => {
+  const editForm = useForm({
+    defaultValues: {
+      fullName: "",
+      email: "",
+      role: "USER",
+      isActive: "true",
+      password: "",
+    },
+    onSubmit: async ({ value }) => {
+      if (!editingUser) return;
+      setEditFormError("");
+      try {
+        await updateUserMutation.mutateAsync({
+          id: editingUser.id,
+          fullName: value.fullName.trim(),
+          email: value.email.trim(),
+          role: value.role,
+          isActive: value.isActive === "true",
+          password: value.password.trim() ? value.password.trim() : undefined,
+        });
+
+        setIsEditModalOpen(false);
+        setEditingUser(null);
+      } catch (err: any) {
+        setEditFormError(err.message || "Failed to update user");
+      }
+    },
+  });
+
+  const handleOpenCreateModal = () => {
     setFormError("");
-    form.reset({
+    createForm.reset({
       fullName: "",
       email: "",
       password: "",
-      role: "ACCOUNTANT",
+      role: "USER",
     });
     setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (user: UserItem) => {
+    setEditingUser(user);
+    setEditFormError("");
+    editForm.reset({
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive ? "true" : "false",
+      password: "",
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteUser = async (user: UserItem) => {
+    if (user.id === currentUser?.id) {
+      alert("You cannot delete your own account.");
+      return;
+    }
+
+    if (
+      confirm(
+        `Are you sure you want to delete user account "${user.fullName}" (${user.email})?`,
+      )
+    ) {
+      try {
+        const res = await deleteUserMutation.mutateAsync(user.id);
+        if (res?.message) {
+          alert(res.message);
+        }
+      } catch (err: any) {
+        alert(err.message || "Failed to delete user");
+      }
+    }
+  };
+
+  const canManageTargetUser = (target: UserItem) => {
+    if (isSuperAdmin) return true;
+    if (isAdmin) {
+      return (
+        target.role !== "SUPER_ADMIN" &&
+        target.role !== "ADMIN" &&
+        target.id !== currentUser?.id
+      );
+    }
+    return false;
   };
 
   const columns = useMemo<ColumnDef<UserItem>[]>(
@@ -102,12 +204,19 @@ export default function UsersPage() {
         header: "User",
         cell: ({ row }) => (
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#4c8b60] to-[#25533d] text-white flex items-center justify-center font-bold text-[10px]">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4c8b60] to-[#25533d] text-white flex items-center justify-center font-bold text-xs shadow-xs">
               {row.original.fullName.slice(0, 2).toUpperCase()}
             </div>
-            <span className="font-semibold text-slate-900">
-              {row.original.fullName}
-            </span>
+            <div>
+              <span className="font-semibold text-slate-900 block text-xs">
+                {row.original.fullName}
+              </span>
+              {row.original.id === currentUser?.id && (
+                <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                  You
+                </span>
+              )}
+            </div>
           </div>
         ),
       },
@@ -127,7 +236,7 @@ export default function UsersPage() {
           const roleObj = ROLES.find((r) => r.value === row.original.role);
           return (
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${roleObj?.color || "bg-slate-100"}`}
+              className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${roleObj?.color || "bg-slate-100"}`}
             >
               {roleObj?.label || row.original.role}
             </span>
@@ -143,7 +252,7 @@ export default function UsersPage() {
               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                 row.original.isActive
                   ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                  : "bg-slate-100 text-slate-500"
+                  : "bg-slate-100 text-slate-500 border border-slate-200"
               }`}
             >
               <span
@@ -158,13 +267,55 @@ export default function UsersPage() {
         accessorKey: "createdAt",
         header: "Created",
         cell: ({ row }) => (
-          <span className="text-slate-500 text-xs">
-            {new Date(row.original.createdAt).toLocaleDateString()}
+          <span className="text-slate-500 text-xs font-mono">
+            {new Date(row.original.createdAt).toLocaleDateString("en-GB")}
           </span>
         ),
       },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const allowed = canManageTargetUser(row.original);
+
+          if (!allowed && row.original.id !== currentUser?.id) {
+            return (
+              <div className="flex items-center justify-end">
+                <span className="text-[10px] font-semibold text-slate-400">
+                  Protected
+                </span>
+              </div>
+            );
+          }
+
+          return (
+            <div className="flex items-center justify-end gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-slate-700 hover:bg-slate-50 gap-1 text-xs"
+                onClick={() => handleOpenEditModal(row.original)}
+                icon={<Edit3 size={13} />}
+              >
+                Edit
+              </Button>
+              {row.original.id !== currentUser?.id && allowed && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  className="gap-1 text-xs"
+                  onClick={() => handleDeleteUser(row.original)}
+                  icon={<Trash2 size={13} />}
+                >
+                  Delete
+                </Button>
+              )}
+            </div>
+          );
+        },
+      },
     ],
-    [],
+    [currentUser?.id, isSuperAdmin, isAdmin],
   );
 
   return (
@@ -175,15 +326,15 @@ export default function UsersPage() {
             User & Access Management
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Role-based permissions, credentials management, and ERP access
-            control.
+            Role-based permissions, credentials management, account status, and
+            system access control.
           </p>
         </div>
         {isAdmin && (
           <Button
             variant="primary"
             size="lg"
-            onClick={handleOpenModal}
+            onClick={handleOpenCreateModal}
             icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
             className="self-start shadow-sm"
           >
@@ -219,13 +370,13 @@ export default function UsersPage() {
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">
-            Accountants
+            Accountants & HR
           </p>
           <p className="text-2xl font-black text-emerald-950 mt-1">
-            {stats?.byRole?.ACCOUNTANT || 0}
+            {(stats?.byRole?.ACCOUNTANT || 0) + (stats?.byRole?.HR || 0)}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
-            Ledger & reporting access
+            Finance, payroll & HR managers
           </p>
         </div>
 
@@ -271,6 +422,7 @@ export default function UsersPage() {
         />
       </div>
 
+      {/* CREATE USER MODAL */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -281,7 +433,7 @@ export default function UsersPage() {
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+            createForm.handleSubmit();
           }}
           className="space-y-4"
         >
@@ -291,7 +443,7 @@ export default function UsersPage() {
             </div>
           )}
 
-          <form.Field
+          <createForm.Field
             name="fullName"
             validators={{
               onChange: ({ value }) =>
@@ -306,9 +458,9 @@ export default function UsersPage() {
                 required
               />
             )}
-          </form.Field>
+          </createForm.Field>
 
-          <form.Field
+          <createForm.Field
             name="email"
             validators={{
               onChange: ({ value }) =>
@@ -328,9 +480,9 @@ export default function UsersPage() {
                 required
               />
             )}
-          </form.Field>
+          </createForm.Field>
 
-          <form.Field
+          <createForm.Field
             name="password"
             validators={{
               onChange: ({ value }) =>
@@ -350,31 +502,43 @@ export default function UsersPage() {
                 required
               />
             )}
-          </form.Field>
+          </createForm.Field>
 
-          <form.Field name="role">
+          <createForm.Field name="role">
             {(field) => (
               <FormSelect
                 field={field}
                 label="Access Role"
                 options={[
-                  {
-                    value: "SUPER_ADMIN",
-                    label: "Super Admin (All permissions)",
-                  },
-                  {
-                    value: "ADMIN",
-                    label: "Admin (Manage operations & finance)",
-                  },
+                  ...(isSuperAdmin
+                    ? [
+                        {
+                          value: "SUPER_ADMIN",
+                          label: "Super Admin (Full System Access)",
+                        },
+                        {
+                          value: "ADMIN",
+                          label: "Admin (Operations & Management)",
+                        },
+                      ]
+                    : []),
                   {
                     value: "ACCOUNTANT",
-                    label: "Accountant (General Ledger & Reports)",
+                    label: "Accountant (Finance & Ledgers)",
                   },
-                  { value: "USER", label: "User (Standard submitter)" },
+                  {
+                    value: "HR",
+                    label: "HR (Leaves, Attendance, Staff)",
+                  },
+                  {
+                    value: "INVENTORY_MANAGER",
+                    label: "Inventory Manager (Stock & POs)",
+                  },
+                  { value: "USER", label: "Standard User (Read/Submit)" },
                 ]}
               />
             )}
-          </form.Field>
+          </createForm.Field>
 
           <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-100">
             <Button
@@ -385,11 +549,166 @@ export default function UsersPage() {
               Cancel
             </Button>
             <FormSubmit
-              form={form}
+              form={createForm}
               variant="primary"
               loading={createUserMutation.isPending}
             >
               Create User
+            </FormSubmit>
+          </div>
+        </form>
+      </Modal>
+
+      {/* EDIT USER MODAL */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingUser(null);
+        }}
+        title={`Edit User: ${editingUser?.fullName || ""}`}
+        maxWidth="md"
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            editForm.handleSubmit();
+          }}
+          className="space-y-4"
+        >
+          {editFormError && (
+            <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
+              {editFormError}
+            </div>
+          )}
+
+          <editForm.Field
+            name="fullName"
+            validators={{
+              onChange: ({ value }) =>
+                !value.trim() ? "Full name is required" : undefined,
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Full Name *"
+                placeholder="e.g. John Doe"
+                required
+              />
+            )}
+          </editForm.Field>
+
+          <editForm.Field
+            name="email"
+            validators={{
+              onChange: ({ value }) =>
+                !value.trim()
+                  ? "Email is required"
+                  : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+                    ? "Invalid email format"
+                    : undefined,
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                type="email"
+                label="Email Address *"
+                placeholder="user@agm.ae"
+                required
+              />
+            )}
+          </editForm.Field>
+
+          <editForm.Field name="role">
+            {(field) => (
+              <FormSelect
+                field={field}
+                label="Assign Role"
+                disabled={editingUser?.id === currentUser?.id}
+                options={[
+                  ...(isSuperAdmin
+                    ? [
+                        {
+                          value: "SUPER_ADMIN",
+                          label: "Super Admin (Full System Access)",
+                        },
+                        {
+                          value: "ADMIN",
+                          label: "Admin (Operations & Management)",
+                        },
+                      ]
+                    : []),
+                  {
+                    value: "ACCOUNTANT",
+                    label: "Accountant (Finance & Ledgers)",
+                  },
+                  {
+                    value: "HR",
+                    label: "HR (Leaves, Attendance, Staff)",
+                  },
+                  {
+                    value: "INVENTORY_MANAGER",
+                    label: "Inventory Manager (Stock & POs)",
+                  },
+                  { value: "USER", label: "Standard User (Read/Submit)" },
+                ]}
+              />
+            )}
+          </editForm.Field>
+
+          <editForm.Field name="isActive">
+            {(field) => (
+              <FormSelect
+                field={field}
+                label="Account Status"
+                disabled={editingUser?.id === currentUser?.id}
+                options={[
+                  { value: "true", label: "Active (Login allowed)" },
+                  { value: "false", label: "Disabled (Suspended access)" },
+                ]}
+              />
+            )}
+          </editForm.Field>
+
+          <editForm.Field
+            name="password"
+            validators={{
+              onChange: ({ value }) =>
+                value && value.length < 6
+                  ? "Password must be at least 6 characters"
+                  : undefined,
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                type="password"
+                label="Reset Password (leave blank to keep current)"
+                placeholder="New password (optional)"
+              />
+            )}
+          </editForm.Field>
+
+          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsEditModalOpen(false);
+                setEditingUser(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <FormSubmit
+              form={editForm}
+              variant="primary"
+              loading={updateUserMutation.isPending}
+            >
+              Save Changes
             </FormSubmit>
           </div>
         </form>
