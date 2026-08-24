@@ -422,7 +422,6 @@ export default function UsersPage() {
         />
       </div>
 
-      {/* CREATE USER MODAL */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -559,7 +558,6 @@ export default function UsersPage() {
         </form>
       </Modal>
 
-      {/* EDIT USER MODAL */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => {
