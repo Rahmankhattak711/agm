@@ -35,7 +35,7 @@ interface JournalLineFormItem {
 export default function JournalEntriesPage() {
   const { data: journalEntries, isLoading, error } = useJournalEntries();
   const { data: accounts } = useAccounts();
-  const { user } = useAuth();
+  const { user, canModify } = useAuth();
   const createJournalEntryMutation = useCreateJournalEntry();
   const updateJournalEntryMutation = useUpdateJournalEntry();
   const deleteJournalEntryMutation = useDeleteJournalEntry();
@@ -486,33 +486,41 @@ export default function JournalEntriesPage() {
                         className="flex items-center gap-1.5"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Button
-                          size="sm"
-                          variant={je.isPosted ? "secondary" : "primary"}
-                          onClick={(e) => handleToggleStatus(je, e)}
-                        >
-                          {je.isPosted ? "Unpost" : "Post"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="w-8 h-8 !p-0 rounded-lg text-slate-400 hover:text-slate-700"
-                          onClick={(e) => handleOpenEditModal(je, e)}
-                          title="Edit"
-                        >
-                          <EditIcon size={14} />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="w-8 h-8 !p-0 rounded-lg text-slate-400 hover:text-red-600"
-                          onClick={(e) =>
-                            handleDelete(je.id, je.entryNumber, e)
-                          }
-                          title="Delete"
-                        >
-                          <TrashIcon size={14} />
-                        </Button>
+                        {!canModify(je.createdBy, ["ACCOUNTANT"]) ? (
+                          <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                            View Only
+                          </span>
+                        ) : (
+                          <>
+                            <Button
+                              size="sm"
+                              variant={je.isPosted ? "secondary" : "primary"}
+                              onClick={(e) => handleToggleStatus(je, e)}
+                            >
+                              {je.isPosted ? "Unpost" : "Post"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="w-8 h-8 !p-0 rounded-lg text-slate-400 hover:text-slate-700"
+                              onClick={(e) => handleOpenEditModal(je, e)}
+                              title="Edit"
+                            >
+                              <EditIcon size={14} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="w-8 h-8 !p-0 rounded-lg text-slate-400 hover:text-red-600"
+                              onClick={(e) =>
+                                handleDelete(je.id, je.entryNumber, e)
+                              }
+                              title="Delete"
+                            >
+                              <TrashIcon size={14} />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

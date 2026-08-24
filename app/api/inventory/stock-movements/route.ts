@@ -1,6 +1,11 @@
+import {
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma";
-import { getAuthUser } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
 const INCOMING_TYPES = [
@@ -19,6 +24,9 @@ const OUTGOING_TYPES = [
 
 export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get("productId");
     const warehouseId = searchParams.get("warehouseId");
@@ -52,6 +60,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const user = await getAuthUser(request);
+    if (!user) return unauthorized();
+    if (!hasRole(user, "INVENTORY_MANAGER")) {
+      return forbidden("Forbidden: Only Inventory Managers and Admins can record stock movements");
+    }
+
     const body = await request.json();
     const {
       productId,
@@ -93,7 +106,7 @@ export async function POST(request: Request) {
             referenceNumber: referenceNumber?.trim() || null,
             notes: notes?.trim() || null,
             movementDate: movementDate ? new Date(movementDate) : new Date(),
-            createdBy: user?.id || null,
+            createdBy: user.id,
           },
           include: {
             product: true,

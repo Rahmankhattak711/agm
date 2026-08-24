@@ -1,8 +1,17 @@
+import {
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const rows = await prisma.pettyCashTransaction.findMany({
       orderBy: { transactionDate: "desc" },
       include: {
@@ -33,6 +42,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const body = await request.json();
     const {
       transactionDate,
@@ -44,7 +56,6 @@ export async function POST(request: Request) {
       receiptImageUrl,
       notes,
       accountId,
-      approvedBy,
       isApproved = false,
     } = body;
 
@@ -61,6 +72,11 @@ export async function POST(request: Request) {
       );
     }
 
+    const shouldApprove = Boolean(isApproved);
+    if (shouldApprove && !hasRole(authUser, "ACCOUNTANT")) {
+      return forbidden("Forbidden: Only Accountants and Admins can approve petty cash vouchers");
+    }
+
     const created = await prisma.pettyCashTransaction.create({
       data: {
         transactionDate: new Date(transactionDate),
@@ -72,9 +88,9 @@ export async function POST(request: Request) {
         receiptImageUrl: receiptImageUrl || null,
         notes: notes || null,
         accountId: accountId || null,
-        approvedBy: approvedBy || null,
-        isApproved: Boolean(isApproved),
-        approvedAt: isApproved ? new Date() : null,
+        approvedBy: shouldApprove ? authUser.id : null,
+        isApproved: shouldApprove,
+        approvedAt: shouldApprove ? new Date() : null,
       },
       include: {
         approver: {
@@ -98,11 +114,13 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const body = await request.json();
     const {
       id,
       isApproved,
-      approvedBy,
       category,
       categoryType,
       amount,
@@ -120,14 +138,28 @@ export async function PATCH(request: Request) {
       );
     }
 
+    const existing = await prisma.pettyCashTransaction.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Petty cash transaction not found" },
+        { status: 404 },
+      );
+    }
+
+    const isApprovalChange = isApproved !== undefined;
+    if (isApprovalChange && !hasRole(authUser, "ACCOUNTANT")) {
+      return forbidden("Forbidden: Only Accountants and Admins can approve or reject petty cash vouchers");
+    }
+
     const dataToUpdate: any = {};
 
     if (isApproved !== undefined) {
       dataToUpdate.isApproved = Boolean(isApproved);
       dataToUpdate.approvedAt = isApproved ? new Date() : null;
-      if (approvedBy !== undefined) {
-        dataToUpdate.approvedBy = approvedBy || null;
-      }
+      dataToUpdate.approvedBy = isApproved ? authUser.id : null;
     }
 
     if (category !== undefined) dataToUpdate.category = category;
@@ -167,6 +199,13 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
+    if (!hasRole(authUser, "ACCOUNTANT")) {
+      return forbidden("Forbidden: Only Accountants and Admins can delete petty cash vouchers");
+    }
+
     const { searchParams } = new URL(request.url);
     const paramId = searchParams.get("id");
     let id = paramId;

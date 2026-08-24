@@ -1,10 +1,19 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma";
-import { getAuthUser } from "@/lib/auth-server";
+import {
+  canModifyResource,
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get("employeeId");
     const status = searchParams.get("status");
@@ -43,6 +52,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const body = await request.json();
     const { employeeId, leaveType, startDate, endDate, totalDays, reason } =
       body;
@@ -82,6 +94,8 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const user = await getAuthUser(request);
+    if (!user) return unauthorized();
+
     const body = await request.json();
     const { id, status } = body;
 
@@ -102,6 +116,16 @@ export async function PATCH(request: Request) {
         { error: "Leave request not found" },
         { status: 404 },
       );
+    }
+
+    // Status change (approval/rejection) requires HR role
+    if ((status === "APPROVED" || status === "REJECTED") && !hasRole(user, "HR")) {
+      return forbidden("Forbidden: Only HR and Admins can approve or reject leave requests");
+    }
+
+    // If cancelling, user must be HR, admin or associated with employee
+    if (status === "CANCELLED" && !hasRole(user, "HR") && user.id !== existing.employeeId) {
+      return forbidden("Forbidden: You cannot cancel another user's leave request");
     }
 
     const updated = await prisma.$transaction(
@@ -136,7 +160,7 @@ export async function PATCH(request: Request) {
           where: { id },
           data: {
             status,
-            approvedBy: status === "APPROVED" ? user?.id || null : null,
+            approvedBy: status === "APPROVED" ? user.id : null,
             approvedAt: status === "APPROVED" ? new Date() : null,
           },
           include: {
@@ -161,11 +185,31 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const user = await getAuthUser(request);
+    if (!user) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
     if (!id)
       return NextResponse.json({ error: "Missing leave ID" }, { status: 400 });
+
+    const existing = await prisma.leaveRequest.findUnique({
+      where: { id },
+      select: { id: true, employeeId: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Leave request not found" },
+        { status: 404 },
+      );
+    }
+
+    // User A cannot delete User B's leave request unless HR / Admin
+    if (!canModifyResource(user, existing.employeeId, ["HR"])) {
+      return forbidden("Forbidden: You cannot delete another user's leave request");
+    }
 
     await prisma.leaveRequest.delete({ where: { id } });
     return NextResponse.json({ success: true });

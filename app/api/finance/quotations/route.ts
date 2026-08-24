@@ -1,9 +1,18 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma";
+import {
+  canModifyResource,
+  forbidden,
+  getAuthUser,
+  unauthorized,
+} from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
     const status = searchParams.get("status") || "";
@@ -53,6 +62,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const body = await request.json();
     const {
       quotationNo,
@@ -73,7 +85,6 @@ export async function POST(request: Request) {
       notes,
       terms,
       paymentTerms,
-      createdById,
       status = "DRAFT",
       items = [],
     } = body;
@@ -102,12 +113,17 @@ export async function POST(request: Request) {
     const computedTotal =
       computedSubtotal + computedVat - Number(discount || 0);
 
+    const existing = await prisma.quotation.findUnique({
+      where: { quotationNo },
+      select: { id: true, createdById: true },
+    });
+
+    if (existing && !canModifyResource(authUser, existing.createdById, ["ACCOUNTANT"])) {
+      return forbidden("Forbidden: You cannot overwrite another user's quotation");
+    }
+
     const quotation = await prisma.$transaction(
       async (tx: Prisma.TransactionClient) => {
-        const existing = await tx.quotation.findUnique({
-          where: { quotationNo },
-        });
-
         let qId: string;
 
         if (existing) {
@@ -139,7 +155,6 @@ export async function POST(request: Request) {
               notes: notes || null,
               terms: terms || null,
               paymentTerms: paymentTerms || null,
-              createdById: createdById || null,
             },
           });
           qId = updated.id;
@@ -168,7 +183,7 @@ export async function POST(request: Request) {
               notes: notes || null,
               terms: terms || null,
               paymentTerms: paymentTerms || null,
-              createdById: createdById || null,
+              createdById: authUser.id,
             },
           });
           qId = created.id;

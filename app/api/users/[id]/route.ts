@@ -31,8 +31,9 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const body = await request.json();
-    const { fullName, role, isActive, password } = body as {
+    const { fullName, email, role, isActive, password } = body as {
       fullName?: string;
+      email?: string;
       role?: UserRole;
       isActive?: boolean;
       password?: string;
@@ -60,12 +61,28 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     const data: {
       fullName?: string;
+      email?: string;
       role?: UserRole;
       isActive?: boolean;
       passwordHash?: string;
     } = {};
 
-    if (fullName !== undefined) data.fullName = fullName;
+    if (fullName !== undefined) data.fullName = fullName.trim();
+    if (email !== undefined) {
+      const trimmedEmail = email.trim().toLowerCase();
+      if (trimmedEmail !== target.email.toLowerCase()) {
+        const existing = await prisma.user.findUnique({
+          where: { email: trimmedEmail },
+        });
+        if (existing && existing.id !== id) {
+          return NextResponse.json(
+            { error: "A user with this email already exists" },
+            { status: 409 },
+          );
+        }
+        data.email = trimmedEmail;
+      }
+    }
     if (role !== undefined) data.role = role;
     if (isActive !== undefined) data.isActive = isActive;
     if (password) data.passwordHash = await bcrypt.hash(password, 10);
@@ -95,7 +112,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (authUser.id === id) {
       return NextResponse.json(
-        { error: "You cannot deactivate your own account" },
+        { error: "You cannot delete your own account" },
         { status: 403 },
       );
     }
@@ -111,13 +128,37 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (!canManageUser(authUser, target)) return forbidden();
 
+    // If Super Admin, attempt to delete completely from database
+    if (authUser.role === "SUPER_ADMIN") {
+      try {
+        await prisma.refreshToken.deleteMany({ where: { userId: id } });
+        await prisma.user.delete({ where: { id } });
+        return NextResponse.json({
+          success: true,
+          message: "User permanently deleted",
+        });
+      } catch (e) {
+        // Fallback: If user is referenced in other relational tables, deactivate them
+        const updated = await prisma.user.update({
+          where: { id },
+          data: { isActive: false },
+          select: userSelect,
+        });
+        return NextResponse.json({
+          success: true,
+          message: "User has linked operational records, deactivated instead",
+          user: updated,
+        });
+      }
+    }
+
     const updated = await prisma.user.update({
       where: { id },
       data: { isActive: false },
       select: userSelect,
     });
 
-    return NextResponse.json(updated);
+    return NextResponse.json({ success: true, user: updated });
   } catch {
     return NextResponse.json(
       { error: "Internal Server Error" },

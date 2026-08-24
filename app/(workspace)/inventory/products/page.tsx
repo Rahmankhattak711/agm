@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
+import { useAuth } from "@/context/AuthContext";
 import {
   useProducts,
   useCreateProduct,
@@ -28,6 +29,8 @@ import {
 } from "@/components/ui";
 
 export default function ProductsPage() {
+  const { hasRole, isAdmin } = useAuth();
+  const canManageInventory = hasRole("INVENTORY_MANAGER") || isAdmin;
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [selectedType, setSelectedType] = useState<string>("ALL");
@@ -307,38 +310,50 @@ export default function ProductsPage() {
       {
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenAdjust(row.original)}
-            >
-              Adjust
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenEdit(row.original)}
-            >
-              Edit
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={async () => {
-                if (confirm(`Delete product "${row.original.name}"?`)) {
-                  await deleteProduct.mutateAsync(row.original.id);
-                }
-              }}
-            >
-              Delete
-            </Button>
-          </div>
-        ),
+        cell: ({ row }) => {
+          if (!canManageInventory) {
+            return (
+              <div className="flex items-center justify-end">
+                <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                  View Only
+                </span>
+              </div>
+            );
+          }
+
+          return (
+            <div className="flex items-center justify-end gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleOpenAdjust(row.original)}
+              >
+                Adjust
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleOpenEdit(row.original)}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={async () => {
+                  if (confirm(`Delete product "${row.original.name}"?`)) {
+                    await deleteProduct.mutateAsync(row.original.id);
+                  }
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          );
+        },
       },
     ],
-    [deleteProduct],
+    [canManageInventory, deleteProduct],
   );
 
   return (
@@ -354,13 +369,15 @@ export default function ProductsPage() {
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={handleOpenCreate}
-          icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-        >
-          Add Product / SKU
-        </Button>
+        {canManageInventory && (
+          <Button
+            variant="primary"
+            onClick={handleOpenCreate}
+            icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
+          >
+            New Product
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

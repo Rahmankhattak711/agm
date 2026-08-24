@@ -1,9 +1,18 @@
+import {
+  canModifyResource,
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
-import { getAuthUser } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get("employeeId");
     const date = searchParams.get("date");
@@ -58,9 +67,15 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const user = await getAuthUser(request);
+    if (!user) return unauthorized();
+
     const body = await request.json();
 
     if (Array.isArray(body)) {
+      if (!hasRole(user, "HR")) {
+        return forbidden("Forbidden: Only HR and Admins can perform batch attendance operations");
+      }
+
       const results = [];
       for (const item of body) {
         const {
@@ -97,7 +112,7 @@ export async function POST(request: Request) {
             lateMinutes: lateMinutes !== undefined ? Number(lateMinutes) : 0,
             location: location?.trim() || null,
             notes: notes?.trim() || null,
-            markedBy: user?.id || null,
+            markedBy: user.id,
           },
           create: {
             employeeId,
@@ -112,7 +127,7 @@ export async function POST(request: Request) {
             lateMinutes: lateMinutes !== undefined ? Number(lateMinutes) : 0,
             location: location?.trim() || null,
             notes: notes?.trim() || null,
-            markedBy: user?.id || null,
+            markedBy: user.id,
           },
         });
         results.push(record);
@@ -140,6 +155,11 @@ export async function POST(request: Request) {
       );
     }
 
+    // If marking someone else's attendance, require HR role
+    if (employeeId !== user.id && !hasRole(user, "HR")) {
+      return forbidden("Forbidden: You can only record your own attendance unless you are HR or Admin");
+    }
+
     const date = new Date(attendanceDate);
     const created = await prisma.dailyAttendance.upsert({
       where: {
@@ -157,7 +177,7 @@ export async function POST(request: Request) {
         lateMinutes: lateMinutes !== undefined ? Number(lateMinutes) : 0,
         location: location?.trim() || null,
         notes: notes?.trim() || null,
-        markedBy: user?.id || null,
+        markedBy: user.id,
       },
       create: {
         employeeId,
@@ -170,7 +190,7 @@ export async function POST(request: Request) {
         lateMinutes: lateMinutes !== undefined ? Number(lateMinutes) : 0,
         location: location?.trim() || null,
         notes: notes?.trim() || null,
-        markedBy: user?.id || null,
+        markedBy: user.id,
       },
       include: {
         employee: true,
@@ -189,6 +209,9 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const user = await getAuthUser(request);
+    if (!user) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
@@ -197,6 +220,23 @@ export async function DELETE(request: Request) {
         { error: "Missing attendance ID" },
         { status: 400 },
       );
+
+    const existing = await prisma.dailyAttendance.findUnique({
+      where: { id },
+      select: { id: true, markedBy: true, employeeId: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Attendance record not found" },
+        { status: 404 },
+      );
+    }
+
+    // User A cannot delete User B's attendance record unless HR / Admin
+    if (!canModifyResource(user, existing.markedBy || existing.employeeId, ["HR"])) {
+      return forbidden("Forbidden: You cannot delete another user's attendance record");
+    }
 
     await prisma.dailyAttendance.delete({ where: { id } });
     return NextResponse.json({ success: true });

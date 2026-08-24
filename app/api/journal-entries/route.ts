@@ -1,12 +1,24 @@
+import {
+  canModifyResource,
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "ACCOUNTANT")) {
+      return forbidden("Forbidden: Only Accountants and Admins can create journal entries");
+    }
+
     const body = await request.json();
-    const { entryNumber, entryDate, description, reference, createdBy, lines } =
-      body;
+    const { entryNumber, entryDate, description, reference, lines } = body;
 
     if (
       !entryNumber ||
@@ -36,26 +48,7 @@ export async function POST(request: Request) {
       );
     }
 
-    let resolvedCreatedBy = createdBy;
-
-    const existingUser = resolvedCreatedBy
-      ? await prisma.user.findUnique({ where: { id: resolvedCreatedBy } })
-      : null;
-
-    if (!existingUser) {
-      const fallbackUser = await prisma.user.findFirst({
-        where: { isActive: true },
-        select: { id: true },
-      });
-      if (fallbackUser) {
-        resolvedCreatedBy = fallbackUser.id;
-      } else {
-        return NextResponse.json(
-          { error: "No active user found to assign createdBy" },
-          { status: 400 },
-        );
-      }
-    }
+    const resolvedCreatedBy = authUser.id;
 
     // Fetch accounts to auto-resolve VAT if not provided
     const accountIds = lines.map((l: any) => l.accountId);
@@ -149,8 +142,11 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const entries = await prisma.journalEntry.findMany({
       orderBy: { entryDate: "desc" },
       include: {
@@ -186,6 +182,9 @@ export async function PUT(request: Request) {
 
 async function handleUpdate(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const body = await request.json();
     const {
       id,
@@ -202,6 +201,23 @@ async function handleUpdate(request: Request) {
         { error: "Missing journal entry id" },
         { status: 400 },
       );
+    }
+
+    const existing = await prisma.journalEntry.findUnique({
+      where: { id },
+      select: { id: true, createdBy: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Journal entry not found" },
+        { status: 404 },
+      );
+    }
+
+    // Ownership check: User A cannot edit User B's journal entry unless ACCOUNTANT / ADMIN / SUPER_ADMIN
+    if (!canModifyResource(authUser, existing.createdBy, ["ACCOUNTANT"])) {
+      return forbidden("Forbidden: You cannot edit another user's journal entry");
     }
 
     if (Array.isArray(lines) && lines.length > 0) {
@@ -305,6 +321,9 @@ async function handleUpdate(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const body = await request.json();
     const { id } = body;
 
@@ -313,6 +332,23 @@ export async function DELETE(request: Request) {
         { error: "Missing journal entry id" },
         { status: 400 },
       );
+    }
+
+    const existing = await prisma.journalEntry.findUnique({
+      where: { id },
+      select: { id: true, createdBy: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Journal entry not found" },
+        { status: 404 },
+      );
+    }
+
+    // Ownership check: User A cannot delete User B's journal entry unless ACCOUNTANT / ADMIN / SUPER_ADMIN
+    if (!canModifyResource(authUser, existing.createdBy, ["ACCOUNTANT"])) {
+      return forbidden("Forbidden: You cannot delete another user's journal entry");
     }
 
     await prisma.journalEntry.delete({

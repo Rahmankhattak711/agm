@@ -1,9 +1,17 @@
+import {
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
-import { getAuthUser } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get("employeeId");
     const year = searchParams.get("year");
@@ -43,6 +51,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "HR")) {
+      return forbidden("Forbidden: Only HR and Admins can create bonuses");
+    }
+
     const body = await request.json();
     const { employeeId, type, amount, month, year, reason } = body;
 
@@ -80,6 +94,11 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const user = await getAuthUser(request);
+    if (!user) return unauthorized();
+    if (!hasRole(user, "HR")) {
+      return forbidden("Forbidden: Only HR and Admins can update bonuses");
+    }
+
     const body = await request.json();
     const { id, isApproved, isPaid, paidDate, amount, type, reason } = body;
 
@@ -92,7 +111,7 @@ export async function PATCH(request: Request) {
     if (reason !== undefined) data.reason = reason?.trim() || null;
     if (isApproved !== undefined) {
       data.isApproved = Boolean(isApproved);
-      data.approvedBy = isApproved ? user?.id || null : null;
+      data.approvedBy = isApproved ? user.id : null;
     }
     if (isPaid !== undefined) {
       data.isPaid = Boolean(isPaid);
@@ -124,6 +143,12 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "HR")) {
+      return forbidden("Forbidden: Only HR and Admins can delete bonuses");
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 

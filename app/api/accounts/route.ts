@@ -1,3 +1,9 @@
+import {
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -81,8 +87,11 @@ const DEFAULT_ACCOUNTS = [
   { accountCode: "5450", accountName: "Rental Car Exp", type: "EXPENSE" },
 ];
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     let accounts = await prisma.chartOfAccount.findMany({
       orderBy: { accountCode: "asc" },
     });
@@ -113,6 +122,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "ACCOUNTANT")) return forbidden("Forbidden: Only Accountants and Admins can create accounts");
+
     const body = await request.json();
     const { accountCode, accountName, type } = body;
 

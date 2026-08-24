@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
+import { useAuth } from "@/context/AuthContext";
 import {
   useEmployees,
   useUpdateEmployee,
@@ -26,6 +27,8 @@ import {
 } from "@/components/ui";
 
 export default function EmployeesPage() {
+  const { hasRole, isAdmin } = useAuth();
+  const isHR = hasRole("HR") || isAdmin;
   const [search, setSearch] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -313,35 +316,47 @@ export default function EmployeesPage() {
       {
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenEditModal(row.original)}
-            >
-              Edit Details
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={async () => {
-                if (
-                  confirm(
-                    `Delete employee record for ${row.original.firstName} ${row.original.lastName}?`,
-                  )
-                ) {
-                  await deleteEmployeeMutation.mutateAsync(row.original.id);
-                }
-              }}
-            >
-              Delete
-            </Button>
-          </div>
-        ),
+        cell: ({ row }) => {
+          if (!isHR) {
+            return (
+              <div className="flex items-center justify-end">
+                <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                  View Only
+                </span>
+              </div>
+            );
+          }
+
+          return (
+            <div className="flex items-center justify-end gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleOpenEditModal(row.original)}
+              >
+                Edit Details
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={async () => {
+                  if (
+                    confirm(
+                      `Delete employee record for ${row.original.firstName} ${row.original.lastName}?`,
+                    )
+                  ) {
+                    await deleteEmployeeMutation.mutateAsync(row.original.id);
+                  }
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          );
+        },
       },
     ],
-    [deleteEmployeeMutation],
+    [deleteEmployeeMutation, isHR],
   );
 
   return (

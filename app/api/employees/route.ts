@@ -1,8 +1,17 @@
+import {
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const department = searchParams.get("department");
     const status = searchParams.get("status");
@@ -60,7 +69,9 @@ export async function GET(request: Request) {
                 annualLeaveBalance: 30,
               },
             });
-          } catch (e) {}
+          } catch (e) {
+            // Ignore if concurrently created
+          }
         }
       }
     }
@@ -74,7 +85,7 @@ export async function GET(request: Request) {
         { lastName: { contains: search, mode: "insensitive" } },
         { employeeCode: { contains: search, mode: "insensitive" } },
         { email: { contains: search, mode: "insensitive" } },
-        { emiratesId: { contains: search, mode: "insensitive" } },
+        { designation: { contains: search, mode: "insensitive" } },
       ];
     }
 
@@ -84,17 +95,16 @@ export async function GET(request: Request) {
         reportsTo: {
           select: {
             id: true,
+            employeeCode: true,
             firstName: true,
             lastName: true,
-            employeeCode: true,
           },
         },
         _count: {
           select: {
+            directReports: true,
             attendances: true,
             leaves: true,
-            bonuses: true,
-            payrolls: true,
           },
         },
       },
@@ -112,6 +122,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "HR")) {
+      return forbidden("Forbidden: Only HR and Admins can create employee profiles");
+    }
+
     const body = await request.json();
     const {
       employeeCode,
@@ -238,6 +254,12 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "HR")) {
+      return forbidden("Forbidden: Only HR and Admins can update employee profiles");
+    }
+
     const body = await request.json();
     const { id, ...data } = body;
 
@@ -321,6 +343,12 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "HR")) {
+      return forbidden("Forbidden: Only HR and Admins can delete employee profiles");
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     if (!id)

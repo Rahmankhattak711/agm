@@ -1,8 +1,20 @@
+import {
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "ACCOUNTANT", "HR")) {
+      return forbidden("Forbidden: Only Accountants, HR, and Admins can create fixed assets");
+    }
+
     const body = await request.json();
     const {
       assetCode,
@@ -54,8 +66,11 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const assets = await prisma.fixedAsset.findMany({
       include: { schedules: true },
     });

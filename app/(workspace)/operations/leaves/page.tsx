@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
+import { useAuth } from "@/context/AuthContext";
 import {
   useLeaveRequests,
   useCreateLeaveRequest,
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui";
 
 export default function LeavesPage() {
+  const { hasRole, canModify } = useAuth();
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [employeeFilter, setEmployeeFilter] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -98,8 +100,10 @@ export default function LeavesPage() {
         return "bg-emerald-100 text-emerald-800 border-emerald-200";
       case "REJECTED":
         return "bg-rose-100 text-rose-800 border-rose-200";
-      default:
+      case "CANCELLED":
         return "bg-slate-100 text-slate-700 border-slate-200";
+      default:
+        return "bg-slate-100 text-slate-800 border-slate-200";
     }
   };
 
@@ -107,24 +111,25 @@ export default function LeavesPage() {
     () => [
       {
         accessorKey: "employee",
-        header: "Employee",
+        header: "Employee Details",
         cell: ({ row }) => (
           <div>
             <span className="font-bold text-slate-900 block">
-              {row.original.employee?.firstName || ""}{" "}
-              {row.original.employee?.lastName || "Staff"}
+              {row.original.employee?.firstName}{" "}
+              {row.original.employee?.lastName}
             </span>
-            <span className="font-mono text-[10px] text-slate-400">
-              Code: {row.original.employee?.employeeCode || "N/A"}
+            <span className="font-mono text-[10px] text-slate-500 font-semibold uppercase">
+              {row.original.employee?.employeeCode} &bull;{" "}
+              {row.original.employee?.department || "Operations"}
             </span>
           </div>
         ),
       },
       {
         accessorKey: "leaveType",
-        header: "Category",
+        header: "Leave Type",
         cell: ({ row }) => (
-          <span className="font-semibold text-slate-800 text-xs">
+          <span className="font-semibold text-slate-800 text-xs uppercase tracking-wide">
             {row.original.leaveType}
           </span>
         ),
@@ -171,9 +176,17 @@ export default function LeavesPage() {
         header: "Actions",
         cell: ({ row }) => {
           const isPending = row.original.status === "PENDING";
+          const canApprove = hasRole("HR");
+          const canDelete = canModify(row.original.employeeId, ["HR"]);
+
           return (
             <div className="flex items-center justify-end gap-1.5">
-              {isPending && (
+              {!canApprove && !canDelete && (
+                <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                  View Only
+                </span>
+              )}
+              {isPending && canApprove && (
                 <>
                   <Button
                     variant="outline"
@@ -203,23 +216,25 @@ export default function LeavesPage() {
                   </Button>
                 </>
               )}
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={async () => {
-                  if (confirm("Delete this leave application?")) {
-                    await deleteLeave.mutateAsync(row.original.id);
-                  }
-                }}
-              >
-                Delete
-              </Button>
+              {canDelete && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={async () => {
+                    if (confirm("Delete this leave application?")) {
+                      await deleteLeave.mutateAsync(row.original.id);
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
+              )}
             </div>
           );
         },
       },
     ],
-    [deleteLeave, updateStatus],
+    [canModify, deleteLeave, hasRole, updateStatus],
   );
 
   return (

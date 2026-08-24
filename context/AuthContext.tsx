@@ -19,6 +19,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isSuperAdmin: boolean;
   hasRole: (...roles: string[]) => boolean;
+  canModify: (resourceOwnerId?: string | null, allowedRoles?: string[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -66,6 +67,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const hasRole = (...roles: string[]) =>
     !!user?.role && roles.includes(user.role);
 
+  const canModify = useCallback(
+    (resourceOwnerId?: string | null, allowedRoles: string[] = []) => {
+      if (!user) return false;
+      if (user.role === "SUPER_ADMIN" || user.role === "ADMIN") return true;
+      if (allowedRoles.length > 0 && allowedRoles.includes(user.role)) return true;
+      if (resourceOwnerId && user.id === resourceOwnerId) return true;
+      return false;
+    },
+    [user],
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -77,6 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin,
         isSuperAdmin,
         hasRole,
+        canModify,
       }}
     >
       {children}

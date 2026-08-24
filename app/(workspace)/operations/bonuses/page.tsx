@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
+import { useAuth } from "@/context/AuthContext";
 import {
   useBonuses,
   useCreateBonus,
@@ -25,6 +26,8 @@ import {
 } from "@/components/ui";
 
 export default function BonusesPage() {
+  const { hasRole, isAdmin } = useAuth();
+  const isHR = hasRole("HR") || isAdmin;
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth() + 1,
   );
@@ -186,6 +189,16 @@ export default function BonusesPage() {
         header: "Actions",
         cell: ({ row }) => {
           const isApproved = row.original.isApproved;
+          if (!isHR) {
+            return (
+              <div className="flex items-center justify-end">
+                <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                  View Only
+                </span>
+              </div>
+            );
+          }
+
           return (
             <div className="flex items-center justify-end gap-1.5">
               {!isApproved && (
@@ -219,7 +232,7 @@ export default function BonusesPage() {
         },
       },
     ],
-    [deleteBonus, updateBonus],
+    [deleteBonus, isHR, updateBonus],
   );
 
   return (
@@ -235,13 +248,15 @@ export default function BonusesPage() {
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={handleOpenModal}
-          icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-        >
-          Award Bonus
-        </Button>
+        {isHR && (
+          <Button
+            variant="primary"
+            onClick={handleOpenModal}
+            icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
+          >
+            Award Bonus
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
