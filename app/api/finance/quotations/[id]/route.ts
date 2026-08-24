@@ -1,5 +1,11 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma";
+import {
+  canModifyResource,
+  forbidden,
+  getAuthUser,
+  unauthorized,
+} from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -7,6 +13,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const { id } = await params;
     if (!id) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -48,7 +57,27 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const { id } = await params;
+    const existing = await prisma.quotation.findUnique({
+      where: { id },
+      select: { id: true, createdById: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Quotation not found" },
+        { status: 404 },
+      );
+    }
+
+    // Ownership check: User A cannot edit User B's quotation unless ACCOUNTANT / ADMIN / SUPER_ADMIN
+    if (!canModifyResource(authUser, existing.createdById, ["ACCOUNTANT"])) {
+      return forbidden("Forbidden: You cannot edit another user's quotation");
+    }
+
     const body = await request.json();
     const {
       quotationNo,
@@ -181,7 +210,27 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const { id } = await params;
+    const existing = await prisma.quotation.findUnique({
+      where: { id },
+      select: { id: true, createdById: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Quotation not found" },
+        { status: 404 },
+      );
+    }
+
+    // Ownership check: User A cannot delete User B's quotation unless ACCOUNTANT / ADMIN / SUPER_ADMIN
+    if (!canModifyResource(authUser, existing.createdById, ["ACCOUNTANT"])) {
+      return forbidden("Forbidden: You cannot delete another user's quotation");
+    }
+
     await prisma.quotation.delete({
       where: { id },
     });
