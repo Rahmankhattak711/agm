@@ -152,7 +152,8 @@ function LoginForm() {
             <div className="mb-4 rounded-xl bg-amber-50 p-3.5 text-xs font-semibold text-amber-800 border border-amber-200 flex items-center gap-2.5 animate-in fade-in">
               <Clock className="w-4 h-4 text-amber-600 shrink-0" />
               <span>
-                Your 24-hour session has expired. Please sign in again to continue.
+                Your 24-hour session has expired. Please sign in again to
+                continue.
               </span>
             </div>
           )}
