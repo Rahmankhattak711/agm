@@ -128,7 +128,6 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (!canManageUser(authUser, target)) return forbidden();
 
-    // If Super Admin, attempt to delete completely from database
     if (authUser.role === "SUPER_ADMIN") {
       try {
         await prisma.refreshToken.deleteMany({ where: { userId: id } });
@@ -138,7 +137,6 @@ export async function DELETE(request: Request, context: RouteContext) {
           message: "User permanently deleted",
         });
       } catch (e) {
-        // Fallback: If user is referenced in other relational tables, deactivate them
         const updated = await prisma.user.update({
           where: { id },
           data: { isActive: false },

@@ -13,7 +13,9 @@ export async function POST(request: Request) {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
     if (!hasRole(authUser, "ACCOUNTANT")) {
-      return forbidden("Forbidden: Only Accountants and Admins can run depreciation schedules");
+      return forbidden(
+        "Forbidden: Only Accountants and Admins can run depreciation schedules",
+      );
     }
 
     const body = await request.json();

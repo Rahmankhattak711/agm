@@ -12,7 +12,9 @@ export async function POST(request: Request) {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
     if (!hasRole(authUser, "ACCOUNTANT", "HR")) {
-      return forbidden("Forbidden: Only Accountants, HR, and Admins can create fixed assets");
+      return forbidden(
+        "Forbidden: Only Accountants, HR, and Admins can create fixed assets",
+      );
     }
 
     const body = await request.json();
