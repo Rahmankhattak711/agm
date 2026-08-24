@@ -73,7 +73,6 @@ export async function PUT(
       );
     }
 
-    // Ownership check: User A cannot edit User B's quotation unless ACCOUNTANT / ADMIN / SUPER_ADMIN
     if (!canModifyResource(authUser, existing.createdById, ["ACCOUNTANT"])) {
       return forbidden("Forbidden: You cannot edit another user's quotation");
     }
@@ -226,7 +225,6 @@ export async function DELETE(
       );
     }
 
-    // Ownership check: User A cannot delete User B's quotation unless ACCOUNTANT / ADMIN / SUPER_ADMIN
     if (!canModifyResource(authUser, existing.createdById, ["ACCOUNTANT"])) {
       return forbidden("Forbidden: You cannot delete another user's quotation");
     }
