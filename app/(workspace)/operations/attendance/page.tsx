@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
+import { useAuth } from "@/context/AuthContext";
 import {
   useDailyAttendance,
   useRecordAttendance,
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui";
 
 export default function AttendancePage() {
+  const { canModify } = useAuth();
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split("T")[0],
   );
@@ -243,24 +245,37 @@ export default function AttendancePage() {
       {
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1.5">
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={async () => {
-                if (confirm("Delete attendance punch?")) {
-                  await deleteAttendance.mutateAsync(row.original.id);
-                }
-              }}
-            >
-              Delete
-            </Button>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const canDelete = canModify(
+            row.original.markedBy || row.original.employeeId,
+            ["HR"],
+          );
+
+          return (
+            <div className="flex items-center justify-end gap-1.5">
+              {!canDelete ? (
+                <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                  View Only
+                </span>
+              ) : (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={async () => {
+                    if (confirm("Delete attendance punch?")) {
+                      await deleteAttendance.mutateAsync(row.original.id);
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
+              )}
+            </div>
+          );
+        },
       },
     ],
-    [deleteAttendance],
+    [canModify, deleteAttendance],
   );
 
   return (
