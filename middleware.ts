@@ -10,6 +10,18 @@ const PROTECTED_PREFIXES = [
   "/quotation",
 ];
 
+const PROTECTED_API_PREFIXES = [
+  "/api/inventory",
+  "/api/employees",
+  "/api/assets",
+  "/api/accounts",
+  "/api/finance",
+  "/api/journal-entries",
+  "/api/petty-cash",
+  "/api/reports",
+  "/api/users",
+];
+
 const AUTH_PREFIXES = ["/login", "/signup"];
 
 export function middleware(request: NextRequest) {
@@ -35,9 +47,16 @@ export function middleware(request: NextRequest) {
   const isProtectedPath = PROTECTED_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix),
   );
+  const isProtectedApiPath = PROTECTED_API_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix),
+  );
   const isAuthPath = AUTH_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix),
   );
+
+  if (isProtectedApiPath && !token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   if (isProtectedPath && !token) {
     const loginUrl = new URL("/login", request.url);
