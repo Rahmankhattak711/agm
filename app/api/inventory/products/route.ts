@@ -74,7 +74,9 @@ export async function POST(request: Request) {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
     if (!hasRole(authUser, "INVENTORY_MANAGER")) {
-      return forbidden("Forbidden: Only Inventory Managers and Admins can create products");
+      return forbidden(
+        "Forbidden: Only Inventory Managers and Admins can create products",
+      );
     }
 
     const body = await request.json();
@@ -171,7 +173,9 @@ export async function PATCH(request: Request) {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
     if (!hasRole(authUser, "INVENTORY_MANAGER")) {
-      return forbidden("Forbidden: Only Inventory Managers and Admins can update products");
+      return forbidden(
+        "Forbidden: Only Inventory Managers and Admins can update products",
+      );
     }
 
     const body = await request.json();
@@ -219,7 +223,9 @@ export async function DELETE(request: Request) {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
     if (!hasRole(authUser, "INVENTORY_MANAGER")) {
-      return forbidden("Forbidden: Only Inventory Managers and Admins can delete products");
+      return forbidden(
+        "Forbidden: Only Inventory Managers and Admins can delete products",
+      );
     }
 
     const { searchParams } = new URL(request.url);
