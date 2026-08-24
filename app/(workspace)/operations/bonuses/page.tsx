@@ -299,7 +299,7 @@ export default function BonusesPage() {
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="flex flex-wrap items-center gap-2.5 w-full">
+          <div className="flex gap-2">
             <Select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
