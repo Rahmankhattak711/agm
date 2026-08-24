@@ -6,8 +6,8 @@ export interface User {
   isActive: boolean;
 }
 
-export const SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours (86,400,000 ms)
-export const SESSION_COOKIE_MAX_AGE = 86400; // 24 hours in seconds
+export const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
+export const SESSION_COOKIE_MAX_AGE = 86400;
 
 export const authService = {
   getAccessToken(): string | null {
@@ -40,7 +40,6 @@ export const authService = {
     if (typeof window === "undefined") return false;
     const expiry = this.getSessionExpiry();
     if (!expiry) {
-      // If token exists but no expiry recorded, check token existence
       const token = localStorage.getItem("agm_access_token");
       return !token;
     }
@@ -101,6 +100,8 @@ export const authService = {
   },
 
   isAuthenticated(): boolean {
-    return !this.isSessionExpired() && !!localStorage.getItem("agm_access_token");
+    return (
+      !this.isSessionExpired() && !!localStorage.getItem("agm_access_token")
+    );
   },
 };

@@ -15,7 +15,6 @@ export function getTokenFromRequest(request: Request): string | null {
   const auth = request.headers.get("Authorization");
   if (auth?.startsWith("Bearer ")) return auth.slice(7);
 
-  // Fallback to cookie header if present
   const cookieHeader = request.headers.get("cookie");
   if (cookieHeader) {
     const match = cookieHeader.match(/agm_access_token=([^;]+)/);
@@ -57,13 +56,6 @@ export function hasRole(actor: AuthUser, ...roles: UserRole[]): boolean {
   return roles.includes(actor.role);
 }
 
-/**
- * Validates whether an authenticated user can modify (edit/delete) a resource.
- * - SUPER_ADMIN and ADMIN can always modify any resource.
- * - If actor has one of the allowedRoles (e.g. INVENTORY_MANAGER, HR, ACCOUNTANT), they can modify.
- * - If actor is the creator/owner of the resource (actor.id === resourceOwnerId), they can modify.
- * - Otherwise, access is forbidden.
- */
 export function canModifyResource(
   actor: AuthUser,
   resourceOwnerId?: string | null,
@@ -97,7 +89,9 @@ export function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }
 
-export function forbidden(message = "Forbidden: You do not have permission to perform this action") {
+export function forbidden(
+  message = "Forbidden: You do not have permission to perform this action",
+) {
   return NextResponse.json({ error: message }, { status: 403 });
 }
 
