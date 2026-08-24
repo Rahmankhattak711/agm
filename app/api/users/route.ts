@@ -33,6 +33,10 @@ export async function GET(request: Request) {
         ADMIN: users.filter((u: UserItem) => u.role === "ADMIN").length,
         ACCOUNTANT: users.filter((u: UserItem) => u.role === "ACCOUNTANT")
           .length,
+        HR: users.filter((u: UserItem) => u.role === "HR").length,
+        INVENTORY_MANAGER: users.filter(
+          (u: UserItem) => u.role === "INVENTORY_MANAGER",
+        ).length,
         USER: users.filter((u: UserItem) => u.role === "USER").length,
       },
     };
