@@ -1,8 +1,9 @@
 import React from "react";
-import { FolderOpen, Loader2, Trash2 } from "lucide-react";
+import { FolderOpen, Loader2, Trash2, ShieldCheck, Eye } from "lucide-react";
 import { QuotationRecord } from "@/lib/hooks/api-hooks";
 import { formatCurrency } from "./constants";
 import { Button, Modal } from "@/components/ui";
+import { useAuth } from "@/context/AuthContext";
 
 export interface QuotationSavedModalProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ export const QuotationSavedModal: React.FC<QuotationSavedModalProps> = ({
   onLoadQuotation,
   onDeleteQuotation,
 }) => {
+  const { canModify } = useAuth();
+
   return (
     <Modal
       isOpen={isOpen}
@@ -40,59 +43,77 @@ export const QuotationSavedModal: React.FC<QuotationSavedModalProps> = ({
             &quot;Save to DB&quot;.
           </div>
         ) : (
-          savedQuotations.map((q) => (
-            <div
-              key={q.id}
-              onClick={() => onLoadQuotation(q)}
-              className="py-3 px-3 hover:bg-slate-50 rounded-xl transition flex items-center justify-between cursor-pointer group"
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs text-slate-900 font-mono">
-                    {q.quotationNo}
-                  </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
-                    {q.status}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-600 font-medium mt-0.5">
-                  Client:{" "}
-                  <strong className="text-slate-800">
-                    {q.customer || "Unnamed Client"}
-                  </strong>{" "}
-                  {q.project ? `— Project: ${q.project}` : ""}{" "}
-                  {q.location ? `(${q.location})` : ""}
-                </p>
-                <p className="text-[11px] text-slate-400">
-                  Date: {q.date || "N/A"} | Total:{" "}
-                  <strong>
-                    AED {formatCurrency(Number(q.totalAmount || 0))}
-                  </strong>{" "}
-                  | Items: {q.items?.length || 0}
-                </p>
-              </div>
+          savedQuotations.map((q) => {
+            const hasDeletePermission = canModify(q.createdBy?.id, [
+              "ACCOUNTANT",
+            ]);
 
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => onLoadQuotation(q)}
-                  className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200"
-                >
-                  Load
-                </Button>
-                <Button
-                  type="button"
-                  variant="danger"
-                  size="sm"
-                  onClick={(e) => onDeleteQuotation(q.id, e)}
-                  title="Delete from DB"
-                  icon={<Trash2 size={13} />}
-                />
+            return (
+              <div
+                key={q.id}
+                onClick={() => onLoadQuotation(q)}
+                className="py-3 px-3 hover:bg-slate-50 rounded-xl transition flex items-center justify-between cursor-pointer group"
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-xs text-slate-900 font-mono">
+                      {q.quotationNo}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
+                      {q.status}
+                    </span>
+                    {q.createdBy?.fullName && (
+                      <span className="text-[10px] text-slate-500 bg-slate-50 border border-slate-200 px-1.5 py-0.2 rounded font-medium">
+                        By {q.createdBy.fullName}
+                      </span>
+                    )}
+                    {!hasDeletePermission && (
+                      <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded inline-flex items-center gap-1">
+                        <Eye size={10} /> View Only
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-600 font-medium mt-0.5">
+                    Client:{" "}
+                    <strong className="text-slate-800">
+                      {q.customer || "Unnamed Client"}
+                    </strong>{" "}
+                    {q.project ? `— Project: ${q.project}` : ""}{" "}
+                    {q.location ? `(${q.location})` : ""}
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    Date: {q.date || "N/A"} | Total:{" "}
+                    <strong>
+                      AED {formatCurrency(Number(q.totalAmount || 0))}
+                    </strong>{" "}
+                    | Items: {q.items?.length || 0}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => onLoadQuotation(q)}
+                    className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200"
+                  >
+                    Load
+                  </Button>
+                  {hasDeletePermission && (
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="sm"
+                      onClick={(e) => onDeleteQuotation(q.id, e)}
+                      title="Delete from DB"
+                      icon={<Trash2 size={13} />}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </Modal>
