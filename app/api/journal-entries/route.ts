@@ -14,7 +14,9 @@ export async function POST(request: Request) {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
     if (!hasRole(authUser, "ACCOUNTANT")) {
-      return forbidden("Forbidden: Only Accountants and Admins can create journal entries");
+      return forbidden(
+        "Forbidden: Only Accountants and Admins can create journal entries",
+      );
     }
 
     const body = await request.json();
@@ -50,7 +52,6 @@ export async function POST(request: Request) {
 
     const resolvedCreatedBy = authUser.id;
 
-    // Fetch accounts to auto-resolve VAT if not provided
     const accountIds = lines.map((l: any) => l.accountId);
     const accounts = await prisma.chartOfAccount.findMany({
       where: { id: { in: accountIds } },
@@ -215,9 +216,10 @@ async function handleUpdate(request: Request) {
       );
     }
 
-    // Ownership check: User A cannot edit User B's journal entry unless ACCOUNTANT / ADMIN / SUPER_ADMIN
     if (!canModifyResource(authUser, existing.createdBy, ["ACCOUNTANT"])) {
-      return forbidden("Forbidden: You cannot edit another user's journal entry");
+      return forbidden(
+        "Forbidden: You cannot edit another user's journal entry",
+      );
     }
 
     if (Array.isArray(lines) && lines.length > 0) {
@@ -346,9 +348,10 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Ownership check: User A cannot delete User B's journal entry unless ACCOUNTANT / ADMIN / SUPER_ADMIN
     if (!canModifyResource(authUser, existing.createdBy, ["ACCOUNTANT"])) {
-      return forbidden("Forbidden: You cannot delete another user's journal entry");
+      return forbidden(
+        "Forbidden: You cannot delete another user's journal entry",
+      );
     }
 
     await prisma.journalEntry.delete({

@@ -100,7 +100,6 @@ export default function JournalEntriesPage() {
         return;
       }
 
-      // Compute payload lines including auto-generated 5% VAT ledger lines if VAT is selected
       const payloadLines: Array<{
         accountId: string;
         debit: number;
@@ -799,7 +798,6 @@ export default function JournalEntriesPage() {
                     </Button>
                   </div>
 
-                  {/* Column Headers for larger screens */}
                   <div className="hidden sm:flex items-center gap-2 px-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                     <span className="flex-1">Account</span>
                     <span className="w-20 sm:w-24 text-right">Debit</span>
@@ -839,7 +837,6 @@ export default function JournalEntriesPage() {
                               : "bg-slate-50/70 border-slate-200"
                           }`}
                         >
-                          {/* Account Selection */}
                           <div className="flex-1 min-w-[120px]">
                             <select
                               value={line.accountId}
@@ -860,7 +857,6 @@ export default function JournalEntriesPage() {
                             </select>
                           </div>
 
-                          {/* Debit Input */}
                           <div className="w-20 sm:w-24">
                             <input
                               type="number"
@@ -885,7 +881,6 @@ export default function JournalEntriesPage() {
                             />
                           </div>
 
-                          {/* Credit Input */}
                           <div className="w-20 sm:w-24">
                             <input
                               type="number"
@@ -910,8 +905,6 @@ export default function JournalEntriesPage() {
                             />
                           </div>
 
-                          {/* VAT Selection in Same Row */}
-                          {/* VAT Selection in Same Row (Only Non-VAT 0% and VAT 5%) */}
                           <div className="w-28 sm:w-32">
                             <select
                               value={line.vatType ? "VAT_5" : ""}
@@ -945,7 +938,6 @@ export default function JournalEntriesPage() {
                             </select>
                           </div>
 
-                          {/* Line Total in Same Row (e.g. 1000 + 5% = 1050) */}
                           <div
                             className={`w-24 sm:w-28 px-2 py-1.5 text-xs rounded-lg border font-mono font-bold text-right truncate ${
                               line.vatType
@@ -959,7 +951,6 @@ export default function JournalEntriesPage() {
                               : "AED 0.00"}
                           </div>
 
-                          {/* Remove Button */}
                           <Button
                             type="button"
                             size="sm"
@@ -976,7 +967,6 @@ export default function JournalEntriesPage() {
                     })}
                   </div>
 
-                  {/* Summary Bar */}
                   <div className="p-3 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-between text-xs font-bold">
                     <div className="flex items-center gap-2">
                       <span

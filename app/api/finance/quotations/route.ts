@@ -118,8 +118,13 @@ export async function POST(request: Request) {
       select: { id: true, createdById: true },
     });
 
-    if (existing && !canModifyResource(authUser, existing.createdById, ["ACCOUNTANT"])) {
-      return forbidden("Forbidden: You cannot overwrite another user's quotation");
+    if (
+      existing &&
+      !canModifyResource(authUser, existing.createdById, ["ACCOUNTANT"])
+    ) {
+      return forbidden(
+        "Forbidden: You cannot overwrite another user's quotation",
+      );
     }
 
     const quotation = await prisma.$transaction(

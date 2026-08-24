@@ -74,7 +74,9 @@ export async function POST(request: Request) {
 
     const shouldApprove = Boolean(isApproved);
     if (shouldApprove && !hasRole(authUser, "ACCOUNTANT")) {
-      return forbidden("Forbidden: Only Accountants and Admins can approve petty cash vouchers");
+      return forbidden(
+        "Forbidden: Only Accountants and Admins can approve petty cash vouchers",
+      );
     }
 
     const created = await prisma.pettyCashTransaction.create({
@@ -151,7 +153,9 @@ export async function PATCH(request: Request) {
 
     const isApprovalChange = isApproved !== undefined;
     if (isApprovalChange && !hasRole(authUser, "ACCOUNTANT")) {
-      return forbidden("Forbidden: Only Accountants and Admins can approve or reject petty cash vouchers");
+      return forbidden(
+        "Forbidden: Only Accountants and Admins can approve or reject petty cash vouchers",
+      );
     }
 
     const dataToUpdate: any = {};
@@ -203,7 +207,9 @@ export async function DELETE(request: Request) {
     if (!authUser) return unauthorized();
 
     if (!hasRole(authUser, "ACCOUNTANT")) {
-      return forbidden("Forbidden: Only Accountants and Admins can delete petty cash vouchers");
+      return forbidden(
+        "Forbidden: Only Accountants and Admins can delete petty cash vouchers",
+      );
     }
 
     const { searchParams } = new URL(request.url);

@@ -70,7 +70,10 @@ export async function GET(request: Request) {
               },
             });
           } catch (e) {
-            // Ignore if concurrently created
+            return NextResponse.json(
+              { error: "Internal Server Error" },
+              { status: 500 },
+            );
           }
         }
       }
@@ -125,7 +128,9 @@ export async function POST(request: Request) {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
     if (!hasRole(authUser, "HR")) {
-      return forbidden("Forbidden: Only HR and Admins can create employee profiles");
+      return forbidden(
+        "Forbidden: Only HR and Admins can create employee profiles",
+      );
     }
 
     const body = await request.json();
@@ -257,7 +262,9 @@ export async function PATCH(request: Request) {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
     if (!hasRole(authUser, "HR")) {
-      return forbidden("Forbidden: Only HR and Admins can update employee profiles");
+      return forbidden(
+        "Forbidden: Only HR and Admins can update employee profiles",
+      );
     }
 
     const body = await request.json();
@@ -346,7 +353,9 @@ export async function DELETE(request: Request) {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
     if (!hasRole(authUser, "HR")) {
-      return forbidden("Forbidden: Only HR and Admins can delete employee profiles");
+      return forbidden(
+        "Forbidden: Only HR and Admins can delete employee profiles",
+      );
     }
 
     const { searchParams } = new URL(request.url);

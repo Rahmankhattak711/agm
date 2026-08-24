@@ -6,11 +6,11 @@ const REFRESH_TOKEN_SECRET =
   process.env.REFRESH_TOKEN_SECRET || "dev_refresh_secret";
 
 export function signAccessToken(payload: object) {
-  return jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+  return jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: "24h" });
 }
 
 export function signRefreshToken(payload: object) {
-  return jwt.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+  return jwt.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: "24h" });
 }
 
 export function verifyRefreshToken(token: string) {

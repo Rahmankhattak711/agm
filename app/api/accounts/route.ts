@@ -124,7 +124,10 @@ export async function POST(request: Request) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
-    if (!hasRole(authUser, "ACCOUNTANT")) return forbidden("Forbidden: Only Accountants and Admins can create accounts");
+    if (!hasRole(authUser, "ACCOUNTANT"))
+      return forbidden(
+        "Forbidden: Only Accountants and Admins can create accounts",
+      );
 
     const body = await request.json();
     const { accountCode, accountName, type } = body;

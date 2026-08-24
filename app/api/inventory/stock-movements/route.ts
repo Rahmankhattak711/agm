@@ -62,7 +62,9 @@ export async function POST(request: Request) {
     const user = await getAuthUser(request);
     if (!user) return unauthorized();
     if (!hasRole(user, "INVENTORY_MANAGER")) {
-      return forbidden("Forbidden: Only Inventory Managers and Admins can record stock movements");
+      return forbidden(
+        "Forbidden: Only Inventory Managers and Admins can record stock movements",
+      );
     }
 
     const body = await request.json();

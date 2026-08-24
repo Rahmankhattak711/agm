@@ -99,8 +99,7 @@ export async function POST(request: Request) {
             productId: item.productId,
             quantityOrdered: Number(item.quantityOrdered),
             unitCost: Number(item.unitCost),
-            totalCost:
-              Number(item.quantityOrdered) * Number(item.unitCost),
+            totalCost: Number(item.quantityOrdered) * Number(item.unitCost),
           })),
         },
       },
@@ -154,9 +153,10 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // Ownership check: User A cannot edit User B's purchase order unless INVENTORY_MANAGER / ADMIN / SUPER_ADMIN
     if (!canModifyResource(user, existing.createdBy, ["INVENTORY_MANAGER"])) {
-      return forbidden("Forbidden: You cannot edit another user's purchase order");
+      return forbidden(
+        "Forbidden: You cannot edit another user's purchase order",
+      );
     }
 
     const updated = await prisma.$transaction(
@@ -273,9 +273,10 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Ownership check: User A cannot delete User B's purchase order unless INVENTORY_MANAGER / ADMIN / SUPER_ADMIN
     if (!canModifyResource(user, existing.createdBy, ["INVENTORY_MANAGER"])) {
-      return forbidden("Forbidden: You cannot delete another user's purchase order");
+      return forbidden(
+        "Forbidden: You cannot delete another user's purchase order",
+      );
     }
 
     await prisma.purchaseOrder.delete({ where: { id } });
