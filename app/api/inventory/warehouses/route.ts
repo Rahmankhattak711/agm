@@ -1,8 +1,17 @@
+import {
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const warehouses = await prisma.warehouse.findMany({
       include: {
         stockLevels: {
@@ -28,6 +37,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "INVENTORY_MANAGER")) {
+      return forbidden("Forbidden: Only Inventory Managers and Admins can create warehouses");
+    }
+
     const body = await request.json();
     const { code, name, location } = body;
 
@@ -64,6 +79,12 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "INVENTORY_MANAGER")) {
+      return forbidden("Forbidden: Only Inventory Managers and Admins can update warehouses");
+    }
+
     const body = await request.json();
     const { id, ...data } = body;
 
@@ -94,6 +115,12 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "INVENTORY_MANAGER")) {
+      return forbidden("Forbidden: Only Inventory Managers and Admins can delete warehouses");
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 

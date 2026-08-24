@@ -1,8 +1,17 @@
+import {
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const categories = await prisma.productCategory.findMany({
       include: {
         parent: true,
@@ -29,6 +38,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "INVENTORY_MANAGER")) {
+      return forbidden("Forbidden: Only Inventory Managers and Admins can create categories");
+    }
+
     const body = await request.json();
     const { name, parentId, inventoryAccountId, cogsAccountId } = body;
 
@@ -71,6 +86,12 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "INVENTORY_MANAGER")) {
+      return forbidden("Forbidden: Only Inventory Managers and Admins can update categories");
+    }
+
     const body = await request.json();
     const { id, name, parentId, inventoryAccountId, cogsAccountId } = body;
 
@@ -110,6 +131,12 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "INVENTORY_MANAGER")) {
+      return forbidden("Forbidden: Only Inventory Managers and Admins can delete categories");
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 

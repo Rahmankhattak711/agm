@@ -1,8 +1,17 @@
+import {
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get("categoryId");
     const supplierId = searchParams.get("supplierId");
@@ -62,6 +71,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "INVENTORY_MANAGER")) {
+      return forbidden("Forbidden: Only Inventory Managers and Admins can create products");
+    }
+
     const body = await request.json();
     const {
       sku,
@@ -129,6 +144,7 @@ export async function POST(request: Request) {
           unitCost: created.costPrice,
           referenceNumber: "INITIAL_STOCK",
           notes: "Initial inventory setup",
+          createdBy: authUser.id,
         },
       });
     }
@@ -152,6 +168,12 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "INVENTORY_MANAGER")) {
+      return forbidden("Forbidden: Only Inventory Managers and Admins can update products");
+    }
+
     const body = await request.json();
     const { id, ...data } = body;
 
@@ -194,6 +216,12 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "INVENTORY_MANAGER")) {
+      return forbidden("Forbidden: Only Inventory Managers and Admins can delete products");
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 

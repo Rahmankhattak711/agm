@@ -1,10 +1,18 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma";
-import { getAuthUser } from "@/lib/auth-server";
+import {
+  canModifyResource,
+  forbidden,
+  getAuthUser,
+  unauthorized,
+} from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const supplierId = searchParams.get("supplierId");
@@ -40,6 +48,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const user = await getAuthUser(request);
+    if (!user) return unauthorized();
+
     const body = await request.json();
     const {
       poNumber,
@@ -68,19 +78,11 @@ export async function POST(request: Request) {
     }
 
     let totalAmount = 0;
-    const validatedItems = items.map((item: any) => {
-      const quantityOrdered = Number(item.quantityOrdered || 1);
-      const unitCost = Number(item.unitCost || 0);
-      const totalCost = Number(item.totalCost || quantityOrdered * unitCost);
-      totalAmount += totalCost;
-      return {
-        productId: item.productId,
-        quantityOrdered,
-        quantityReceived: Number(item.quantityReceived || 0),
-        unitCost,
-        totalCost,
-      };
-    });
+    for (const item of items) {
+      const qty = Number(item.quantityOrdered || 0);
+      const cost = Number(item.unitCost || 0);
+      totalAmount += qty * cost;
+    }
 
     const created = await prisma.purchaseOrder.create({
       data: {
@@ -91,16 +93,21 @@ export async function POST(request: Request) {
         status: status || "DRAFT",
         totalAmount,
         notes: notes?.trim() || null,
-        createdBy: user?.id || null,
+        createdBy: user.id,
         items: {
-          create: validatedItems,
+          create: items.map((item: any) => ({
+            productId: item.productId,
+            quantityOrdered: Number(item.quantityOrdered),
+            unitCost: Number(item.unitCost),
+            totalCost:
+              Number(item.quantityOrdered) * Number(item.unitCost),
+          })),
         },
       },
       include: {
         supplier: true,
-        items: {
-          include: { product: true },
-        },
+        creator: { select: { fullName: true, email: true } },
+        items: { include: { product: true } },
       },
     });
 
@@ -109,7 +116,7 @@ export async function POST(request: Request) {
     console.error("Error creating purchase order:", error);
     if (error.code === "P2002") {
       return NextResponse.json(
-        { error: "A purchase order with this PO Number already exists" },
+        { error: "A purchase order with this PO number already exists" },
         { status: 409 },
       );
     }
@@ -122,9 +129,11 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const user = await getAuthUser(request);
+    if (!user) return unauthorized();
+
     const body = await request.json();
-    const { id, status, expectedDate, notes, items, warehouseIdToReceive } =
-      body;
+    const { id, status, expectedDate, notes, warehouseIdToReceive } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -143,6 +152,11 @@ export async function PATCH(request: Request) {
         { error: "Purchase order not found" },
         { status: 404 },
       );
+    }
+
+    // Ownership check: User A cannot edit User B's purchase order unless INVENTORY_MANAGER / ADMIN / SUPER_ADMIN
+    if (!canModifyResource(user, existing.createdBy, ["INVENTORY_MANAGER"])) {
+      return forbidden("Forbidden: You cannot edit another user's purchase order");
     }
 
     const updated = await prisma.$transaction(
@@ -177,6 +191,7 @@ export async function PATCH(request: Request) {
                 unitCost: item.unitCost,
                 referenceNumber: existing.poNumber,
                 notes: `Received from PO ${existing.poNumber}`,
+                createdBy: user.id,
               },
             });
 
@@ -233,6 +248,9 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const user = await getAuthUser(request);
+    if (!user) return unauthorized();
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
@@ -241,6 +259,23 @@ export async function DELETE(request: Request) {
         { error: "Missing purchase order ID" },
         { status: 400 },
       );
+    }
+
+    const existing = await prisma.purchaseOrder.findUnique({
+      where: { id },
+      select: { id: true, createdBy: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Purchase order not found" },
+        { status: 404 },
+      );
+    }
+
+    // Ownership check: User A cannot delete User B's purchase order unless INVENTORY_MANAGER / ADMIN / SUPER_ADMIN
+    if (!canModifyResource(user, existing.createdBy, ["INVENTORY_MANAGER"])) {
+      return forbidden("Forbidden: You cannot delete another user's purchase order");
     }
 
     await prisma.purchaseOrder.delete({ where: { id } });
