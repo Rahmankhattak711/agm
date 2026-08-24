@@ -1456,6 +1456,43 @@ export function useCreateUser() {
   });
 }
 
+export function useUpdateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      fullName?: string;
+      email?: string;
+      role?: string;
+      isActive?: boolean;
+      password?: string;
+    }) =>
+      fetchJson<UserItem>(`/api/users/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+}
+
+export function useDeleteUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ success?: boolean; message?: string }>(`/api/users/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+}
+
 export function useProfitLoss() {
   return useQuery<ProfitLossReport>({
     queryKey: ["reports", "profit-loss"],
