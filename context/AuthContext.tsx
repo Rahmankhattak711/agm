@@ -19,7 +19,10 @@ interface AuthContextType {
   isAdmin: boolean;
   isSuperAdmin: boolean;
   hasRole: (...roles: string[]) => boolean;
-  canModify: (resourceOwnerId?: string | null, allowedRoles?: string[]) => boolean;
+  canModify: (
+    resourceOwnerId?: string | null,
+    allowedRoles?: string[],
+  ) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,7 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return true;
   }, [logout]);
 
-  // Handle 24-hour expiration lifecycle
   useEffect(() => {
     const currentUser = authService.getUser();
     if (currentUser && authService.isAuthenticated()) {
@@ -64,7 +66,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  // 24-Hour Timer & Focus Auto-Logout Handler
   useEffect(() => {
     if (!user) return;
 
@@ -80,12 +81,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Set auto-logout timeout for the remaining 24h duration
     const timeoutId = setTimeout(() => {
       logout(true);
     }, remainingMs);
 
-    // Periodically check (every 60s) and check on window focus/tab resume
     const intervalId = setInterval(checkExpiration, 60000);
     window.addEventListener("focus", checkExpiration);
     document.addEventListener("visibilitychange", checkExpiration);
@@ -116,7 +115,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (resourceOwnerId?: string | null, allowedRoles: string[] = []) => {
       if (!user) return false;
       if (user.role === "SUPER_ADMIN" || user.role === "ADMIN") return true;
-      if (allowedRoles.length > 0 && allowedRoles.includes(user.role)) return true;
+      if (allowedRoles.length > 0 && allowedRoles.includes(user.role))
+        return true;
       if (resourceOwnerId && user.id === resourceOwnerId) return true;
       return false;
     },
