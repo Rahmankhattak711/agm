@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
+import { useAuth } from "@/context/AuthContext";
 import {
   CheckCircle2,
   Clock,
@@ -35,6 +36,8 @@ import {
 } from "@/components/ui";
 
 export default function PettyCashPage() {
+  const { hasRole, isAdmin } = useAuth();
+  const isAccountantOrAdmin = hasRole("ACCOUNTANT") || isAdmin;
   const { data: transactions = [], isLoading, error } = usePettyCash();
   const createPettyCashMutation = useCreatePettyCash();
   const updatePettyCashMutation = useUpdatePettyCash();
@@ -322,20 +325,22 @@ export default function PettyCashPage() {
                 )}
               </span>
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={(e) => handleToggleApproval(row.original, e)}
-                className={`text-[10px] px-1.5 py-0.5 h-6 rounded ${
-                  isAppr
-                    ? "text-slate-400 hover:text-amber-700"
-                    : "text-emerald-700 font-bold hover:bg-emerald-50"
-                }`}
-                title={isAppr ? "Revert to Pending" : "Approve this Voucher"}
-              >
-                {isAppr ? "Revoke" : "Approve"}
-              </Button>
+              {isAccountantOrAdmin && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => handleToggleApproval(row.original, e)}
+                  className={`text-[10px] px-1.5 py-0.5 h-6 rounded ${
+                    isAppr
+                      ? "text-slate-400 hover:text-amber-700"
+                      : "text-emerald-700 font-bold hover:bg-emerald-50"
+                  }`}
+                  title={isAppr ? "Revert to Pending" : "Approve this Voucher"}
+                >
+                  {isAppr ? "Revoke" : "Approve"}
+                </Button>
+              )}
             </div>
           );
         },
@@ -354,20 +359,26 @@ export default function PettyCashPage() {
               title="View Details"
               icon={<Eye size={14} />}
             />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={(e) => handleDelete(row.original, e)}
-              className="p-1 text-slate-400 hover:text-red-600 h-7 w-7"
-              title="Delete Voucher"
-              icon={<Trash2 size={14} />}
-            />
+            {isAccountantOrAdmin ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={(e) => handleDelete(row.original, e)}
+                className="p-1 text-slate-400 hover:text-red-600 h-7 w-7"
+                title="Delete Voucher"
+                icon={<Trash2 size={14} />}
+              />
+            ) : (
+              <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                View Only
+              </span>
+            )}
           </div>
         ),
       },
     ],
-    [],
+    [isAccountantOrAdmin],
   );
 
   return (
