@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
+import { useAuth } from "@/context/AuthContext";
 import {
   usePurchaseOrders,
   useCreatePurchaseOrder,
@@ -41,6 +42,7 @@ interface ItemRow {
 }
 
 export default function PurchaseOrdersPage() {
+  const { canModify } = useAuth();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [supplierFilter, setSupplierFilter] = useState<string>("");
@@ -223,9 +225,16 @@ export default function PurchaseOrdersPage() {
         accessorKey: "poNumber",
         header: "PO Number",
         cell: ({ row }) => (
-          <span className="font-mono font-bold text-slate-900">
-            {row.original.poNumber}
-          </span>
+          <div>
+            <span className="font-mono font-bold text-slate-900 block">
+              {row.original.poNumber}
+            </span>
+            {row.original.creator?.fullName && (
+              <span className="text-[10px] text-slate-400 font-medium">
+                By {row.original.creator.fullName}
+              </span>
+            )}
+          </div>
         ),
       },
       {
@@ -280,6 +289,9 @@ export default function PurchaseOrdersPage() {
         cell: ({ row }) => {
           const isDraft = row.original.status === "DRAFT";
           const isOrdered = row.original.status === "ORDERED";
+          const canEdit = canModify(row.original.createdBy, [
+            "INVENTORY_MANAGER",
+          ]);
 
           return (
             <div className="flex items-center justify-end gap-1.5">
@@ -301,7 +313,13 @@ export default function PurchaseOrdersPage() {
                 Print
               </Button>
 
-              {isDraft && (
+              {!canEdit && (
+                <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                  View Only
+                </span>
+              )}
+
+              {canEdit && isDraft && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -317,7 +335,7 @@ export default function PurchaseOrdersPage() {
                 </Button>
               )}
 
-              {isOrdered && (
+              {canEdit && isOrdered && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -328,7 +346,7 @@ export default function PurchaseOrdersPage() {
                 </Button>
               )}
 
-              {isDraft && (
+              {canEdit && isDraft && (
                 <Button
                   variant="danger"
                   size="sm"
@@ -350,7 +368,7 @@ export default function PurchaseOrdersPage() {
         },
       },
     ],
-    [deletePO, updatePO],
+    [canModify, deletePO, updatePO],
   );
 
   return (
