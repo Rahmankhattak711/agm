@@ -1,11 +1,23 @@
+import {
+  forbidden,
+  getAuthUser,
+  hasRole,
+  unauthorized,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "ACCOUNTANT")) {
+      return forbidden("Forbidden: Only Accountants and Admins can run depreciation schedules");
+    }
+
     const body = await request.json();
-    const { fiscalYear, createdBy } = body;
+    const { fiscalYear } = body;
 
     const assets = await prisma.fixedAsset.findMany();
 
@@ -31,7 +43,7 @@ export async function POST(request: Request) {
               entryNumber,
               entryDate: new Date(),
               description: `Depreciation for ${asset.assetName} (${fiscalYear || new Date().getFullYear()})`,
-              createdBy: createdBy || "",
+              createdBy: authUser.id,
             },
           });
 
