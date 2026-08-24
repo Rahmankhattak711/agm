@@ -12,7 +12,7 @@ export const QuotationFooter: React.FC = () => {
         className="w-full h-full block"
       >
         <polygon points="0,0 150,0 90,100 0,100" fill="#22222e" />
-        <polygon points="166,0 850,0 790,100 106,100" fill="#1b4332" />
+        <polygon points="166,0 850,0 790,100 106,100" fill="#28633a" />
         <polygon points="866,0 1000,0 1000,100 806,100" fill="#22222e" />
       </svg>
 
@@ -25,7 +25,7 @@ export const QuotationFooter: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-center whitespace-nowrap text-[9.5px] opacity-90 mt-0.5">
-          Sheikh Zayed Road, near Oasis Centre, Office No. 13-11, Adel Mohammed
+          Sheikh Zayed Road, near Oasis Centre, Office No. 13-11, Adel Mohammed <br />
           Ali Jassim Bldg, Al Quoz 1, Dubai, UAE
         </div>
       </div>
