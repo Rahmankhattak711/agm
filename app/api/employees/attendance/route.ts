@@ -73,7 +73,9 @@ export async function POST(request: Request) {
 
     if (Array.isArray(body)) {
       if (!hasRole(user, "HR")) {
-        return forbidden("Forbidden: Only HR and Admins can perform batch attendance operations");
+        return forbidden(
+          "Forbidden: Only HR and Admins can perform batch attendance operations",
+        );
       }
 
       const results = [];
@@ -155,9 +157,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // If marking someone else's attendance, require HR role
     if (employeeId !== user.id && !hasRole(user, "HR")) {
-      return forbidden("Forbidden: You can only record your own attendance unless you are HR or Admin");
+      return forbidden(
+        "Forbidden: You can only record your own attendance unless you are HR or Admin",
+      );
     }
 
     const date = new Date(attendanceDate);
@@ -233,9 +236,12 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // User A cannot delete User B's attendance record unless HR / Admin
-    if (!canModifyResource(user, existing.markedBy || existing.employeeId, ["HR"])) {
-      return forbidden("Forbidden: You cannot delete another user's attendance record");
+    if (
+      !canModifyResource(user, existing.markedBy || existing.employeeId, ["HR"])
+    ) {
+      return forbidden(
+        "Forbidden: You cannot delete another user's attendance record",
+      );
     }
 
     await prisma.dailyAttendance.delete({ where: { id } });

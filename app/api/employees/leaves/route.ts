@@ -118,14 +118,23 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // Status change (approval/rejection) requires HR role
-    if ((status === "APPROVED" || status === "REJECTED") && !hasRole(user, "HR")) {
-      return forbidden("Forbidden: Only HR and Admins can approve or reject leave requests");
+    if (
+      (status === "APPROVED" || status === "REJECTED") &&
+      !hasRole(user, "HR")
+    ) {
+      return forbidden(
+        "Forbidden: Only HR and Admins can approve or reject leave requests",
+      );
     }
 
-    // If cancelling, user must be HR, admin or associated with employee
-    if (status === "CANCELLED" && !hasRole(user, "HR") && user.id !== existing.employeeId) {
-      return forbidden("Forbidden: You cannot cancel another user's leave request");
+    if (
+      status === "CANCELLED" &&
+      !hasRole(user, "HR") &&
+      user.id !== existing.employeeId
+    ) {
+      return forbidden(
+        "Forbidden: You cannot cancel another user's leave request",
+      );
     }
 
     const updated = await prisma.$transaction(
@@ -206,9 +215,10 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // User A cannot delete User B's leave request unless HR / Admin
     if (!canModifyResource(user, existing.employeeId, ["HR"])) {
-      return forbidden("Forbidden: You cannot delete another user's leave request");
+      return forbidden(
+        "Forbidden: You cannot delete another user's leave request",
+      );
     }
 
     await prisma.leaveRequest.delete({ where: { id } });
