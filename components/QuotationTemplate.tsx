@@ -35,6 +35,7 @@ import {
   QuotationItem,
   QuotationItemsTable,
   QuotationMeta,
+  QuotationPaymentTerms,
   QuotationSavedModal,
   QuotationSignatures,
   QuotationTemplateProps,
@@ -76,19 +77,14 @@ export default function QuotationTemplate({
   const createJournalEntryMutation = useCreateJournalEntry();
 
   const [meta, setMeta] = useState<QuotationMeta>({
-    quotationNo:
-      initialMeta?.quotationNo ||
-      `AGM-QTN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
-    date: initialMeta?.date || new Date().toLocaleDateString("en-GB"),
-    validUntil:
-      initialMeta?.validUntil ||
-      new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString(
-        "en-GB",
-      ),
+    quotationNo: initialMeta?.quotationNo || "AGM-QTN-2026-01217",
+    date: initialMeta?.date || "06/08/2026",
+    validUntil: initialMeta?.validUntil || "16/08/2026",
     customer: initialMeta?.customer || "Brian Berthelsen",
     attention: initialMeta?.attention || "",
     address: initialMeta?.address || "Dubai, UAE",
     trn: initialMeta?.trn || "",
+    email: initialMeta?.email || "brian@example.com",
     mobile: initialMeta?.mobile || "+971 56 545 3103",
     project: initialMeta?.project || "Proposed G+1 Townhouses",
     location: initialMeta?.location || "Al Furjan, Dubai - UAE",
@@ -124,6 +120,14 @@ export default function QuotationTemplate({
 
   const updatePaymentTerm = (idx: number, val: string) => {
     setPaymentTerms((prev) => prev.map((term, i) => (i === idx ? val : term)));
+  };
+
+  const addPaymentTerm = () => {
+    setPaymentTerms((prev) => [...prev, "Payment milestone term"]);
+  };
+
+  const removePaymentTerm = (idx: number) => {
+    setPaymentTerms((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleProductSelect = (id: number | string, productId: string) => {
@@ -629,7 +633,10 @@ export default function QuotationTemplate({
           <tfoot className="print-page-footer-group">
             <tr>
               <td className="p-0 border-none">
-                <QuotationFooter />
+                <div className="h-[75px] w-full hidden print:block" />
+                <div className="print:hidden">
+                  <QuotationFooter />
+                </div>
               </td>
             </tr>
           </tfoot>
@@ -641,8 +648,6 @@ export default function QuotationTemplate({
                   docType={docType}
                   meta={meta}
                   onUpdateMeta={updateMeta}
-                  paymentTerms={paymentTerms}
-                  onUpdatePaymentTerm={updatePaymentTerm}
                 />
 
                 <QuotationDetailsCards meta={meta} onUpdateMeta={updateMeta} />
@@ -668,12 +673,21 @@ export default function QuotationTemplate({
                 />
 
                 <QuotationTerms termsList={DEFAULT_TERMS_AND_CONDITIONS} />
-
-                <QuotationSignatures />
+                <QuotationPaymentTerms
+                  paymentTerms={paymentTerms}
+                  onUpdatePaymentTerm={updatePaymentTerm}
+                  onAddPaymentTerm={addPaymentTerm}
+                  onRemovePaymentTerm={removePaymentTerm}
+                />
               </td>
             </tr>
           </tbody>
         </table>
+
+        {/* Pinned print footer rendered across all printed sheets */}
+        <div className="hidden print:block">
+          <QuotationFooter />
+        </div>
       </div>
     </div>
   );

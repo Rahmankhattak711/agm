@@ -54,7 +54,7 @@ body {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 8mm 8mm 10mm 8mm;
+    margin: 5mm 6mm 6mm 6mm;
   }
 
   * {
@@ -109,6 +109,7 @@ body {
   /* Table structure for repeating header & footer across all printed pages */
   .print-page-table {
     width: 100% !important;
+    min-height: 100vh !important;
     border-collapse: collapse !important;
     page-break-inside: auto !important;
     table-layout: fixed !important;
@@ -119,22 +120,24 @@ body {
     display: table-header-group !important;
   }
 
+  /* Inner tables (e.g. Quotation items table) header prints only once on the first page and does not repeat */
+  .print-page-table table thead,
+  thead:not(.print-page-header-group) {
+    display: table-row-group !important;
+  }
+
   .print-page-table > tfoot,
   tfoot.print-page-footer-group {
     display: table-footer-group !important;
   }
 
-  .print-page-table > tbody,
-  tbody.print-page-body-group {
-    display: table-row-group !important;
+  .print-page-table > tbody > tr,
+  .print-page-table > tbody > tr > td {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
   }
 
   .print-avoid-break {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-
-  tr {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }

@@ -3,7 +3,7 @@ import React from "react";
 export const QuotationFooter: React.FC = () => {
   return (
     <div
-      className="mt-4 relative w-full bg-transparent print-avoid-break overflow-hidden"
+      className="mt-4 print:mt-0 print:fixed print:bottom-0 print:left-0 print:right-0 print:w-full print:z-50 relative w-full bg-transparent print-avoid-break overflow-hidden"
       style={{ height: 70 }}
     >
       <svg

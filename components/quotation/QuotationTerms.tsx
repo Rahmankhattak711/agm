@@ -13,7 +13,7 @@ export const QuotationTerms: React.FC<QuotationTermsProps> = ({
   const [showAllTerms, setShowAllTerms] = useState<boolean>(true);
 
   return (
-    <div className="px-10 mt-6 print-avoid-break">
+    <div className="px-10 mt-4 print:px-8">
       <div className="border border-agm-box-border bg-agm-box-bg p-4 rounded-xl">
         <div className="flex items-center justify-between mb-2">
           <div className="font-bold text-slate-900 uppercase text-[11.5px] tracking-wider text-agm-green">
@@ -34,7 +34,7 @@ export const QuotationTerms: React.FC<QuotationTermsProps> = ({
         </div>
 
         <div
-          className={`space-y-1 text-[11px] text-slate-700 leading-relaxed ${
+          className={`space-y-1.5 text-[11px] text-slate-700 leading-relaxed ${
             showAllTerms ? "" : "max-h-48 overflow-hidden print:max-h-none"
           }`}
         >
