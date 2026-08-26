@@ -93,7 +93,13 @@ body {
 
   #printable-voucher,
   #printable-statement,
-  #printable-po {
+  #printable-po,
+  #sales-print-area,
+  #purchases-print-area,
+  #customers-print-area,
+  #suppliers-print-area,
+  #expenses-print-area,
+  #management-print-area {
     background: white !important;
     color: black !important;
     padding: 0 !important;
@@ -109,7 +115,6 @@ body {
   /* Table structure for repeating header & footer across all printed pages */
   .print-page-table {
     width: 100% !important;
-    min-height: 100vh !important;
     border-collapse: collapse !important;
     page-break-inside: auto !important;
     table-layout: fixed !important;
@@ -129,6 +134,7 @@ body {
   .print-page-table > tfoot,
   tfoot.print-page-footer-group {
     display: table-footer-group !important;
+    height: 88px !important;
   }
 
   .print-page-table > tbody > tr,
@@ -137,8 +143,16 @@ body {
     page-break-inside: auto !important;
   }
 
-  .print-avoid-break {
+  .print-avoid-break,
+  .break-inside-avoid,
+  [class*="print:break-inside-avoid"] {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
+  }
+
+  .break-after-avoid,
+  [class*="print:break-after-avoid"] {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
   }
 }

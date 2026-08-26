@@ -28,14 +28,14 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
 }) => {
   return (
     <div className="px-10 print:px-8">
-      <div className="flex items-stretch justify-between gap-4 mt-3.5 print:mt-2 print-avoid-break">
+      <div className="flex items-stretch justify-between gap-4 mt-3.5 print:mt-1.5 print-avoid-break">
         {/* Banking Details Card */}
-        <div className="flex-1 border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2 rounded-xl text-[11.5px] print:text-[10px] flex flex-col justify-center shadow-2xs">
-          <div className="font-bold mb-1.5 text-slate-900 uppercase text-[11px] print:text-[9.5px] tracking-wider text-agm-green flex items-center gap-1.5">
+        <div className="flex-1 border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl text-[11.5px] print:text-[9.5px] flex flex-col justify-center shadow-2xs">
+          <div className="font-bold mb-1.5 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
             BANKING INFORMATION
           </div>
-          <div className="space-y-1 text-slate-700 font-medium">
+          <div className="space-y-1 print:space-y-0.5 text-slate-700 font-medium">
             <div>
               Company:{" "}
               <strong className="text-slate-900">

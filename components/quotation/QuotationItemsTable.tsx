@@ -87,37 +87,37 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
           <tr className="text-center text-white bg-agm-green print-avoid-break">
             <TableHeaderCell
               align="center"
-              className="py-2.5 px-2 print:py-1.5 print:px-1 font-bold w-12 border border-agm-box-border text-white"
+              className="py-2.5 px-2 print:py-1.5 print:px-1 font-bold w-12 border border-agm-box-border text-white text-center align-middle"
             >
               S.No
             </TableHeaderCell>
             <TableHeaderCell
               align="center"
-              className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold border border-agm-box-border text-white"
+              className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold border border-agm-box-border text-white text-center align-middle"
             >
               DISC
             </TableHeaderCell>
             <TableHeaderCell
               align="center"
-              className="py-2.5 px-2 print:py-1.5 print:px-1 font-bold w-20 border border-agm-box-border text-white"
+              className="py-2.5 px-2 print:py-1.5 print:px-1 font-bold w-20 border border-agm-box-border text-white text-center align-middle"
             >
               QTY/SQM
             </TableHeaderCell>
             <TableHeaderCell
               align="center"
-              className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold w-28 border border-agm-box-border text-white"
+              className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold w-28 border border-agm-box-border text-white text-center align-middle"
             >
               Price
             </TableHeaderCell>
             <TableHeaderCell
               align="center"
-              className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold w-32 border border-agm-box-border text-white"
+              className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold w-32 border border-agm-box-border text-white text-center align-middle"
             >
               Total
             </TableHeaderCell>
             <TableHeaderCell
               align="center"
-              className="py-2.5 print:hidden font-bold w-12 border border-agm-box-border text-white"
+              className="py-2.5 print:hidden font-bold w-12 border border-agm-box-border text-white text-center align-middle"
             >
               Actions
             </TableHeaderCell>
@@ -143,10 +143,10 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
               <React.Fragment key={it.id}>
                 {/* Full-width Section Title (e.g. Guest Bathroom, Majlis Washroom, Kids Bathroom 1 & 2) */}
                 {showSectionHeader && (
-                  <TableRow className="bg-agm-box-bg font-bold border-t border-b border-agm-box-border print-avoid-break hover:bg-agm-box-bg">
+                  <TableRow className="bg-agm-box-bg font-bold border-t border-b border-agm-box-border print-avoid-break break-after-avoid print:break-after-avoid hover:bg-agm-box-bg">
                     <TableCell
                       colSpan={5}
-                      className="py-2 px-3 print:py-1 print:px-2 text-[12.5px] print:text-[11px] font-bold text-slate-900 border border-agm-box-border"
+                      className="py-2 px-3 print:py-0.5 print:px-2 text-[12.5px] print:text-[10px] font-bold text-slate-900 border border-agm-box-border"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-slate-900 tracking-wide">
@@ -175,13 +175,13 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                           {/* S.No column: 1, 2, 3, 4... */}
                           <TableCell
                             align="center"
-                            className="py-2 px-2 print:py-1 print:px-1 align-top text-center font-bold text-slate-700 border border-agm-box-border w-12"
+                            className="py-2 px-2 print:py-0.5 print:px-1 align-middle text-center font-bold text-slate-700 border border-agm-box-border w-12"
                           >
                             {pIdx + 1}
                           </TableCell>
 
                           {/* Description column */}
-                          <TableCell className="py-2 px-3 print:py-1 print:px-2 align-top border border-agm-box-border">
+                          <TableCell className="py-2 px-3 print:py-0.5 print:px-2 align-top border border-agm-box-border">
                             {isFirst && availableProducts.length > 0 && (
                               <div className="mb-1 print:hidden">
                                 <select
@@ -358,12 +358,12 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                   <TableRow className="print-avoid-break hover:bg-slate-50/50 bg-white">
                     <TableCell
                       align="center"
-                      className="py-2 px-2 print:py-1 print:px-1 align-top text-slate-700 font-bold border border-agm-box-border w-12"
+                      className="py-2 px-2 print:py-0.5 print:px-1 align-middle text-center text-slate-700 font-bold border border-agm-box-border w-12"
                     >
                       {idx + 1}
                     </TableCell>
 
-                    <TableCell className="py-2 px-3 print:py-1 print:px-2 align-top border border-agm-box-border">
+                    <TableCell className="py-2 px-3 print:py-0.5 print:px-2 align-top border border-agm-box-border">
                       {availableProducts.length > 0 && (
                         <div className="mb-1 print:hidden">
                           <select
@@ -413,7 +413,7 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                         </button>
                       </div>
 
-                      <div className="hidden print:block whitespace-pre-wrap text-slate-800 text-[10px] leading-tight py-0.5">
+                      <div className="hidden print:block whitespace-pre-wrap text-slate-800 text-[10px] print:text-[9.5px] leading-tight py-0.5 print:py-0">
                         {it.desc}
                       </div>
 
@@ -436,7 +436,7 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
 
                     <TableCell
                       align="center"
-                      className="py-2 px-2 print:py-1 print:px-1 align-top border border-agm-box-border text-center"
+                      className="py-2 px-2 print:py-0.5 print:px-1 align-middle border border-agm-box-border text-center"
                     >
                       <input
                         type="text"
@@ -451,7 +451,7 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
 
                     <TableCell
                       align="center"
-                      className="py-2 px-2 print:py-1 print:px-1 align-top border border-agm-box-border text-center"
+                      className="py-2 px-2 print:py-0.5 print:px-1 align-middle border border-agm-box-border text-center"
                     >
                       <input
                         type="text"
@@ -475,12 +475,12 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
 
                     <TableCell
                       align="center"
-                      className="py-2 px-3 print:py-1 print:px-2 align-top font-mono font-bold text-slate-900 border border-agm-box-border text-center"
+                      className="py-2 px-3 print:py-0.5 print:px-2 align-middle font-mono font-bold text-slate-900 border border-agm-box-border text-center"
                     >
                       {isFree ? "Free" : formatCurrency(rowTotal)}
                     </TableCell>
 
-                    <td className="py-2 px-1 align-top text-center print:hidden border-none">
+                    <td className="py-2 px-1 align-middle text-center print:hidden border-none">
                       <Button
                         type="button"
                         variant="ghost"

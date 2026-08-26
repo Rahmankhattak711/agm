@@ -16,14 +16,14 @@ export const QuotationDocTitleBar: React.FC<QuotationDocTitleBarProps> = ({
     "w-36 bg-transparent outline-none focus:bg-emerald-50/70 rounded px-1.5 py-0.5 text-right font-bold text-slate-900 border-b border-dashed border-slate-300 focus:border-emerald-600 transition-colors print:bg-transparent print:p-0 print:border-none";
 
   return (
-    <div className="px-10 py-3.5 print:px-8 print:py-1.5 w-full border-b border-slate-100 bg-slate-50/50">
+    <div className="px-10 py-3.5 print:px-8 print:py-1 w-full border-b border-slate-100 bg-slate-50/50">
       <div className="flex items-center justify-between gap-8">
         <div>
-          <h1 className="text-2xl print:text-xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-2xl print:text-lg font-black text-slate-900 tracking-tight">
             {docType === "TAX_INVOICE" ? "TAX INVOICE" : "QUOTATION"}
           </h1>
           {docType === "TAX_INVOICE" && (
-            <p className="text-[11px] print:text-[10px] font-semibold text-emerald-700 mt-0.5">
+            <p className="text-[11px] print:text-[9.5px] font-semibold text-emerald-700 mt-0.5 print:mt-0">
               Official UAE FTA Tax Invoice (Standard Rated 5% VAT)
             </p>
           )}

@@ -13,10 +13,10 @@ export const QuotationTerms: React.FC<QuotationTermsProps> = ({
   const [showAllTerms, setShowAllTerms] = useState<boolean>(true);
 
   return (
-    <div className="px-10 mt-4 print:px-8">
-      <div className="border border-agm-box-border bg-agm-box-bg p-4 rounded-xl">
-        <div className="flex items-center justify-between mb-2">
-          <div className="font-bold text-slate-900 uppercase text-[11.5px] tracking-wider text-agm-green">
+    <div className="px-10 mt-4 print:px-8 print:mt-2">
+      <div className="border border-agm-box-border bg-agm-box-bg p-4 print:p-2.5 rounded-xl print:rounded-lg">
+        <div className="flex items-center justify-between mb-2 print:mb-1">
+          <div className="font-bold text-slate-900 uppercase text-[11.5px] print:text-[10px] tracking-wider text-agm-green">
             TERMS AND CONDITIONS (20 CLAUSES)
           </div>
           <Button
@@ -34,16 +34,19 @@ export const QuotationTerms: React.FC<QuotationTermsProps> = ({
         </div>
 
         <div
-          className={`space-y-1.5 text-[11px] text-slate-700 leading-relaxed ${
+          className={`space-y-1.5 print:space-y-0.5 text-[11px] print:text-[9.5px] print:leading-snug text-slate-700 leading-relaxed ${
             showAllTerms ? "" : "max-h-48 overflow-hidden print:max-h-none"
           }`}
         >
           {termsList.map((t) => (
-            <div key={t.id} className="flex items-start gap-1.5 py-0.5">
-              <span className="font-bold text-agm-green min-w-[18px]">
+            <div
+              key={t.id}
+              className="flex items-start gap-1.5 py-0.5 print:py-0.5 break-inside-avoid print:break-inside-avoid print-avoid-break"
+            >
+              <span className="font-bold text-agm-green min-w-[18px] print:min-w-[15px] shrink-0">
                 {t.id}.
               </span>
-              <div>
+              <div className="break-inside-avoid print:break-inside-avoid">
                 <strong className="text-slate-900 mr-1">{t.title}</strong>
                 <span>{t.text}</span>
               </div>

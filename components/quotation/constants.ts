@@ -72,12 +72,12 @@ export const DEFAULT_TERMS_AND_CONDITIONS = [
   {
     id: 7,
     title: "Quality and Finish Disclaimer:",
-    text: "The Client acknowledges and agrees that item related to repairs, remodelling, and refurbishment materials, such as doors, walls, and cabinets etc may be not result in a 100% perfect finish due to the condition of item.",
+    text: "The Client acknowledges and agrees that items related to repairs, remodeling, and refurbishment materials, such as doors, walls, and cabinets etc. may not result in a 100% perfect finish due to the condition of the existing items.",
   },
   {
     id: 8,
     title: "Third-Party Contractor Liability:",
-    text: "The Client acknowledges that other contractors working on-site. AGM Fitout Technical Services LLC shall not be held liable for any major or minor damage caused by (Whom). The Client shall ensure proper coordination among all parties on-site. Any repair or rework required because of such damage shall be carried out at the Client’s cost.",
+    text: "The Client acknowledges that other contractors may be working on-site. AGM Fitout Technical Services LLC shall not be held liable for any major or minor damage caused by them. The Client shall ensure proper coordination among all parties on-site. Any repair or rework required because of such damage shall be carried out at the Client’s cost.",
   },
   {
     id: 9,

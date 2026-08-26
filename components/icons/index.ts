@@ -35,3 +35,4 @@ export * from "./CloseIcon";
 export * from "./LogoutIcon";
 export * from "./RefreshIcon";
 export * from "./SpinnerIcon";
+export * from "./FinanceIcons";
