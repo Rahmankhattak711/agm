@@ -9,7 +9,7 @@ export const QuotationFooter: React.FC<QuotationFooterProps> = ({
 }) => {
   return (
     <div
-      className={`quotation-footer mt-4 print:mt-0 relative w-full bg-white overflow-hidden max-w-[1200px] mx-auto ${className}`}
+      className={`quotation-footer mt-4 print:mt-0 relative w-full bg-white overflow-hidden max-w-full ${className}`}
       style={{
         WebkitPrintColorAdjust: "exact",
         printColorAdjust: "exact",
@@ -19,15 +19,14 @@ export const QuotationFooter: React.FC<QuotationFooterProps> = ({
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1200 220"
         width="100%"
-        height="220"
         preserveAspectRatio="xMidYMid meet"
         aria-hidden="true"
         style={{
           display: "block",
           width: "100%",
           height: "auto",
-          minHeight: "220px",
-          overflow: "visible",
+          maxHeight: "135px",
+          overflow: "hidden",
           WebkitPrintColorAdjust: "exact",
           printColorAdjust: "exact",
         }}
