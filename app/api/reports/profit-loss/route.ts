@@ -1,126 +1,275 @@
 import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 type Account = Awaited<
   ReturnType<typeof prisma.chartOfAccount.findMany>
 >[number];
+
 type ProfitItem = {
   id: string;
   section: string;
   accountCode: string;
   accountName: string;
   amount: number;
+  prevAmount?: number;
+  variance?: number;
+  variancePct?: number;
 };
 
-export async function GET() {
+function calculateBalances(
+  lines: any[],
+  accounts: Account[],
+  prevLines: any[] = [],
+) {
+  const balanceMap = new Map<string, number>();
+  for (const l of lines) {
+    const type = l.account?.type;
+    const current = balanceMap.get(l.accountId) || 0;
+    if (type === "REVENUE") {
+      balanceMap.set(
+        l.accountId,
+        current + Number(l.credit || 0) - Number(l.debit || 0),
+      );
+    } else if (type === "EXPENSE") {
+      balanceMap.set(
+        l.accountId,
+        current + Number(l.debit || 0) - Number(l.credit || 0),
+      );
+    }
+  }
+
+  const prevBalanceMap = new Map<string, number>();
+  for (const l of prevLines) {
+    const type = l.account?.type;
+    const current = prevBalanceMap.get(l.accountId) || 0;
+    if (type === "REVENUE") {
+      prevBalanceMap.set(
+        l.accountId,
+        current + Number(l.credit || 0) - Number(l.debit || 0),
+      );
+    } else if (type === "EXPENSE") {
+      prevBalanceMap.set(
+        l.accountId,
+        current + Number(l.debit || 0) - Number(l.credit || 0),
+      );
+    }
+  }
+
+  const incomeAccounts = accounts.filter((a: Account) => a.type === "REVENUE");
+  const expenseAccounts = accounts.filter((a: Account) => a.type === "EXPENSE");
+
+  const isDirectExpense = (acc: {
+    accountCode: string;
+    accountName: string;
+  }) => {
+    const name = acc.accountName.toLowerCase();
+    return (
+      acc.accountCode === "5010" ||
+      name.includes("purchase material") ||
+      name.includes("direct material") ||
+      name.includes("direct expense") ||
+      name.includes("cogs") ||
+      name.includes("cost of goods")
+    );
+  };
+
+  const createItem = (acc: Account, section: string): ProfitItem => {
+    const amount = balanceMap.get(acc.id) || 0;
+    const prevAmount = prevBalanceMap.get(acc.id) || 0;
+    const variance = amount - prevAmount;
+    const variancePct =
+      prevAmount !== 0 ? ((amount - prevAmount) / Math.abs(prevAmount)) * 100 : 0;
+
+    return {
+      id: acc.id,
+      section,
+      accountCode: acc.accountCode,
+      accountName: acc.accountName,
+      amount,
+      prevAmount,
+      variance,
+      variancePct,
+    };
+  };
+
+  const incomeItems: ProfitItem[] = incomeAccounts.map((acc: Account) =>
+    createItem(acc, "Income"),
+  );
+
+  const directExpenseItems: ProfitItem[] = expenseAccounts
+    .filter(isDirectExpense)
+    .map((acc: Account) => createItem(acc, "Direct Material Expense"));
+
+  const operatingExpenseItems: ProfitItem[] = expenseAccounts
+    .filter((acc: Account) => !isDirectExpense(acc))
+    .map((acc: Account) => createItem(acc, "Operating Expense"));
+
+  const totalIncome = incomeItems.reduce((s, i) => s + i.amount, 0);
+  const totalDirectExpenses = directExpenseItems.reduce((s, i) => s + i.amount, 0);
+  const grossProfit = totalIncome - totalDirectExpenses;
+  const totalOperatingExpenses = operatingExpenseItems.reduce(
+    (s, i) => s + i.amount,
+    0,
+  );
+  const totalExpenses = totalOperatingExpenses;
+  const netProfit = grossProfit - totalOperatingExpenses;
+
+  // Previous period summaries
+  const prevTotalIncome = incomeItems.reduce((s, i) => s + (i.prevAmount || 0), 0);
+  const prevTotalDirectExpenses = directExpenseItems.reduce(
+    (s, i) => s + (i.prevAmount || 0),
+    0,
+  );
+  const prevGrossProfit = prevTotalIncome - prevTotalDirectExpenses;
+  const prevTotalOperatingExpenses = operatingExpenseItems.reduce(
+    (s, i) => s + (i.prevAmount || 0),
+    0,
+  );
+  const prevNetProfit = prevGrossProfit - prevTotalOperatingExpenses;
+
+  return {
+    income: incomeItems,
+    totalIncome,
+    prevTotalIncome,
+    directExpenses: directExpenseItems,
+    totalDirectExpenses,
+    prevTotalDirectExpenses,
+    grossProfit,
+    prevGrossProfit,
+    operatingExpenses: operatingExpenseItems,
+    totalOperatingExpenses,
+    prevTotalOperatingExpenses,
+    totalExpenses,
+    netProfit,
+    prevNetProfit,
+    netIncome: netProfit,
+    revenue: totalIncome,
+    expenses: totalDirectExpenses + totalOperatingExpenses,
+  };
+}
+
+export async function GET(req: NextRequest) {
   try {
-    const [accounts, lines] = await Promise.all([
+    const { searchParams } = new URL(req.url);
+    const period = searchParams.get("period") || "all"; // 'daily', 'weekly', 'monthly', 'yearly', 'custom', 'all'
+    const customStart = searchParams.get("startDate");
+    const customEnd = searchParams.get("endDate");
+    const compare = searchParams.get("compare") === "true";
+
+    const now = new Date();
+    let startDate: Date | null = null;
+    let endDate: Date | null = null;
+    let prevStartDate: Date | null = null;
+    let prevEndDate: Date | null = null;
+    let periodLabel = "All Time";
+
+    if (period === "daily") {
+      const targetDate = customStart ? new Date(customStart) : new Date(now);
+      startDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0);
+      endDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59);
+
+      prevStartDate = new Date(startDate);
+      prevStartDate.setDate(prevStartDate.getDate() - 1);
+      prevEndDate = new Date(endDate);
+      prevEndDate.setDate(prevEndDate.getDate() - 1);
+
+      periodLabel = `Daily (${startDate.toLocaleDateString("en-GB")})`;
+    } else if (period === "weekly") {
+      const day = now.getDay();
+      const diffToMonday = now.getDate() - day + (day === 0 ? -6 : 1);
+      startDate = new Date(now.getFullYear(), now.getMonth(), diffToMonday, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 6);
+      endDate.setHours(23, 59, 59);
+
+      prevStartDate = new Date(startDate);
+      prevStartDate.setDate(prevStartDate.getDate() - 7);
+      prevEndDate = new Date(endDate);
+      prevEndDate.setDate(prevEndDate.getDate() - 7);
+
+      periodLabel = `Weekly (${startDate.toLocaleDateString("en-GB")} - ${endDate.toLocaleDateString("en-GB")})`;
+    } else if (period === "monthly") {
+      const year = customStart ? new Date(customStart).getFullYear() : now.getFullYear();
+      const month = customStart ? new Date(customStart).getMonth() : now.getMonth();
+      startDate = new Date(year, month, 1, 0, 0, 0);
+      endDate = new Date(year, month + 1, 0, 23, 59, 59);
+
+      prevStartDate = new Date(year, month - 1, 1, 0, 0, 0);
+      prevEndDate = new Date(year, month, 0, 23, 59, 59);
+
+      periodLabel = `Monthly (${startDate.toLocaleString("default", { month: "long", year: "numeric" })})`;
+    } else if (period === "yearly") {
+      const year = customStart ? new Date(customStart).getFullYear() : now.getFullYear();
+      startDate = new Date(year, 0, 1, 0, 0, 0);
+      endDate = new Date(year, 11, 31, 23, 59, 59);
+
+      prevStartDate = new Date(year - 1, 0, 1, 0, 0, 0);
+      prevEndDate = new Date(year - 1, 11, 31, 23, 59, 59);
+
+      periodLabel = `Yearly / Fiscal Year (${year})`;
+    } else if (period === "custom" && customStart && customEnd) {
+      startDate = new Date(customStart);
+      startDate.setHours(0, 0, 0);
+      endDate = new Date(customEnd);
+      endDate.setHours(23, 59, 59);
+
+      const durationMs = endDate.getTime() - startDate.getTime();
+      prevEndDate = new Date(startDate.getTime() - 1);
+      prevStartDate = new Date(prevEndDate.getTime() - durationMs);
+
+      periodLabel = `Custom Range (${startDate.toLocaleDateString("en-GB")} - ${endDate.toLocaleDateString("en-GB")})`;
+    }
+
+    // Build Prisma where conditions
+    const whereCondition: any = {};
+    if (startDate && endDate) {
+      whereCondition.journalEntry = {
+        entryDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      };
+    }
+
+    const prevWhereCondition: any = {};
+    if (compare && prevStartDate && prevEndDate) {
+      prevWhereCondition.journalEntry = {
+        entryDate: {
+          gte: prevStartDate,
+          lte: prevEndDate,
+        },
+      };
+    }
+
+    const [accounts, currentLines, prevLines] = await Promise.all([
       prisma.chartOfAccount.findMany({
         orderBy: { accountCode: "asc" },
       }),
       prisma.journalEntryLine.findMany({
-        include: { account: true },
+        where: whereCondition,
+        include: { account: true, journalEntry: true },
       }),
+      compare && prevStartDate && prevEndDate
+        ? prisma.journalEntryLine.findMany({
+            where: prevWhereCondition,
+            include: { account: true, journalEntry: true },
+          })
+        : Promise.resolve([]),
     ]);
 
-    const balanceMap = new Map<string, number>();
-    for (const l of lines) {
-      const type = l.account?.type;
-      const current = balanceMap.get(l.accountId) || 0;
-      if (type === "REVENUE") {
-        balanceMap.set(
-          l.accountId,
-          current + Number(l.credit || 0) - Number(l.debit || 0),
-        );
-      } else if (type === "EXPENSE") {
-        balanceMap.set(
-          l.accountId,
-          current + Number(l.debit || 0) - Number(l.credit || 0),
-        );
-      }
-    }
-
-    const incomeAccounts = accounts.filter(
-      (a: Account) => a.type === "REVENUE",
-    );
-    const expenseAccounts = accounts.filter(
-      (a: Account) => a.type === "EXPENSE",
-    );
-
-    const isDirectExpense = (acc: {
-      accountCode: string;
-      accountName: string;
-    }) => {
-      const name = acc.accountName.toLowerCase();
-      return (
-        acc.accountCode === "5010" ||
-        name.includes("purchase material") ||
-        name.includes("direct material") ||
-        name.includes("direct expense") ||
-        name.includes("cogs") ||
-        name.includes("cost of goods")
-      );
-    };
-
-    const incomeItems: ProfitItem[] = incomeAccounts.map((acc: Account) => ({
-      id: acc.id,
-      section: "Income",
-      accountCode: acc.accountCode,
-      accountName: acc.accountName,
-      amount: balanceMap.get(acc.id) || 0,
-    }));
-
-    const directExpenseItems: ProfitItem[] = expenseAccounts
-      .filter(isDirectExpense)
-      .map((acc: Account) => ({
-        id: acc.id,
-        section: "Direct Material Expense",
-        accountCode: acc.accountCode,
-        accountName: acc.accountName,
-        amount: balanceMap.get(acc.id) || 0,
-      }));
-
-    const operatingExpenseItems: ProfitItem[] = expenseAccounts
-      .filter((acc: Account) => !isDirectExpense(acc))
-      .map((acc: Account) => ({
-        id: acc.id,
-        section: "Operating Expense",
-        accountCode: acc.accountCode,
-        accountName: acc.accountName,
-        amount: balanceMap.get(acc.id) || 0,
-      }));
-
-    const totalIncome = incomeItems.reduce(
-      (s: number, i: ProfitItem) => s + i.amount,
-      0,
-    );
-    const totalDirectExpenses = directExpenseItems.reduce(
-      (s: number, i: ProfitItem) => s + i.amount,
-      0,
-    );
-    const grossProfit = totalIncome - totalDirectExpenses;
-    const totalOperatingExpenses = operatingExpenseItems.reduce(
-      (s: number, i: ProfitItem) => s + i.amount,
-      0,
-    );
-    const totalExpenses = totalOperatingExpenses;
-    const netProfit = grossProfit - totalOperatingExpenses;
+    const result = calculateBalances(currentLines, accounts, prevLines);
 
     return NextResponse.json({
       companyName: "AGM FITOUT TECHNICAL SERVICES LLC",
-      reportTitle: "Profit & Loss",
-      income: incomeItems,
-      totalIncome,
-      directExpenses: directExpenseItems,
-      totalDirectExpenses,
-      grossProfit,
-      operatingExpenses: operatingExpenseItems,
-      totalOperatingExpenses,
-      totalExpenses,
-      netProfit,
-      netIncome: netProfit,
-      revenue: totalIncome,
-      expenses: totalDirectExpenses + totalOperatingExpenses,
+      reportTitle: "Statement of Profit & Loss",
+      period,
+      periodLabel,
+      startDate: startDate ? startDate.toISOString().split("T")[0] : null,
+      endDate: endDate ? endDate.toISOString().split("T")[0] : null,
+      prevStartDate: prevStartDate ? prevStartDate.toISOString().split("T")[0] : null,
+      prevEndDate: prevEndDate ? prevEndDate.toISOString().split("T")[0] : null,
+      compare,
+      ...result,
     });
   } catch (error: any) {
     console.error("GET /api/reports/profit-loss error:", error);

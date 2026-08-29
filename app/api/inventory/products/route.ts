@@ -17,16 +17,21 @@ export async function GET(request: Request) {
     const supplierId = searchParams.get("supplierId");
     const type = searchParams.get("type");
     const search = searchParams.get("search");
+    const productOrigin = searchParams.get("productOrigin");
 
     const where: any = {};
     if (categoryId) where.categoryId = categoryId;
     if (supplierId) where.supplierId = supplierId;
     if (type) where.type = type;
+    if (productOrigin) where.productOrigin = productOrigin;
     if (search) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
         { sku: { contains: search, mode: "insensitive" } },
         { barcode: { contains: search, mode: "insensitive" } },
+        { brand: { contains: search, mode: "insensitive" } },
+        { supplierSku: { contains: search, mode: "insensitive" } },
+        { originCompany: { contains: search, mode: "insensitive" } },
       ];
     }
 
@@ -88,6 +93,11 @@ export async function POST(request: Request) {
       unit,
       barcode,
       imageUrl,
+      brand,
+      supplierSku,
+      originCompany,
+      shopLocation,
+      productOrigin,
       categoryId,
       supplierId,
       costPrice,
@@ -114,6 +124,11 @@ export async function POST(request: Request) {
         unit: unit?.trim() || "PCS",
         barcode: barcode?.trim() || null,
         imageUrl: imageUrl?.trim() || null,
+        brand: brand?.trim() || null,
+        supplierSku: supplierSku?.trim() || null,
+        originCompany: originCompany?.trim() || null,
+        shopLocation: shopLocation?.trim() || null,
+        productOrigin: productOrigin || "PURCHASED_EXTERNAL",
         categoryId: categoryId || null,
         supplierId: supplierId || null,
         costPrice: costPrice !== undefined ? Number(costPrice) : 0,
