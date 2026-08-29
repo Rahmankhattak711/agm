@@ -285,7 +285,7 @@ export default function AttendancePage() {
         id: "actions",
         header: () => <div className="text-center">Actions</div>,
         cell: ({ row }) => {
-          if (!canModify) return null;
+          if (!canModify(row.original.employeeId, ["HR"])) return null;
           return (
             <div className="flex items-center justify-center">
               <button
@@ -332,7 +332,7 @@ export default function AttendancePage() {
             Print Register
           </Button>
 
-          {canModify && (
+          {canModify(null, ["HR"]) && (
             <Button
               variant="primary"
               size="sm"
