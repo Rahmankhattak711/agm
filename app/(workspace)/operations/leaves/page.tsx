@@ -47,11 +47,14 @@ export default function LeavesPage() {
   const updateStatus = useUpdateLeaveStatus();
   const deleteLeave = useDeleteLeaveRequest();
 
-  const stats = useMemo(() => ({
-    pending:  leaves.filter((l) => l.status === "PENDING").length,
-    approved: leaves.filter((l) => l.status === "APPROVED").length,
-    rejected: leaves.filter((l) => l.status === "REJECTED").length,
-  }), [leaves]);
+  const stats = useMemo(
+    () => ({
+      pending: leaves.filter((l) => l.status === "PENDING").length,
+      approved: leaves.filter((l) => l.status === "APPROVED").length,
+      rejected: leaves.filter((l) => l.status === "REJECTED").length,
+    }),
+    [leaves],
+  );
 
   const form = useForm({
     defaultValues: {

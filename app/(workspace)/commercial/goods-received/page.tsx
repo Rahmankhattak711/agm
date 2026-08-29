@@ -45,7 +45,6 @@ export default function GoodsReceivedPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedGrn, setSelectedGrn] = useState<GoodsReceipt | null>(null);
 
-  // Form State
   const [grnNumber, setGrnNumber] = useState("");
   const [purchaseOrderId, setPurchaseOrderId] = useState("");
   const [supplierId, setSupplierId] = useState("");
@@ -158,7 +157,6 @@ export default function GoodsReceivedPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -170,7 +168,9 @@ export default function GoodsReceivedPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Receive warehouse shipments, verify delivery notes, record accepted and damaged quantities, and auto-update stock on hand.
+            AGM FITOUT TECHNICAL SERVICES LLC — Receive warehouse shipments,
+            verify delivery notes, record accepted and damaged quantities, and
+            auto-update stock on hand.
           </p>
         </div>
 
@@ -187,7 +187,6 @@ export default function GoodsReceivedPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-teal-50/60 border border-teal-100 flex flex-col justify-between space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-teal-800">
@@ -217,7 +216,6 @@ export default function GoodsReceivedPage() {
         </div>
       </div>
 
-      {/* Search */}
       <div className="flex items-center gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
         <Search size={14} className="text-slate-400 ml-2" />
         <input
@@ -229,7 +227,6 @@ export default function GoodsReceivedPage() {
         />
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">
           <TableHead className="bg-slate-50/95 border-b border-slate-200">
@@ -287,7 +284,9 @@ export default function GoodsReceivedPage() {
                     {g.warehouse?.name || "Main Warehouse"}
                   </TableCell>
                   <TableCell className="py-3 px-3 text-slate-600">
-                    {g.receiptDate ? new Date(g.receiptDate).toISOString().slice(0, 10) : "—"}
+                    {g.receiptDate
+                      ? new Date(g.receiptDate).toISOString().slice(0, 10)
+                      : "—"}
                   </TableCell>
                   <TableCell className="py-3 px-3">
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
@@ -311,7 +310,6 @@ export default function GoodsReceivedPage() {
         </Table>
       </div>
 
-      {/* Create Modal */}
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
@@ -331,10 +329,14 @@ export default function GoodsReceivedPage() {
                 >
                   <option value="">Direct Receiving (No PO)</option>
                   {purchaseOrders
-                    .filter((p) => p.status !== "RECEIVED" && p.status !== "CANCELLED")
+                    .filter(
+                      (p) =>
+                        p.status !== "RECEIVED" && p.status !== "CANCELLED",
+                    )
                     .map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.poNumber} - {p.supplier?.name} (AED {Number(p.totalAmount).toFixed(2)})
+                        {p.poNumber} - {p.supplier?.name} (AED{" "}
+                        {Number(p.totalAmount).toFixed(2)})
                       </option>
                     ))}
                 </select>
@@ -391,7 +393,6 @@ export default function GoodsReceivedPage() {
               </div>
             </div>
 
-            {/* Received Items */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-800">Received Items</span>
@@ -489,7 +490,6 @@ export default function GoodsReceivedPage() {
         </Modal>
       )}
 
-      {/* Details View Modal */}
       {selectedGrn && (
         <Modal
           isOpen={!!selectedGrn}
@@ -499,33 +499,63 @@ export default function GoodsReceivedPage() {
           <div className="space-y-4 text-xs">
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
               <div className="flex justify-between font-mono">
-                <span className="font-bold text-teal-950">{selectedGrn.grnNumber}</span>
+                <span className="font-bold text-teal-950">
+                  {selectedGrn.grnNumber}
+                </span>
                 <span className="text-slate-500">
-                  {selectedGrn.receiptDate ? new Date(selectedGrn.receiptDate).toISOString().slice(0, 10) : ""}
+                  {selectedGrn.receiptDate
+                    ? new Date(selectedGrn.receiptDate)
+                        .toISOString()
+                        .slice(0, 10)
+                    : ""}
                 </span>
               </div>
-              <p className="font-bold text-slate-900">Supplier: {selectedGrn.supplier?.name || "Vendor"}</p>
-              <p className="text-slate-600">Warehouse: {selectedGrn.warehouse?.name || "Main Warehouse"}</p>
-              <p className="text-slate-500 font-mono">Delivery Note: {selectedGrn.deliveryNoteNumber || "N/A"}</p>
+              <p className="font-bold text-slate-900">
+                Supplier: {selectedGrn.supplier?.name || "Vendor"}
+              </p>
+              <p className="text-slate-600">
+                Warehouse: {selectedGrn.warehouse?.name || "Main Warehouse"}
+              </p>
+              <p className="text-slate-500 font-mono">
+                Delivery Note: {selectedGrn.deliveryNoteNumber || "N/A"}
+              </p>
             </div>
 
             <div className="border border-slate-200 rounded-xl overflow-hidden">
               <Table className="w-full text-xs">
                 <TableHead className="bg-slate-50">
-                  <TableHeaderCell className="py-2 px-3">Product</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Received</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Accepted</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Damaged</TableHeaderCell>
+                  <TableHeaderCell className="py-2 px-3">
+                    Product
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Received
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Accepted
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Damaged
+                  </TableHeaderCell>
                 </TableHead>
                 <TableBody>
                   {selectedGrn.items?.map((item: any) => (
                     <TableRow key={item.id}>
-                      <TableCell className="py-2 px-3">{item.product?.name || "Product"}</TableCell>
-                      <TableCell align="right" className="py-2 px-3 font-mono">{item.quantityReceived}</TableCell>
-                      <TableCell align="right" className="py-2 px-3 font-mono font-bold text-emerald-800">
+                      <TableCell className="py-2 px-3">
+                        {item.product?.name || "Product"}
+                      </TableCell>
+                      <TableCell align="right" className="py-2 px-3 font-mono">
+                        {item.quantityReceived}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className="py-2 px-3 font-mono font-bold text-emerald-800"
+                      >
                         {item.quantityAccepted}
                       </TableCell>
-                      <TableCell align="right" className="py-2 px-3 font-mono text-rose-700">
+                      <TableCell
+                        align="right"
+                        className="py-2 px-3 font-mono text-rose-700"
+                      >
                         {item.quantityDamaged}
                       </TableCell>
                     </TableRow>

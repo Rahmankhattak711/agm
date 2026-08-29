@@ -3,7 +3,10 @@
 import { EyeIcon, PrintIcon, SearchIcon } from "@/components/icons";
 import { QuotationFooter, QuotationHeader } from "@/components/quotation";
 import { ReportDateFilter } from "@/components/reports/ReportDateFilter";
-import { ChartBarItem, ReportSummaryChart } from "@/components/reports/ReportSummaryChart";
+import {
+  ChartBarItem,
+  ReportSummaryChart,
+} from "@/components/reports/ReportSummaryChart";
 import {
   Button,
   DataTable,
@@ -67,7 +70,11 @@ export default function PurchaseReportsPage() {
       }
 
       // Supplier
-      if (supplierFilter && b.supplierId !== supplierFilter && b.supplierName !== supplierFilter) {
+      if (
+        supplierFilter &&
+        b.supplierId !== supplierFilter &&
+        b.supplierName !== supplierFilter
+      ) {
         return false;
       }
 
@@ -108,7 +115,10 @@ export default function PurchaseReportsPage() {
           if (startDate && new Date(b.billDate) < new Date(startDate)) {
             return false;
           }
-          if (endDate && new Date(b.billDate) > new Date(endDate + "T23:59:59")) {
+          if (
+            endDate &&
+            new Date(b.billDate) > new Date(endDate + "T23:59:59")
+          ) {
             return false;
           }
         }
@@ -116,7 +126,15 @@ export default function PurchaseReportsPage() {
 
       return true;
     });
-  }, [bills, search, statusFilter, supplierFilter, periodFilter, startDate, endDate]);
+  }, [
+    bills,
+    search,
+    statusFilter,
+    supplierFilter,
+    periodFilter,
+    startDate,
+    endDate,
+  ]);
 
   // KPI Calculations
   const nonCancelledBills = useMemo(
@@ -125,28 +143,36 @@ export default function PurchaseReportsPage() {
   );
 
   const totalProcurementSpend = useMemo(
-    () => nonCancelledBills.reduce((acc, b) => acc + Number(b.totalAmount || 0), 0),
+    () =>
+      nonCancelledBills.reduce((acc, b) => acc + Number(b.totalAmount || 0), 0),
     [nonCancelledBills],
   );
 
   const totalDisbursed = useMemo(
-    () => nonCancelledBills.reduce((acc, b) => acc + Number(b.paidAmount || 0), 0),
+    () =>
+      nonCancelledBills.reduce((acc, b) => acc + Number(b.paidAmount || 0), 0),
     [nonCancelledBills],
   );
 
   const totalOutstandingAP = useMemo(
-    () => nonCancelledBills.reduce((acc, b) => acc + Number(b.remainingBalance || 0), 0),
+    () =>
+      nonCancelledBills.reduce(
+        (acc, b) => acc + Number(b.remainingBalance || 0),
+        0,
+      ),
     [nonCancelledBills],
   );
 
   const totalInputVat = useMemo(
-    () => nonCancelledBills.reduce((acc, b) => acc + Number(b.vatAmount || 0), 0),
+    () =>
+      nonCancelledBills.reduce((acc, b) => acc + Number(b.vatAmount || 0), 0),
     [nonCancelledBills],
   );
 
-  const settlementRatio = totalProcurementSpend > 0
-    ? (totalDisbursed / totalProcurementSpend) * 100
-    : 0;
+  const settlementRatio =
+    totalProcurementSpend > 0
+      ? (totalDisbursed / totalProcurementSpend) * 100
+      : 0;
 
   // Chart Data: Top 5 Suppliers by Spend
   const topSuppliersChartData = useMemo<ChartBarItem[]>(() => {
@@ -320,7 +346,6 @@ export default function PurchaseReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -332,7 +357,8 @@ export default function PurchaseReportsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Supplier procurement orders, vendor bills, payment disbursements, and material expenditure.
+            AGM FITOUT TECHNICAL SERVICES LLC — Supplier procurement orders,
+            vendor bills, payment disbursements, and material expenditure.
           </p>
         </div>
 
@@ -345,7 +371,6 @@ export default function PurchaseReportsPage() {
         </Button>
       </div>
 
-      {/* 5 KPI Stat Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-cols-5 gap-3.5">
         <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
@@ -366,9 +391,7 @@ export default function PurchaseReportsPage() {
           <p className="text-xl font-black text-emerald-800 mt-1">
             {formatCurrency(totalDisbursed)}
           </p>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            Cleared payments
-          </p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Cleared payments</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
@@ -408,7 +431,6 @@ export default function PurchaseReportsPage() {
         </div>
       </div>
 
-      {/* Visual Analytics Chart */}
       {topSuppliersChartData.length > 0 && (
         <ReportSummaryChart
           title="Procurement & Disbursal Breakdown by Top Suppliers"
@@ -419,9 +441,7 @@ export default function PurchaseReportsPage() {
         />
       )}
 
-      {/* Main Table Card Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Date Filter & Search Controls Bar */}
         <div className="space-y-3 pb-3 border-b border-slate-100">
           <ReportDateFilter
             periodFilter={periodFilter}
@@ -477,7 +497,6 @@ export default function PurchaseReportsPage() {
           </div>
         </div>
 
-        {/* DataTable */}
         {error ? (
           <div className="py-8 text-center text-xs text-red-500">
             Error loading supplier bills: {(error as any).message}
@@ -493,7 +512,6 @@ export default function PurchaseReportsPage() {
         )}
       </div>
 
-      {/* Bill Detail Modal */}
       {selectedBill && (
         <Modal
           isOpen={Boolean(selectedBill)}
@@ -550,8 +568,6 @@ export default function PurchaseReportsPage() {
               </div>
             </div>
 
-
-            {/* Line Items Table */}
             {selectedBill.items && selectedBill.items.length > 0 && (
               <div className="space-y-2">
                 <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
@@ -577,7 +593,9 @@ export default function PurchaseReportsPage() {
                       {selectedBill.items.map((it: any, idx: number) => (
                         <TableRow key={idx}>
                           <TableCell className="py-2 px-3 font-medium text-slate-800">
-                            {it.description || it.product?.name || `Material Item #${idx + 1}`}
+                            {it.description ||
+                              it.product?.name ||
+                              `Material Item #${idx + 1}`}
                           </TableCell>
                           <TableCell className="py-2 px-3 text-center font-mono">
                             {it.quantity} {it.unit || "Unit"}
@@ -586,7 +604,9 @@ export default function PurchaseReportsPage() {
                             {Number(it.unitCost).toFixed(2)}
                           </TableCell>
                           <TableCell className="py-2 px-3 text-right font-mono font-bold text-slate-900">
-                            {Number(it.totalPrice || it.quantity * it.unitCost).toFixed(2)}
+                            {Number(
+                              it.totalPrice || it.quantity * it.unitCost,
+                            ).toFixed(2)}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -596,7 +616,6 @@ export default function PurchaseReportsPage() {
               </div>
             )}
 
-            {/* Financial Summary */}
             <div className="flex justify-end pt-2">
               <div className="w-full lg:w-72 p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                 <div className="flex justify-between text-slate-600">
@@ -645,7 +664,6 @@ export default function PurchaseReportsPage() {
         </Modal>
       )}
 
-      {/* Printable Procurement Summary Modal */}
       {isPrintSummaryOpen && (
         <Modal
           isOpen={isPrintSummaryOpen}
@@ -654,7 +672,10 @@ export default function PurchaseReportsPage() {
           maxWidth="4xl"
         >
           <div className="space-y-6 text-xs print:p-0">
-            <div className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0" id="purchases-print-area">
+            <div
+              className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0"
+              id="purchases-print-area"
+            >
               <table className="print-page-table w-full border-collapse">
                 <thead className="print-page-header-group">
                   <tr>
@@ -692,7 +713,12 @@ export default function PurchaseReportsPage() {
                               {filteredBills.length} Bills
                             </p>
                             <p className="text-slate-400 text-[10px]">
-                              Generated: {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                              Generated:{" "}
+                              {new Date().toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })}
                             </p>
                           </div>
                         </div>
@@ -734,33 +760,70 @@ export default function PurchaseReportsPage() {
 
                         <div className="space-y-2">
                           <h4 className="font-bold text-slate-900 text-xs">
-                            Procurement Bills Breakdown ({filteredBills.length} records)
+                            Procurement Bills Breakdown ({filteredBills.length}{" "}
+                            records)
                           </h4>
                           <div className="rounded-xl border border-slate-200 overflow-hidden">
                             <table className="w-full text-left text-xs">
                               <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Bill No</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Supplier</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Date</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">Net (AED)</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">VAT (AED)</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">Total (AED)</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">Balance Due</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-center">Status</th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Bill No
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Supplier
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Date
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    Net (AED)
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    VAT (AED)
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    Total (AED)
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    Balance Due
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-center">
+                                    Status
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-100 font-mono">
                                 {filteredBills.map((b) => (
                                   <tr key={b.id}>
-                                    <td className="py-1.5 px-3 font-bold text-slate-900">{b.billNumber}</td>
-                                    <td className="py-1.5 px-3 font-sans font-medium text-slate-800">{b.supplierName}</td>
-                                    <td className="py-1.5 px-3 text-slate-600">{b.billDate ? new Date(b.billDate).toISOString().slice(0, 10) : "—"}</td>
-                                    <td className="py-1.5 px-3 text-right">{Number(b.subtotal).toFixed(2)}</td>
-                                    <td className="py-1.5 px-3 text-right text-blue-700">{Number(b.vatAmount).toFixed(2)}</td>
-                                    <td className="py-1.5 px-3 text-right font-bold text-slate-900">{Number(b.totalAmount).toFixed(2)}</td>
-                                    <td className="py-1.5 px-3 text-right font-bold text-amber-700">{Number(b.remainingBalance).toFixed(2)}</td>
-                                    <td className="py-1.5 px-3 text-center font-sans text-[10px]">{b.status}</td>
+                                    <td className="py-1.5 px-3 font-bold text-slate-900">
+                                      {b.billNumber}
+                                    </td>
+                                    <td className="py-1.5 px-3 font-sans font-medium text-slate-800">
+                                      {b.supplierName}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-slate-600">
+                                      {b.billDate
+                                        ? new Date(b.billDate)
+                                            .toISOString()
+                                            .slice(0, 10)
+                                        : "—"}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-right">
+                                      {Number(b.subtotal).toFixed(2)}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-right text-blue-700">
+                                      {Number(b.vatAmount).toFixed(2)}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-right font-bold text-slate-900">
+                                      {Number(b.totalAmount).toFixed(2)}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-right font-bold text-amber-700">
+                                      {Number(b.remainingBalance).toFixed(2)}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-center font-sans text-[10px]">
+                                      {b.status}
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>

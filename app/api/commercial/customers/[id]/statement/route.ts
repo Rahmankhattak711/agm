@@ -37,7 +37,6 @@ export async function GET(
       );
     }
 
-    // Build chronological Statement Ledger
     type StatementRow = {
       date: string;
       type: "INVOICE" | "PAYMENT" | "CREDIT_NOTE";

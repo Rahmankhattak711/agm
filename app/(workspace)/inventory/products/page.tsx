@@ -69,7 +69,9 @@ export default function ProductsPage() {
 
   const filteredProducts = useMemo(() => {
     if (selectedOrigin === "ALL") return products;
-    return products.filter((p) => (p.productOrigin || "PURCHASED_EXTERNAL") === selectedOrigin);
+    return products.filter(
+      (p) => (p.productOrigin || "PURCHASED_EXTERNAL") === selectedOrigin,
+    );
   }, [products, selectedOrigin]);
 
   const totalProducts = products.length;
@@ -423,7 +425,8 @@ export default function ProductsPage() {
             Products & Materials Catalog
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Manage internal catalogs and materials procured from external shops, suppliers, and brands.
+            Manage internal catalogs and materials procured from external shops,
+            suppliers, and brands.
           </p>
         </div>
 
@@ -646,8 +649,12 @@ export default function ProductsPage() {
             <productForm.Field name="productOrigin">
               {(field) => (
                 <FormSelect field={field} label="Product Source">
-                  <option value="PURCHASED_EXTERNAL">Purchased from External Shop / Vendor</option>
-                  <option value="INTERNAL">Internal / Self-Produced Product</option>
+                  <option value="PURCHASED_EXTERNAL">
+                    Purchased from External Shop / Vendor
+                  </option>
+                  <option value="INTERNAL">
+                    Internal / Self-Produced Product
+                  </option>
                 </FormSelect>
               )}
             </productForm.Field>

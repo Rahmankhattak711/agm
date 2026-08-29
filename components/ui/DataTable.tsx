@@ -117,7 +117,14 @@ export function DataTable<TData, TValue>({
               Array.from({ length: Math.min(pageSize, 5) }).map((_, rowIdx) => (
                 <tr key={rowIdx} className="hover:bg-slate-50/40">
                   {columns.map((_, colIdx) => {
-                    const widths = ["w-3/4", "w-1/2", "w-4/5", "w-2/3", "w-5/6", "w-3/5"];
+                    const widths = [
+                      "w-3/4",
+                      "w-1/2",
+                      "w-4/5",
+                      "w-2/3",
+                      "w-5/6",
+                      "w-3/5",
+                    ];
                     const width = widths[(rowIdx + colIdx) % widths.length];
                     return (
                       <td key={colIdx} className="py-3.5 px-4">

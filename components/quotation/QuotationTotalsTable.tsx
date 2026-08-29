@@ -1,11 +1,6 @@
 import React, { ChangeEvent } from "react";
 import { formatCurrency, numberToWords } from "./constants";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui";
 
 export interface QuotationTotalsTableProps {
   subtotal: number;
@@ -29,7 +24,6 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
   return (
     <div className="px-10 print:px-8">
       <div className="flex items-stretch justify-between gap-4 mt-3.5 print:mt-1.5 print-avoid-break">
-        {/* Banking Details Card */}
         <div className="flex-1 border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl text-[11.5px] print:text-[9.5px] flex flex-col justify-center shadow-2xs">
           <div className="font-bold mb-1.5 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -62,17 +56,13 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
             </div>
             <div>
               SWIFT Code:{" "}
-              <strong className="text-slate-900 font-mono">
-                NBARAEAD
-              </strong>
+              <strong className="text-slate-900 font-mono">NBARAEAD</strong>
             </div>
           </div>
         </div>
 
-        {/* Totals Breakdown Table */}
         <div className="w-80 border border-slate-200 print:border-slate-300 bg-white rounded-xl overflow-hidden shadow-2xs text-[12px] print:text-[10px]">
           <div className="divide-y divide-slate-100 print:divide-slate-200">
-            {/* Subtotal */}
             <div className="flex items-center justify-between px-4 py-2.5 print:py-1 bg-slate-50/40">
               <span className="font-semibold text-slate-600">Subtotal</span>
               <span className="font-mono font-bold text-slate-900 text-[12.5px] print:text-[10.5px]">
@@ -80,7 +70,6 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
               </span>
             </div>
 
-            {/* VAT */}
             <div className="flex items-center justify-between px-4 py-2 print:py-1">
               <div className="flex items-center gap-1.5">
                 <span className="font-semibold text-slate-600">VAT</span>
@@ -95,7 +84,9 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
                       onUpdateVatPct(e.target.value)
                     }
                   />
-                  <span className="text-emerald-800 font-bold text-[10px]">%</span>
+                  <span className="text-emerald-800 font-bold text-[10px]">
+                    %
+                  </span>
                 </div>
               </div>
               <span className="font-mono font-semibold text-slate-800">
@@ -103,7 +94,6 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
               </span>
             </div>
 
-            {/* Discount */}
             <div className="flex items-center justify-between px-4 py-2 print:py-1">
               <div className="flex items-center gap-1">
                 <span className="font-semibold text-slate-600">Discount</span>
@@ -125,7 +115,6 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
               </div>
             </div>
 
-            {/* Total AED */}
             <div className="flex items-center justify-between px-4 py-2.5 print:py-1.5 bg-agm-green text-white">
               <span className="font-black tracking-wide text-white text-[12px] print:text-[10.5px] uppercase">
                 TOTAL (AED)

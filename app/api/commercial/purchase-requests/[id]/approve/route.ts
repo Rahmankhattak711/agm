@@ -14,7 +14,14 @@ export async function POST(
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
-    if (!hasRole(authUser, ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "INVENTORY_MANAGER"])) {
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "ACCOUNTANT",
+        "INVENTORY_MANAGER",
+      ])
+    ) {
       return forbidden();
     }
 

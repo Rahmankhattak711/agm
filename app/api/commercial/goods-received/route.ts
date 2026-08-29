@@ -22,7 +22,12 @@ export async function GET(request: Request) {
             ? {
                 OR: [
                   { grnNumber: { contains: search, mode: "insensitive" } },
-                  { deliveryNoteNumber: { contains: search, mode: "insensitive" } },
+                  {
+                    deliveryNoteNumber: {
+                      contains: search,
+                      mode: "insensitive",
+                    },
+                  },
                   { notes: { contains: search, mode: "insensitive" } },
                 ],
               }
@@ -178,7 +183,6 @@ export async function POST(request: Request) {
         });
       }
 
-      // Update PO item received quantity if linked
       if (purchaseOrderId && prodId) {
         const poItem = await prisma.purchaseOrderItem.findFirst({
           where: {
@@ -198,7 +202,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Update PO status if all items received
     if (purchaseOrderId) {
       const po = await prisma.purchaseOrder.findUnique({
         where: { id: purchaseOrderId },
@@ -219,8 +222,8 @@ export async function POST(request: Request) {
             status: allReceived
               ? "RECEIVED"
               : partiallyReceived
-              ? "PARTIALLY_RECEIVED"
-              : po.status,
+                ? "PARTIALLY_RECEIVED"
+                : po.status,
           },
         });
       }

@@ -78,8 +78,16 @@ export interface Expense {
   status: "DRAFT" | "APPROVED" | "PAID" | "CANCELLED";
   expenseAccountId?: string | null;
   paymentAccountId?: string | null;
-  expenseAccount?: { id: string; accountCode: string; accountName: string } | null;
-  paymentAccount?: { id: string; accountCode: string; accountName: string } | null;
+  expenseAccount?: {
+    id: string;
+    accountCode: string;
+    accountName: string;
+  } | null;
+  paymentAccount?: {
+    id: string;
+    accountCode: string;
+    accountName: string;
+  } | null;
   createdById: string;
   createdBy?: { id: string; fullName: string; email: string };
   journalEntryId?: string | null;
@@ -374,7 +382,6 @@ export interface Product {
   barcode?: string | null;
   imageUrl?: string | null;
 
-  // External / Shop & Brand metadata
   brand?: string | null;
   supplierSku?: string | null;
   originCompany?: string | null;
@@ -899,7 +906,8 @@ export function useExpenses(filters?: {
   const queryParams = new URLSearchParams();
   if (filters?.category) queryParams.set("category", filters.category);
   if (filters?.status) queryParams.set("status", filters.status);
-  if (filters?.paymentMethod) queryParams.set("paymentMethod", filters.paymentMethod);
+  if (filters?.paymentMethod)
+    queryParams.set("paymentMethod", filters.paymentMethod);
   if (filters?.startDate) queryParams.set("startDate", filters.startDate);
   if (filters?.endDate) queryParams.set("endDate", filters.endDate);
   if (filters?.search) queryParams.set("search", filters.search);
@@ -1685,7 +1693,9 @@ export function useProfitLoss(params?: {
     queryParams.set("compare", String(params.compare));
 
   const qs = queryParams.toString();
-  const url = qs ? `/api/reports/profit-loss?${qs}` : "/api/reports/profit-loss";
+  const url = qs
+    ? `/api/reports/profit-loss?${qs}`
+    : "/api/reports/profit-loss";
 
   return useQuery<ProfitLossReport>({
     queryKey: ["reports", "profit-loss", params],
@@ -1939,7 +1949,8 @@ export function useSalesOrders(params?: { search?: string; status?: string }) {
 
   return useQuery<SalesOrder[]>({
     queryKey: ["sales-orders", params],
-    queryFn: () => fetchJson<SalesOrder[]>(`/api/commercial/sales-orders${qStr}`),
+    queryFn: () =>
+      fetchJson<SalesOrder[]>(`/api/commercial/sales-orders${qStr}`),
   });
 }
 
@@ -1983,7 +1994,8 @@ export interface SalesInvoice {
   invoiceDate: string;
   dueDate?: string | null;
   projectScope?: string | null;
-  status: "DRAFT" | "POSTED" | "PARTIALLY_PAID" | "PAID" | "OVERDUE" | "CANCELLED";
+  status:
+    "DRAFT" | "POSTED" | "PARTIALLY_PAID" | "PAID" | "OVERDUE" | "CANCELLED";
   subtotal: number;
   discount: number;
   vatRate: number;
@@ -1999,7 +2011,10 @@ export interface SalesInvoice {
   createdAt: string;
 }
 
-export function useSalesInvoices(params?: { search?: string; status?: string }) {
+export function useSalesInvoices(params?: {
+  search?: string;
+  status?: string;
+}) {
   const q = new URLSearchParams();
   if (params?.search) q.append("search", params.search);
   if (params?.status) q.append("status", params.status);
@@ -2143,7 +2158,10 @@ export interface PurchaseRequest {
   createdAt: string;
 }
 
-export function usePurchaseRequests(params?: { search?: string; status?: string }) {
+export function usePurchaseRequests(params?: {
+  search?: string;
+  status?: string;
+}) {
   const q = new URLSearchParams();
   if (params?.search) q.append("search", params.search);
   if (params?.status) q.append("status", params.status);
@@ -2173,7 +2191,13 @@ export function useCreatePurchaseRequest() {
 export function useApprovePurchaseRequest() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, action }: { id: string; action: "APPROVE" | "REJECT" }) =>
+    mutationFn: ({
+      id,
+      action,
+    }: {
+      id: string;
+      action: "APPROVE" | "REJECT";
+    }) =>
       fetchJson<any>(`/api/commercial/purchase-requests/${id}/approve`, {
         method: "POST",
         body: JSON.stringify({ action }),
@@ -2264,7 +2288,10 @@ export interface SupplierBill {
   createdAt: string;
 }
 
-export function useSupplierBills(params?: { search?: string; status?: string }) {
+export function useSupplierBills(params?: {
+  search?: string;
+  status?: string;
+}) {
   const q = new URLSearchParams();
   if (params?.search) q.append("search", params.search);
   if (params?.status) q.append("status", params.status);
@@ -2369,8 +2396,7 @@ export function useDebitNotes(search?: string) {
   const qStr = search ? `?search=${encodeURIComponent(search)}` : "";
   return useQuery<DebitNote[]>({
     queryKey: ["debit-notes", search],
-    queryFn: () =>
-      fetchJson<DebitNote[]>(`/api/commercial/debit-notes${qStr}`),
+    queryFn: () => fetchJson<DebitNote[]>(`/api/commercial/debit-notes${qStr}`),
   });
 }
 
@@ -2389,4 +2415,3 @@ export function useCreateDebitNote() {
     },
   });
 }
-

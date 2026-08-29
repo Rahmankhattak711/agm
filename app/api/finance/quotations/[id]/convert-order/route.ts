@@ -1,4 +1,9 @@
-import { getAuthUser, unauthorized, forbidden, hasRole } from "@/lib/auth-server";
+import {
+  getAuthUser,
+  unauthorized,
+  forbidden,
+  hasRole,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -9,7 +14,14 @@ export async function POST(
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
-    if (!hasRole(authUser, ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "INVENTORY_MANAGER"])) {
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "ACCOUNTANT",
+        "INVENTORY_MANAGER",
+      ])
+    ) {
       return forbidden();
     }
 
@@ -27,7 +39,6 @@ export async function POST(
       );
     }
 
-    // Auto-generate Sales Order number
     const count = await prisma.salesOrder.count();
     const orderNumber = `SO-2026-${(count + 1).toString().padStart(4, "0")}`;
 

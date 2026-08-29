@@ -22,7 +22,9 @@ export async function GET(request: Request) {
           search
             ? {
                 OR: [
-                  { creditNoteNumber: { contains: search, mode: "insensitive" } },
+                  {
+                    creditNoteNumber: { contains: search, mode: "insensitive" },
+                  },
                   { customerName: { contains: search, mode: "insensitive" } },
                   { reason: { contains: search, mode: "insensitive" } },
                 ],
@@ -60,13 +62,7 @@ export async function POST(request: Request) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
-    if (
-      !hasRole(authUser, [
-        "SUPER_ADMIN",
-        "ADMIN",
-        "ACCOUNTANT",
-      ])
-    ) {
+    if (!hasRole(authUser, ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"])) {
       return forbidden();
     }
 
@@ -98,7 +94,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Auto-generate credit note number
     let cnNo = creditNoteNumber;
     if (!cnNo) {
       const count = await prisma.creditNote.count();

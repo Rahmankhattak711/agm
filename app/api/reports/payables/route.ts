@@ -46,7 +46,8 @@ export async function GET() {
       const diffTime = Math.abs(now.getTime() - bDate.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      let agingBucket: "current" | "days30" | "days60" | "days90Plus" = "current";
+      let agingBucket: "current" | "days30" | "days60" | "days90Plus" =
+        "current";
       if (diffDays <= 30) agingBucket = "current";
       else if (diffDays <= 60) agingBucket = "days30";
       else if (diffDays <= 90) agingBucket = "days60";
@@ -65,7 +66,9 @@ export async function GET() {
         supplierContact: b.supplier?.contactPerson || b.supplier?.phone || "—",
         supplierEmail: b.supplier?.email || "—",
         orderDate: bDate.toISOString().slice(0, 10),
-        dueDate: b.dueDate ? new Date(b.dueDate).toISOString().slice(0, 10) : "—",
+        dueDate: b.dueDate
+          ? new Date(b.dueDate).toISOString().slice(0, 10)
+          : "—",
         status: b.status,
         totalAmount,
         paidAmount,
@@ -88,7 +91,8 @@ export async function GET() {
             const diffTime = Math.abs(now.getTime() - orderDate.getTime());
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            let agingBucket: "current" | "days30" | "days60" | "days90Plus" = "current";
+            let agingBucket: "current" | "days30" | "days60" | "days90Plus" =
+              "current";
             if (diffDays <= 30) agingBucket = "current";
             else if (diffDays <= 60) agingBucket = "days30";
             else if (diffDays <= 90) agingBucket = "days60";

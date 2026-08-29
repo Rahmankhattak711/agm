@@ -10,8 +10,25 @@ import {
   useQuotations,
   useConvertQuotationToSalesOrder,
 } from "@/lib/hooks/api-hooks";
-import { Button, Modal, Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell, TableLoading } from "@/components/ui";
-import { FileText, Plus, ShoppingCart, CheckCircle, Search, Eye } from "lucide-react";
+import {
+  Button,
+  Modal,
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableLoading,
+} from "@/components/ui";
+import {
+  FileText,
+  Plus,
+  ShoppingCart,
+  CheckCircle,
+  Search,
+  Eye,
+} from "lucide-react";
 
 export default function CommercialQuotationsPage() {
   const { data: products = [] } = useProducts();
@@ -107,7 +124,6 @@ export default function CommercialQuotationsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5 print:hidden">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -119,7 +135,9 @@ export default function CommercialQuotationsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Create official commercial proposals, <br /> generate multi-point BOQ scope bundles, and convert accepted proposals into Sales Orders.
+            AGM FITOUT TECHNICAL SERVICES LLC — Create official commercial
+            proposals, <br /> generate multi-point BOQ scope bundles, and
+            convert accepted proposals into Sales Orders.
           </p>
         </div>
 
@@ -161,7 +179,6 @@ export default function CommercialQuotationsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Search bar */}
           <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-2xl border border-slate-200">
             <Search size={14} className="text-slate-400 ml-2" />
             <input
@@ -176,15 +193,23 @@ export default function CommercialQuotationsPage() {
           <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-xs bg-white">
             <Table className="w-full text-xs text-left">
               <TableHead className="bg-slate-50 border-b border-slate-200">
-                <TableHeaderCell className="py-3 px-4">Quotation No</TableHeaderCell>
-                <TableHeaderCell className="py-3 px-4">Customer</TableHeaderCell>
-                <TableHeaderCell className="py-3 px-4">Project / Scope</TableHeaderCell>
+                <TableHeaderCell className="py-3 px-4">
+                  Quotation No
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-4">
+                  Customer
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-4">
+                  Project / Scope
+                </TableHeaderCell>
                 <TableHeaderCell className="py-3 px-3">Date</TableHeaderCell>
                 <TableHeaderCell align="right" className="py-3 px-4 text-right">
                   Total (AED)
                 </TableHeaderCell>
                 <TableHeaderCell className="py-3 px-3">Status</TableHeaderCell>
-                <TableHeaderCell className="py-3 px-3 text-center">Actions</TableHeaderCell>
+                <TableHeaderCell className="py-3 px-3 text-center">
+                  Actions
+                </TableHeaderCell>
               </TableHead>
 
               <TableBody className="divide-y divide-slate-100">
@@ -192,7 +217,10 @@ export default function CommercialQuotationsPage() {
                   <TableLoading colSpan={7} rows={5} />
                 ) : filteredQuotations.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="py-8 text-center text-slate-400 italic">
+                    <TableCell
+                      colSpan={7}
+                      className="py-8 text-center text-slate-400 italic"
+                    >
                       No saved quotations found.
                     </TableCell>
                   </TableRow>
@@ -208,9 +236,17 @@ export default function CommercialQuotationsPage() {
                       <TableCell className="py-3 px-4 text-slate-600 max-w-xs truncate">
                         {q.project || "—"}
                       </TableCell>
-                      <TableCell className="py-3 px-3 text-slate-600">{q.date}</TableCell>
-                      <TableCell align="right" className="py-3 px-4 text-right font-mono font-black">
-                        AED {Number(q.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      <TableCell className="py-3 px-3 text-slate-600">
+                        {q.date}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className="py-3 px-4 text-right font-mono font-black"
+                      >
+                        AED{" "}
+                        {Number(q.totalAmount).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
                       </TableCell>
                       <TableCell className="py-3 px-3">
                         <span
@@ -218,8 +254,8 @@ export default function CommercialQuotationsPage() {
                             q.status === "ACCEPTED"
                               ? "bg-emerald-100 text-emerald-800"
                               : q.status === "SENT"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-slate-100 text-slate-700"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-slate-100 text-slate-700"
                           }`}
                         >
                           {q.status}
@@ -248,7 +284,12 @@ export default function CommercialQuotationsPage() {
                                 q.customer || "",
                               )}&projectScope=${encodeURIComponent(q.project || "")}`;
                             }}
-                            icon={<FileText size={12} className="text-emerald-700" />}
+                            icon={
+                              <FileText
+                                size={12}
+                                className="text-emerald-700"
+                              />
+                            }
                             className="text-[10px] font-bold text-emerald-800 hover:bg-emerald-50 border-emerald-300"
                           >
                             Convert to Invoice

@@ -43,13 +43,13 @@ export async function GET() {
 
     const now = new Date();
 
-    // Map Sales Invoices & Quotations
     const invoiceItems = salesInvoices.map((inv) => {
       const invDate = inv.invoiceDate ? new Date(inv.invoiceDate) : now;
       const diffTime = Math.abs(now.getTime() - invDate.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      let agingBucket: "current" | "days30" | "days60" | "days90Plus" = "current";
+      let agingBucket: "current" | "days30" | "days60" | "days90Plus" =
+        "current";
       if (diffDays <= 30) agingBucket = "current";
       else if (diffDays <= 60) agingBucket = "days30";
       else if (diffDays <= 90) agingBucket = "days60";
@@ -83,7 +83,6 @@ export async function GET() {
       };
     });
 
-    // If invoices are empty, fallback to active quotations
     const items =
       invoiceItems.length > 0
         ? invoiceItems
@@ -92,7 +91,8 @@ export async function GET() {
             const diffTime = Math.abs(now.getTime() - qDate.getTime());
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            let agingBucket: "current" | "days30" | "days60" | "days90Plus" = "current";
+            let agingBucket: "current" | "days30" | "days60" | "days90Plus" =
+              "current";
             if (diffDays <= 30) agingBucket = "current";
             else if (diffDays <= 60) agingBucket = "days30";
             else if (diffDays <= 90) agingBucket = "days60";
@@ -153,7 +153,10 @@ export async function GET() {
   } catch (error: any) {
     console.error("GET /api/reports/receivables error:", error);
     return NextResponse.json(
-      { error: "Failed to generate receivables report", details: error.message },
+      {
+        error: "Failed to generate receivables report",
+        details: error.message,
+      },
       { status: 500 },
     );
   }

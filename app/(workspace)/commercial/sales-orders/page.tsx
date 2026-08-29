@@ -46,7 +46,6 @@ export default function SalesOrdersPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null);
 
-  // Form State
   const [orderNumber, setOrderNumber] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [customerName, setCustomerName] = useState("");
@@ -88,7 +87,10 @@ export default function SalesOrdersPage() {
   };
 
   const formSubtotal = items.reduce(
-    (s, i) => s + (parseFloat(String(i.quantity)) || 0) * (parseFloat(String(i.unitPrice)) || 0),
+    (s, i) =>
+      s +
+      (parseFloat(String(i.quantity)) || 0) *
+        (parseFloat(String(i.unitPrice)) || 0),
     0,
   );
   const formVat = formSubtotal * 0.05;
@@ -141,8 +143,7 @@ export default function SalesOrdersPage() {
       (so.projectScope &&
         so.projectScope.toLowerCase().includes(search.toLowerCase()));
 
-    const matchesStatus =
-      statusFilter === "ALL" || so.status === statusFilter;
+    const matchesStatus = statusFilter === "ALL" || so.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -154,7 +155,6 @@ export default function SalesOrdersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -166,7 +166,9 @@ export default function SalesOrdersPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Track confirmed customer sales orders, delivery timelines, project commitments, and convert them to Sales Invoices.
+            AGM FITOUT TECHNICAL SERVICES LLC — Track confirmed customer sales
+            orders, delivery timelines, project commitments, and convert them to
+            Sales Invoices.
           </p>
         </div>
 
@@ -183,14 +185,16 @@ export default function SalesOrdersPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-blue-800">
             Total Sales Orders Value
           </p>
           <p className="text-xl font-black text-blue-950 font-mono">
-            AED {totalContractValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalContractValue.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </p>
         </div>
 
@@ -199,7 +203,12 @@ export default function SalesOrdersPage() {
             Confirmed / In Progress
           </p>
           <p className="text-xl font-black text-emerald-950 font-mono">
-            {salesOrders.filter((s) => s.status === "CONFIRMED" || s.status === "PROCESSING").length} Orders
+            {
+              salesOrders.filter(
+                (s) => s.status === "CONFIRMED" || s.status === "PROCESSING",
+              ).length
+            }{" "}
+            Orders
           </p>
         </div>
 
@@ -213,7 +222,6 @@ export default function SalesOrdersPage() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
         <div className="relative flex-1 max-w-md">
           <Search
@@ -247,7 +255,6 @@ export default function SalesOrdersPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">
           <TableHead className="bg-slate-50/95 border-b border-slate-200">
@@ -305,13 +312,18 @@ export default function SalesOrdersPage() {
                     {so.projectScope || "—"}
                   </TableCell>
                   <TableCell className="py-3 px-3 text-slate-600">
-                    {so.orderDate ? new Date(so.orderDate).toISOString().slice(0, 10) : "—"}
+                    {so.orderDate
+                      ? new Date(so.orderDate).toISOString().slice(0, 10)
+                      : "—"}
                   </TableCell>
                   <TableCell
                     align="right"
                     className="py-3 px-4 text-right font-mono font-black text-slate-900"
                   >
-                    AED {Number(so.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    AED{" "}
+                    {Number(so.totalAmount).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
                   </TableCell>
                   <TableCell className="py-3 px-3">
                     <span
@@ -319,8 +331,8 @@ export default function SalesOrdersPage() {
                         so.status === "COMPLETED"
                           ? "bg-emerald-100 text-emerald-800"
                           : so.status === "CONFIRMED"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-slate-100 text-slate-700"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       {so.status}
@@ -356,7 +368,6 @@ export default function SalesOrdersPage() {
         </Table>
       </div>
 
-      {/* Create Modal */}
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
@@ -374,7 +385,9 @@ export default function SalesOrdersPage() {
                   value={customerId}
                   onChange={(e) => {
                     setCustomerId(e.target.value);
-                    const c = customers.find((cust) => cust.id === e.target.value);
+                    const c = customers.find(
+                      (cust) => cust.id === e.target.value,
+                    );
                     if (c) setCustomerName(c.name);
                   }}
                 >
@@ -415,10 +428,11 @@ export default function SalesOrdersPage() {
               />
             </div>
 
-            {/* Scope Items */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-800">Order Line Items</span>
+                <span className="font-bold text-slate-800">
+                  Order Line Items
+                </span>
                 <button
                   type="button"
                   onClick={addItem}
@@ -486,7 +500,6 @@ export default function SalesOrdersPage() {
               </div>
             </div>
 
-            {/* Totals */}
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-xs text-right space-y-1">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal (Excl. VAT):</span>
@@ -498,7 +511,9 @@ export default function SalesOrdersPage() {
               </div>
               <div className="flex justify-between font-black text-slate-900 text-sm border-t border-slate-200 pt-1">
                 <span>Total Order Value:</span>
-                <span className="text-blue-800">AED {formTotal.toFixed(2)}</span>
+                <span className="text-blue-800">
+                  AED {formTotal.toFixed(2)}
+                </span>
               </div>
             </div>
 
@@ -524,7 +539,6 @@ export default function SalesOrdersPage() {
         </Modal>
       )}
 
-      {/* Details View Modal */}
       {selectedOrder && (
         <Modal
           isOpen={!!selectedOrder}
@@ -542,9 +556,15 @@ export default function SalesOrdersPage() {
                 </p>
               </div>
               <div className="text-right font-mono">
-                <p className="font-bold text-blue-900">{selectedOrder.orderNumber}</p>
+                <p className="font-bold text-blue-900">
+                  {selectedOrder.orderNumber}
+                </p>
                 <p className="text-slate-500">
-                  {selectedOrder.orderDate ? new Date(selectedOrder.orderDate).toISOString().slice(0, 10) : ""}
+                  {selectedOrder.orderDate
+                    ? new Date(selectedOrder.orderDate)
+                        .toISOString()
+                        .slice(0, 10)
+                    : ""}
                 </p>
               </div>
             </div>
@@ -552,10 +572,18 @@ export default function SalesOrdersPage() {
             <div className="border border-slate-200 rounded-xl overflow-hidden">
               <Table className="w-full text-xs">
                 <TableHead className="bg-slate-50">
-                  <TableHeaderCell className="py-2 px-3">Description</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Qty</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Rate</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Total</TableHeaderCell>
+                  <TableHeaderCell className="py-2 px-3">
+                    Description
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Qty
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Rate
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Total
+                  </TableHeaderCell>
                 </TableHead>
                 <TableBody>
                   {selectedOrder.items?.map((item: any) => (
@@ -569,7 +597,10 @@ export default function SalesOrdersPage() {
                       <TableCell align="right" className="py-2 px-3 font-mono">
                         {Number(item.unitPrice).toFixed(2)}
                       </TableCell>
-                      <TableCell align="right" className="py-2 px-3 font-mono font-bold">
+                      <TableCell
+                        align="right"
+                        className="py-2 px-3 font-mono font-bold"
+                      >
                         {Number(item.totalAmount).toFixed(2)}
                       </TableCell>
                     </TableRow>

@@ -50,8 +50,6 @@ export default function JournalEntriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
 
-  // formatAed imported from @/lib/utils/format
-
   const getVatAccount = (nature: "INPUT" | "OUTPUT") => {
     if (!accounts || accounts.length === 0) return "";
     if (nature === "INPUT") {

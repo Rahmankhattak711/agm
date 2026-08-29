@@ -27,6 +27,7 @@
 Transform commercial transactions into an end-to-end connected workflow spanning Sales, Purchasing, Inventory, Payments, and Automated Accounting.
 
 #### **A. Sales Transaction Flow**
+
 `Quotation ➔ Sales Order ➔ Sales Invoice ➔ Customer Payment ➔ Credit Note (Sales Return)`
 
 - **Commercial Quotations (`/commercial/quotations`)**:
@@ -51,6 +52,7 @@ Transform commercial transactions into an end-to-end connected workflow spanning
 ---
 
 #### **B. Purchasing & Procurement Flow**
+
 `Purchase Request ➔ Purchase Order ➔ Goods Received (GRN) ➔ Supplier Bill ➔ Supplier Payment ➔ Debit Note (Purchase Return)`
 
 - **Purchase Requests & Requisitions (`/commercial/purchase-requests`)**:
@@ -74,6 +76,7 @@ Transform commercial transactions into an end-to-end connected workflow spanning
 ---
 
 #### **C. Master Data & Statements**
+
 - **Customer Directory & Statements (`/commercial/customers`)**:
   - Comprehensive client database with credit limits, TRN numbers, and a live **Statement of Account Ledger** tracking chronological debits, credits, and running balances.
 - **Suppliers & Vendors (`/inventory/suppliers`)**:

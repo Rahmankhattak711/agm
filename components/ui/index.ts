@@ -4,4 +4,3 @@ export * from "./Table";
 export * from "./DataTable";
 export * from "./Skeleton";
 export * from "./form";
-

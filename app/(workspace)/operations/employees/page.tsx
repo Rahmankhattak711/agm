@@ -50,21 +50,24 @@ export default function EmployeesPage() {
   const updateEmployeeMutation = useUpdateEmployee();
   const deleteEmployeeMutation = useDeleteEmployee();
 
-  const stats = useMemo(() => ({
-    total: employees.length,
-    active: employees.filter((e) => e.employmentStatus === "ACTIVE").length,
-    monthlyPayroll: employees
-      .filter((e) => e.employmentStatus === "ACTIVE")
-      .reduce(
-        (sum, e) =>
-          sum +
-          Number(e.basicSalary || 0) +
-          Number(e.housingAllowance || 0) +
-          Number(e.transportAllowance || 0) +
-          Number(e.otherAllowances || 0),
-        0,
-      ),
-  }), [employees]);
+  const stats = useMemo(
+    () => ({
+      total: employees.length,
+      active: employees.filter((e) => e.employmentStatus === "ACTIVE").length,
+      monthlyPayroll: employees
+        .filter((e) => e.employmentStatus === "ACTIVE")
+        .reduce(
+          (sum, e) =>
+            sum +
+            Number(e.basicSalary || 0) +
+            Number(e.housingAllowance || 0) +
+            Number(e.transportAllowance || 0) +
+            Number(e.otherAllowances || 0),
+          0,
+        ),
+    }),
+    [employees],
+  );
 
   const departments = Array.from(
     new Set(employees.map((e) => e.department).filter(Boolean)),

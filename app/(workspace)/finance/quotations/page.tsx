@@ -55,7 +55,8 @@ export default function QuotationsPage() {
             Commercial Quotations & Invoices
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Create, manage, and print official commercial proposals, multi-point scope bundles, and client invoices.
+            Create, manage, and print official commercial proposals, multi-point
+            scope bundles, and client invoices.
           </p>
         </div>
       </div>

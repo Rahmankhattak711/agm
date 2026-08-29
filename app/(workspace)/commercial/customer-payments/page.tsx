@@ -26,17 +26,13 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 type PaymentMethod = CustomerPayment["paymentMethod"];
 
 const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   BANK_TRANSFER: "Bank Transfer (RAK Bank)",
-  CHEQUE:        "Corporate Cheque",
-  CASH:          "Petty Cash / Cash",
-  CARD:          "Credit / Debit Card",
+  CHEQUE: "Corporate Cheque",
+  CASH: "Petty Cash / Cash",
+  CARD: "Credit / Debit Card",
 };
 
 function getDebitAccount(method: PaymentMethod): string {
@@ -72,8 +68,12 @@ function KpiCard({
   valueClass = "text-slate-900",
 }: KpiCardProps) {
   return (
-    <div className={`p-4 rounded-2xl border flex flex-col justify-between space-y-2 ${colorClass}`}>
-      <p className="text-[11px] font-bold uppercase tracking-wider opacity-70">{label}</p>
+    <div
+      className={`p-4 rounded-2xl border flex flex-col justify-between space-y-2 ${colorClass}`}
+    >
+      <p className="text-[11px] font-bold uppercase tracking-wider opacity-70">
+        {label}
+      </p>
       <p className={`text-xl font-black font-mono ${valueClass}`}>{value}</p>
     </div>
   );
@@ -89,7 +89,9 @@ function UserCell({ fullName, email }: { fullName?: string; email?: string }) {
         {name[0]}
       </div>
       <div>
-        <p className="font-medium text-slate-700 text-[11px] leading-tight">{name}</p>
+        <p className="font-medium text-slate-700 text-[11px] leading-tight">
+          {name}
+        </p>
         <p className="text-[9.5px] text-slate-400 leading-tight">{mail}</p>
       </div>
     </div>
@@ -97,7 +99,13 @@ function UserCell({ fullName, email }: { fullName?: string; email?: string }) {
 }
 
 /** One row in the Audit View detail list. */
-function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+function DetailRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex justify-between">
       <span className="text-slate-500">{label}</span>
@@ -144,7 +152,8 @@ export default function CustomerPaymentsPage() {
 
   const [search, setSearch] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<CustomerPayment | null>(null);
+  const [selectedPayment, setSelectedPayment] =
+    useState<CustomerPayment | null>(null);
   const [form, setForm] = useState<PaymentFormState>(EMPTY_FORM);
 
   // Derived state -----------------------------------------------------------
@@ -215,14 +224,14 @@ export default function CustomerPaymentsPage() {
       e.preventDefault();
       try {
         await createPayment.mutateAsync({
-          customerId:       form.customerId || undefined,
-          customerName:     form.customerName || "Customer",
-          salesInvoiceId:   form.salesInvoiceId || undefined,
-          paymentDate:      form.paymentDate,
-          amount:           parseFloat(form.amount),
-          paymentMethod:    form.paymentMethod,
-          referenceNumber:  form.referenceNumber,
-          notes:            form.notes,
+          customerId: form.customerId || undefined,
+          customerName: form.customerName || "Customer",
+          salesInvoiceId: form.salesInvoiceId || undefined,
+          paymentDate: form.paymentDate,
+          amount: parseFloat(form.amount),
+          paymentMethod: form.paymentMethod,
+          referenceNumber: form.referenceNumber,
+          notes: form.notes,
         });
         handleCloseCreate();
       } catch (err: any) {
@@ -236,8 +245,6 @@ export default function CustomerPaymentsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 print:p-0 print:m-0">
-
-      {/* Official Print Header */}
       <div className="hidden print:block mb-6">
         <QuotationHeader />
         <div className="px-10 pt-4 pb-2 border-b border-slate-200 flex justify-between items-end">
@@ -246,7 +253,8 @@ export default function CustomerPaymentsPage() {
               Customer Payment Receipt Voucher
             </h1>
             <p className="text-xs text-slate-500">
-              AGM FITOUT TECHNICAL SERVICES LLC — Accounts Receivable Settlement &amp; Bank Collection
+              AGM FITOUT TECHNICAL SERVICES LLC — Accounts Receivable Settlement
+              &amp; Bank Collection
             </p>
           </div>
           <p className="text-[10px] text-slate-400 font-mono">
@@ -255,7 +263,6 @@ export default function CustomerPaymentsPage() {
         </div>
       </div>
 
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5 print:hidden">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -267,7 +274,8 @@ export default function CustomerPaymentsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Record customer receipts, update Accounts Receivable (1200), and post to General Ledger.
+            AGM FITOUT TECHNICAL SERVICES LLC — Record customer receipts, update
+            Accounts Receivable (1200), and post to General Ledger.
           </p>
         </div>
 
@@ -282,7 +290,6 @@ export default function CustomerPaymentsPage() {
         </Button>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:grid-cols-3">
         <KpiCard
           label="Total Collections"
@@ -306,7 +313,6 @@ export default function CustomerPaymentsPage() {
         </div>
       </div>
 
-      {/* Search */}
       <div className="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm print:hidden">
         <Input
           leftIcon={<Search size={15} />}
@@ -317,7 +323,6 @@ export default function CustomerPaymentsPage() {
         />
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm bg-white">
         <Table>
           <TableHead className="bg-slate-50/95 border-b border-slate-200">
@@ -349,7 +354,10 @@ export default function CustomerPaymentsPage() {
 
           <TableBody className="divide-y divide-slate-100">
             {isLoading ? (
-              <TableLoading colSpan={7} message="Loading customer payments..." />
+              <TableLoading
+                colSpan={7}
+                message="Loading customer payments..."
+              />
             ) : filteredPayments.length === 0 ? (
               <TableEmpty
                 colSpan={7}
@@ -362,7 +370,6 @@ export default function CustomerPaymentsPage() {
                   key={pmt.id}
                   className="hover:bg-slate-50/60 text-slate-700 transition"
                 >
-                  {/* Receipt No */}
                   <TableCell className="py-3 px-4 font-mono font-bold text-amber-950">
                     <div className="flex items-center gap-1.5">
                       <Receipt size={14} className="text-amber-600 shrink-0" />
@@ -373,9 +380,10 @@ export default function CustomerPaymentsPage() {
                     </p>
                   </TableCell>
 
-                  {/* Customer */}
                   <TableCell className="py-3 px-4">
-                    <p className="font-bold text-slate-900">{pmt.customerName}</p>
+                    <p className="font-bold text-slate-900">
+                      {pmt.customerName}
+                    </p>
                     <p className="text-[10px] text-blue-700 font-mono">
                       {pmt.salesInvoice?.invoiceNumber
                         ? `Invoice: ${pmt.salesInvoice.invoiceNumber}`
@@ -383,15 +391,15 @@ export default function CustomerPaymentsPage() {
                     </p>
                   </TableCell>
 
-                  {/* GL Impact */}
                   <TableCell className="py-3 px-4 font-mono text-[10.5px]">
                     <div className="text-emerald-700 font-semibold">
                       Dr. {getDebitAccount(pmt.paymentMethod)}
                     </div>
-                    <div className="text-slate-500">Cr. 1200 - Accounts Receivable</div>
+                    <div className="text-slate-500">
+                      Cr. 1200 - Accounts Receivable
+                    </div>
                   </TableCell>
 
-                  {/* Processed By */}
                   <TableCell className="py-3 px-4">
                     <UserCell
                       fullName={(pmt as any).createdBy?.fullName}
@@ -399,15 +407,15 @@ export default function CustomerPaymentsPage() {
                     />
                   </TableCell>
 
-                  {/* Date & Method */}
                   <TableCell className="py-3 px-3">
-                    <p className="font-mono text-slate-700">{formatDate(pmt.paymentDate)}</p>
+                    <p className="font-mono text-slate-700">
+                      {formatDate(pmt.paymentDate)}
+                    </p>
                     <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-slate-100 text-slate-600">
                       {pmt.paymentMethod.replace("_", " ")}
                     </span>
                   </TableCell>
 
-                  {/* Amount */}
                   <TableCell
                     align="right"
                     className="py-3 px-4 text-right font-mono font-black text-emerald-800 text-sm"
@@ -415,7 +423,6 @@ export default function CustomerPaymentsPage() {
                     {formatAed(pmt.amount)}
                   </TableCell>
 
-                  {/* Action */}
                   <TableCell className="py-3 px-3 text-center print:hidden">
                     <Button
                       variant="outline"
@@ -433,7 +440,6 @@ export default function CustomerPaymentsPage() {
         </Table>
       </div>
 
-      {/* Create Modal */}
       <Modal
         isOpen={isCreateOpen}
         onClose={handleCloseCreate}
@@ -463,7 +469,8 @@ export default function CustomerPaymentsPage() {
               <option value="">No Invoice (General Receipt)</option>
               {openInvoices.map((inv) => (
                 <option key={inv.id} value={inv.id}>
-                  {inv.invoiceNumber} — {inv.customerName} (Due: {formatAed(Number(inv.remainingBalance))})
+                  {inv.invoiceNumber} — {inv.customerName} (Due:{" "}
+                  {formatAed(Number(inv.remainingBalance))})
                 </option>
               ))}
             </Select>
@@ -484,13 +491,17 @@ export default function CustomerPaymentsPage() {
             <Select
               label="Payment Method"
               value={form.paymentMethod}
-              onChange={(e) => setField("paymentMethod", e.target.value as PaymentMethod)}
+              onChange={(e) =>
+                setField("paymentMethod", e.target.value as PaymentMethod)
+              }
             >
-              {(Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[]).map((m) => (
-                <option key={m} value={m}>
-                  {PAYMENT_METHOD_LABELS[m]}
-                </option>
-              ))}
+              {(Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[]).map(
+                (m) => (
+                  <option key={m} value={m}>
+                    {PAYMENT_METHOD_LABELS[m]}
+                  </option>
+                ),
+              )}
             </Select>
           </div>
 
@@ -519,7 +530,12 @@ export default function CustomerPaymentsPage() {
           />
 
           <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-            <Button variant="outline" size="sm" type="button" onClick={handleCloseCreate}>
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={handleCloseCreate}
+            >
               Cancel
             </Button>
             <Button
@@ -535,68 +551,84 @@ export default function CustomerPaymentsPage() {
         </form>
       </Modal>
 
-      {/* Audit View Modal */}
       <Modal
         isOpen={!!selectedPayment}
         onClose={() => setSelectedPayment(null)}
-        title={selectedPayment ? `Payment Receipt — ${selectedPayment.receiptNumber}` : ""}
+        title={
+          selectedPayment
+            ? `Payment Receipt — ${selectedPayment.receiptNumber}`
+            : ""
+        }
         maxWidth="md"
       >
         {selectedPayment && (
           <div className="space-y-4 text-xs text-slate-700">
-            {/* Customer block */}
             <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
-              <p className="text-[10px] font-bold uppercase text-slate-400">Received From (Customer)</p>
-              <p className="font-bold text-slate-900 text-sm mt-0.5">{selectedPayment.customerName}</p>
+              <p className="text-[10px] font-bold uppercase text-slate-400">
+                Received From (Customer)
+              </p>
+              <p className="font-bold text-slate-900 text-sm mt-0.5">
+                {selectedPayment.customerName}
+              </p>
               <p className="text-[11px] text-slate-500 mt-0.5">
                 Applied Invoice:{" "}
-                {selectedPayment.salesInvoice?.invoiceNumber || "General Account Credit"}
+                {selectedPayment.salesInvoice?.invoiceNumber ||
+                  "General Account Credit"}
               </p>
             </div>
 
-            {/* GL entries */}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/80">
-                <p className="text-[10px] font-bold uppercase text-amber-800">Debit (Received Into)</p>
+                <p className="text-[10px] font-bold uppercase text-amber-800">
+                  Debit (Received Into)
+                </p>
                 <p className="font-mono font-bold text-amber-950 mt-0.5">
                   {getDebitAccount(selectedPayment.paymentMethod)}
                 </p>
               </div>
               <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200/80">
-                <p className="text-[10px] font-bold uppercase text-emerald-800">Credit (Cleared)</p>
+                <p className="text-[10px] font-bold uppercase text-emerald-800">
+                  Credit (Cleared)
+                </p>
                 <p className="font-mono font-bold text-emerald-950 mt-0.5">
                   1200 - Accounts Receivable
                 </p>
               </div>
             </div>
 
-            {/* Detail rows */}
             <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
               <DetailRow label="Processed By:">
-                {(selectedPayment as any).createdBy?.fullName || "Administrator"}{" "}
+                {(selectedPayment as any).createdBy?.fullName ||
+                  "Administrator"}{" "}
                 ({(selectedPayment as any).createdBy?.email || "admin@agm.ae"})
               </DetailRow>
               <DetailRow label="Payment Date:">
-                <span className="font-mono">{formatDate(selectedPayment.paymentDate)}</span>
+                <span className="font-mono">
+                  {formatDate(selectedPayment.paymentDate)}
+                </span>
               </DetailRow>
               <DetailRow label="Payment Method:">
                 <span className="font-bold">
-                  {PAYMENT_METHOD_LABELS[selectedPayment.paymentMethod] ?? selectedPayment.paymentMethod}
+                  {PAYMENT_METHOD_LABELS[selectedPayment.paymentMethod] ??
+                    selectedPayment.paymentMethod}
                 </span>
               </DetailRow>
               <DetailRow label="Transaction / Cheque Ref:">
-                <span className="font-mono">{selectedPayment.referenceNumber || "—"}</span>
+                <span className="font-mono">
+                  {selectedPayment.referenceNumber || "—"}
+                </span>
               </DetailRow>
 
               <div className="h-px bg-slate-200 my-1" />
 
               <div className="flex justify-between text-sm font-bold bg-amber-100/60 p-2 rounded-xl text-amber-950">
                 <span>Total Amount Paid:</span>
-                <span className="font-mono text-amber-900">{formatAed(selectedPayment.amount)}</span>
+                <span className="font-mono text-amber-900">
+                  {formatAed(selectedPayment.amount)}
+                </span>
               </div>
             </div>
 
-            {/* Footer actions */}
             <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
               <Button
                 variant="outline"
@@ -619,7 +651,6 @@ export default function CustomerPaymentsPage() {
         )}
       </Modal>
 
-      {/* Official Print Footer */}
       <div className="hidden print:block">
         <QuotationFooter />
       </div>

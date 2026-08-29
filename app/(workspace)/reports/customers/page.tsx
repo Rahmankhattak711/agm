@@ -23,13 +23,25 @@ import {
   TableCell,
 } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
-import { AgingBucketCard, AgingBucket } from "@/components/reports/AgingBucketCard";
-import { FileText, Users2, Mail, Phone, Building2, ShieldAlert } from "lucide-react";
+import {
+  AgingBucketCard,
+  AgingBucket,
+} from "@/components/reports/AgingBucketCard";
+import {
+  FileText,
+  Users2,
+  Mail,
+  Phone,
+  Building2,
+  ShieldAlert,
+} from "lucide-react";
 
 export default function CustomerReportsPage() {
   const [search, setSearch] = useState("");
   const [balanceFilter, setBalanceFilter] = useState<string>("ALL");
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
+    null,
+  );
   const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
   const { data: customers = [], isLoading, error } = useCustomers();
@@ -49,10 +61,38 @@ export default function CustomerReportsPage() {
   // Compute A/R Aging Buckets from open sales invoices
   const agingBuckets = useMemo<AgingBucket[]>(() => {
     const buckets = [
-      { label: "Current", daysRange: "0–30 Days", amount: 0, count: 0, color: "#059669", badgeBg: "#ecfdf5" },
-      { label: "Watchlist", daysRange: "31–60 Days", amount: 0, count: 0, color: "#d97706", badgeBg: "#fffbeb" },
-      { label: "Overdue", daysRange: "61–90 Days", amount: 0, count: 0, color: "#ea580c", badgeBg: "#fff7ed" },
-      { label: "Critical", daysRange: "90+ Days", amount: 0, count: 0, color: "#dc2626", badgeBg: "#fef2f2" },
+      {
+        label: "Current",
+        daysRange: "0–30 Days",
+        amount: 0,
+        count: 0,
+        color: "#059669",
+        badgeBg: "#ecfdf5",
+      },
+      {
+        label: "Watchlist",
+        daysRange: "31–60 Days",
+        amount: 0,
+        count: 0,
+        color: "#d97706",
+        badgeBg: "#fffbeb",
+      },
+      {
+        label: "Overdue",
+        daysRange: "61–90 Days",
+        amount: 0,
+        count: 0,
+        color: "#ea580c",
+        badgeBg: "#fff7ed",
+      },
+      {
+        label: "Critical",
+        daysRange: "90+ Days",
+        amount: 0,
+        count: 0,
+        color: "#dc2626",
+        badgeBg: "#fef2f2",
+      },
     ];
 
     const now = new Date().getTime();
@@ -62,7 +102,9 @@ export default function CustomerReportsPage() {
       const balance = Number(inv.remainingBalance || 0);
       if (balance <= 0) return;
 
-      const invDate = inv.invoiceDate ? new Date(inv.invoiceDate).getTime() : now;
+      const invDate = inv.invoiceDate
+        ? new Date(inv.invoiceDate).getTime()
+        : now;
       const daysOld = Math.floor((now - invDate) / (1000 * 60 * 60 * 24));
 
       if (daysOld <= 30) {
@@ -94,7 +136,13 @@ export default function CustomerReportsPage() {
         const matchesCompany = c.companyName?.toLowerCase().includes(q);
         const matchesTrn = c.trn?.toLowerCase().includes(q);
         const matchesEmail = c.email?.toLowerCase().includes(q);
-        if (!matchesCode && !matchesName && !matchesCompany && !matchesTrn && !matchesEmail) {
+        if (
+          !matchesCode &&
+          !matchesName &&
+          !matchesCompany &&
+          !matchesTrn &&
+          !matchesEmail
+        ) {
           return false;
         }
       }
@@ -113,7 +161,11 @@ export default function CustomerReportsPage() {
   const totalClients = customers.length;
 
   const totalReceivables = useMemo(
-    () => customers.reduce((acc, c) => acc + Math.max(0, Number(c.currentBalance || 0)), 0),
+    () =>
+      customers.reduce(
+        (acc, c) => acc + Math.max(0, Number(c.currentBalance || 0)),
+        0,
+      ),
     [customers],
   );
 
@@ -240,11 +292,15 @@ export default function CustomerReportsPage() {
                 isOverLimit
                   ? "bg-rose-100 text-rose-800 border border-rose-200"
                   : balance > 0
-                  ? "bg-amber-100 text-amber-800 border border-amber-200"
-                  : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                    ? "bg-amber-100 text-amber-800 border border-amber-200"
+                    : "bg-emerald-100 text-emerald-800 border border-emerald-200"
               }`}
             >
-              {isOverLimit ? "Exceeded Limit" : balance > 0 ? "Open Balance" : "Settled"}
+              {isOverLimit
+                ? "Exceeded Limit"
+                : balance > 0
+                  ? "Open Balance"
+                  : "Settled"}
             </span>
           );
         },
@@ -272,7 +328,6 @@ export default function CustomerReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -284,7 +339,8 @@ export default function CustomerReportsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Client receivable ledgers, credit risk exposure, open invoices, and statement of accounts.
+            AGM FITOUT TECHNICAL SERVICES LLC — Client receivable ledgers,
+            credit risk exposure, open invoices, and statement of accounts.
           </p>
         </div>
 
@@ -297,7 +353,6 @@ export default function CustomerReportsPage() {
         </Button>
       </div>
 
-      {/* 4 KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
@@ -348,7 +403,6 @@ export default function CustomerReportsPage() {
         </div>
       </div>
 
-      {/* A/R Aging Schedule Analysis */}
       <AgingBucketCard
         title="Accounts Receivable (A/R) Aging Schedule"
         subtitle="Chronological breakdown of open customer balances based on invoice issue dates"
@@ -356,9 +410,7 @@ export default function CustomerReportsPage() {
         totalOverdue={totalReceivables}
       />
 
-      {/* Main Table Card Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Filter Controls Bar */}
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="w-full sm:w-80">
             <Input
@@ -382,13 +434,14 @@ export default function CustomerReportsPage() {
             >
               <option value="ALL">All Balance Statuses</option>
               <option value="HAS_BALANCE">Has Outstanding Balance</option>
-              <option value="HIGH_BALANCE">High Balance (&gt; 10,000 AED)</option>
+              <option value="HIGH_BALANCE">
+                High Balance (&gt; 10,000 AED)
+              </option>
               <option value="SETTLED">Fully Settled (0.00 AED)</option>
             </Select>
           </div>
         </div>
 
-        {/* DataTable */}
         {error ? (
           <div className="py-8 text-center text-xs text-red-500">
             Error loading customers: {(error as any).message}
@@ -404,7 +457,6 @@ export default function CustomerReportsPage() {
         )}
       </div>
 
-      {/* Customer Statement / Audit Modal */}
       {selectedCustomerId && activeCustomer && (
         <Modal
           isOpen={Boolean(selectedCustomerId)}
@@ -413,7 +465,6 @@ export default function CustomerReportsPage() {
           maxWidth="2xl"
         >
           <div className="space-y-5 text-xs">
-            {/* Header info */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block">
@@ -454,7 +505,6 @@ export default function CustomerReportsPage() {
               </div>
             </div>
 
-            {/* Statement Ledger Entries */}
             <div className="space-y-2">
               <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
                 Chronological Transactions &amp; Invoices
@@ -493,7 +543,11 @@ export default function CustomerReportsPage() {
                             {inv.invoiceNumber}
                           </TableCell>
                           <TableCell className="py-2 px-3 text-slate-600">
-                            {inv.invoiceDate ? new Date(inv.invoiceDate).toISOString().slice(0, 10) : "—"}
+                            {inv.invoiceDate
+                              ? new Date(inv.invoiceDate)
+                                  .toISOString()
+                                  .slice(0, 10)
+                              : "—"}
                           </TableCell>
                           <TableCell className="py-2 px-3 text-right text-slate-800">
                             {Number(inv.totalAmount).toFixed(2)}
@@ -534,7 +588,6 @@ export default function CustomerReportsPage() {
         </Modal>
       )}
 
-      {/* Printable Customers Summary Modal */}
       {isPrintSummaryOpen && (
         <Modal
           isOpen={isPrintSummaryOpen}
@@ -543,7 +596,10 @@ export default function CustomerReportsPage() {
           maxWidth="4xl"
         >
           <div className="space-y-6 text-xs print:p-0">
-            <div className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0" id="customers-print-area">
+            <div
+              className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0"
+              id="customers-print-area"
+            >
               <table className="print-page-table w-full border-collapse">
                 <thead className="print-page-header-group">
                   <tr>
@@ -581,7 +637,12 @@ export default function CustomerReportsPage() {
                               {filteredCustomers.length} Accounts
                             </p>
                             <p className="text-slate-400 text-[10px]">
-                              Generated: {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                              Generated:{" "}
+                              {new Date().toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })}
                             </p>
                           </div>
                         </div>
@@ -615,29 +676,54 @@ export default function CustomerReportsPage() {
 
                         <div className="space-y-2">
                           <h4 className="font-bold text-slate-900 text-xs">
-                            Customer Directory ({filteredCustomers.length} accounts)
+                            Customer Directory ({filteredCustomers.length}{" "}
+                            accounts)
                           </h4>
                           <div className="rounded-xl border border-slate-200 overflow-hidden">
                             <table className="w-full text-left text-xs">
                               <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Code</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Customer</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Contact</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">Credit Limit (AED)</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">Balance Due (AED)</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">Total Invoiced (AED)</th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Code
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Customer
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Contact
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    Credit Limit (AED)
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    Balance Due (AED)
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    Total Invoiced (AED)
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-100 font-mono">
                                 {filteredCustomers.map((c) => (
                                   <tr key={c.id}>
-                                    <td className="py-1.5 px-3 font-bold text-slate-900">{c.customerCode}</td>
-                                    <td className="py-1.5 px-3 font-sans font-medium text-slate-800">{c.name}</td>
-                                    <td className="py-1.5 px-3 font-sans text-slate-600">{c.phone || c.email || "—"}</td>
-                                    <td className="py-1.5 px-3 text-right">{Number(c.creditLimit).toFixed(2)}</td>
-                                    <td className="py-1.5 px-3 text-right font-bold text-rose-700">{Number(c.currentBalance).toFixed(2)}</td>
-                                    <td className="py-1.5 px-3 text-center font-bold text-slate-700">{c._count?.salesInvoices || 0}</td>
+                                    <td className="py-1.5 px-3 font-bold text-slate-900">
+                                      {c.customerCode}
+                                    </td>
+                                    <td className="py-1.5 px-3 font-sans font-medium text-slate-800">
+                                      {c.name}
+                                    </td>
+                                    <td className="py-1.5 px-3 font-sans text-slate-600">
+                                      {c.phone || c.email || "—"}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-right">
+                                      {Number(c.creditLimit).toFixed(2)}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-right font-bold text-rose-700">
+                                      {Number(c.currentBalance).toFixed(2)}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-center font-bold text-slate-700">
+                                      {c._count?.salesInvoices || 0}
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>

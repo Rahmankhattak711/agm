@@ -1,4 +1,9 @@
-import { getAuthUser, unauthorized, forbidden, hasRole } from "@/lib/auth-server";
+import {
+  getAuthUser,
+  unauthorized,
+  forbidden,
+  hasRole,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -30,7 +35,6 @@ export async function POST(
       );
     }
 
-    // Auto-generate invoice number
     const count = await prisma.salesInvoice.count();
     const invoiceNumber = `INV-2026-${(count + 1).toString().padStart(4, "0")}`;
 

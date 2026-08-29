@@ -63,18 +63,29 @@ export async function PATCH(
     const updateData: any = {};
     if (body.category !== undefined) updateData.category = body.category;
     if (body.payee !== undefined) updateData.payee = body.payee;
-    if (body.description !== undefined) updateData.description = body.description;
+    if (body.description !== undefined)
+      updateData.description = body.description;
     if (body.status !== undefined) updateData.status = body.status;
-    if (body.paymentMethod !== undefined) updateData.paymentMethod = body.paymentMethod;
+    if (body.paymentMethod !== undefined)
+      updateData.paymentMethod = body.paymentMethod;
     if (body.reference !== undefined) updateData.reference = body.reference;
     if (body.receiptUrl !== undefined) updateData.receiptUrl = body.receiptUrl;
-    if (body.expenseAccountId !== undefined) updateData.expenseAccountId = body.expenseAccountId;
-    if (body.paymentAccountId !== undefined) updateData.paymentAccountId = body.paymentAccountId;
-    if (body.expenseDate !== undefined) updateData.expenseDate = new Date(body.expenseDate);
+    if (body.expenseAccountId !== undefined)
+      updateData.expenseAccountId = body.expenseAccountId;
+    if (body.paymentAccountId !== undefined)
+      updateData.paymentAccountId = body.paymentAccountId;
+    if (body.expenseDate !== undefined)
+      updateData.expenseDate = new Date(body.expenseDate);
 
     if (body.amount !== undefined || body.taxAmount !== undefined) {
-      const amount = body.amount !== undefined ? Number(body.amount) : Number(existing.amount);
-      const taxAmount = body.taxAmount !== undefined ? Number(body.taxAmount) : Number(existing.taxAmount);
+      const amount =
+        body.amount !== undefined
+          ? Number(body.amount)
+          : Number(existing.amount);
+      const taxAmount =
+        body.taxAmount !== undefined
+          ? Number(body.taxAmount)
+          : Number(existing.taxAmount);
       updateData.amount = amount;
       updateData.taxAmount = taxAmount;
       updateData.totalAmount = amount + taxAmount;
@@ -122,11 +133,16 @@ export async function DELETE(
     await prisma.$transaction(async (tx) => {
       await tx.expense.delete({ where: { id } });
       if (existing.journalEntryId) {
-        await tx.journalEntry.delete({ where: { id: existing.journalEntryId } }).catch(() => {});
+        await tx.journalEntry
+          .delete({ where: { id: existing.journalEntryId } })
+          .catch(() => {});
       }
     });
 
-    return NextResponse.json({ success: true, message: "Expense deleted successfully" });
+    return NextResponse.json({
+      success: true,
+      message: "Expense deleted successfully",
+    });
   } catch (error: any) {
     return NextResponse.json(
       { error: "Failed to delete expense", details: error.message },

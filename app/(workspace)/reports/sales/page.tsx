@@ -23,7 +23,10 @@ import {
 } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { ReportDateFilter } from "@/components/reports/ReportDateFilter";
-import { ReportSummaryChart, ChartBarItem } from "@/components/reports/ReportSummaryChart";
+import {
+  ReportSummaryChart,
+  ChartBarItem,
+} from "@/components/reports/ReportSummaryChart";
 import { Percent, TrendingUp, DollarSign } from "lucide-react";
 
 export default function SalesReportsPage() {
@@ -33,7 +36,9 @@ export default function SalesReportsPage() {
   const [periodFilter, setPeriodFilter] = useState<string>("ALL");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
-  const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(
+    null,
+  );
   const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
   const { data: invoices = [], isLoading, error } = useSalesInvoices();
@@ -57,7 +62,12 @@ export default function SalesReportsPage() {
         const matchesCustomer = inv.customerName?.toLowerCase().includes(q);
         const matchesTrn = inv.customerTrn?.toLowerCase().includes(q);
         const matchesScope = inv.projectScope?.toLowerCase().includes(q);
-        if (!matchesNumber && !matchesCustomer && !matchesTrn && !matchesScope) {
+        if (
+          !matchesNumber &&
+          !matchesCustomer &&
+          !matchesTrn &&
+          !matchesScope
+        ) {
           return false;
         }
       }
@@ -68,7 +78,11 @@ export default function SalesReportsPage() {
       }
 
       // Customer
-      if (customerFilter && inv.customerId !== customerFilter && inv.customerName !== customerFilter) {
+      if (
+        customerFilter &&
+        inv.customerId !== customerFilter &&
+        inv.customerName !== customerFilter
+      ) {
         return false;
       }
 
@@ -109,7 +123,10 @@ export default function SalesReportsPage() {
           if (startDate && new Date(inv.invoiceDate) < new Date(startDate)) {
             return false;
           }
-          if (endDate && new Date(inv.invoiceDate) > new Date(endDate + "T23:59:59")) {
+          if (
+            endDate &&
+            new Date(inv.invoiceDate) > new Date(endDate + "T23:59:59")
+          ) {
             return false;
           }
         }
@@ -117,7 +134,15 @@ export default function SalesReportsPage() {
 
       return true;
     });
-  }, [invoices, search, statusFilter, customerFilter, periodFilter, startDate, endDate]);
+  }, [
+    invoices,
+    search,
+    statusFilter,
+    customerFilter,
+    periodFilter,
+    startDate,
+    endDate,
+  ]);
 
   // KPI Calculations
   const nonCancelledInvoices = useMemo(
@@ -126,32 +151,48 @@ export default function SalesReportsPage() {
   );
 
   const totalInvoicedSales = useMemo(
-    () => nonCancelledInvoices.reduce((acc, inv) => acc + Number(inv.totalAmount || 0), 0),
+    () =>
+      nonCancelledInvoices.reduce(
+        (acc, inv) => acc + Number(inv.totalAmount || 0),
+        0,
+      ),
     [nonCancelledInvoices],
   );
 
   const totalCollected = useMemo(
-    () => nonCancelledInvoices.reduce((acc, inv) => acc + Number(inv.paidAmount || 0), 0),
+    () =>
+      nonCancelledInvoices.reduce(
+        (acc, inv) => acc + Number(inv.paidAmount || 0),
+        0,
+      ),
     [nonCancelledInvoices],
   );
 
   const totalOutstanding = useMemo(
-    () => nonCancelledInvoices.reduce((acc, inv) => acc + Number(inv.remainingBalance || 0), 0),
+    () =>
+      nonCancelledInvoices.reduce(
+        (acc, inv) => acc + Number(inv.remainingBalance || 0),
+        0,
+      ),
     [nonCancelledInvoices],
   );
 
   const totalOutputVat = useMemo(
-    () => nonCancelledInvoices.reduce((acc, inv) => acc + Number(inv.vatAmount || 0), 0),
+    () =>
+      nonCancelledInvoices.reduce(
+        (acc, inv) => acc + Number(inv.vatAmount || 0),
+        0,
+      ),
     [nonCancelledInvoices],
   );
 
-  const collectionEfficiency = totalInvoicedSales > 0
-    ? (totalCollected / totalInvoicedSales) * 100
-    : 0;
+  const collectionEfficiency =
+    totalInvoicedSales > 0 ? (totalCollected / totalInvoicedSales) * 100 : 0;
 
   // Chart Data: Top 5 Clients by Invoiced Sales
   const topClientsChartData = useMemo<ChartBarItem[]>(() => {
-    const clientMap: Record<string, { invoiced: number; collected: number }> = {};
+    const clientMap: Record<string, { invoiced: number; collected: number }> =
+      {};
     nonCancelledInvoices.forEach((inv) => {
       const name = inv.customerName || "General Client";
       if (!clientMap[name]) {
@@ -326,7 +367,6 @@ export default function SalesReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -338,7 +378,9 @@ export default function SalesReportsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Track commercial invoicing performance, client receivables,<br /> VAT collection, and revenue realization.
+            AGM FITOUT TECHNICAL SERVICES LLC — Track commercial invoicing
+            performance, client receivables,
+            <br /> VAT collection, and revenue realization.
           </p>
         </div>
 
@@ -351,7 +393,6 @@ export default function SalesReportsPage() {
         </Button>
       </div>
 
-      {/* 5 KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
         <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
@@ -414,7 +455,6 @@ export default function SalesReportsPage() {
         </div>
       </div>
 
-      {/* Visual Analytics Chart */}
       {topClientsChartData.length > 0 && (
         <ReportSummaryChart
           title="Revenue & Collection Breakdown by Top Clients"
@@ -425,9 +465,7 @@ export default function SalesReportsPage() {
         />
       )}
 
-      {/* Main Table Card Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Date Filter & Search Controls Bar */}
         <div className="space-y-3 pb-3 border-b border-slate-100">
           <ReportDateFilter
             periodFilter={periodFilter}
@@ -483,7 +521,6 @@ export default function SalesReportsPage() {
           </div>
         </div>
 
-        {/* DataTable */}
         {error ? (
           <div className="py-8 text-center text-xs text-red-500">
             Error loading sales invoices: {(error as any).message}
@@ -499,7 +536,6 @@ export default function SalesReportsPage() {
         )}
       </div>
 
-      {/* Invoice Detail / Audit Modal */}
       {selectedInvoice && (
         <Modal
           isOpen={Boolean(selectedInvoice)}
@@ -508,7 +544,6 @@ export default function SalesReportsPage() {
           maxWidth="2xl"
         >
           <div className="space-y-5 text-xs">
-            {/* Header info */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block">
@@ -529,7 +564,9 @@ export default function SalesReportsPage() {
                 </span>
                 <span className="font-mono font-semibold text-slate-800">
                   {selectedInvoice.invoiceDate
-                    ? new Date(selectedInvoice.invoiceDate).toISOString().slice(0, 10)
+                    ? new Date(selectedInvoice.invoiceDate)
+                        .toISOString()
+                        .slice(0, 10)
                     : "—"}
                 </span>
               </div>
@@ -539,7 +576,9 @@ export default function SalesReportsPage() {
                 </span>
                 <span className="font-mono font-semibold text-slate-800">
                   {selectedInvoice.dueDate
-                    ? new Date(selectedInvoice.dueDate).toISOString().slice(0, 10)
+                    ? new Date(selectedInvoice.dueDate)
+                        .toISOString()
+                        .slice(0, 10)
                     : "—"}
                 </span>
               </div>
@@ -557,7 +596,6 @@ export default function SalesReportsPage() {
               </div>
             </div>
 
-            {/* Scope / Notes */}
             {selectedInvoice.projectScope && (
               <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100">
                 <span className="text-[10px] uppercase font-bold text-blue-800 block mb-0.5">
@@ -569,7 +607,6 @@ export default function SalesReportsPage() {
               </div>
             )}
 
-            {/* Line Items Table */}
             {selectedInvoice.items && selectedInvoice.items.length > 0 && (
               <div className="space-y-2">
                 <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
@@ -595,7 +632,9 @@ export default function SalesReportsPage() {
                       {selectedInvoice.items.map((it: any, idx: number) => (
                         <TableRow key={idx}>
                           <TableCell className="py-2 px-3 font-medium text-slate-800">
-                            {it.description || it.product?.name || `Item #${idx + 1}`}
+                            {it.description ||
+                              it.product?.name ||
+                              `Item #${idx + 1}`}
                           </TableCell>
                           <TableCell className="py-2 px-3 text-center font-mono">
                             {it.quantity} {it.unit || "Unit"}
@@ -604,7 +643,9 @@ export default function SalesReportsPage() {
                             {Number(it.unitPrice).toFixed(2)}
                           </TableCell>
                           <TableCell className="py-2 px-3 text-right font-mono font-bold text-slate-900">
-                            {Number(it.totalPrice || it.quantity * it.unitPrice).toFixed(2)}
+                            {Number(
+                              it.totalPrice || it.quantity * it.unitPrice,
+                            ).toFixed(2)}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -614,7 +655,6 @@ export default function SalesReportsPage() {
               </div>
             )}
 
-            {/* Financial Summary */}
             <div className="flex justify-end pt-2">
               <div className="w-full sm:w-72 p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                 <div className="flex justify-between text-slate-600">
@@ -650,7 +690,6 @@ export default function SalesReportsPage() {
               </div>
             </div>
 
-            {/* Modal Actions */}
             <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
               <Button
                 variant="outline"
@@ -664,7 +703,6 @@ export default function SalesReportsPage() {
         </Modal>
       )}
 
-      {/* Printable Sales Summary Modal */}
       {isPrintSummaryOpen && (
         <Modal
           isOpen={isPrintSummaryOpen}
@@ -673,8 +711,10 @@ export default function SalesReportsPage() {
           maxWidth="4xl"
         >
           <div className="space-y-6 text-xs print:p-0">
-            {/* Printable Container */}
-            <div className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0" id="sales-print-area">
+            <div
+              className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0"
+              id="sales-print-area"
+            >
               <table className="print-page-table w-full border-collapse">
                 <thead className="print-page-header-group">
                   <tr>
@@ -698,7 +738,6 @@ export default function SalesReportsPage() {
                   <tr>
                     <td className="p-0 border-none align-top">
                       <div className="space-y-6">
-                        {/* Title Bar */}
                         <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-2 print-avoid-break">
                           <div>
                             <span className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase block">
@@ -713,12 +752,16 @@ export default function SalesReportsPage() {
                               {filteredInvoices.length} Invoices
                             </p>
                             <p className="text-slate-400 text-[10px]">
-                              Generated: {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                              Generated:{" "}
+                              {new Date().toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })}
                             </p>
                           </div>
                         </div>
 
-                        {/* Summary KPIs */}
                         <div className="grid grid-cols-4 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
                           <div>
                             <span className="text-[10px] text-slate-400 uppercase font-bold block">
@@ -754,36 +797,72 @@ export default function SalesReportsPage() {
                           </div>
                         </div>
 
-                        {/* Invoices List */}
                         <div className="space-y-2">
                           <h4 className="font-bold text-slate-900 text-xs">
-                            Invoices Breakdown ({filteredInvoices.length} records)
+                            Invoices Breakdown ({filteredInvoices.length}{" "}
+                            records)
                           </h4>
                           <div className="rounded-xl border border-slate-200 overflow-hidden">
                             <table className="w-full text-left text-xs">
                               <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Inv No</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Customer</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Date</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">Net (AED)</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">VAT (AED)</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">Total (AED)</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">Due (AED)</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-center">Status</th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Inv No
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Customer
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Date
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    Net (AED)
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    VAT (AED)
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    Total (AED)
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    Due (AED)
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-center">
+                                    Status
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-100 font-mono">
                                 {filteredInvoices.map((inv) => (
                                   <tr key={inv.id}>
-                                    <td className="py-1.5 px-3 font-bold text-slate-900">{inv.invoiceNumber}</td>
-                                    <td className="py-1.5 px-3 font-sans font-medium text-slate-800">{inv.customerName}</td>
-                                    <td className="py-1.5 px-3 text-slate-600">{inv.invoiceDate ? new Date(inv.invoiceDate).toISOString().slice(0, 10) : "—"}</td>
-                                    <td className="py-1.5 px-3 text-right">{Number(inv.subtotal).toFixed(2)}</td>
-                                    <td className="py-1.5 px-3 text-right text-blue-700">{Number(inv.vatAmount).toFixed(2)}</td>
-                                    <td className="py-1.5 px-3 text-right font-bold text-emerald-800">{Number(inv.totalAmount).toFixed(2)}</td>
-                                    <td className="py-1.5 px-3 text-right font-bold text-rose-700">{Number(inv.remainingBalance).toFixed(2)}</td>
-                                    <td className="py-1.5 px-3 text-center font-sans text-[10px]">{inv.status}</td>
+                                    <td className="py-1.5 px-3 font-bold text-slate-900">
+                                      {inv.invoiceNumber}
+                                    </td>
+                                    <td className="py-1.5 px-3 font-sans font-medium text-slate-800">
+                                      {inv.customerName}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-slate-600">
+                                      {inv.invoiceDate
+                                        ? new Date(inv.invoiceDate)
+                                            .toISOString()
+                                            .slice(0, 10)
+                                        : "—"}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-right">
+                                      {Number(inv.subtotal).toFixed(2)}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-right text-blue-700">
+                                      {Number(inv.vatAmount).toFixed(2)}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-right font-bold text-emerald-800">
+                                      {Number(inv.totalAmount).toFixed(2)}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-right font-bold text-rose-700">
+                                      {Number(inv.remainingBalance).toFixed(2)}
+                                    </td>
+                                    <td className="py-1.5 px-3 text-center font-sans text-[10px]">
+                                      {inv.status}
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -800,7 +879,6 @@ export default function SalesReportsPage() {
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex justify-end gap-2 pt-2">
               <Button
                 variant="outline"

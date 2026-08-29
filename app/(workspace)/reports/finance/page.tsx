@@ -7,11 +7,12 @@ import { TrialBalanceReport } from "@/app/(workspace)/finance/reports/components
 import { Landmark, FileSpreadsheet, Scale, TrendingUp } from "lucide-react";
 
 export default function FinanceReportsPage() {
-  const [activeSubTab, setActiveSubTab] = useState<"pnl" | "balance-sheet" | "trial-balance">("pnl");
+  const [activeSubTab, setActiveSubTab] = useState<
+    "pnl" | "balance-sheet" | "trial-balance"
+  >("pnl");
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-r from-[#1d3345] to-[#233c4d] p-6 rounded-2xl text-white shadow-lg border border-white/10">
         <div>
           <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
@@ -21,11 +22,11 @@ export default function FinanceReportsPage() {
             Financial Statements & General Ledger
           </h1>
           <p className="text-white/70 text-sm mt-1">
-            Statement of Profit & Loss, Balance Sheet, and Trial Balance audit statements.
+            Statement of Profit & Loss, Balance Sheet, and Trial Balance audit
+            statements.
           </p>
         </div>
 
-        {/* Tab Selector */}
         <div className="flex bg-white/10 p-1 rounded-xl border border-white/10 self-start sm:self-auto">
           <button
             onClick={() => setActiveSubTab("pnl")}
@@ -61,8 +62,12 @@ export default function FinanceReportsPage() {
       </div>
 
       {activeSubTab === "pnl" && <ProfitLossReport />}
-      {activeSubTab === "balance-sheet" && <BalanceSheetReport isLoading={false} />}
-      {activeSubTab === "trial-balance" && <TrialBalanceReport isLoading={false} />}
+      {activeSubTab === "balance-sheet" && (
+        <BalanceSheetReport isLoading={false} />
+      )}
+      {activeSubTab === "trial-balance" && (
+        <TrialBalanceReport isLoading={false} />
+      )}
     </div>
   );
 }

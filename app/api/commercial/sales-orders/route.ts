@@ -104,7 +104,6 @@ export async function POST(request: Request) {
       if (c) custName = c.name;
     }
 
-    // Auto-generate orderNumber if not supplied
     let orderNo = orderNumber;
     if (!orderNo) {
       const count = await prisma.salesOrder.count();

@@ -126,7 +126,6 @@ export default function SalesVouchersPage() {
     null,
   );
 
-  // Form State for new voucher
   const [customerName, setCustomerName] = useState("");
   const [customerTrn, setCustomerTrn] = useState("");
   const [projectScope, setProjectScope] = useState("");
@@ -245,7 +244,6 @@ export default function SalesVouchersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -257,7 +255,8 @@ export default function SalesVouchersPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Commercial sales vouchers, client billing schedules, and FTA 5% Output VAT tracking.
+            AGM FITOUT TECHNICAL SERVICES LLC — Commercial sales vouchers,
+            client billing schedules, and FTA 5% Output VAT tracking.
           </p>
         </div>
 
@@ -273,14 +272,16 @@ export default function SalesVouchersPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
             Total Sales Billed (Incl. VAT)
           </p>
           <p className="text-xl font-black text-emerald-950 font-mono">
-            AED {totalSalesRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalSalesRevenue.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </p>
         </div>
 
@@ -289,7 +290,10 @@ export default function SalesVouchersPage() {
             Output VAT 5% Collected
           </p>
           <p className="text-xl font-black text-blue-950 font-mono">
-            AED {totalVatCollected.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalVatCollected.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </p>
         </div>
 
@@ -303,7 +307,6 @@ export default function SalesVouchersPage() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
         <div className="relative flex-1 max-w-md">
           <Search
@@ -337,7 +340,6 @@ export default function SalesVouchersPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">
           <TableHead className="bg-slate-50/95 border-b border-slate-200">
@@ -442,8 +444,8 @@ export default function SalesVouchersPage() {
                         item.status === "PAID"
                           ? "bg-emerald-100 text-emerald-800"
                           : item.status === "POSTED"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-slate-100 text-slate-700"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       {item.status}
@@ -466,7 +468,6 @@ export default function SalesVouchersPage() {
         </Table>
       </div>
 
-      {/* Create Sales Voucher Modal */}
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
@@ -529,7 +530,6 @@ export default function SalesVouchersPage() {
               />
             </div>
 
-            {/* Line Items */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-800">
@@ -602,7 +602,6 @@ export default function SalesVouchersPage() {
               </div>
             </div>
 
-            {/* Totals Breakdown */}
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1 font-mono text-xs text-right">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal (Excl. VAT):</span>
@@ -655,7 +654,6 @@ export default function SalesVouchersPage() {
         </Modal>
       )}
 
-      {/* Voucher Detail & Print Modal */}
       {selectedVoucher && (
         <Modal
           isOpen={!!selectedVoucher}
@@ -680,9 +678,7 @@ export default function SalesVouchersPage() {
                   {selectedVoucher.voucherNumber}
                 </p>
                 <p className="text-slate-500">Date: {selectedVoucher.date}</p>
-                <p className="text-slate-500">
-                  Due: {selectedVoucher.dueDate}
-                </p>
+                <p className="text-slate-500">Due: {selectedVoucher.dueDate}</p>
               </div>
             </div>
 

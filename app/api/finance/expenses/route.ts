@@ -61,8 +61,14 @@ export async function GET(req: NextRequest) {
       orderBy: { expenseDate: "desc" },
     });
 
-    const totalAmount = expenses.reduce((sum, e) => sum + Number(e.totalAmount), 0);
-    const totalTax = expenses.reduce((sum, e) => sum + Number(e.taxAmount || 0), 0);
+    const totalAmount = expenses.reduce(
+      (sum, e) => sum + Number(e.totalAmount),
+      0,
+    );
+    const totalTax = expenses.reduce(
+      (sum, e) => sum + Number(e.taxAmount || 0),
+      0,
+    );
 
     return NextResponse.json({
       expenses,

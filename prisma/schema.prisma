@@ -616,7 +616,6 @@ model Product {
   barcode     String?     @unique
   imageUrl    String?     @map("image_url")
 
-  // External / Shop & Brand metadata
   brand         String?
   supplierSku   String? @map("supplier_sku")
   originCompany String? @map("origin_company")
@@ -847,10 +846,6 @@ model QuotationItem {
 
   @@map("quotation_items")
 }
-
-// ==========================================
-// COMMERCIAL MODULE: CUSTOMERS & SALES
-// ==========================================
 
 model Customer {
   id             String  @id @default(uuid()) @db.Uuid
@@ -1086,10 +1081,6 @@ model CreditNoteItem {
 
   @@map("credit_note_items")
 }
-
-// ==========================================
-// COMMERCIAL MODULE: PURCHASING & AP
-// ==========================================
 
 enum PurchaseRequestStatus {
   DRAFT

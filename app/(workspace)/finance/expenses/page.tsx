@@ -68,12 +68,11 @@ export default function ExpensesPage() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
-  // Form State
   const [formCategory, setFormCategory] = useState(EXPENSE_CATEGORIES[0]);
   const [formPayee, setFormPayee] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formAmount, setFormAmount] = useState("");
-  const [formTaxRate, setFormTaxRate] = useState("5"); // 5% VAT default
+  const [formTaxRate, setFormTaxRate] = useState("5");
   const [formPaymentMethod, setFormPaymentMethod] = useState<
     "BANK_TRANSFER" | "CREDIT_CARD" | "CASH" | "CHEQUE"
   >("BANK_TRANSFER");
@@ -101,19 +100,16 @@ export default function ExpensesPage() {
   const expenses = data?.expenses || [];
   const summary = data?.summary || { totalAmount: 0, totalTax: 0, count: 0 };
 
-  // Expense Accounts (Type EXPENSE)
   const expenseAccounts = useMemo(
     () => accounts.filter((a) => a.type === "EXPENSE"),
     [accounts],
   );
 
-  // Asset Accounts (Type ASSET for Cash/Bank)
   const paymentAccounts = useMemo(
     () => accounts.filter((a) => a.type === "ASSET"),
     [accounts],
   );
 
-  // Auto-calculated Tax and Total
   const calculatedTax = useMemo(() => {
     const amt = parseFloat(formAmount) || 0;
     const rate = parseFloat(formTaxRate) || 0;
@@ -189,7 +185,11 @@ export default function ExpensesPage() {
   };
 
   const handleDelete = async (id: string, num: string) => {
-    if (confirm(`Delete expense "${num}"? Associated journal entry will also be removed.`)) {
+    if (
+      confirm(
+        `Delete expense "${num}"? Associated journal entry will also be removed.`,
+      )
+    ) {
       try {
         await deleteMutation.mutateAsync(id);
       } catch (err: any) {
@@ -219,14 +219,14 @@ export default function ExpensesPage() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Header with Title & Quick Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight">
             Direct Operating Expenses & Claims
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Record company overheads, utilities, government fees, and operational claims with automated General Ledger posting.
+            Record company overheads, utilities, government fees, and
+            operational claims with automated General Ledger posting.
           </p>
         </div>
 
@@ -240,7 +240,6 @@ export default function ExpensesPage() {
         </Button>
       </div>
 
-      {/* 2. KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <div className="flex items-center justify-between">
@@ -311,7 +310,6 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      {/* 3. Search & Filter Bar */}
       <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
         <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
           <div className="w-full lg:w-80 relative">
@@ -326,7 +324,6 @@ export default function ExpensesPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-            {/* Category Filter */}
             <select
               className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
               value={selectedCategory}
@@ -340,7 +337,6 @@ export default function ExpensesPage() {
               ))}
             </select>
 
-            {/* Payment Method Filter */}
             <select
               className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
               value={selectedMethod}
@@ -353,7 +349,6 @@ export default function ExpensesPage() {
               <option value="CHEQUE">Cheque</option>
             </select>
 
-            {/* Status Filter */}
             <select
               className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
               value={selectedStatus}
@@ -368,7 +363,6 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      {/* 4. Expenses Table */}
       <div className="rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">
           <TableHead className="bg-slate-50/80 border-b border-slate-200">
@@ -387,7 +381,10 @@ export default function ExpensesPage() {
             <TableHeaderCell className="py-3.5 px-4 font-bold text-slate-600">
               Payment Method
             </TableHeaderCell>
-            <TableHeaderCell align="right" className="py-3.5 px-4 text-right font-bold text-slate-600">
+            <TableHeaderCell
+              align="right"
+              className="py-3.5 px-4 text-right font-bold text-slate-600"
+            >
               Total (AED)
             </TableHeaderCell>
             <TableHeaderCell className="py-3.5 px-3 font-bold text-slate-600">
@@ -403,13 +400,20 @@ export default function ExpensesPage() {
               <TableLoading colSpan={8} rows={5} />
             ) : expenses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="py-12 text-center text-slate-400 italic">
-                  No operating expenses found. Click &quot;Record Expense&quot; above to create your first claim.
+                <TableCell
+                  colSpan={8}
+                  className="py-12 text-center text-slate-400 italic"
+                >
+                  No operating expenses found. Click &quot;Record Expense&quot;
+                  above to create your first claim.
                 </TableCell>
               </TableRow>
             ) : (
               expenses.map((exp) => (
-                <TableRow key={exp.id} className="hover:bg-slate-50/60 transition">
+                <TableRow
+                  key={exp.id}
+                  className="hover:bg-slate-50/60 transition"
+                >
                   <TableCell className="py-3.5 px-4 font-mono font-bold text-emerald-950">
                     {exp.expenseNumber}
                   </TableCell>
@@ -469,8 +473,8 @@ export default function ExpensesPage() {
                         exp.status === "PAID"
                           ? "bg-emerald-100 text-emerald-800"
                           : exp.status === "APPROVED"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-slate-100 text-slate-700"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       {exp.status}
@@ -505,7 +509,6 @@ export default function ExpensesPage() {
         </Table>
       </div>
 
-      {/* 5. Modal: Record New Expense */}
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
@@ -690,8 +693,12 @@ export default function ExpensesPage() {
               onChange={(e) => setFormCreateJournal(e.target.checked)}
               className="rounded text-emerald-600 focus:ring-emerald-500"
             />
-            <label htmlFor="auto-je" className="text-slate-700 font-semibold cursor-pointer">
-              Automatically post balanced General Ledger journal entry for this expense
+            <label
+              htmlFor="auto-je"
+              className="text-slate-700 font-semibold cursor-pointer"
+            >
+              Automatically post balanced General Ledger journal entry for this
+              expense
             </label>
           </div>
 
@@ -709,13 +716,14 @@ export default function ExpensesPage() {
               disabled={createMutation.isPending}
               className="bg-[#28633a] hover:bg-[#1f4d2d] text-white font-bold"
             >
-              {createMutation.isPending ? "Recording..." : "Record & Post Expense"}
+              {createMutation.isPending
+                ? "Recording..."
+                : "Record & Post Expense"}
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* 6. Modal: Print Expense Voucher */}
       <Modal
         isOpen={isPrintModalOpen}
         onClose={() => setIsPrintModalOpen(false)}
@@ -723,7 +731,10 @@ export default function ExpensesPage() {
       >
         {selectedExpense && (
           <div className="space-y-4">
-            <div id="printable-voucher" className="p-6 bg-white border border-slate-200 rounded-2xl space-y-4">
+            <div
+              id="printable-voucher"
+              className="p-6 bg-white border border-slate-200 rounded-2xl space-y-4"
+            >
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div>
                   <h3 className="text-base font-black text-slate-900">
@@ -738,7 +749,10 @@ export default function ExpensesPage() {
                     {selectedExpense.expenseNumber}
                   </p>
                   <p className="text-xs text-slate-500">
-                    Date: {new Date(selectedExpense.expenseDate).toLocaleDateString("en-GB")}
+                    Date:{" "}
+                    {new Date(selectedExpense.expenseDate).toLocaleDateString(
+                      "en-GB",
+                    )}
                   </p>
                 </div>
               </div>
@@ -783,7 +797,9 @@ export default function ExpensesPage() {
                   <span className="text-slate-400 block text-[10px] uppercase font-bold mb-0.5">
                     Purpose / Description
                   </span>
-                  <p className="text-slate-800">{selectedExpense.description}</p>
+                  <p className="text-slate-800">
+                    {selectedExpense.description}
+                  </p>
                 </div>
               )}
 
@@ -825,7 +841,10 @@ export default function ExpensesPage() {
             </div>
 
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsPrintModalOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsPrintModalOpen(false)}
+              >
                 Close
               </Button>
               <Button

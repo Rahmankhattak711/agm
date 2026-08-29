@@ -31,7 +31,14 @@ import {
   UserAdminIcon,
   WarehousesIcon,
 } from "./icons";
-import { ChevronDown, ChevronRight, ShoppingCart, Landmark, DollarSign, Wallet } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  ShoppingCart,
+  Landmark,
+  DollarSign,
+  Wallet,
+} from "lucide-react";
 
 interface SidebarProps {
   activeSection?: string;
@@ -73,10 +80,26 @@ const navGroups: NavGroup[] = [
         icon: <QuotationsIcon />,
         href: "/commercial/sales-invoices",
         children: [
-          { id: "quotations", label: "Quotations", href: "/commercial/quotations" },
-          { id: "sales-invoices", label: "Sales Invoices", href: "/commercial/sales-invoices" },
-          { id: "sales-returns", label: "Sales Returns", href: "/inventory/sales-returns" },
-          { id: "customers", label: "Customers", href: "/commercial/customers" },
+          {
+            id: "quotations",
+            label: "Quotations",
+            href: "/commercial/quotations",
+          },
+          {
+            id: "sales-invoices",
+            label: "Sales Invoices",
+            href: "/commercial/sales-invoices",
+          },
+          {
+            id: "sales-returns",
+            label: "Sales Returns",
+            href: "/inventory/sales-returns",
+          },
+          {
+            id: "customers",
+            label: "Customers",
+            href: "/commercial/customers",
+          },
         ],
       },
       {
@@ -85,9 +108,21 @@ const navGroups: NavGroup[] = [
         icon: <PurchaseOrdersIcon />,
         href: "/commercial/supplier-bills",
         children: [
-          { id: "purchase-orders", label: "Purchase Orders", href: "/inventory/purchase-orders" },
-          { id: "supplier-bills", label: "Purchase Invoices", href: "/commercial/supplier-bills" },
-          { id: "purchase-returns", label: "Purchase Returns", href: "/inventory/purchase-returns" },
+          {
+            id: "purchase-orders",
+            label: "Purchase Orders",
+            href: "/inventory/purchase-orders",
+          },
+          {
+            id: "supplier-bills",
+            label: "Purchase Invoices",
+            href: "/commercial/supplier-bills",
+          },
+          {
+            id: "purchase-returns",
+            label: "Purchase Returns",
+            href: "/inventory/purchase-returns",
+          },
           { id: "suppliers", label: "Suppliers", href: "/inventory/suppliers" },
         ],
       },
@@ -97,9 +132,21 @@ const navGroups: NavGroup[] = [
         icon: <AccountsIcon />,
         href: "/finance/accounts",
         children: [
-          { id: "accounts", label: "Chart of Accounts", href: "/finance/accounts" },
-          { id: "journals", label: "Journal Entries", href: "/finance/journal-entries" },
-          { id: "expenses", label: "Direct Expenses", href: "/finance/expenses" },
+          {
+            id: "accounts",
+            label: "Chart of Accounts",
+            href: "/finance/accounts",
+          },
+          {
+            id: "journals",
+            label: "Journal Entries",
+            href: "/finance/journal-entries",
+          },
+          {
+            id: "expenses",
+            label: "Direct Expenses",
+            href: "/finance/expenses",
+          },
         ],
       },
       {
@@ -108,11 +155,27 @@ const navGroups: NavGroup[] = [
         icon: <ReportsIcon />,
         href: "/finance/reports",
         children: [
-          { id: "finance-reports", label: "Financial Statements", href: "/finance/reports" },
-          { id: "report-sales", label: "Sales Reports", href: "/reports/sales" },
-          { id: "report-purchases", label: "Purchase Reports", href: "/reports/purchases" },
+          {
+            id: "finance-reports",
+            label: "Financial Statements",
+            href: "/finance/reports",
+          },
+          {
+            id: "report-sales",
+            label: "Sales Reports",
+            href: "/reports/sales",
+          },
+          {
+            id: "report-purchases",
+            label: "Purchase Reports",
+            href: "/reports/purchases",
+          },
           { id: "report-vat", label: "VAT & Tax Return", href: "/reports/vat" },
-          { id: "report-management", label: "Executive Summary", href: "/reports/management" },
+          {
+            id: "report-management",
+            label: "Executive Summary",
+            href: "/reports/management",
+          },
         ],
       },
     ],
@@ -126,10 +189,26 @@ const navGroups: NavGroup[] = [
         icon: <EmployeesIcon />,
         href: "/operations/employees",
         children: [
-          { id: "employees", label: "Employees Directory", href: "/operations/employees" },
-          { id: "attendance", label: "Daily Attendance", href: "/operations/attendance" },
-          { id: "leaves", label: "Leave Management", href: "/operations/leaves" },
-          { id: "bonuses", label: "Bonuses & Payroll", href: "/operations/bonuses" },
+          {
+            id: "employees",
+            label: "Employees Directory",
+            href: "/operations/employees",
+          },
+          {
+            id: "attendance",
+            label: "Daily Attendance",
+            href: "/operations/attendance",
+          },
+          {
+            id: "leaves",
+            label: "Leave Management",
+            href: "/operations/leaves",
+          },
+          {
+            id: "bonuses",
+            label: "Bonuses & Payroll",
+            href: "/operations/bonuses",
+          },
         ],
       },
       {
@@ -138,7 +217,11 @@ const navGroups: NavGroup[] = [
         icon: <FixedAssetsIcon />,
         href: "/operations/fixed-assets",
         children: [
-          { id: "assets", label: "Asset Registry & Depreciation", href: "/operations/fixed-assets" },
+          {
+            id: "assets",
+            label: "Asset Registry & Depreciation",
+            href: "/operations/fixed-assets",
+          },
         ],
       },
     ],
@@ -158,20 +241,21 @@ const navGroups: NavGroup[] = [
 
 export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    "sales-group": true,
-    "purchases-group": false,
-    "accounts-group": false,
-    "reports-group": false,
-    "hr-group": false,
-    "assets-group": false,
-  });
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    {
+      "sales-group": true,
+      "purchases-group": false,
+      "accounts-group": false,
+      "reports-group": false,
+      "hr-group": false,
+      "assets-group": false,
+    },
+  );
 
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, loading } = useAuth();
 
-  // Auto-expand group if current pathname matches a child
   useEffect(() => {
     navGroups.forEach((g) => {
       g.items.forEach((item) => {
@@ -228,7 +312,6 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
         width: collapsed ? 74 : 240,
       }}
     >
-      {/* Architectural Wireframe Background */}
       <div className="pointer-events-none absolute inset-y-0 right-[-90px] w-[260px] opacity-20">
         <svg aria-hidden="true" viewBox="0 0 240 720" className="h-full w-full">
           <path
@@ -240,7 +323,6 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
         </svg>
       </div>
 
-      {/* Header with Logo and Collapse Toggle */}
       <div className="relative z-10 flex items-center gap-2 border-b border-white/8 px-3 min-h-[72px]">
         {!collapsed ? (
           <div className="w-full flex items-center">
@@ -265,7 +347,6 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
         </button>
       </div>
 
-      {/* Navigation List */}
       <nav className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden p-3 custom-scrollbar">
         {navGroups.map((group) => (
           <div key={group.label} className="mb-3">
@@ -277,13 +358,16 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
             {collapsed && <div className="h-1.5" />}
 
             {group.items.map((item) => {
-              const hasChildren = Boolean(item.children && item.children.length > 0);
+              const hasChildren = Boolean(
+                item.children && item.children.length > 0,
+              );
               const isExpanded = Boolean(expandedGroups[item.id]);
 
               const isDirectActive = item.href ? pathname === item.href : false;
               const isChildActive = hasChildren
                 ? item.children!.some(
-                    (c) => pathname === c.href || pathname.startsWith(`${c.href}/`),
+                    (c) =>
+                      pathname === c.href || pathname.startsWith(`${c.href}/`),
                   )
                 : false;
 
@@ -309,8 +393,8 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
                       active && (!hasChildren || collapsed)
                         ? "bg-gradient-to-r from-white/16 to-white/6 text-white shadow-[inset_0_0_0_1px_rgba(233,242,234,0.16)]"
                         : active && hasChildren
-                        ? "text-white font-bold bg-white/6"
-                        : "text-white/65 hover:bg-white/6 hover:text-white"
+                          ? "text-white font-bold bg-white/6"
+                          : "text-white/65 hover:bg-white/6 hover:text-white"
                     }`}
                     style={{ padding: collapsed ? "10px 0" : "7px 10px" }}
                   >
@@ -349,12 +433,12 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
                     )}
                   </div>
 
-                  {/* Expandable Sub-items */}
                   {hasChildren && isExpanded && !collapsed && (
                     <div className="ml-6 pl-2 mt-0.5 border-l border-white/10 space-y-0.5">
                       {item.children!.map((child) => {
                         const childActive =
-                          pathname === child.href || pathname.startsWith(`${child.href}/`);
+                          pathname === child.href ||
+                          pathname.startsWith(`${child.href}/`);
                         return (
                           <button
                             key={child.id}
@@ -379,10 +463,8 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Divider */}
       <div className="relative z-10 mx-2.5 h-px bg-white/8" />
 
-      {/* User Footer Profile Card */}
       <div className="relative z-10 p-2.5">
         {!collapsed ? (
           <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/6 p-2.5 backdrop-blur-sm">

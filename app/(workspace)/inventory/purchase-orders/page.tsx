@@ -58,9 +58,10 @@ export default function PurchaseOrdersPage() {
   );
   const [formError, setFormError] = useState("");
 
-  // Quick Add External Product Modal State
   const [isQuickProductOpen, setIsQuickProductOpen] = useState(false);
-  const [quickProductTargetIdx, setQuickProductTargetIdx] = useState<number | null>(null);
+  const [quickProductTargetIdx, setQuickProductTargetIdx] = useState<
+    number | null
+  >(null);
   const [quickProductError, setQuickProductError] = useState("");
 
   const {
@@ -122,7 +123,13 @@ export default function PurchaseOrdersPage() {
       expectedDate: "",
       notes: "",
       items: [
-        { productId: "", supplierSku: "", itemNotes: "", quantityOrdered: "1", unitCost: "0" },
+        {
+          productId: "",
+          supplierSku: "",
+          itemNotes: "",
+          quantityOrdered: "1",
+          unitCost: "0",
+        },
       ] as ItemRow[],
     },
     onSubmit: async ({ value }) => {
@@ -204,13 +211,17 @@ export default function PurchaseOrdersPage() {
           unit: value.unit?.trim() || "PCS",
           costPrice: Number(value.costPrice || 0),
           sellingPrice: Number(value.sellingPrice || 0),
-          supplierId: value.supplierId || poForm.getFieldValue("supplierId") || null,
+          supplierId:
+            value.supplierId || poForm.getFieldValue("supplierId") || null,
           description: value.description.trim() || null,
         });
 
         // Insert new product into target line item
         const currentItems = poForm.getFieldValue("items") || [];
-        if (quickProductTargetIdx !== null && currentItems[quickProductTargetIdx]) {
+        if (
+          quickProductTargetIdx !== null &&
+          currentItems[quickProductTargetIdx]
+        ) {
           const next = [...currentItems];
           next[quickProductTargetIdx] = {
             ...next[quickProductTargetIdx],
@@ -234,7 +245,9 @@ export default function PurchaseOrdersPage() {
 
         setIsQuickProductOpen(false);
       } catch (err: any) {
-        setQuickProductError(err.message || "Failed to create external product");
+        setQuickProductError(
+          err.message || "Failed to create external product",
+        );
       }
     },
   });
@@ -266,7 +279,15 @@ export default function PurchaseOrdersPage() {
       orderDate: new Date().toISOString().split("T")[0],
       expectedDate: "",
       notes: "",
-      items: [{ productId: "", supplierSku: "", itemNotes: "", quantityOrdered: "1", unitCost: "0" }],
+      items: [
+        {
+          productId: "",
+          supplierSku: "",
+          itemNotes: "",
+          quantityOrdered: "1",
+          unitCost: "0",
+        },
+      ],
     });
     setIsCreateOpen(true);
   };
@@ -281,7 +302,8 @@ export default function PurchaseOrdersPage() {
       name: "",
       brand: "",
       supplierSku: "",
-      originCompany: currentSupplier?.name || poForm.getFieldValue("shopName") || "",
+      originCompany:
+        currentSupplier?.name || poForm.getFieldValue("shopName") || "",
       shopLocation: currentSupplier?.address || "",
       type: "RAW_MATERIAL",
       unit: "PCS",
@@ -360,13 +382,16 @@ export default function PurchaseOrdersPage() {
         cell: ({ row }) => (
           <div>
             <span className="font-bold text-slate-900 block">
-              {row.original.supplier?.name || row.original.shopName || "External Shop"}
+              {row.original.supplier?.name ||
+                row.original.shopName ||
+                "External Shop"}
             </span>
-            {row.original.shopName && row.original.supplier?.name !== row.original.shopName && (
-              <span className="text-[11px] text-slate-500 font-medium block">
-                Store: {row.original.shopName}
-              </span>
-            )}
+            {row.original.shopName &&
+              row.original.supplier?.name !== row.original.shopName && (
+                <span className="text-[11px] text-slate-500 font-medium block">
+                  Store: {row.original.shopName}
+                </span>
+              )}
             <span className="font-mono text-[10px] text-slate-500 font-medium">
               TRN: {row.original.supplier?.trn || "N/A"}
             </span>
@@ -391,7 +416,9 @@ export default function PurchaseOrdersPage() {
               {row.original.items?.length || 0} Products
             </span>
             <span className="text-[10px] text-slate-400">
-              {row.original.items?.some((it) => it.product?.brand || it.supplierSku)
+              {row.original.items?.some(
+                (it) => it.product?.brand || it.supplierSku,
+              )
                 ? "Includes External Items"
                 : "Standard Items"}
             </span>
@@ -502,7 +529,8 @@ export default function PurchaseOrdersPage() {
             Purchase Orders & Procurement
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Procure products from external companies, hardware shops, and material suppliers with vendor references.
+            Procure products from external companies, hardware shops, and
+            material suppliers with vendor references.
           </p>
         </div>
 
@@ -622,7 +650,6 @@ export default function PurchaseOrdersPage() {
         )}
       </div>
 
-      {/* CREATE PURCHASE ORDER MODAL */}
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
@@ -669,7 +696,11 @@ export default function PurchaseOrdersPage() {
               }}
             >
               {(field) => (
-                <FormSelect field={field} label="Supplier / Vendor Company *" required>
+                <FormSelect
+                  field={field}
+                  label="Supplier / Vendor Company *"
+                  required
+                >
                   <option value="">-- Select Vendor --</option>
                   {suppliers.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -730,7 +761,6 @@ export default function PurchaseOrdersPage() {
             </poForm.Field>
           </div>
 
-          {/* LINE ITEMS */}
           <poForm.Field name="items">
             {(itemsField) => {
               const currentItems = itemsField.state.value;
@@ -738,7 +768,13 @@ export default function PurchaseOrdersPage() {
               const addItem = () => {
                 itemsField.handleChange([
                   ...currentItems,
-                  { productId: "", supplierSku: "", itemNotes: "", quantityOrdered: "1", unitCost: "0" },
+                  {
+                    productId: "",
+                    supplierSku: "",
+                    itemNotes: "",
+                    quantityOrdered: "1",
+                    unitCost: "0",
+                  },
                 ]);
               };
 
@@ -784,7 +820,8 @@ export default function PurchaseOrdersPage() {
                         Procurement Line Items
                       </span>
                       <p className="text-[11px] text-slate-500">
-                        Select catalog products or click quick add to register items bought from other shops.
+                        Select catalog products or click quick add to register
+                        items bought from other shops.
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -812,7 +849,9 @@ export default function PurchaseOrdersPage() {
 
                   <div className="space-y-2">
                     {currentItems.map((row, idx) => {
-                      const selectedProduct = products.find((p) => p.id === row.productId);
+                      const selectedProduct = products.find(
+                        (p) => p.id === row.productId,
+                      );
                       return (
                         <div
                           key={idx}
@@ -831,7 +870,11 @@ export default function PurchaseOrdersPage() {
                                 <option value="">-- Select Product --</option>
                                 {products.map((p) => (
                                   <option key={p.id} value={p.id}>
-                                    {p.name} {p.brand ? `[${p.brand}]` : ""} ({p.sku}) {p.supplierSku ? `• Ref: ${p.supplierSku}` : ""}
+                                    {p.name} {p.brand ? `[${p.brand}]` : ""} (
+                                    {p.sku}){" "}
+                                    {p.supplierSku
+                                      ? `• Ref: ${p.supplierSku}`
+                                      : ""}
                                   </option>
                                 ))}
                               </Select>
@@ -854,7 +897,11 @@ export default function PurchaseOrdersPage() {
                               required
                               value={row.quantityOrdered}
                               onChange={(e) =>
-                                updateItem(idx, "quantityOrdered", e.target.value)
+                                updateItem(
+                                  idx,
+                                  "quantityOrdered",
+                                  e.target.value,
+                                )
                               }
                               className="w-full sm:w-20 py-1.5 text-xs"
                             />
@@ -951,7 +998,6 @@ export default function PurchaseOrdersPage() {
         </form>
       </Modal>
 
-      {/* QUICK ADD EXTERNAL PRODUCT MODAL */}
       <Modal
         isOpen={isQuickProductOpen}
         onClose={() => setIsQuickProductOpen(false)}
@@ -974,7 +1020,8 @@ export default function PurchaseOrdersPage() {
 
           <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-900 text-xs">
             <span className="font-bold block">💡 External Shop Product</span>
-            Register a material or item purchased from an external shop, vendor, or marketplace to inventory.
+            Register a material or item purchased from an external shop, vendor,
+            or marketplace to inventory.
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1090,14 +1137,16 @@ export default function PurchaseOrdersPage() {
             >
               Cancel
             </Button>
-            <FormSubmit form={quickProductForm} loading={createProduct.isPending}>
+            <FormSubmit
+              form={quickProductForm}
+              loading={createProduct.isPending}
+            >
               Create & Add to PO
             </FormSubmit>
           </div>
         </form>
       </Modal>
 
-      {/* RECEIVE GOODS MODAL */}
       <Modal
         isOpen={!!receiveModalPO}
         onClose={() => setReceiveModalPO(null)}
@@ -1145,7 +1194,8 @@ export default function PurchaseOrdersPage() {
                   className="flex justify-between text-slate-600"
                 >
                   <span>
-                    {it.product?.name} {it.product?.brand ? `[${it.product.brand}]` : ""}
+                    {it.product?.name}{" "}
+                    {it.product?.brand ? `[${it.product.brand}]` : ""}
                   </span>
                   <span className="font-mono font-semibold">
                     {it.quantityOrdered} {it.product?.unit}
@@ -1170,7 +1220,6 @@ export default function PurchaseOrdersPage() {
         </form>
       </Modal>
 
-      {/* PO DETAILS MODAL */}
       <Modal
         isOpen={!!selectedPO}
         onClose={() => setSelectedPO(null)}
@@ -1200,10 +1249,14 @@ export default function PurchaseOrdersPage() {
                   Vendor / Shop
                 </span>
                 <span className="font-bold text-slate-800 block">
-                  {selectedPO.supplier?.name || selectedPO.shopName || "External Vendor"}
+                  {selectedPO.supplier?.name ||
+                    selectedPO.shopName ||
+                    "External Vendor"}
                 </span>
                 {selectedPO.shopName && (
-                  <span className="text-slate-500 block">Store: {selectedPO.shopName}</span>
+                  <span className="text-slate-500 block">
+                    Store: {selectedPO.shopName}
+                  </span>
                 )}
                 <span className="text-slate-400 block">
                   TRN: {selectedPO.supplier?.trn || "N/A"}
@@ -1245,7 +1298,10 @@ export default function PurchaseOrdersPage() {
                       </div>
                       {it.product?.brand && (
                         <div className="text-[10px] text-slate-500">
-                          Brand: <span className="font-medium text-slate-700">{it.product.brand}</span>
+                          Brand:{" "}
+                          <span className="font-medium text-slate-700">
+                            {it.product.brand}
+                          </span>
                         </div>
                       )}
                       {it.itemNotes && (
@@ -1260,8 +1316,12 @@ export default function PurchaseOrdersPage() {
                       </span>
                     </TableCell>
                     <TableCell align="center">
-                      <span className="font-mono font-bold">{it.quantityOrdered}</span>{" "}
-                      <span className="text-[10px] text-slate-400">{it.product?.unit}</span>
+                      <span className="font-mono font-bold">
+                        {it.quantityOrdered}
+                      </span>{" "}
+                      <span className="text-[10px] text-slate-400">
+                        {it.product?.unit}
+                      </span>
                     </TableCell>
                     <TableCell align="center">
                       <span className="font-mono">{it.quantityReceived}</span>

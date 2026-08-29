@@ -102,7 +102,6 @@ function ReportsContent() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5 print:hidden">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -111,12 +110,13 @@ function ReportsContent() {
             </h2>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Real-time statutory accounting statements, receivables &amp; payables aging, general ledger, and UAE VAT Form 201 returns.
+            AGM FITOUT TECHNICAL SERVICES LLC — Real-time statutory accounting
+            statements, receivables &amp; payables aging, general ledger, and
+            UAE VAT Form 201 returns.
           </p>
         </div>
       </div>
 
-      {/* Sleek Navigation Pill Bar */}
       <div className="flex items-center gap-1.5 p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200/70 overflow-x-auto no-scrollbar print:hidden">
         {tabs.map((t) => {
           const isActive = activeTab === t.id;
@@ -138,7 +138,6 @@ function ReportsContent() {
         })}
       </div>
 
-      {/* Tab Contents */}
       {activeTab === "summary" && (
         <ExecutiveSummaryReport
           profitLoss={profitLoss}

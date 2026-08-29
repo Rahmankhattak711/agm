@@ -249,7 +249,6 @@ export default function ExpenseReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight">
@@ -271,7 +270,6 @@ export default function ExpenseReportsPage() {
         </Button>
       </div>
 
-      {/* 2. KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
@@ -323,7 +321,6 @@ export default function ExpenseReportsPage() {
         </div>
       </div>
 
-      {/* 3. Category Breakdown Visual Chart */}
       {categoryBreakdown.length > 0 && (
         <ReportSummaryChart
           title="Expense Distribution by Category"
@@ -333,7 +330,6 @@ export default function ExpenseReportsPage() {
         />
       )}
 
-      {/* 4. Filter Toolbar */}
       <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
         <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
           <div className="w-full lg:w-80">
@@ -382,7 +378,6 @@ export default function ExpenseReportsPage() {
         </div>
       </div>
 
-      {/* 5. Data Table */}
       <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-xs">
         <DataTable
           columns={columns}
@@ -391,7 +386,6 @@ export default function ExpenseReportsPage() {
         />
       </div>
 
-      {/* 6. View Expense Detail Modal */}
       <Modal
         isOpen={Boolean(selectedExpense)}
         onClose={() => setSelectedExpense(null)}
@@ -477,7 +471,6 @@ export default function ExpenseReportsPage() {
         )}
       </Modal>
 
-      {/* 7. Print Statement Modal */}
       <Modal
         isOpen={isPrintSummaryOpen}
         onClose={() => setIsPrintSummaryOpen(false)}
@@ -488,8 +481,7 @@ export default function ExpenseReportsPage() {
             id="print-expense-report"
             className="p-6 bg-white border border-slate-200 rounded-2xl space-y-4"
           >
-            <QuotationHeader
-            />
+            <QuotationHeader />
 
             <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 rounded-xl text-xs">
               <div>

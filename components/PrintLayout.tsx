@@ -36,8 +36,8 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({
             A G M FITOUT TECHNICAL SERVICES L.L.C
           </div>
           <div>
-            Sheikh Zayed Road, near Oasis Centre, Office No. 13-11 Building: Adel
-            Mohammed Ali Jassim Al Marzouqi, Al Quoz First 1, Dubai, UAE
+            Sheikh Zayed Road, near Oasis Centre, Office No. 13-11 Building:
+            Adel Mohammed Ali Jassim Al Marzouqi, Al Quoz First 1, Dubai, UAE
           </div>
           <div className="font-semibold mt-0.5 text-slate-900">
             Tel: +971 48 749839 | Mob: +971 50 340 7300 | TRN: 104094432200003
@@ -60,7 +60,11 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({
               </p>
             )}
             <p className="text-[10px] text-slate-500 font-mono">
-              Printed: {new Date().toLocaleDateString("en-GB")} {new Date().toLocaleTimeString("en-GB", { hour: '2-digit', minute: '2-digit' })}
+              Printed: {new Date().toLocaleDateString("en-GB")}{" "}
+              {new Date().toLocaleTimeString("en-GB", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </p>
           </div>
         </div>
@@ -92,7 +96,8 @@ export const PrintFooter: React.FC = () => {
             <span>info@agmfitout.com</span>
           </div>
           <div className="text-[8.5px] opacity-80 mt-1">
-            Sheikh Zayed Road, Adel Mohammed Ali Jassim Bldg, Al Quoz 1, Dubai, UAE
+            Sheikh Zayed Road, Adel Mohammed Ali Jassim Bldg, Al Quoz 1, Dubai,
+            UAE
           </div>
         </div>
       </div>

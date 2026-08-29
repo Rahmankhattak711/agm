@@ -90,7 +90,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Auto-generate customerCode if missing
     let code = customerCode;
     if (!code) {
       const count = await prisma.customer.count();

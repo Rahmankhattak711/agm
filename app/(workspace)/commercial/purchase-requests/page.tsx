@@ -51,14 +51,11 @@ export default function PurchaseRequestsPage() {
     useState<PurchaseRequest | null>(null);
   const [convertSupplierId, setConvertSupplierId] = useState("");
 
-  // Form state
   const [requestNumber, setRequestNumber] = useState("");
   const [requesterName, setRequesterName] = useState("");
   const [department, setDepartment] = useState("Operations / Site");
   const [requiredDate, setRequiredDate] = useState(
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .slice(0, 10),
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
   );
   const [reason, setReason] = useState("");
   const [items, setItems] = useState([
@@ -155,15 +152,13 @@ export default function PurchaseRequestsPage() {
         r.department.toLowerCase().includes(search.toLowerCase())) ||
       (r.reason && r.reason.toLowerCase().includes(search.toLowerCase()));
 
-    const matchesStatus =
-      statusFilter === "ALL" || r.status === statusFilter;
+    const matchesStatus = statusFilter === "ALL" || r.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -175,7 +170,9 @@ export default function PurchaseRequestsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Site team material requisitions, administrative approvals, and one-click conversion into Purchase Orders.
+            AGM FITOUT TECHNICAL SERVICES LLC — Site team material requisitions,
+            administrative approvals, and one-click conversion into Purchase
+            Orders.
           </p>
         </div>
 
@@ -192,7 +189,6 @@ export default function PurchaseRequestsPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 flex flex-col justify-between space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-purple-800">
@@ -208,7 +204,8 @@ export default function PurchaseRequestsPage() {
             Pending Approval
           </p>
           <p className="text-xl font-black text-amber-950 font-mono">
-            {requests.filter((r) => r.status === "PENDING_APPROVAL").length} Pending
+            {requests.filter((r) => r.status === "PENDING_APPROVAL").length}{" "}
+            Pending
           </p>
         </div>
 
@@ -217,12 +214,16 @@ export default function PurchaseRequestsPage() {
             Approved / Converted to PO
           </p>
           <p className="text-xl font-black text-emerald-950 font-mono">
-            {requests.filter((r) => r.status === "APPROVED" || r.status === "CONVERTED").length} Approved
+            {
+              requests.filter(
+                (r) => r.status === "APPROVED" || r.status === "CONVERTED",
+              ).length
+            }{" "}
+            Approved
           </p>
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
         <div className="relative flex-1 max-w-md">
           <Search
@@ -258,7 +259,6 @@ export default function PurchaseRequestsPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">
           <TableHead className="bg-slate-50/95 border-b border-slate-200">
@@ -316,10 +316,14 @@ export default function PurchaseRequestsPage() {
                     {r.reason}
                   </TableCell>
                   <TableCell className="py-3 px-3 text-slate-600">
-                    {r.requestDate ? new Date(r.requestDate).toISOString().slice(0, 10) : "—"}
+                    {r.requestDate
+                      ? new Date(r.requestDate).toISOString().slice(0, 10)
+                      : "—"}
                   </TableCell>
                   <TableCell className="py-3 px-3 text-slate-600">
-                    {r.requiredDate ? new Date(r.requiredDate).toISOString().slice(0, 10) : "—"}
+                    {r.requiredDate
+                      ? new Date(r.requiredDate).toISOString().slice(0, 10)
+                      : "—"}
                   </TableCell>
                   <TableCell className="py-3 px-3">
                     <span
@@ -327,10 +331,10 @@ export default function PurchaseRequestsPage() {
                         r.status === "APPROVED"
                           ? "bg-emerald-100 text-emerald-800"
                           : r.status === "CONVERTED"
-                          ? "bg-blue-100 text-blue-800"
-                          : r.status === "PENDING_APPROVAL"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-rose-100 text-rose-800"
+                            ? "bg-blue-100 text-blue-800"
+                            : r.status === "PENDING_APPROVAL"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-rose-100 text-rose-800"
                       }`}
                     >
                       {r.status}
@@ -386,7 +390,6 @@ export default function PurchaseRequestsPage() {
         </Table>
       </div>
 
-      {/* Create Modal */}
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
@@ -440,10 +443,11 @@ export default function PurchaseRequestsPage() {
               />
             </div>
 
-            {/* Requisition Items */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-800">Required Materials</span>
+                <span className="font-bold text-slate-800">
+                  Required Materials
+                </span>
                 <button
                   type="button"
                   onClick={addItem}
@@ -531,7 +535,6 @@ export default function PurchaseRequestsPage() {
         </Modal>
       )}
 
-      {/* Convert to PO Modal */}
       {convertModalReq && (
         <Modal
           isOpen={!!convertModalReq}
@@ -541,10 +544,12 @@ export default function PurchaseRequestsPage() {
           <form onSubmit={handleConvertPo} className="space-y-4 text-xs">
             <div className="p-3 bg-indigo-50/70 rounded-xl border border-indigo-100 space-y-1">
               <p className="font-bold text-indigo-950">
-                Requisition: {convertModalReq.requestNumber} - {convertModalReq.reason}
+                Requisition: {convertModalReq.requestNumber} -{" "}
+                {convertModalReq.reason}
               </p>
               <p className="text-slate-600">
-                Items: {convertModalReq.items?.length || 0} line items will be converted to a formal Purchase Order.
+                Items: {convertModalReq.items?.length || 0} line items will be
+                converted to a formal Purchase Order.
               </p>
             </div>
 
@@ -589,7 +594,6 @@ export default function PurchaseRequestsPage() {
         </Modal>
       )}
 
-      {/* Details View Modal */}
       {selectedReq && (
         <Modal
           isOpen={!!selectedReq}
@@ -598,22 +602,32 @@ export default function PurchaseRequestsPage() {
         >
           <div className="space-y-4 text-xs">
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-              <p className="font-bold text-slate-900">{selectedReq.requesterName} ({selectedReq.department})</p>
+              <p className="font-bold text-slate-900">
+                {selectedReq.requesterName} ({selectedReq.department})
+              </p>
               <p className="text-slate-600">{selectedReq.reason}</p>
             </div>
 
             <div className="border border-slate-200 rounded-xl overflow-hidden">
               <Table className="w-full text-xs">
                 <TableHead className="bg-slate-50">
-                  <TableHeaderCell className="py-2 px-3">Description</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Qty</TableHeaderCell>
+                  <TableHeaderCell className="py-2 px-3">
+                    Description
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Qty
+                  </TableHeaderCell>
                   <TableHeaderCell className="py-2 px-3">Unit</TableHeaderCell>
                 </TableHead>
                 <TableBody>
                   {selectedReq.items?.map((item: any) => (
                     <TableRow key={item.id}>
-                      <TableCell className="py-2 px-3">{item.description}</TableCell>
-                      <TableCell align="right" className="py-2 px-3 font-mono">{item.quantity}</TableCell>
+                      <TableCell className="py-2 px-3">
+                        {item.description}
+                      </TableCell>
+                      <TableCell align="right" className="py-2 px-3 font-mono">
+                        {item.quantity}
+                      </TableCell>
                       <TableCell className="py-2 px-3">{item.unit}</TableCell>
                     </TableRow>
                   ))}

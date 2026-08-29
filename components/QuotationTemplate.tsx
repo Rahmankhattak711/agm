@@ -683,7 +683,6 @@ export default function QuotationTemplate({
           </tbody>
         </table>
 
-        {/* Pinned print footer rendered across all printed sheets */}
         <div className="hidden print:block">
           <QuotationFooter />
         </div>

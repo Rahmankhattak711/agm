@@ -48,7 +48,6 @@ export async function GET(
       return NextResponse.json({ error: "Account not found" }, { status: 404 });
     }
 
-    // Compute running balance ledger
     let runningBalance = 0;
     const ledger = account.journalLines.map((line) => {
       const debit = Number(line.debit || 0);
@@ -135,7 +134,6 @@ export async function PUT(
       return NextResponse.json({ error: "Account not found" }, { status: 404 });
     }
 
-    // If changing accountCode, check uniqueness
     if (accountCode && accountCode.trim() !== existing.accountCode) {
       const codeTaken = await prisma.chartOfAccount.findUnique({
         where: { accountCode: accountCode.trim() },
@@ -154,7 +152,7 @@ export async function PUT(
         accountCode: accountCode?.trim() ?? existing.accountCode,
         accountName: accountName?.trim() ?? existing.accountName,
         type: type ?? existing.type,
-        parentId: parentId !== undefined ? (parentId || null) : existing.parentId,
+        parentId: parentId !== undefined ? parentId || null : existing.parentId,
         isActive: isActive !== undefined ? isActive : existing.isActive,
       },
       include: {
@@ -229,7 +227,8 @@ export async function DELETE(
         data: { isActive: false },
       });
       return NextResponse.json({
-        message: "Account has transaction history and was archived (set to inactive).",
+        message:
+          "Account has transaction history and was archived (set to inactive).",
         account: deactivated,
       });
     }

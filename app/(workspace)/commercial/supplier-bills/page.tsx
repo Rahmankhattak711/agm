@@ -53,7 +53,6 @@ export default function SupplierBillsPage() {
     null,
   );
 
-  // Form State
   const [billNumber, setBillNumber] = useState("");
   const [supplierId, setSupplierId] = useState("");
   const [supplierName, setSupplierName] = useState("");
@@ -62,9 +61,7 @@ export default function SupplierBillsPage() {
     new Date().toISOString().slice(0, 10),
   );
   const [dueDate, setDueDate] = useState(
-    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .slice(0, 10),
+    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
   );
   const [items, setItems] = useState([
     {
@@ -77,7 +74,6 @@ export default function SupplierBillsPage() {
   ]);
   const [autoPost, setAutoPost] = useState(true);
 
-  // Payment Form
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("BANK_TRANSFER");
   const [paymentRef, setPaymentRef] = useState("");
@@ -185,8 +181,7 @@ export default function SupplierBillsPage() {
       (b.supplierTrn &&
         b.supplierTrn.toLowerCase().includes(search.toLowerCase()));
 
-    const matchesStatus =
-      statusFilter === "ALL" || b.status === statusFilter;
+    const matchesStatus = statusFilter === "ALL" || b.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -206,7 +201,6 @@ export default function SupplierBillsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -218,7 +212,9 @@ export default function SupplierBillsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Record vendor tax invoices, calculate 5% Input VAT, manage  <br />Accounts Payable liabilities, and post to General Ledger.
+            AGM FITOUT TECHNICAL SERVICES LLC — Record vendor tax invoices,
+            calculate 5% Input VAT, manage <br />
+            Accounts Payable liabilities, and post to General Ledger.
           </p>
         </div>
 
@@ -234,14 +230,16 @@ export default function SupplierBillsPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-cyan-50/60 border border-cyan-100 flex flex-col justify-between space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-800">
             Total Billed by Suppliers
           </p>
           <p className="text-xl font-black text-cyan-950 font-mono">
-            AED {totalPayables.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalPayables.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </p>
         </div>
 
@@ -250,7 +248,10 @@ export default function SupplierBillsPage() {
             Outstanding Accounts Payable
           </p>
           <p className="text-xl font-black text-rose-950 font-mono">
-            AED {totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalOutstanding.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </p>
         </div>
 
@@ -259,12 +260,14 @@ export default function SupplierBillsPage() {
             Recoverable Input VAT (5%)
           </p>
           <p className="text-xl font-black text-emerald-950 font-mono">
-            AED {totalInputVat.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalInputVat.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </p>
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
         <div className="relative flex-1 max-w-md">
           <Search
@@ -298,7 +301,6 @@ export default function SupplierBillsPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">
           <TableHead className="bg-slate-50/95 border-b border-slate-200">
@@ -364,16 +366,23 @@ export default function SupplierBillsPage() {
                     )}
                   </TableCell>
                   <TableCell className="py-3 px-3 text-slate-600">
-                    {b.billDate ? new Date(b.billDate).toISOString().slice(0, 10) : "—"}
+                    {b.billDate
+                      ? new Date(b.billDate).toISOString().slice(0, 10)
+                      : "—"}
                   </TableCell>
                   <TableCell className="py-3 px-3 text-slate-600">
-                    {b.dueDate ? new Date(b.dueDate).toISOString().slice(0, 10) : "—"}
+                    {b.dueDate
+                      ? new Date(b.dueDate).toISOString().slice(0, 10)
+                      : "—"}
                   </TableCell>
                   <TableCell
                     align="right"
                     className="py-3 px-3 text-right font-mono font-black text-slate-900"
                   >
-                    AED {Number(b.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    AED{" "}
+                    {Number(b.totalAmount).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
                   </TableCell>
                   <TableCell
                     align="right"
@@ -383,7 +392,10 @@ export default function SupplierBillsPage() {
                         : "text-emerald-700"
                     }`}
                   >
-                    AED {Number(b.remainingBalance).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    AED{" "}
+                    {Number(b.remainingBalance).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
                   </TableCell>
                   <TableCell className="py-3 px-3">
                     <span
@@ -391,10 +403,10 @@ export default function SupplierBillsPage() {
                         b.status === "PAID"
                           ? "bg-emerald-100 text-emerald-800"
                           : b.status === "POSTED"
-                          ? "bg-blue-100 text-blue-800"
-                          : b.status === "PARTIALLY_PAID"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-slate-100 text-slate-700"
+                            ? "bg-blue-100 text-blue-800"
+                            : b.status === "PARTIALLY_PAID"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       {b.status}
@@ -444,7 +456,6 @@ export default function SupplierBillsPage() {
         </Table>
       </div>
 
-      {/* Create Bill Modal */}
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
@@ -462,7 +473,9 @@ export default function SupplierBillsPage() {
                   value={supplierId}
                   onChange={(e) => {
                     setSupplierId(e.target.value);
-                    const s = suppliers.find((sup) => sup.id === e.target.value);
+                    const s = suppliers.find(
+                      (sup) => sup.id === e.target.value,
+                    );
                     if (s) {
                       setSupplierName(s.name);
                       setSupplierTrn(s.trn || "");
@@ -534,7 +547,6 @@ export default function SupplierBillsPage() {
               </div>
             </div>
 
-            {/* Line Items */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-800">Bill Items</span>
@@ -605,7 +617,6 @@ export default function SupplierBillsPage() {
               </div>
             </div>
 
-            {/* Totals */}
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-xs text-right space-y-1">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal (Excl. VAT):</span>
@@ -617,7 +628,9 @@ export default function SupplierBillsPage() {
               </div>
               <div className="flex justify-between font-black text-slate-900 text-sm border-t border-slate-200 pt-1">
                 <span>Total Bill Amount:</span>
-                <span className="text-cyan-900">AED {formTotal.toFixed(2)}</span>
+                <span className="text-cyan-900">
+                  AED {formTotal.toFixed(2)}
+                </span>
               </div>
             </div>
 
@@ -629,7 +642,10 @@ export default function SupplierBillsPage() {
                 onChange={(e) => setAutoPost(e.target.checked)}
                 className="rounded border-slate-300 text-cyan-600"
               />
-              <label htmlFor="autoPostBill" className="font-semibold text-slate-700">
+              <label
+                htmlFor="autoPostBill"
+                className="font-semibold text-slate-700"
+              >
                 Auto-post to General Ledger & update Accounts Payable
               </label>
             </div>
@@ -643,11 +659,7 @@ export default function SupplierBillsPage() {
               >
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                size="lg"
-                type="submit"
-              >
+              <Button variant="primary" size="lg" type="submit">
                 Save Supplier Bill
               </Button>
             </div>
@@ -655,7 +667,6 @@ export default function SupplierBillsPage() {
         </Modal>
       )}
 
-      {/* Disburse Payment Modal */}
       {paymentModalBill && (
         <Modal
           isOpen={!!paymentModalBill}
@@ -668,7 +679,9 @@ export default function SupplierBillsPage() {
                 Vendor: {paymentModalBill.supplierName}
               </p>
               <p className="text-slate-600">
-                Bill Total: AED {Number(paymentModalBill.totalAmount).toFixed(2)} | Outstanding: AED {Number(paymentModalBill.remainingBalance).toFixed(2)}
+                Bill Total: AED{" "}
+                {Number(paymentModalBill.totalAmount).toFixed(2)} | Outstanding:
+                AED {Number(paymentModalBill.remainingBalance).toFixed(2)}
               </p>
             </div>
 
@@ -724,11 +737,7 @@ export default function SupplierBillsPage() {
               >
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                size="lg"
-                type="submit"
-              >
+              <Button variant="primary" size="lg" type="submit">
                 Disburse & Post to GL
               </Button>
             </div>
@@ -736,7 +745,6 @@ export default function SupplierBillsPage() {
         </Modal>
       )}
 
-      {/* Bill View Modal */}
       {selectedBill && (
         <Modal
           isOpen={!!selectedBill}
@@ -746,30 +754,57 @@ export default function SupplierBillsPage() {
           <div className="space-y-4 text-xs">
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
               <div className="flex justify-between font-mono">
-                <span className="font-bold text-cyan-950">{selectedBill.billNumber}</span>
+                <span className="font-bold text-cyan-950">
+                  {selectedBill.billNumber}
+                </span>
                 <span className="text-slate-500">
-                  {selectedBill.billDate ? new Date(selectedBill.billDate).toISOString().slice(0, 10) : ""}
+                  {selectedBill.billDate
+                    ? new Date(selectedBill.billDate).toISOString().slice(0, 10)
+                    : ""}
                 </span>
               </div>
-              <p className="font-bold text-slate-900">Supplier: {selectedBill.supplierName}</p>
-              <p className="text-slate-500 font-mono">TRN: {selectedBill.supplierTrn || "N/A"}</p>
+              <p className="font-bold text-slate-900">
+                Supplier: {selectedBill.supplierName}
+              </p>
+              <p className="text-slate-500 font-mono">
+                TRN: {selectedBill.supplierTrn || "N/A"}
+              </p>
             </div>
 
             <div className="border border-slate-200 rounded-xl overflow-hidden">
               <Table className="w-full text-xs">
                 <TableHead className="bg-slate-50">
-                  <TableHeaderCell className="py-2 px-3">Description</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Qty</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Unit Cost</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Total</TableHeaderCell>
+                  <TableHeaderCell className="py-2 px-3">
+                    Description
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Qty
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Unit Cost
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Total
+                  </TableHeaderCell>
                 </TableHead>
                 <TableBody>
                   {selectedBill.items?.map((item: any) => (
                     <TableRow key={item.id}>
-                      <TableCell className="py-2 px-3">{item.description}</TableCell>
-                      <TableCell align="right" className="py-2 px-3 font-mono">{item.quantity}</TableCell>
-                      <TableCell align="right" className="py-2 px-3 font-mono">{Number(item.unitCost).toFixed(2)}</TableCell>
-                      <TableCell align="right" className="py-2 px-3 font-mono font-bold">{Number(item.totalAmount).toFixed(2)}</TableCell>
+                      <TableCell className="py-2 px-3">
+                        {item.description}
+                      </TableCell>
+                      <TableCell align="right" className="py-2 px-3 font-mono">
+                        {item.quantity}
+                      </TableCell>
+                      <TableCell align="right" className="py-2 px-3 font-mono">
+                        {Number(item.unitCost).toFixed(2)}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className="py-2 px-3 font-mono font-bold"
+                      >
+                        {Number(item.totalAmount).toFixed(2)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -787,7 +822,9 @@ export default function SupplierBillsPage() {
               </div>
               <div className="flex justify-between font-black text-slate-900 text-sm border-t border-slate-200 pt-1">
                 <span>Total Bill Amount:</span>
-                <span className="text-cyan-900">AED {Number(selectedBill.totalAmount).toFixed(2)}</span>
+                <span className="text-cyan-900">
+                  AED {Number(selectedBill.totalAmount).toFixed(2)}
+                </span>
               </div>
             </div>
 

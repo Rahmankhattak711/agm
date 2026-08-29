@@ -19,10 +19,6 @@ import {
 import { useSuppliers } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 type ReturnStatus =
   "DRAFT" | "SUBMITTED" | "APPROVED" | "COMPLETED" | "REJECTED";
 
@@ -38,10 +34,6 @@ interface PurchaseReturnItem {
   totalAmount: number;
   status: ReturnStatus;
 }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 const STATUS_BADGE_CLASSES: Record<ReturnStatus, string> = {
   COMPLETED: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -217,7 +209,6 @@ export default function PurchaseReturnsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 print:p-0 print:m-0">
-      {/* Official Print Header */}
       <div className="hidden print:block mb-6">
         <QuotationHeader />
         <div className="px-10 pt-4 pb-2 border-b border-slate-200 flex justify-between items-end">
@@ -236,7 +227,6 @@ export default function PurchaseReturnsPage() {
         </div>
       </div>
 
-      {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5 print:hidden">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -249,7 +239,8 @@ export default function PurchaseReturnsPage() {
           </div>
           <p className="text-xs text-slate-500">
             AGM FITOUT TECHNICAL SERVICES LLC — Track rejected supplier
-            deliveries, return to vendor <br /> (RTV), and debit note reconciliation.
+            deliveries, return to vendor <br /> (RTV), and debit note
+            reconciliation.
           </p>
         </div>
 
@@ -263,7 +254,6 @@ export default function PurchaseReturnsPage() {
         </Button>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:grid-cols-3">
         <KpiCard
           label="Total Return Value"
@@ -285,7 +275,6 @@ export default function PurchaseReturnsPage() {
         />
       </div>
 
-      {/* Filters & Search */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm print:hidden">
         <div className="w-full sm:w-96">
           <Input
@@ -311,7 +300,6 @@ export default function PurchaseReturnsPage() {
         </Select>
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm bg-white">
         <Table>
           <TableHead className="bg-slate-50/95 border-b border-slate-200">
@@ -411,7 +399,6 @@ export default function PurchaseReturnsPage() {
         </Table>
       </div>
 
-      {/* Create Modal */}
       <Modal
         isOpen={isCreateOpen}
         onClose={handleCloseCreate}
@@ -489,7 +476,6 @@ export default function PurchaseReturnsPage() {
         </form>
       </Modal>
 
-      {/* Audit View Modal */}
       <Modal
         isOpen={!!selectedReturn}
         onClose={() => setSelectedReturn(null)}
@@ -558,7 +544,6 @@ export default function PurchaseReturnsPage() {
         )}
       </Modal>
 
-      {/* Official Print Footer */}
       <div className="hidden print:block">
         <QuotationFooter />
       </div>

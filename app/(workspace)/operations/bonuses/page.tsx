@@ -54,7 +54,6 @@ export default function BonusesPage() {
   const updateBonus = useUpdateBonus();
   const deleteBonus = useDeleteBonus();
 
-
   const totalBonusesCount = bonuses.length;
   const approvedTotal = bonuses
     .filter((b) => b.isApproved)

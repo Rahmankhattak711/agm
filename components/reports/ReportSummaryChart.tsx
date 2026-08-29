@@ -50,25 +50,29 @@ export const ReportSummaryChart: React.FC<ReportSummaryChartProps> = ({
             </span>
             <h3 className="font-bold text-sm text-slate-900">{title}</h3>
           </div>
-          {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+          )}
         </div>
 
-        {/* Legend */}
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-slate-900" />
-            <span className="font-semibold text-slate-600">{primaryLegend}</span>
+            <span className="font-semibold text-slate-600">
+              {primaryLegend}
+            </span>
           </div>
           {secondaryLegend && (
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
-              <span className="font-semibold text-slate-600">{secondaryLegend}</span>
+              <span className="font-semibold text-slate-600">
+                {secondaryLegend}
+              </span>
             </div>
           )}
         </div>
       </div>
 
-      {/* Chart Bars Area */}
       <div
         className="relative flex items-end justify-around gap-4 pt-6 pb-2 px-3 bg-slate-50/70 rounded-2xl border border-slate-100 overflow-x-auto"
         style={{ minHeight: height }}
@@ -80,25 +84,23 @@ export const ReportSummaryChart: React.FC<ReportSummaryChartProps> = ({
         ) : (
           data.map((item, idx) => {
             const pHeight = Math.max((item.value / maxVal) * 80, 4);
-            const sHeight = item.secondaryValue !== undefined
-              ? Math.max((item.secondaryValue / maxVal) * 80, 4)
-              : null;
+            const sHeight =
+              item.secondaryValue !== undefined
+                ? Math.max((item.secondaryValue / maxVal) * 80, 4)
+                : null;
 
             return (
               <div
                 key={idx}
                 className="flex-1 flex flex-col items-center min-w-[70px] max-w-[130px] group cursor-pointer"
               >
-                {/* Tooltip on hover */}
                 <div className="mb-2 text-center transition-transform group-hover:-translate-y-1">
                   <span className="inline-block px-1.5 py-0.5 rounded bg-white border border-slate-200/80 shadow-xs text-[10px] font-bold text-slate-800 font-mono">
                     {formatValue(item.value)}
                   </span>
                 </div>
 
-                {/* Bars Container */}
                 <div className="w-full h-32 flex items-end justify-center gap-1.5 rounded-xl bg-slate-200/30 p-1.5">
-                  {/* Primary Bar */}
                   <div
                     className="w-full rounded-md transition-all duration-500 shadow-2xs group-hover:opacity-90"
                     style={{
@@ -108,7 +110,6 @@ export const ReportSummaryChart: React.FC<ReportSummaryChartProps> = ({
                     title={`${primaryLegend}: ${formatValue(item.value)}`}
                   />
 
-                  {/* Secondary Bar */}
                   {sHeight !== null && (
                     <div
                       className="w-full rounded-md transition-all duration-500 shadow-2xs group-hover:opacity-90"
@@ -121,7 +122,6 @@ export const ReportSummaryChart: React.FC<ReportSummaryChartProps> = ({
                   )}
                 </div>
 
-                {/* Label */}
                 <span className="mt-2 text-[11px] font-bold text-slate-700 text-center truncate w-full">
                   {item.label}
                 </span>

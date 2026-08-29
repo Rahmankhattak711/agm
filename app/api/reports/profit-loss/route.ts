@@ -78,7 +78,9 @@ function calculateBalances(
     const prevAmount = prevBalanceMap.get(acc.id) || 0;
     const variance = amount - prevAmount;
     const variancePct =
-      prevAmount !== 0 ? ((amount - prevAmount) / Math.abs(prevAmount)) * 100 : 0;
+      prevAmount !== 0
+        ? ((amount - prevAmount) / Math.abs(prevAmount)) * 100
+        : 0;
 
     return {
       id: acc.id,
@@ -105,7 +107,10 @@ function calculateBalances(
     .map((acc: Account) => createItem(acc, "Operating Expense"));
 
   const totalIncome = incomeItems.reduce((s, i) => s + i.amount, 0);
-  const totalDirectExpenses = directExpenseItems.reduce((s, i) => s + i.amount, 0);
+  const totalDirectExpenses = directExpenseItems.reduce(
+    (s, i) => s + i.amount,
+    0,
+  );
   const grossProfit = totalIncome - totalDirectExpenses;
   const totalOperatingExpenses = operatingExpenseItems.reduce(
     (s, i) => s + i.amount,
@@ -114,8 +119,10 @@ function calculateBalances(
   const totalExpenses = totalOperatingExpenses;
   const netProfit = grossProfit - totalOperatingExpenses;
 
-  // Previous period summaries
-  const prevTotalIncome = incomeItems.reduce((s, i) => s + (i.prevAmount || 0), 0);
+  const prevTotalIncome = incomeItems.reduce(
+    (s, i) => s + (i.prevAmount || 0),
+    0,
+  );
   const prevTotalDirectExpenses = directExpenseItems.reduce(
     (s, i) => s + (i.prevAmount || 0),
     0,
@@ -151,7 +158,7 @@ function calculateBalances(
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const period = searchParams.get("period") || "all"; // 'daily', 'weekly', 'monthly', 'yearly', 'custom', 'all'
+    const period = searchParams.get("period") || "all";
     const customStart = searchParams.get("startDate");
     const customEnd = searchParams.get("endDate");
     const compare = searchParams.get("compare") === "true";
@@ -165,8 +172,22 @@ export async function GET(req: NextRequest) {
 
     if (period === "daily") {
       const targetDate = customStart ? new Date(customStart) : new Date(now);
-      startDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0);
-      endDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59);
+      startDate = new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        targetDate.getDate(),
+        0,
+        0,
+        0,
+      );
+      endDate = new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        targetDate.getDate(),
+        23,
+        59,
+        59,
+      );
 
       prevStartDate = new Date(startDate);
       prevStartDate.setDate(prevStartDate.getDate() - 1);
@@ -177,7 +198,14 @@ export async function GET(req: NextRequest) {
     } else if (period === "weekly") {
       const day = now.getDay();
       const diffToMonday = now.getDate() - day + (day === 0 ? -6 : 1);
-      startDate = new Date(now.getFullYear(), now.getMonth(), diffToMonday, 0, 0, 0);
+      startDate = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        diffToMonday,
+        0,
+        0,
+        0,
+      );
       endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + 6);
       endDate.setHours(23, 59, 59);
@@ -189,8 +217,12 @@ export async function GET(req: NextRequest) {
 
       periodLabel = `Weekly (${startDate.toLocaleDateString("en-GB")} - ${endDate.toLocaleDateString("en-GB")})`;
     } else if (period === "monthly") {
-      const year = customStart ? new Date(customStart).getFullYear() : now.getFullYear();
-      const month = customStart ? new Date(customStart).getMonth() : now.getMonth();
+      const year = customStart
+        ? new Date(customStart).getFullYear()
+        : now.getFullYear();
+      const month = customStart
+        ? new Date(customStart).getMonth()
+        : now.getMonth();
       startDate = new Date(year, month, 1, 0, 0, 0);
       endDate = new Date(year, month + 1, 0, 23, 59, 59);
 
@@ -199,7 +231,9 @@ export async function GET(req: NextRequest) {
 
       periodLabel = `Monthly (${startDate.toLocaleString("default", { month: "long", year: "numeric" })})`;
     } else if (period === "yearly") {
-      const year = customStart ? new Date(customStart).getFullYear() : now.getFullYear();
+      const year = customStart
+        ? new Date(customStart).getFullYear()
+        : now.getFullYear();
       startDate = new Date(year, 0, 1, 0, 0, 0);
       endDate = new Date(year, 11, 31, 23, 59, 59);
 
@@ -266,7 +300,9 @@ export async function GET(req: NextRequest) {
       periodLabel,
       startDate: startDate ? startDate.toISOString().split("T")[0] : null,
       endDate: endDate ? endDate.toISOString().split("T")[0] : null,
-      prevStartDate: prevStartDate ? prevStartDate.toISOString().split("T")[0] : null,
+      prevStartDate: prevStartDate
+        ? prevStartDate.toISOString().split("T")[0]
+        : null,
       prevEndDate: prevEndDate ? prevEndDate.toISOString().split("T")[0] : null,
       compare,
       ...result,

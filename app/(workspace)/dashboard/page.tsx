@@ -46,16 +46,21 @@ import {
 type PeriodOption = "THIS_MONTH" | "THIS_QUARTER" | "THIS_YEAR" | "CUSTOM";
 
 export default function DashboardPage() {
-  // Period filter state
   const [period, setPeriod] = useState<PeriodOption>("THIS_MONTH");
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
 
-  // Calculate Date Boundaries
   const dateRange = useMemo(() => {
     const now = new Date();
     let start: Date;
-    let end: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    let end: Date = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23,
+      59,
+      59,
+    );
 
     if (period === "THIS_MONTH") {
       start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -92,7 +97,8 @@ export default function DashboardPage() {
     compare: true,
   });
   const { data: balanceSheet, isLoading: bsLoading } = useBalanceSheet();
-  const { data: journalEntries = [], isLoading: jeLoading } = useJournalEntries();
+  const { data: journalEntries = [], isLoading: jeLoading } =
+    useJournalEntries();
   const { data: expensesData, isLoading: expLoading } = useExpenses();
   const { data: invoices = [], isLoading: invLoading } = useSalesInvoices();
   const { data: bills = [], isLoading: billsLoading } = useSupplierBills();
@@ -109,16 +115,20 @@ export default function DashboardPage() {
 
   const formatCompact = (val: number | string | undefined) => {
     const num = Number(val || 0);
-    if (Math.abs(num) >= 1_000_000) return `AED ${(num / 1_000_000).toFixed(2)}M`;
+    if (Math.abs(num) >= 1_000_000)
+      return `AED ${(num / 1_000_000).toFixed(2)}M`;
     if (Math.abs(num) >= 1_000) return `AED ${(num / 1_000).toFixed(1)}k`;
     return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
   // 1. Cash & Bank Balances (Treasury)
   const treasuryMetrics = useMemo(() => {
-    const pettyCashAcc = accounts.find((a) => a.accountCode === "1010")?.balance || 0;
-    const rakBankAcc = accounts.find((a) => a.accountCode === "1020")?.balance || 0;
-    const siteFloatAcc = accounts.find((a) => a.accountCode === "1030")?.balance || 0;
+    const pettyCashAcc =
+      accounts.find((a) => a.accountCode === "1010")?.balance || 0;
+    const rakBankAcc =
+      accounts.find((a) => a.accountCode === "1020")?.balance || 0;
+    const siteFloatAcc =
+      accounts.find((a) => a.accountCode === "1030")?.balance || 0;
     const totalLiquid = pettyCashAcc + rakBankAcc + siteFloatAcc;
 
     return { pettyCashAcc, rakBankAcc, siteFloatAcc, totalLiquid };
@@ -127,8 +137,13 @@ export default function DashboardPage() {
   // 2. Accounts Receivable (A/R) Breakdown
   const arMetrics = useMemo(() => {
     const now = new Date();
-    const active = invoices.filter((i) => i.status !== "CANCELLED" && Number(i.remainingBalance || 0) > 0);
-    const totalOutstanding = active.reduce((sum, i) => sum + Number(i.remainingBalance || 0), 0);
+    const active = invoices.filter(
+      (i) => i.status !== "CANCELLED" && Number(i.remainingBalance || 0) > 0,
+    );
+    const totalOutstanding = active.reduce(
+      (sum, i) => sum + Number(i.remainingBalance || 0),
+      0,
+    );
 
     let dueSoon = 0;
     let overdue = 0;
@@ -136,7 +151,9 @@ export default function DashboardPage() {
 
     active.forEach((i) => {
       const invDate = new Date(i.dueDate || i.invoiceDate);
-      const diffDays = Math.floor((now.getTime() - invDate.getTime()) / (1000 * 60 * 60 * 24));
+      const diffDays = Math.floor(
+        (now.getTime() - invDate.getTime()) / (1000 * 60 * 60 * 24),
+      );
       const bal = Number(i.remainingBalance || 0);
       if (diffDays > 0) {
         overdue += bal;
@@ -158,8 +175,13 @@ export default function DashboardPage() {
   // 3. Accounts Payable (A/P) Breakdown
   const apMetrics = useMemo(() => {
     const now = new Date();
-    const active = bills.filter((b) => b.status !== "CANCELLED" && Number(b.remainingBalance || 0) > 0);
-    const totalOutstanding = active.reduce((sum, b) => sum + Number(b.remainingBalance || 0), 0);
+    const active = bills.filter(
+      (b) => b.status !== "CANCELLED" && Number(b.remainingBalance || 0) > 0,
+    );
+    const totalOutstanding = active.reduce(
+      (sum, b) => sum + Number(b.remainingBalance || 0),
+      0,
+    );
 
     let dueSoon = 0;
     let overdue = 0;
@@ -167,7 +189,9 @@ export default function DashboardPage() {
 
     active.forEach((b) => {
       const billDate = new Date(b.dueDate || b.billDate);
-      const diffDays = Math.floor((now.getTime() - billDate.getTime()) / (1000 * 60 * 60 * 24));
+      const diffDays = Math.floor(
+        (now.getTime() - billDate.getTime()) / (1000 * 60 * 60 * 24),
+      );
       const bal = Number(b.remainingBalance || 0);
       if (diffDays > 0) {
         overdue += bal;
@@ -205,7 +229,11 @@ export default function DashboardPage() {
   const prevNetIncome = Number(profitLoss?.prevNetProfit || 0);
 
   const revenueChangePct =
-    prevRevenue > 0 ? ((revenue - prevRevenue) / prevRevenue) * 100 : revenue > 0 ? 100 : 0;
+    prevRevenue > 0
+      ? ((revenue - prevRevenue) / prevRevenue) * 100
+      : revenue > 0
+        ? 100
+        : 0;
   const netIncomeChangePct =
     prevNetIncome !== 0
       ? ((netIncome - prevNetIncome) / Math.abs(prevNetIncome)) * 100
@@ -216,11 +244,17 @@ export default function DashboardPage() {
   const marginPct = revenue > 0 ? (netIncome / revenue) * 100 : 0;
 
   // 5. Balance Sheet Totals
-  const totalAssets = Number(balanceSheet?.totalAssets ?? balanceSheet?.assets ?? 0);
-  const totalLiabilities = Number(balanceSheet?.totalLiabilities ?? balanceSheet?.liabilities ?? 0);
+  const totalAssets = Number(
+    balanceSheet?.totalAssets ?? balanceSheet?.assets ?? 0,
+  );
+  const totalLiabilities = Number(
+    balanceSheet?.totalLiabilities ?? balanceSheet?.liabilities ?? 0,
+  );
   const totalEquity = Number(
     balanceSheet?.totalEquity ??
-      (typeof balanceSheet?.equityAmount === "number" ? balanceSheet.equityAmount : 0),
+      (typeof balanceSheet?.equityAmount === "number"
+        ? balanceSheet.equityAmount
+        : 0),
   );
   const isBalanced = Boolean(balanceSheet?.balanced);
 
@@ -248,7 +282,8 @@ export default function DashboardPage() {
       .reduce((sum, b) => sum + Number(b.paidAmount || 0), 0);
 
     const moneyIn = periodReceipts || revenue * 0.85;
-    const moneyOut = periodBillPayments + periodDirectExpenses || expenses * 0.75;
+    const moneyOut =
+      periodBillPayments + periodDirectExpenses || expenses * 0.75;
     const netCashFlow = moneyIn - moneyOut;
 
     return { moneyIn, moneyOut, netCashFlow };
@@ -337,7 +372,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 max-w-full">
-      {/* 🏛️ 1. Header with Period Selector & + Create Dropdown */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-[#284257] to-[#1c3243] text-white shadow-md">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -352,9 +386,15 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Period Selector Pills */}
           <div className="flex items-center bg-white/10 rounded-xl p-1 border border-white/15 backdrop-blur-xs">
-            {(["THIS_MONTH", "THIS_QUARTER", "THIS_YEAR", "CUSTOM"] as PeriodOption[]).map((p) => {
+            {(
+              [
+                "THIS_MONTH",
+                "THIS_QUARTER",
+                "THIS_YEAR",
+                "CUSTOM",
+              ] as PeriodOption[]
+            ).map((p) => {
               const labels: Record<PeriodOption, string> = {
                 THIS_MONTH: "Month",
                 THIS_QUARTER: "Quarter",
@@ -380,7 +420,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Custom Date Inputs (when Custom is selected) */}
       {period === "CUSTOM" && (
         <div className="flex flex-wrap items-center gap-3 p-3.5 bg-white rounded-2xl border border-slate-200/80 text-xs shadow-xs">
           <span className="font-bold text-slate-700">Custom Date Range:</span>
@@ -402,9 +441,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* 📊 2. Exactly 5 Core KPI Cards (Responsive iPad: 2–3 cols, Desktop: 5 cols) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        {/* KPI 1: Cash & Bank */}
         <StatCard
           id="stat-cash-bank"
           title="Cash & Bank"
@@ -412,7 +449,13 @@ export default function DashboardPage() {
           subtitle="RAK Bank & Petty Cash"
           gradient="bg-gradient-to-br from-[#1b4b2d] via-[#153e24] to-[#0f2c1a]"
           loading={accLoading}
-          icon={<Landmark size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
+          icon={
+            <Landmark
+              size={20}
+              className="w-5 h-5 text-white"
+              strokeWidth={2}
+            />
+          }
           trend={{
             label: `${cashFlowMetrics.netCashFlow >= 0 ? "+" : ""}${formatCompact(cashFlowMetrics.netCashFlow)} Net`,
             up: cashFlowMetrics.netCashFlow >= 0,
@@ -420,7 +463,6 @@ export default function DashboardPage() {
           sparkline={[30, 45, 60, 65, 80, 95]}
         />
 
-        {/* KPI 2: Receivables */}
         <StatCard
           id="stat-receivables"
           title="Accounts Receivable"
@@ -428,15 +470,23 @@ export default function DashboardPage() {
           subtitle={`${arMetrics.openCount} Open Invoices`}
           gradient="bg-gradient-to-br from-[#2a4d69] via-[#213f56] to-[#172c3d]"
           loading={invLoading}
-          icon={<DollarSign size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
+          icon={
+            <DollarSign
+              size={20}
+              className="w-5 h-5 text-white"
+              strokeWidth={2}
+            />
+          }
           trend={{
-            label: arMetrics.overdueCount > 0 ? `${arMetrics.overdueCount} Overdue` : "Current",
+            label:
+              arMetrics.overdueCount > 0
+                ? `${arMetrics.overdueCount} Overdue`
+                : "Current",
             up: arMetrics.overdueCount === 0,
           }}
           sparkline={[40, 50, 55, 70, 75, 85]}
         />
 
-        {/* KPI 3: Payables */}
         <StatCard
           id="stat-payables"
           title="Accounts Payable"
@@ -444,15 +494,19 @@ export default function DashboardPage() {
           subtitle={`${apMetrics.openCount} Supplier Bills`}
           gradient="bg-gradient-to-br from-[#3b5368] via-[#2d4052] to-[#202f3d]"
           loading={billsLoading}
-          icon={<Receipt size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
+          icon={
+            <Receipt size={20} className="w-5 h-5 text-white" strokeWidth={2} />
+          }
           trend={{
-            label: apMetrics.overdueCount > 0 ? `${apMetrics.overdueCount} Due` : "Settled",
+            label:
+              apMetrics.overdueCount > 0
+                ? `${apMetrics.overdueCount} Due`
+                : "Settled",
             up: apMetrics.overdueCount === 0,
           }}
           sparkline={[35, 45, 50, 60, 65, 70]}
         />
 
-        {/* KPI 4: Revenue */}
         <StatCard
           id="stat-revenue"
           title="Total Revenue"
@@ -460,7 +514,13 @@ export default function DashboardPage() {
           subtitle="Operating Income"
           gradient="bg-gradient-to-br from-[#215a36] via-[#1b4b2d] to-[#123620]"
           loading={plLoading}
-          icon={<ReportsIcon size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
+          icon={
+            <ReportsIcon
+              size={20}
+              className="w-5 h-5 text-white"
+              strokeWidth={2}
+            />
+          }
           trend={{
             label: `${revenueChangePct >= 0 ? "+" : ""}${revenueChangePct.toFixed(1)}% vs prev`,
             up: revenueChangePct >= 0,
@@ -468,7 +528,6 @@ export default function DashboardPage() {
           sparkline={[20, 35, 45, 60, 80, 95]}
         />
 
-        {/* KPI 5: Net Profit */}
         <StatCard
           id="stat-net-income"
           title="Net Profit"
@@ -476,7 +535,13 @@ export default function DashboardPage() {
           subtitle={`${marginPct.toFixed(1)}% Margin`}
           gradient="bg-gradient-to-br from-[#1d425f] via-[#163349] to-[#0f2434]"
           loading={plLoading}
-          icon={<JournalEntriesIcon size={20} className="w-5 h-5 text-white" strokeWidth={2} />}
+          icon={
+            <JournalEntriesIcon
+              size={20}
+              className="w-5 h-5 text-white"
+              strokeWidth={2}
+            />
+          }
           trend={{
             label: `${netIncomeChangePct >= 0 ? "+" : ""}${netIncomeChangePct.toFixed(1)}% vs prev`,
             up: netIncome >= 0,
@@ -485,9 +550,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* 📈 3. Primary Charts Section (Responsive 2-column or stack on iPad portrait) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Income vs Expenses Breakdown (7 cols on desktop, full on tablet) */}
         <div className="lg:col-span-7 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
@@ -500,8 +563,11 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-2 text-xs">
               <span className="font-semibold text-slate-500">Net Flow:</span>
-              <span className={`font-mono font-bold ${cashFlowMetrics.netCashFlow >= 0 ? "text-emerald-700" : "text-rose-700"}`}>
-                {cashFlowMetrics.netCashFlow >= 0 ? "+" : ""}{formatCompact(cashFlowMetrics.netCashFlow)}
+              <span
+                className={`font-mono font-bold ${cashFlowMetrics.netCashFlow >= 0 ? "text-emerald-700" : "text-rose-700"}`}
+              >
+                {cashFlowMetrics.netCashFlow >= 0 ? "+" : ""}
+                {formatCompact(cashFlowMetrics.netCashFlow)}
               </span>
             </div>
           </div>
@@ -515,7 +581,6 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Balance Sheet Capital Structure (5 cols on desktop, full on tablet) */}
         <div className="lg:col-span-5 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -540,19 +605,25 @@ export default function DashboardPage() {
 
             <div className="space-y-2.5 pt-3 text-xs">
               <div className="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="text-slate-600 font-medium">Total Assets:</span>
+                <span className="text-slate-600 font-medium">
+                  Total Assets:
+                </span>
                 <span className="font-mono font-bold text-slate-900">
                   {formatCurrency(totalAssets)}
                 </span>
               </div>
               <div className="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="text-slate-600 font-medium">Total Liabilities:</span>
+                <span className="text-slate-600 font-medium">
+                  Total Liabilities:
+                </span>
                 <span className="font-mono font-bold text-slate-900">
                   {formatCurrency(totalLiabilities)}
                 </span>
               </div>
               <div className="flex justify-between items-center p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100">
-                <span className="text-emerald-900 font-medium">Net Equity:</span>
+                <span className="text-emerald-900 font-medium">
+                  Net Equity:
+                </span>
                 <span className="font-mono font-bold text-emerald-800">
                   {formatCurrency(totalEquity)}
                 </span>
@@ -563,15 +634,15 @@ export default function DashboardPage() {
           <div className="pt-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100">
             <span>Working Capital Ratio</span>
             <span className="font-bold text-slate-800">
-              {totalLiabilities > 0 ? `${(totalAssets / totalLiabilities).toFixed(2)}x` : "1.00x"}
+              {totalLiabilities > 0
+                ? `${(totalAssets / totalLiabilities).toFixed(2)}x`
+                : "1.00x"}
             </span>
           </div>
         </div>
       </div>
 
-      {/* ⚠️ 4. Action Required & AR/AP Aging Center */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Compact Action Required (7 cols on desktop) */}
         <div className="lg:col-span-7 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
@@ -604,7 +675,9 @@ export default function DashboardPage() {
                         {item.icon}
                         {item.title}
                       </span>
-                      <span className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full border ${item.badgeColor}`}>
+                      <span
+                        className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full border ${item.badgeColor}`}
+                      >
                         {item.badge}
                       </span>
                     </div>
@@ -626,7 +699,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* AR & AP Aging Summary (5 cols on desktop) */}
         <div className="lg:col-span-5 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">
@@ -634,11 +706,14 @@ export default function DashboardPage() {
             </h3>
 
             <div className="space-y-3 pt-3 text-xs">
-              {/* AR Progress */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-slate-700">A/R Customer Inflows:</span>
-                  <span className="font-mono font-bold text-slate-900">{formatCurrency(arMetrics.totalOutstanding)}</span>
+                  <span className="font-semibold text-slate-700">
+                    A/R Customer Inflows:
+                  </span>
+                  <span className="font-mono font-bold text-slate-900">
+                    {formatCurrency(arMetrics.totalOutstanding)}
+                  </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2 flex overflow-hidden">
                   <div
@@ -658,15 +733,20 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-400">
                   <span>Current: {formatCompact(arMetrics.dueSoon)}</span>
-                  <span className="text-rose-600 font-bold">Overdue: {formatCompact(arMetrics.overdue)}</span>
+                  <span className="text-rose-600 font-bold">
+                    Overdue: {formatCompact(arMetrics.overdue)}
+                  </span>
                 </div>
               </div>
 
-              {/* AP Progress */}
               <div className="space-y-1.5 pt-1">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-slate-700">A/P Supplier Commitments:</span>
-                  <span className="font-mono font-bold text-slate-900">{formatCurrency(apMetrics.totalOutstanding)}</span>
+                  <span className="font-semibold text-slate-700">
+                    A/P Supplier Commitments:
+                  </span>
+                  <span className="font-mono font-bold text-slate-900">
+                    {formatCurrency(apMetrics.totalOutstanding)}
+                  </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2 flex overflow-hidden">
                   <div
@@ -686,24 +766,31 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-400">
                   <span>Current: {formatCompact(apMetrics.dueSoon)}</span>
-                  <span className="text-amber-700 font-bold">Due/Overdue: {formatCompact(apMetrics.overdue)}</span>
+                  <span className="text-amber-700 font-bold">
+                    Due/Overdue: {formatCompact(apMetrics.overdue)}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="flex justify-between items-center pt-2 text-xs border-t border-slate-100">
-            <Link href="/reports/customers" className="font-bold text-emerald-700 hover:underline">
+            <Link
+              href="/reports/customers"
+              className="font-bold text-emerald-700 hover:underline"
+            >
               Customer Aging &rarr;
             </Link>
-            <Link href="/reports/suppliers" className="font-bold text-slate-600 hover:underline">
+            <Link
+              href="/reports/suppliers"
+              className="font-bold text-slate-600 hover:underline"
+            >
               Supplier Schedule &rarr;
             </Link>
           </div>
         </div>
       </div>
 
-      {/* 📑 5. Recent Journal Transactions Table */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
@@ -758,16 +845,19 @@ export default function DashboardPage() {
                     <tr
                       key={je.id}
                       className="hover:bg-slate-50/80 transition-colors cursor-pointer"
-                      onClick={() => (window.location.href = "/finance/journal-entries")}
+                      onClick={() =>
+                        (window.location.href = "/finance/journal-entries")
+                      }
                     >
                       <td className="py-3 font-bold text-slate-800">
                         {je.entryNumber}
                       </td>
                       <td className="py-3 text-slate-600">
-                        {new Date(je.entryDate).toLocaleDateString(
-                          undefined,
-                          { month: "short", day: "numeric", year: "numeric" },
-                        )}
+                        {new Date(je.entryDate).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
                       </td>
                       <td className="py-3 text-slate-500 font-mono text-[11px]">
                         {je.reference || "—"}

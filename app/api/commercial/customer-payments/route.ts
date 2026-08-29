@@ -24,7 +24,9 @@ export async function GET(request: Request) {
                 OR: [
                   { receiptNumber: { contains: search, mode: "insensitive" } },
                   { customerName: { contains: search, mode: "insensitive" } },
-                  { referenceNumber: { contains: search, mode: "insensitive" } },
+                  {
+                    referenceNumber: { contains: search, mode: "insensitive" },
+                  },
                 ],
               }
             : {},
@@ -59,13 +61,7 @@ export async function POST(request: Request) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
-    if (
-      !hasRole(authUser, [
-        "SUPER_ADMIN",
-        "ADMIN",
-        "ACCOUNTANT",
-      ])
-    ) {
+    if (!hasRole(authUser, ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"])) {
       return forbidden();
     }
 
@@ -94,7 +90,6 @@ export async function POST(request: Request) {
     let custName = customerName;
     let invNumber = "";
 
-    // If linked to an invoice, fetch invoice details
     if (salesInvoiceId) {
       const invoice = await prisma.salesInvoice.findUnique({
         where: { id: salesInvoiceId },
@@ -111,7 +106,6 @@ export async function POST(request: Request) {
       if (c) custName = c.name;
     }
 
-    // Auto-generate receipt number
     let recNo = receiptNumber;
     if (!recNo) {
       const count = await prisma.customerPayment.count();
@@ -165,8 +159,8 @@ export async function POST(request: Request) {
           newRem <= 0
             ? "PAID"
             : newPaid > 0
-            ? "PARTIALLY_PAID"
-            : invoice.status;
+              ? "PARTIALLY_PAID"
+              : invoice.status;
 
         await prisma.salesInvoice.update({
           where: { id: salesInvoiceId },

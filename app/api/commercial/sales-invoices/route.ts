@@ -123,7 +123,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Auto-generate invoiceNumber
     let invNo = invoiceNumber;
     if (!invNo) {
       const count = await prisma.salesInvoice.count();

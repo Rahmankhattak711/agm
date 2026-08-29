@@ -11,7 +11,10 @@ import {
 import { PrintIcon } from "@/components/icons";
 import { Button, Modal } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
-import { ReportSummaryChart, ChartBarItem } from "@/components/reports/ReportSummaryChart";
+import {
+  ReportSummaryChart,
+  ChartBarItem,
+} from "@/components/reports/ReportSummaryChart";
 import {
   TrendingUp,
   TrendingDown,
@@ -121,7 +124,6 @@ export default function ManagementReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -133,7 +135,9 @@ export default function ManagementReportsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — High-level executive KPI metrics, working capital health, <br /> liquidity ratios, and statutory performance indicators.
+            AGM FITOUT TECHNICAL SERVICES LLC — High-level executive KPI
+            metrics, working capital health, <br /> liquidity ratios, and
+            statutory performance indicators.
           </p>
         </div>
 
@@ -146,7 +150,6 @@ export default function ManagementReportsPage() {
         </Button>
       </div>
 
-      {/* 4 Top KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
@@ -201,8 +204,8 @@ export default function ManagementReportsPage() {
               currentRatio >= 1.5
                 ? "text-emerald-800"
                 : currentRatio >= 1.0
-                ? "text-blue-800"
-                : "text-rose-700"
+                  ? "text-blue-800"
+                  : "text-rose-700"
             }`}
           >
             {currentRatio > 0 ? `${currentRatio.toFixed(2)}x` : "1.00x"}
@@ -211,13 +214,12 @@ export default function ManagementReportsPage() {
             {currentRatio >= 1.5
               ? "Strong Liquidity Buffer"
               : currentRatio >= 1.0
-              ? "Adequate Working Capital"
-              : "Tight Working Capital"}
+                ? "Adequate Working Capital"
+                : "Tight Working Capital"}
           </p>
         </div>
       </div>
 
-      {/* Visual Analytics Chart */}
       <ReportSummaryChart
         title="Executive Financial Performance & Balance Sheet Drivers"
         subtitle="Visual snapshot of revenue, profitability thresholds, and trading capital exposure"
@@ -225,9 +227,7 @@ export default function ManagementReportsPage() {
         primaryLegend="Financial Balance (AED)"
       />
 
-      {/* Financial Health & Structure Panels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Income & Cost Structure Panel */}
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
@@ -235,7 +235,8 @@ export default function ManagementReportsPage() {
                 Profitability &amp; Operational Margin Structure
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Breakdown of commercial income versus direct &amp; operating costs
+                Breakdown of commercial income versus direct &amp; operating
+                costs
               </p>
             </div>
             <span className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
@@ -245,14 +246,18 @@ export default function ManagementReportsPage() {
 
           <div className="space-y-3 text-xs">
             <div className="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-slate-600 font-medium">Gross Billed Revenue:</span>
+              <span className="text-slate-600 font-medium">
+                Gross Billed Revenue:
+              </span>
               <span className="font-mono font-bold text-slate-900">
                 {formatCurrency(totalRevenue)}
               </span>
             </div>
 
             <div className="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-slate-600 font-medium">Direct Fitout / Material Costs (COGS):</span>
+              <span className="text-slate-600 font-medium">
+                Direct Fitout / Material Costs (COGS):
+              </span>
               <span className="font-mono font-bold text-rose-700">
                 -{formatCurrency(directExpenses)}
               </span>
@@ -271,7 +276,9 @@ export default function ManagementReportsPage() {
             </div>
 
             <div className="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-slate-600 font-medium">Operating &amp; Admin Overheads:</span>
+              <span className="text-slate-600 font-medium">
+                Operating &amp; Admin Overheads:
+              </span>
               <span className="font-mono font-bold text-slate-700">
                 -{formatCurrency(operatingExpenses)}
               </span>
@@ -291,7 +298,6 @@ export default function ManagementReportsPage() {
           </div>
         </div>
 
-        {/* Balance Sheet & Asset Health Panel */}
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
@@ -309,35 +315,45 @@ export default function ManagementReportsPage() {
 
           <div className="space-y-3 text-xs">
             <div className="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-slate-600 font-medium">Total Current Liquid Assets:</span>
+              <span className="text-slate-600 font-medium">
+                Total Current Liquid Assets:
+              </span>
               <span className="font-mono font-bold text-blue-900">
                 {formatCurrency(currentAssets)}
               </span>
             </div>
 
             <div className="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-slate-600 font-medium">Fixed &amp; Non-Current Assets:</span>
+              <span className="text-slate-600 font-medium">
+                Fixed &amp; Non-Current Assets:
+              </span>
               <span className="font-mono font-bold text-slate-800">
                 {formatCurrency(fixedAssets)}
               </span>
             </div>
 
             <div className="flex justify-between items-center p-2.5 rounded-xl bg-blue-50/60 border border-blue-100">
-              <span className="text-blue-900 font-bold">Total Capital Assets:</span>
+              <span className="text-blue-900 font-bold">
+                Total Capital Assets:
+              </span>
               <span className="font-mono font-black text-blue-950">
                 {formatCurrency(totalAssets)}
               </span>
             </div>
 
             <div className="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-slate-600 font-medium">Current Short-Term Liabilities:</span>
+              <span className="text-slate-600 font-medium">
+                Current Short-Term Liabilities:
+              </span>
               <span className="font-mono font-bold text-amber-700">
                 {formatCurrency(currentLiabilities)}
               </span>
             </div>
 
             <div className="flex justify-between items-center p-3 rounded-xl bg-slate-900 text-white">
-              <span className="font-bold text-sm">Total Equity &amp; Retained Capital:</span>
+              <span className="font-bold text-sm">
+                Total Equity &amp; Retained Capital:
+              </span>
               <span className="font-mono font-black text-sm text-emerald-400">
                 {formatCurrency(totalEquity)}
               </span>
@@ -346,7 +362,6 @@ export default function ManagementReportsPage() {
         </div>
       </div>
 
-      {/* Working Capital & Commercial Exposure Matrix */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
@@ -354,7 +369,8 @@ export default function ManagementReportsPage() {
               Working Capital &amp; Trade Exposure Matrix
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Client accounts receivable (A/R) versus supplier accounts payable (A/P)
+              Client accounts receivable (A/R) versus supplier accounts payable
+              (A/P)
             </p>
           </div>
           <span className="p-2 rounded-xl bg-purple-50 text-purple-700">
@@ -405,7 +421,6 @@ export default function ManagementReportsPage() {
         </div>
       </div>
 
-      {/* Printable Management Statement Modal */}
       {isPrintSummaryOpen && (
         <Modal
           isOpen={isPrintSummaryOpen}
@@ -414,7 +429,10 @@ export default function ManagementReportsPage() {
           maxWidth="4xl"
         >
           <div className="space-y-6 text-xs print:p-0">
-            <div className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0" id="management-print-area">
+            <div
+              className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0"
+              id="management-print-area"
+            >
               <table className="print-page-table w-full border-collapse">
                 <thead className="print-page-header-group">
                   <tr>
@@ -452,12 +470,16 @@ export default function ManagementReportsPage() {
                               Statutory Executive Audit
                             </p>
                             <p className="text-slate-400 text-[10px]">
-                              Generated: {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                              Generated:{" "}
+                              {new Date().toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })}
                             </p>
                           </div>
                         </div>
 
-                        {/* KPI Grid */}
                         <div className="grid grid-cols-4 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
                           <div>
                             <span className="text-[10px] text-slate-400 uppercase font-bold block">
@@ -493,56 +515,93 @@ export default function ManagementReportsPage() {
                           </div>
                         </div>
 
-                        {/* Summary Tables */}
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <h4 className="font-bold text-slate-900 text-xs">Income &amp; Margin</h4>
+                            <h4 className="font-bold text-slate-900 text-xs">
+                              Income &amp; Margin
+                            </h4>
                             <div className="rounded-xl border border-slate-200 p-3 space-y-1.5 font-mono">
                               <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">Gross Revenue:</span>
-                                <span className="font-bold">{formatCurrency(totalRevenue)}</span>
+                                <span className="text-slate-500 font-sans">
+                                  Gross Revenue:
+                                </span>
+                                <span className="font-bold">
+                                  {formatCurrency(totalRevenue)}
+                                </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">Direct Costs:</span>
-                                <span className="text-rose-700">-{formatCurrency(directExpenses)}</span>
+                                <span className="text-slate-500 font-sans">
+                                  Direct Costs:
+                                </span>
+                                <span className="text-rose-700">
+                                  -{formatCurrency(directExpenses)}
+                                </span>
                               </div>
                               <div className="flex justify-between border-t border-slate-100 pt-1">
-                                <span className="text-emerald-800 font-bold font-sans">Gross Profit:</span>
-                                <span className="font-bold text-emerald-800">{formatCurrency(grossProfit)}</span>
+                                <span className="text-emerald-800 font-bold font-sans">
+                                  Gross Profit:
+                                </span>
+                                <span className="font-bold text-emerald-800">
+                                  {formatCurrency(grossProfit)}
+                                </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">Operating Overheads:</span>
-                                <span>-{formatCurrency(operatingExpenses)}</span>
+                                <span className="text-slate-500 font-sans">
+                                  Operating Overheads:
+                                </span>
+                                <span>
+                                  -{formatCurrency(operatingExpenses)}
+                                </span>
                               </div>
                               <div className="flex justify-between border-t border-slate-200 pt-1 font-black">
                                 <span className="font-sans">Net Profit:</span>
-                                <span className="text-emerald-800">{formatCurrency(netProfit)}</span>
+                                <span className="text-emerald-800">
+                                  {formatCurrency(netProfit)}
+                                </span>
                               </div>
                             </div>
                           </div>
 
                           <div className="space-y-2">
-                            <h4 className="font-bold text-slate-900 text-xs">Balance Sheet Summary</h4>
+                            <h4 className="font-bold text-slate-900 text-xs">
+                              Balance Sheet Summary
+                            </h4>
                             <div className="rounded-xl border border-slate-200 p-3 space-y-1.5 font-mono">
                               <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">Current Assets:</span>
-                                <span className="font-bold">{formatCurrency(currentAssets)}</span>
+                                <span className="text-slate-500 font-sans">
+                                  Current Assets:
+                                </span>
+                                <span className="font-bold">
+                                  {formatCurrency(currentAssets)}
+                                </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">Fixed Assets:</span>
+                                <span className="text-slate-500 font-sans">
+                                  Fixed Assets:
+                                </span>
                                 <span>{formatCurrency(fixedAssets)}</span>
                               </div>
                               <div className="flex justify-between border-t border-slate-100 pt-1">
-                                <span className="font-sans text-blue-900 font-bold">Total Assets:</span>
-                                <span className="font-bold text-blue-900">{formatCurrency(totalAssets)}</span>
+                                <span className="font-sans text-blue-900 font-bold">
+                                  Total Assets:
+                                </span>
+                                <span className="font-bold text-blue-900">
+                                  {formatCurrency(totalAssets)}
+                                </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">Current Liabilities:</span>
-                                <span className="text-amber-700">{formatCurrency(currentLiabilities)}</span>
+                                <span className="text-slate-500 font-sans">
+                                  Current Liabilities:
+                                </span>
+                                <span className="text-amber-700">
+                                  {formatCurrency(currentLiabilities)}
+                                </span>
                               </div>
                               <div className="flex justify-between border-t border-slate-200 pt-1 font-black">
                                 <span className="font-sans">Total Equity:</span>
-                                <span className="text-emerald-800">{formatCurrency(totalEquity)}</span>
+                                <span className="text-emerald-800">
+                                  {formatCurrency(totalEquity)}
+                                </span>
                               </div>
                             </div>
                           </div>

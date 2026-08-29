@@ -1,7 +1,16 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { CreditCard, Eye, FileCheck2, Plus, Printer, Receipt, Search, Trash2 } from "lucide-react";
+import {
+  CreditCard,
+  Eye,
+  FileCheck2,
+  Plus,
+  Printer,
+  Receipt,
+  Search,
+  Trash2,
+} from "lucide-react";
 import {
   Button,
   Table,
@@ -42,7 +51,6 @@ export default function SalesInvoicesPage() {
     null,
   );
 
-  // Form State for new invoice
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [customerName, setCustomerName] = useState("");
@@ -52,9 +60,7 @@ export default function SalesInvoicesPage() {
     new Date().toISOString().slice(0, 10),
   );
   const [dueDate, setDueDate] = useState(
-    new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .slice(0, 10),
+    new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
   );
   const [items, setItems] = useState([
     {
@@ -67,7 +73,6 @@ export default function SalesInvoicesPage() {
   ]);
   const [autoPost, setAutoPost] = useState(true);
 
-  // Payment form state
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("BANK_TRANSFER");
   const [paymentRef, setPaymentRef] = useState("");
@@ -178,7 +183,8 @@ export default function SalesInvoicesPage() {
         inv.customerName.toLowerCase().includes(q) ||
         (inv.customerTrn && inv.customerTrn.toLowerCase().includes(q)) ||
         (inv.projectScope && inv.projectScope.toLowerCase().includes(q));
-      const matchesStatus = statusFilter === "ALL" || inv.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "ALL" || inv.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [invoices, search, statusFilter]);
@@ -188,7 +194,8 @@ export default function SalesInvoicesPage() {
     [filteredInvoices],
   );
   const totalOutstanding = useMemo(
-    () => filteredInvoices.reduce((s, i) => s + Number(i.remainingBalance || 0), 0),
+    () =>
+      filteredInvoices.reduce((s, i) => s + Number(i.remainingBalance || 0), 0),
     [filteredInvoices],
   );
   const totalVatOutput = useMemo(
@@ -198,7 +205,6 @@ export default function SalesInvoicesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -210,7 +216,9 @@ export default function SalesInvoicesPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Issue tax-compliant sales invoices, calculate 5% Output VAT, <br /> update Accounts Receivable, and post transactions directly to General Ledger.
+            AGM FITOUT TECHNICAL SERVICES LLC — Issue tax-compliant sales
+            invoices, calculate 5% Output VAT, <br /> update Accounts
+            Receivable, and post transactions directly to General Ledger.
           </p>
         </div>
 
@@ -226,14 +234,16 @@ export default function SalesInvoicesPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-blue-800">
             Total Invoiced (Incl. VAT)
           </p>
           <p className="text-xl font-black text-blue-950 font-mono">
-            AED {totalBilled.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalBilled.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </p>
         </div>
 
@@ -242,7 +252,10 @@ export default function SalesInvoicesPage() {
             Outstanding Accounts Receivable
           </p>
           <p className="text-xl font-black text-rose-950 font-mono">
-            AED {totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalOutstanding.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </p>
         </div>
 
@@ -251,12 +264,14 @@ export default function SalesInvoicesPage() {
             Output VAT (5%)
           </p>
           <p className="text-xl font-black text-emerald-950 font-mono">
-            AED {totalVatOutput.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalVatOutput.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </p>
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
         <div className="relative flex-1 max-w-md">
           <Search
@@ -290,7 +305,6 @@ export default function SalesInvoicesPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">
           <TableHead className="bg-slate-50/95 border-b border-slate-200">
@@ -359,13 +373,18 @@ export default function SalesInvoicesPage() {
                     {inv.projectScope || "—"}
                   </TableCell>
                   <TableCell className="py-3 px-3 text-slate-600">
-                    {inv.invoiceDate ? new Date(inv.invoiceDate).toISOString().slice(0, 10) : "—"}
+                    {inv.invoiceDate
+                      ? new Date(inv.invoiceDate).toISOString().slice(0, 10)
+                      : "—"}
                   </TableCell>
                   <TableCell
                     align="right"
                     className="py-3 px-3 text-right font-mono font-black text-slate-900"
                   >
-                    AED {Number(inv.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    AED{" "}
+                    {Number(inv.totalAmount).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
                   </TableCell>
                   <TableCell
                     align="right"
@@ -375,7 +394,10 @@ export default function SalesInvoicesPage() {
                         : "text-emerald-700"
                     }`}
                   >
-                    AED {Number(inv.remainingBalance).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    AED{" "}
+                    {Number(inv.remainingBalance).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
                   </TableCell>
                   <TableCell className="py-3 px-3">
                     <span
@@ -383,10 +405,10 @@ export default function SalesInvoicesPage() {
                         inv.status === "PAID"
                           ? "bg-emerald-100 text-emerald-800"
                           : inv.status === "POSTED"
-                          ? "bg-blue-100 text-blue-800"
-                          : inv.status === "PARTIALLY_PAID"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-slate-100 text-slate-700"
+                            ? "bg-blue-100 text-blue-800"
+                            : inv.status === "PARTIALLY_PAID"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       {inv.status}
@@ -434,7 +456,6 @@ export default function SalesInvoicesPage() {
         </Table>
       </div>
 
-      {/* Create Modal */}
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
@@ -452,7 +473,9 @@ export default function SalesInvoicesPage() {
                   value={customerId}
                   onChange={(e) => {
                     setCustomerId(e.target.value);
-                    const c = customers.find((cust) => cust.id === e.target.value);
+                    const c = customers.find(
+                      (cust) => cust.id === e.target.value,
+                    );
                     if (c) {
                       setCustomerName(c.name);
                       setCustomerTrn(c.trn || "");
@@ -509,7 +532,6 @@ export default function SalesInvoicesPage() {
               />
             </div>
 
-            {/* Line Items */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-800">Invoice Items</span>
@@ -580,7 +602,6 @@ export default function SalesInvoicesPage() {
               </div>
             </div>
 
-            {/* Totals */}
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-xs text-right space-y-1">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal (Excl. VAT):</span>
@@ -592,7 +613,9 @@ export default function SalesInvoicesPage() {
               </div>
               <div className="flex justify-between font-black text-slate-900 text-sm border-t border-slate-200 pt-1">
                 <span>Total Invoice Due:</span>
-                <span className="text-blue-800">AED {formTotal.toFixed(2)}</span>
+                <span className="text-blue-800">
+                  AED {formTotal.toFixed(2)}
+                </span>
               </div>
             </div>
 
@@ -604,7 +627,10 @@ export default function SalesInvoicesPage() {
                 onChange={(e) => setAutoPost(e.target.checked)}
                 className="rounded border-slate-300 text-blue-600"
               />
-              <label htmlFor="autoPost" className="font-semibold text-slate-700">
+              <label
+                htmlFor="autoPost"
+                className="font-semibold text-slate-700"
+              >
                 Auto-post to General Ledger & update Accounts Receivable
               </label>
             </div>
@@ -618,11 +644,7 @@ export default function SalesInvoicesPage() {
               >
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                size="lg"
-                type="submit"
-              >
+              <Button variant="primary" size="lg" type="submit">
                 Save & Issue Sales Invoice
               </Button>
             </div>
@@ -630,7 +652,6 @@ export default function SalesInvoicesPage() {
         </Modal>
       )}
 
-      {/* Record Payment Modal */}
       {paymentModalInv && (
         <Modal
           isOpen={!!paymentModalInv}
@@ -643,7 +664,9 @@ export default function SalesInvoicesPage() {
                 Customer: {paymentModalInv.customerName}
               </p>
               <p className="text-slate-600">
-                Total Invoice: AED {Number(paymentModalInv.totalAmount).toFixed(2)} | Outstanding: AED {Number(paymentModalInv.remainingBalance).toFixed(2)}
+                Total Invoice: AED{" "}
+                {Number(paymentModalInv.totalAmount).toFixed(2)} | Outstanding:
+                AED {Number(paymentModalInv.remainingBalance).toFixed(2)}
               </p>
             </div>
 
@@ -700,11 +723,7 @@ export default function SalesInvoicesPage() {
               >
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                size="lg"
-                type="submit"
-              >
+              <Button variant="primary" size="lg" type="submit">
                 Post Payment to Ledger
               </Button>
             </div>
@@ -712,7 +731,6 @@ export default function SalesInvoicesPage() {
         </Modal>
       )}
 
-      {/* Invoice Detail & Print Modal */}
       {selectedInvoice && (
         <Modal
           isOpen={!!selectedInvoice}
@@ -737,10 +755,20 @@ export default function SalesInvoicesPage() {
                   {selectedInvoice.invoiceNumber}
                 </p>
                 <p className="text-slate-500">
-                  Date: {selectedInvoice.invoiceDate ? new Date(selectedInvoice.invoiceDate).toISOString().slice(0, 10) : ""}
+                  Date:{" "}
+                  {selectedInvoice.invoiceDate
+                    ? new Date(selectedInvoice.invoiceDate)
+                        .toISOString()
+                        .slice(0, 10)
+                    : ""}
                 </p>
                 <p className="text-slate-500">
-                  Due: {selectedInvoice.dueDate ? new Date(selectedInvoice.dueDate).toISOString().slice(0, 10) : ""}
+                  Due:{" "}
+                  {selectedInvoice.dueDate
+                    ? new Date(selectedInvoice.dueDate)
+                        .toISOString()
+                        .slice(0, 10)
+                    : ""}
                 </p>
               </div>
             </div>
@@ -748,10 +776,18 @@ export default function SalesInvoicesPage() {
             <div className="border border-slate-200 rounded-xl overflow-hidden">
               <Table className="w-full text-xs">
                 <TableHead className="bg-slate-50">
-                  <TableHeaderCell className="py-2 px-3">Description</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Qty</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Rate</TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">Total</TableHeaderCell>
+                  <TableHeaderCell className="py-2 px-3">
+                    Description
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Qty
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Rate
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Total
+                  </TableHeaderCell>
                 </TableHead>
                 <TableBody>
                   {selectedInvoice.items?.map((l: any) => (
@@ -765,7 +801,10 @@ export default function SalesInvoicesPage() {
                       <TableCell align="right" className="py-2 px-3 font-mono">
                         {Number(l.unitPrice).toFixed(2)}
                       </TableCell>
-                      <TableCell align="right" className="py-2 px-3 font-mono font-bold">
+                      <TableCell
+                        align="right"
+                        className="py-2 px-3 font-mono font-bold"
+                      >
                         {Number(l.totalAmount).toFixed(2)}
                       </TableCell>
                     </TableRow>

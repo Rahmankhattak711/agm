@@ -46,13 +46,19 @@ export default function AttendancePage() {
   const recordAttendance = useRecordAttendance();
   const deleteAttendance = useDeleteAttendance();
 
-  const stats = useMemo(() => ({
-    present: records.filter((r) => r.status === "PRESENT").length,
-    late:    records.filter((r) => r.status === "LATE").length,
-    absent:  records.filter((r) => r.status === "ABSENT").length,
-    onLeave: records.filter((r) => r.status === "ON_LEAVE").length,
-    overtime: records.reduce((acc, r) => acc + Number(r.overtimeHours || 0), 0),
-  }), [records]);
+  const stats = useMemo(
+    () => ({
+      present: records.filter((r) => r.status === "PRESENT").length,
+      late: records.filter((r) => r.status === "LATE").length,
+      absent: records.filter((r) => r.status === "ABSENT").length,
+      onLeave: records.filter((r) => r.status === "ON_LEAVE").length,
+      overtime: records.reduce(
+        (acc, r) => acc + Number(r.overtimeHours || 0),
+        0,
+      ),
+    }),
+    [records],
+  );
 
   const form = useForm({
     defaultValues: {
@@ -316,7 +322,9 @@ export default function AttendancePage() {
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
             Late Arrivals
           </p>
-          <p className="text-2xl font-black text-amber-600 mt-1">{stats.late}</p>
+          <p className="text-2xl font-black text-amber-600 mt-1">
+            {stats.late}
+          </p>
           <p className="text-xs text-slate-500 mt-0.5">Delayed check-ins</p>
         </div>
 
@@ -328,7 +336,7 @@ export default function AttendancePage() {
             {stats.absent + stats.onLeave}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
-             {stats.onLeave} on approved leave
+            {stats.onLeave} on approved leave
           </p>
         </div>
 

@@ -92,17 +92,18 @@ export default function AccountsPage() {
   const [selectedType, setSelectedType] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  // Modals & Drawers state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingAccount, setEditingAccount] = useState<ChartOfAccount | null>(null);
+  const [editingAccount, setEditingAccount] = useState<ChartOfAccount | null>(
+    null,
+  );
   const [ledgerAccountId, setLedgerAccountId] = useState<string | null>(null);
-  const [deletingAccount, setDeletingAccount] = useState<ChartOfAccount | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState<ChartOfAccount | null>(
+    null,
+  );
   const [formError, setFormError] = useState("");
 
-  // Ledger hook for selected account
-  const { data: accountLedgerData, isLoading: isLedgerLoading } = useAccountLedger(
-    ledgerAccountId || "",
-  );
+  const { data: accountLedgerData, isLoading: isLedgerLoading } =
+    useAccountLedger(ledgerAccountId || "");
 
   const formatCurrency = (val: number | string | undefined) => {
     const num = Number(val || 0);
@@ -120,7 +121,8 @@ export default function AccountsPage() {
         !q ||
         acc.accountCode.toLowerCase().includes(q) ||
         acc.accountName.toLowerCase().includes(q) ||
-        (acc.parent?.accountName && acc.parent.accountName.toLowerCase().includes(q));
+        (acc.parent?.accountName &&
+          acc.parent.accountName.toLowerCase().includes(q));
 
       const matchesType = selectedType === "ALL" || acc.type === selectedType;
 
@@ -156,9 +158,12 @@ export default function AccountsPage() {
 
   // Bank & Liquid Cash balances
   const bankAndCashSummary = useMemo(() => {
-    const pettyCash = accounts.find((a) => a.accountCode === "1010")?.balance || 0;
-    const rakBank = accounts.find((a) => a.accountCode === "1020")?.balance || 0;
-    const siteFloat = accounts.find((a) => a.accountCode === "1030")?.balance || 0;
+    const pettyCash =
+      accounts.find((a) => a.accountCode === "1010")?.balance || 0;
+    const rakBank =
+      accounts.find((a) => a.accountCode === "1020")?.balance || 0;
+    const siteFloat =
+      accounts.find((a) => a.accountCode === "1030")?.balance || 0;
     const totalLiquid = pettyCash + rakBank + siteFloat;
 
     return { pettyCash, rakBank, siteFloat, totalLiquid };
@@ -194,11 +199,7 @@ export default function AccountsPage() {
       accountCode: editingAccount?.accountCode || "",
       accountName: editingAccount?.accountName || "",
       type: (editingAccount?.type || "ASSET") as
-        | "ASSET"
-        | "LIABILITY"
-        | "EQUITY"
-        | "REVENUE"
-        | "EXPENSE",
+        "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE",
       parentId: (editingAccount?.parentId || "") as string,
       isActive: editingAccount?.isActive ?? true,
     },
@@ -298,7 +299,8 @@ export default function AccountsPage() {
             </div>
             {row.original.parent && (
               <span className="text-[10px] text-slate-400 block mt-0.5">
-                Sub-account of: {row.original.parent.accountName} ({row.original.parent.accountCode})
+                Sub-account of: {row.original.parent.accountName} (
+                {row.original.parent.accountCode})
               </span>
             )}
           </div>
@@ -308,7 +310,9 @@ export default function AccountsPage() {
         accessorKey: "type",
         header: "Class",
         cell: ({ row }) => {
-          const typeObj = ACCOUNT_TYPES.find((t) => t.value === row.original.type);
+          const typeObj = ACCOUNT_TYPES.find(
+            (t) => t.value === row.original.type,
+          );
           return (
             <span
               className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
@@ -343,7 +347,8 @@ export default function AccountsPage() {
                 {formatCurrency(bal)}
               </span>
               <span className="text-[9.5px] text-slate-400 font-mono">
-                {row.original.type === "ASSET" || row.original.type === "EXPENSE"
+                {row.original.type === "ASSET" ||
+                row.original.type === "EXPENSE"
                   ? "Dr"
                   : "Cr"}
               </span>
@@ -421,7 +426,6 @@ export default function AccountsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -433,7 +437,9 @@ export default function AccountsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Master chart of accounts, real-time balances, parent-child hierarchies, and one-click account registers.
+            AGM FITOUT TECHNICAL SERVICES LLC — Master chart of accounts,
+            real-time balances, parent-child hierarchies, and one-click account
+            registers.
           </p>
         </div>
 
@@ -446,11 +452,13 @@ export default function AccountsPage() {
         </Button>
       </div>
 
-      {/* 5 Accounting Class KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {ACCOUNT_TYPES.map((t) => {
           const isSelected = selectedType === t.value;
-          const summary = classSummary[t.value] || { count: 0, totalBalance: 0 };
+          const summary = classSummary[t.value] || {
+            count: 0,
+            totalBalance: 0,
+          };
           return (
             <button
               key={t.value}
@@ -482,7 +490,6 @@ export default function AccountsPage() {
         })}
       </div>
 
-      {/* Bank & Liquid Cash Float Overview Card */}
       <div className="p-4.5 rounded-2xl bg-gradient-to-r from-[#1d3345] to-[#233c4d] text-white shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -494,7 +501,8 @@ export default function AccountsPage() {
                 Treasury &amp; Liquid Cash Position
               </h3>
               <p className="text-xs text-white/70 mt-0.5">
-                Live balances across commercial bank accounts and physical petty cash floats
+                Live balances across commercial bank accounts and physical petty
+                cash floats
               </p>
             </div>
           </div>
@@ -539,9 +547,7 @@ export default function AccountsPage() {
         </div>
       </div>
 
-      {/* Main Table Card Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Filter Controls Bar */}
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="w-full sm:w-80">
             <Input
@@ -584,7 +590,6 @@ export default function AccountsPage() {
           </div>
         </div>
 
-        {/* DataTable */}
         {error ? (
           <div className="py-8 text-center text-xs text-red-500">
             Error loading accounts: {(error as any).message}
@@ -600,7 +605,6 @@ export default function AccountsPage() {
         )}
       </div>
 
-      {/* Add Account Modal */}
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -703,7 +707,6 @@ export default function AccountsPage() {
         </form>
       </Modal>
 
-      {/* Edit Account Modal */}
       {editingAccount && (
         <Modal
           isOpen={Boolean(editingAccount)}
@@ -828,7 +831,6 @@ export default function AccountsPage() {
         </Modal>
       )}
 
-      {/* Account Register / General Ledger Modal */}
       {ledgerAccountId && (
         <Modal
           isOpen={Boolean(ledgerAccountId)}
@@ -847,7 +849,6 @@ export default function AccountsPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {/* Account Details Header Strip */}
                 <div className="p-4 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
@@ -878,7 +879,6 @@ export default function AccountsPage() {
                   </div>
                 </div>
 
-                {/* Ledger Entries Table */}
                 <div className="border border-slate-200 rounded-2xl overflow-hidden max-h-96 overflow-y-auto">
                   <Table>
                     <TableHead>
@@ -886,16 +886,26 @@ export default function AccountsPage() {
                         <TableHeaderCell>Date</TableHeaderCell>
                         <TableHeaderCell>Voucher / Ref</TableHeaderCell>
                         <TableHeaderCell>Description</TableHeaderCell>
-                        <TableHeaderCell className="text-right">Debit</TableHeaderCell>
-                        <TableHeaderCell className="text-right">Credit</TableHeaderCell>
-                        <TableHeaderCell className="text-right">Running Balance</TableHeaderCell>
+                        <TableHeaderCell className="text-right">
+                          Debit
+                        </TableHeaderCell>
+                        <TableHeaderCell className="text-right">
+                          Credit
+                        </TableHeaderCell>
+                        <TableHeaderCell className="text-right">
+                          Running Balance
+                        </TableHeaderCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {accountLedgerData.ledger.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center py-8 text-xs text-slate-400">
-                            No journal transactions have been posted to this account yet.
+                          <TableCell
+                            colSpan={6}
+                            className="text-center py-8 text-xs text-slate-400"
+                          >
+                            No journal transactions have been posted to this
+                            account yet.
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -919,7 +929,9 @@ export default function AccountsPage() {
                               {row.debit > 0 ? formatCurrency(row.debit) : "—"}
                             </TableCell>
                             <TableCell className="font-mono text-xs text-right text-slate-800">
-                              {row.credit > 0 ? formatCurrency(row.credit) : "—"}
+                              {row.credit > 0
+                                ? formatCurrency(row.credit)
+                                : "—"}
                             </TableCell>
                             <TableCell className="font-mono font-black text-xs text-right text-emerald-800 whitespace-nowrap">
                               {formatCurrency(row.runningBalance)}
@@ -933,7 +945,8 @@ export default function AccountsPage() {
 
                 <div className="flex items-center justify-between text-xs text-slate-500 pt-2">
                   <span>
-                    Showing {accountLedgerData.ledger.length} chronological journal line postings
+                    Showing {accountLedgerData.ledger.length} chronological
+                    journal line postings
                   </span>
                   <Button
                     variant="outline"
@@ -949,7 +962,6 @@ export default function AccountsPage() {
         </Modal>
       )}
 
-      {/* Delete / Archive Confirmation Modal */}
       {deletingAccount && (
         <Modal
           isOpen={Boolean(deletingAccount)}
@@ -966,7 +978,10 @@ export default function AccountsPage() {
               ?
             </p>
             <p className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
-              If this account has historical journal transactions, it will be safely <strong>archived (marked inactive)</strong> so historical financial statements remain balanced. If it has no transactions, it will be permanently deleted.
+              If this account has historical journal transactions, it will be
+              safely <strong>archived (marked inactive)</strong> so historical
+              financial statements remain balanced. If it has no transactions,
+              it will be permanently deleted.
             </p>
 
             <div className="flex items-center justify-end gap-2.5 pt-2">

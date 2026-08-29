@@ -22,8 +22,14 @@ export async function GET(request: Request) {
           search
             ? {
                 OR: [
-                  { debitNoteNumber: { contains: search, mode: "insensitive" } },
-                  { supplier: { name: { contains: search, mode: "insensitive" } } },
+                  {
+                    debitNoteNumber: { contains: search, mode: "insensitive" },
+                  },
+                  {
+                    supplier: {
+                      name: { contains: search, mode: "insensitive" },
+                    },
+                  },
                   { reason: { contains: search, mode: "insensitive" } },
                 ],
               }

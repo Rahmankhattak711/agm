@@ -24,7 +24,9 @@ export async function GET(request: Request) {
                 OR: [
                   { paymentNumber: { contains: search, mode: "insensitive" } },
                   { supplierName: { contains: search, mode: "insensitive" } },
-                  { referenceNumber: { contains: search, mode: "insensitive" } },
+                  {
+                    referenceNumber: { contains: search, mode: "insensitive" },
+                  },
                 ],
               }
             : {},
@@ -59,13 +61,7 @@ export async function POST(request: Request) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
-    if (
-      !hasRole(authUser, [
-        "SUPER_ADMIN",
-        "ADMIN",
-        "ACCOUNTANT",
-      ])
-    ) {
+    if (!hasRole(authUser, ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"])) {
       return forbidden();
     }
 
@@ -160,11 +156,7 @@ export async function POST(request: Request) {
         const newPaid = Number(bill.paidAmount) + payAmount;
         const newRem = Math.max(0, Number(bill.totalAmount) - newPaid);
         const newStatus =
-          newRem <= 0
-            ? "PAID"
-            : newPaid > 0
-            ? "PARTIALLY_PAID"
-            : bill.status;
+          newRem <= 0 ? "PAID" : newPaid > 0 ? "PARTIALLY_PAID" : bill.status;
 
         await prisma.supplierBill.update({
           where: { id: supplierBillId },

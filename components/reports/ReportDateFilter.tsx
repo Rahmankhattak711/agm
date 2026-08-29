@@ -4,12 +4,7 @@ import React from "react";
 import { Calendar } from "lucide-react";
 
 export type PeriodFilterOption =
-  | "ALL"
-  | "THIS_MONTH"
-  | "LAST_MONTH"
-  | "THIS_QUARTER"
-  | "THIS_YEAR"
-  | "CUSTOM";
+  "ALL" | "THIS_MONTH" | "LAST_MONTH" | "THIS_QUARTER" | "THIS_YEAR" | "CUSTOM";
 
 export interface ReportDateFilterProps {
   periodFilter: string;
@@ -41,7 +36,6 @@ export const ReportDateFilter: React.FC<ReportDateFilterProps> = ({
 
   return (
     <div className={`space-y-2.5 ${className}`}>
-      {/* Preset Pills */}
       <div className="flex flex-wrap items-center gap-1.5">
         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
           <Calendar size={13} className="text-slate-400" />
@@ -66,11 +60,12 @@ export const ReportDateFilter: React.FC<ReportDateFilterProps> = ({
         })}
       </div>
 
-      {/* Custom Date Inputs (when CUSTOM or selected) */}
       {periodFilter === "CUSTOM" && (
         <div className="flex flex-wrap items-center gap-2 p-2.5 bg-slate-50/80 rounded-xl border border-slate-200 text-xs animate-fade-in">
           <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-slate-500 text-[11px]">From:</span>
+            <span className="font-semibold text-slate-500 text-[11px]">
+              From:
+            </span>
             <input
               type="date"
               className="px-2 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 font-mono text-xs font-semibold focus:outline-none focus:border-emerald-500"
@@ -80,7 +75,9 @@ export const ReportDateFilter: React.FC<ReportDateFilterProps> = ({
           </div>
           <span className="text-slate-400 font-bold">→</span>
           <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-slate-500 text-[11px]">To:</span>
+            <span className="font-semibold text-slate-500 text-[11px]">
+              To:
+            </span>
             <input
               type="date"
               className="px-2 py-1 rounded-lg bg-white border border-slate-200 text-slate-800 font-mono text-xs font-semibold focus:outline-none focus:border-emerald-500"

@@ -22,13 +22,18 @@ import {
   TableCell,
 } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
-import { AgingBucketCard, AgingBucket } from "@/components/reports/AgingBucketCard";
+import {
+  AgingBucketCard,
+  AgingBucket,
+} from "@/components/reports/AgingBucketCard";
 import { Building2, FileText, Mail, Phone, Clock } from "lucide-react";
 
 export default function SupplierReportsPage() {
   const [search, setSearch] = useState("");
   const [balanceFilter, setBalanceFilter] = useState<string>("ALL");
-  const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(
+    null,
+  );
   const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
   const { data: suppliers = [], isLoading, error } = useSuppliers();
@@ -45,10 +50,38 @@ export default function SupplierReportsPage() {
   // Compute A/P Aging Buckets from open vendor bills
   const apAgingBuckets = useMemo<AgingBucket[]>(() => {
     const buckets = [
-      { label: "Current", daysRange: "0–30 Days", amount: 0, count: 0, color: "#059669", badgeBg: "#ecfdf5" },
-      { label: "Approaching Due", daysRange: "31–60 Days", amount: 0, count: 0, color: "#d97706", badgeBg: "#fffbeb" },
-      { label: "Past Due", daysRange: "61–90 Days", amount: 0, count: 0, color: "#ea580c", badgeBg: "#fff7ed" },
-      { label: "Severely Overdue", daysRange: "90+ Days", amount: 0, count: 0, color: "#dc2626", badgeBg: "#fef2f2" },
+      {
+        label: "Current",
+        daysRange: "0–30 Days",
+        amount: 0,
+        count: 0,
+        color: "#059669",
+        badgeBg: "#ecfdf5",
+      },
+      {
+        label: "Approaching Due",
+        daysRange: "31–60 Days",
+        amount: 0,
+        count: 0,
+        color: "#d97706",
+        badgeBg: "#fffbeb",
+      },
+      {
+        label: "Past Due",
+        daysRange: "61–90 Days",
+        amount: 0,
+        count: 0,
+        color: "#ea580c",
+        badgeBg: "#fff7ed",
+      },
+      {
+        label: "Severely Overdue",
+        daysRange: "90+ Days",
+        amount: 0,
+        count: 0,
+        color: "#dc2626",
+        badgeBg: "#fef2f2",
+      },
     ];
 
     const now = new Date().getTime();
@@ -81,13 +114,26 @@ export default function SupplierReportsPage() {
 
   // Map total billed and outstanding per supplier
   const supplierMetricsMap = useMemo(() => {
-    const map: Record<string, { totalBilled: number; totalPaid: number; openBalance: number; billCount: number }> = {};
+    const map: Record<
+      string,
+      {
+        totalBilled: number;
+        totalPaid: number;
+        openBalance: number;
+        billCount: number;
+      }
+    > = {};
 
     bills.forEach((b) => {
       if (b.status === "CANCELLED") return;
       const key = b.supplierId || b.supplierName;
       if (!map[key]) {
-        map[key] = { totalBilled: 0, totalPaid: 0, openBalance: 0, billCount: 0 };
+        map[key] = {
+          totalBilled: 0,
+          totalPaid: 0,
+          openBalance: 0,
+          billCount: 0,
+        };
       }
       map[key].totalBilled += Number(b.totalAmount || 0);
       map[key].totalPaid += Number(b.paidAmount || 0);
@@ -101,12 +147,13 @@ export default function SupplierReportsPage() {
   // Enriched & filtered suppliers
   const filteredSuppliers = useMemo(() => {
     return suppliers.filter((s) => {
-      const metrics = supplierMetricsMap[s.id] || supplierMetricsMap[s.name] || {
-        totalBilled: 0,
-        totalPaid: 0,
-        openBalance: 0,
-        billCount: 0,
-      };
+      const metrics = supplierMetricsMap[s.id] ||
+        supplierMetricsMap[s.name] || {
+          totalBilled: 0,
+          totalPaid: 0,
+          openBalance: 0,
+          billCount: 0,
+        };
 
       if (search.trim()) {
         const q = search.toLowerCase();
@@ -115,14 +162,22 @@ export default function SupplierReportsPage() {
         const matchesTrn = s.trn?.toLowerCase().includes(q);
         const matchesContact = s.contactPerson?.toLowerCase().includes(q);
         const matchesEmail = s.email?.toLowerCase().includes(q);
-        if (!matchesCode && !matchesName && !matchesTrn && !matchesContact && !matchesEmail) {
+        if (
+          !matchesCode &&
+          !matchesName &&
+          !matchesTrn &&
+          !matchesContact &&
+          !matchesEmail
+        ) {
           return false;
         }
       }
 
-      if (balanceFilter === "HAS_BALANCE" && metrics.openBalance <= 0) return false;
+      if (balanceFilter === "HAS_BALANCE" && metrics.openBalance <= 0)
+        return false;
       if (balanceFilter === "SETTLED" && metrics.openBalance > 0) return false;
-      if (balanceFilter === "HIGH_BALANCE" && metrics.openBalance < 10000) return false;
+      if (balanceFilter === "HIGH_BALANCE" && metrics.openBalance < 10000)
+        return false;
 
       return true;
     });
@@ -237,7 +292,9 @@ export default function SupplierReportsPage() {
         id: "totalBilled",
         header: () => <div className="text-right">Total Billed</div>,
         cell: ({ row }) => {
-          const m = supplierMetricsMap[row.original.id] || supplierMetricsMap[row.original.name];
+          const m =
+            supplierMetricsMap[row.original.id] ||
+            supplierMetricsMap[row.original.name];
           return (
             <span className="font-mono font-bold text-slate-900 block text-right">
               {formatCurrency(m?.totalBilled || 0)}
@@ -249,7 +306,9 @@ export default function SupplierReportsPage() {
         id: "openBalance",
         header: () => <div className="text-right">Payable Balance (A/P)</div>,
         cell: ({ row }) => {
-          const m = supplierMetricsMap[row.original.id] || supplierMetricsMap[row.original.name];
+          const m =
+            supplierMetricsMap[row.original.id] ||
+            supplierMetricsMap[row.original.name];
           const balance = Number(m?.openBalance || 0);
           return (
             <span
@@ -266,7 +325,9 @@ export default function SupplierReportsPage() {
         id: "status",
         header: "Liability Status",
         cell: ({ row }) => {
-          const m = supplierMetricsMap[row.original.id] || supplierMetricsMap[row.original.name];
+          const m =
+            supplierMetricsMap[row.original.id] ||
+            supplierMetricsMap[row.original.name];
           const balance = Number(m?.openBalance || 0);
 
           return (
@@ -305,7 +366,6 @@ export default function SupplierReportsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -317,7 +377,9 @@ export default function SupplierReportsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Vendor accounts payable ledgers, procurement history, payment terms, and outstanding liability balances.
+            AGM FITOUT TECHNICAL SERVICES LLC — Vendor accounts payable ledgers,
+            procurement history, payment terms, and outstanding liability
+            balances.
           </p>
         </div>
 
@@ -330,7 +392,6 @@ export default function SupplierReportsPage() {
         </Button>
       </div>
 
-      {/* 4 KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
@@ -381,7 +442,6 @@ export default function SupplierReportsPage() {
         </div>
       </div>
 
-      {/* A/P Aging Schedule Analysis */}
       <AgingBucketCard
         title="Accounts Payable (A/P) Aging Schedule"
         subtitle="Chronological breakdown of open vendor liabilities based on supplier bill dates"
@@ -389,9 +449,7 @@ export default function SupplierReportsPage() {
         totalOverdue={totalOutstandingAP}
       />
 
-      {/* Main Table Card Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Filter Controls Bar */}
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="w-full sm:w-80">
             <Input
@@ -415,13 +473,14 @@ export default function SupplierReportsPage() {
             >
               <option value="ALL">All Payable Statuses</option>
               <option value="HAS_BALANCE">Has Outstanding A/P</option>
-              <option value="HIGH_BALANCE">High Balance (&gt; 10,000 AED)</option>
+              <option value="HIGH_BALANCE">
+                High Balance (&gt; 10,000 AED)
+              </option>
               <option value="SETTLED">Fully Settled (0.00 AED)</option>
             </Select>
           </div>
         </div>
 
-        {/* DataTable */}
         {error ? (
           <div className="py-8 text-center text-xs text-red-500">
             Error loading suppliers: {(error as any).message}
@@ -437,7 +496,6 @@ export default function SupplierReportsPage() {
         )}
       </div>
 
-      {/* Supplier Ledger Modal */}
       {selectedSupplierId && activeSupplier && (
         <Modal
           isOpen={Boolean(selectedSupplierId)}
@@ -474,7 +532,10 @@ export default function SupplierReportsPage() {
                 </span>
                 <span className="font-mono font-semibold text-slate-800">
                   {formatCurrency(
-                    (supplierMetricsMap[activeSupplier.id] || supplierMetricsMap[activeSupplier.name])?.totalBilled || 0,
+                    (
+                      supplierMetricsMap[activeSupplier.id] ||
+                      supplierMetricsMap[activeSupplier.name]
+                    )?.totalBilled || 0,
                   )}
                 </span>
               </div>
@@ -484,13 +545,15 @@ export default function SupplierReportsPage() {
                 </span>
                 <span className="font-mono font-black text-amber-700 text-sm block">
                   {formatCurrency(
-                    (supplierMetricsMap[activeSupplier.id] || supplierMetricsMap[activeSupplier.name])?.openBalance || 0,
+                    (
+                      supplierMetricsMap[activeSupplier.id] ||
+                      supplierMetricsMap[activeSupplier.name]
+                    )?.openBalance || 0,
                   )}
                 </span>
               </div>
             </div>
 
-            {/* Vendor Bills List */}
             <div className="space-y-2">
               <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
                 Supplier Bills &amp; Invoices
@@ -525,7 +588,9 @@ export default function SupplierReportsPage() {
                             {b.billNumber}
                           </TableCell>
                           <TableCell className="py-2 px-3 text-slate-600">
-                            {b.billDate ? new Date(b.billDate).toISOString().slice(0, 10) : "—"}
+                            {b.billDate
+                              ? new Date(b.billDate).toISOString().slice(0, 10)
+                              : "—"}
                           </TableCell>
                           <TableCell className="py-2 px-3 text-right text-slate-800">
                             {Number(b.totalAmount).toFixed(2)}
@@ -566,7 +631,6 @@ export default function SupplierReportsPage() {
         </Modal>
       )}
 
-      {/* Printable Supplier Summary Modal */}
       {isPrintSummaryOpen && (
         <Modal
           isOpen={isPrintSummaryOpen}
@@ -575,7 +639,10 @@ export default function SupplierReportsPage() {
           maxWidth="4xl"
         >
           <div className="space-y-6 text-xs print:p-0">
-            <div className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0" id="suppliers-print-area">
+            <div
+              className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0"
+              id="suppliers-print-area"
+            >
               <table className="print-page-table w-full border-collapse">
                 <thead className="print-page-header-group">
                   <tr>
@@ -613,7 +680,12 @@ export default function SupplierReportsPage() {
                               {filteredSuppliers.length} Vendors
                             </p>
                             <p className="text-slate-400 text-[10px]">
-                              Generated: {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+                              Generated:{" "}
+                              {new Date().toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })}
                             </p>
                           </div>
                         </div>
@@ -647,29 +719,52 @@ export default function SupplierReportsPage() {
 
                         <div className="space-y-2">
                           <h4 className="font-bold text-slate-900 text-xs">
-                            Supplier Directory ({filteredSuppliers.length} vendors)
+                            Supplier Directory ({filteredSuppliers.length}{" "}
+                            vendors)
                           </h4>
                           <div className="rounded-xl border border-slate-200 overflow-hidden">
                             <table className="w-full text-left text-xs">
                               <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Code</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Supplier</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">Terms</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">Total Billed (AED)</th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">Balance Due (AED)</th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Code
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Supplier
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                                    Terms
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    Total Billed (AED)
+                                  </th>
+                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                                    Balance Due (AED)
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-100 font-mono">
                                 {filteredSuppliers.map((s) => {
-                                  const m = supplierMetricsMap[s.id] || supplierMetricsMap[s.name];
+                                  const m =
+                                    supplierMetricsMap[s.id] ||
+                                    supplierMetricsMap[s.name];
                                   return (
                                     <tr key={s.id}>
-                                      <td className="py-1.5 px-3 font-bold text-slate-900">{s.supplierCode}</td>
-                                      <td className="py-1.5 px-3 font-sans font-medium text-slate-800">{s.name}</td>
-                                      <td className="py-1.5 px-3 font-sans text-slate-600">{s.address || "UAE"}</td>
-                                      <td className="py-1.5 px-3 text-right">{Number(m?.totalBilled || 0).toFixed(2)}</td>
-                                      <td className="py-1.5 px-3 text-right font-bold text-amber-700">{Number(m?.openBalance || 0).toFixed(2)}</td>
+                                      <td className="py-1.5 px-3 font-bold text-slate-900">
+                                        {s.supplierCode}
+                                      </td>
+                                      <td className="py-1.5 px-3 font-sans font-medium text-slate-800">
+                                        {s.name}
+                                      </td>
+                                      <td className="py-1.5 px-3 font-sans text-slate-600">
+                                        {s.address || "UAE"}
+                                      </td>
+                                      <td className="py-1.5 px-3 text-right">
+                                        {Number(m?.totalBilled || 0).toFixed(2)}
+                                      </td>
+                                      <td className="py-1.5 px-3 text-right font-bold text-amber-700">
+                                        {Number(m?.openBalance || 0).toFixed(2)}
+                                      </td>
                                     </tr>
                                   );
                                 })}

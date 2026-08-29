@@ -70,7 +70,9 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
     item: QuotationItem,
     pointIndex: number,
   ) => {
-    const currentPoints = getItemPoints(item).filter((_, i) => i !== pointIndex);
+    const currentPoints = getItemPoints(item).filter(
+      (_, i) => i !== pointIndex,
+    );
     const validPoints = currentPoints.length > 0 ? currentPoints : [""];
     const joinedDesc = validPoints.map((pt, i) => `${i + 1}. ${pt}`).join("\n");
     onUpdateItem(item.id, "points", validPoints);
@@ -141,7 +143,6 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
 
             return (
               <React.Fragment key={it.id}>
-                {/* Full-width Section Title (e.g. Guest Bathroom, Majlis Washroom, Kids Bathroom 1 & 2) */}
                 {showSectionHeader && (
                   <TableRow className="bg-agm-box-bg font-bold border-t border-b border-agm-box-border print-avoid-break break-after-avoid print:break-after-avoid hover:bg-agm-box-bg">
                     <TableCell
@@ -161,7 +162,6 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                   </TableRow>
                 )}
 
-                {/* Multi-point items (e.g. 1, 2, 3, 4 with merged QTY, Price, Total) */}
                 {isMultiPoint ? (
                   <>
                     {points.map((pointText, pIdx) => {
@@ -172,7 +172,6 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                           key={pIdx}
                           className="print-avoid-break hover:bg-slate-50/40 bg-white"
                         >
-                          {/* S.No column: 1, 2, 3, 4... */}
                           <TableCell
                             align="center"
                             className="py-2 px-2 print:py-0.5 print:px-1 align-middle text-center font-bold text-slate-700 border border-agm-box-border w-12"
@@ -180,7 +179,6 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                             {pIdx + 1}
                           </TableCell>
 
-                          {/* Description column */}
                           <TableCell className="py-2 px-3 print:py-0.5 print:px-2 align-top border border-agm-box-border">
                             {isFirst && availableProducts.length > 0 && (
                               <div className="mb-1 print:hidden">
@@ -216,18 +214,20 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                                   placeholder="e.g. Guest Bathroom"
                                   value={it.section || ""}
                                   onChange={(e) =>
-                                    onUpdateItem(it.id, "section", e.target.value)
+                                    onUpdateItem(
+                                      it.id,
+                                      "section",
+                                      e.target.value,
+                                    )
                                   }
                                 />
                               </div>
                             )}
 
-                            {/* Print static text */}
                             <div className="hidden print:block whitespace-pre-wrap text-slate-800 text-[10px] leading-tight py-0.5">
                               {pointText}
                             </div>
 
-                            {/* Screen editable input for this specific point */}
                             <div className="print:hidden flex items-start gap-1">
                               <textarea
                                 rows={Math.max(
@@ -260,7 +260,6 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                               )}
                             </div>
 
-                            {/* Under the last point, show + Add Point button */}
                             {pIdx === points.length - 1 && (
                               <div className="mt-1.5 print:hidden flex items-center gap-2">
                                 <button
@@ -268,13 +267,13 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                                   onClick={() => handleAddPointToItem(it)}
                                   className="text-[10.5px] font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100/70 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1 transition-colors"
                                 >
-                                  <Plus size={12} /> Add Point {points.length + 1}
+                                  <Plus size={12} /> Add Point{" "}
+                                  {points.length + 1}
                                 </button>
                               </div>
                             )}
                           </TableCell>
 
-                          {/* Merged QTY, Price, Total columns spanning across all points */}
                           {isFirst && (
                             <>
                               <TableCell
@@ -379,9 +378,9 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                             {availableProducts.map((p) => (
                               <option key={p.id} value={p.id}>
                                 {p.name} ({p.sku}) - AED{" "}
-                                {Number(
-                                  p.sellingPrice || p.costPrice,
-                                ).toFixed(2)}
+                                {Number(p.sellingPrice || p.costPrice).toFixed(
+                                  2,
+                                )}
                               </option>
                             ))}
                           </select>

@@ -53,12 +53,6 @@ export async function getStandardAccounts() {
   };
 }
 
-/**
- * Post Sales Invoice to General Ledger:
- * Dr. Accounts Receivable (Total)
- *   Cr. Sales Revenue (Subtotal)
- *   Cr. Output VAT Payable (VAT Amount)
- */
 export async function postSalesInvoiceJournalEntry(params: {
   invoiceId: string;
   invoiceNumber: string;
@@ -160,12 +154,6 @@ export async function postCustomerPaymentJournalEntry(params: {
   return journalEntry;
 }
 
-/**
- * Post Supplier Bill to General Ledger:
- * Dr. Purchase Materials / Expense (Subtotal)
- * Dr. Input VAT Recoverable (VAT Amount)
- *   Cr. Accounts Payable (Total)
- */
 export async function postSupplierBillJournalEntry(params: {
   billId: string;
   billNumber: string;
@@ -267,12 +255,6 @@ export async function postSupplierPaymentJournalEntry(params: {
   return journalEntry;
 }
 
-/**
- * Post Credit Note (Sales Return) to General Ledger:
- * Dr. Service Income / Return (Subtotal)
- * Dr. Output VAT (VAT Amount)
- *   Cr. Accounts Receivable (Total Amount)
- */
 export async function postCreditNoteJournalEntry(params: {
   creditNoteId: string;
   creditNoteNumber: string;

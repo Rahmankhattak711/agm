@@ -1,7 +1,6 @@
 export const SECTION_PATHS: Record<string, string> = {
   dashboard: "/dashboard",
 
-  // Inventory & Commercial
   products: "/inventory/products",
   "purchase-vouchers": "/inventory/purchase-orders",
   "purchase-orders": "/inventory/purchase-orders",
@@ -14,7 +13,6 @@ export const SECTION_PATHS: Record<string, string> = {
   "stock-movements": "/inventory/stock-movements",
   "commercial-customers": "/commercial/customers",
 
-  // Commercial Modules
   "commercial-quotations": "/commercial/quotations",
   "commercial-sales-orders": "/commercial/sales-orders",
   "commercial-sales-invoices": "/commercial/sales-invoices",
@@ -26,7 +24,6 @@ export const SECTION_PATHS: Record<string, string> = {
   "commercial-supplier-payments": "/commercial/supplier-payments",
   "commercial-debit-notes": "/commercial/debit-notes",
 
-  // Finance & Accounts
   accounts: "/finance/accounts",
   journals: "/finance/journal-entries",
   receivables: "/finance/reports?tab=receivables",
@@ -37,7 +34,6 @@ export const SECTION_PATHS: Record<string, string> = {
   vat: "/finance/reports?tab=vat-summary",
   reports: "/finance/reports",
 
-  // Reports direct links
   "report-profit-loss": "/finance/reports?tab=profit-loss",
   "report-balance-sheet": "/finance/reports?tab=balance-sheet",
   "report-trial-balance": "/finance/reports?tab=trial-balance",
@@ -46,7 +42,6 @@ export const SECTION_PATHS: Record<string, string> = {
   "report-ledger": "/finance/reports?tab=ledger",
   "report-vat": "/finance/reports?tab=vat-summary",
 
-  // Dedicated Reports Section
   "report-sales": "/reports/sales",
   "report-purchases": "/reports/purchases",
   "report-customers": "/reports/customers",
@@ -54,14 +49,12 @@ export const SECTION_PATHS: Record<string, string> = {
   "report-expenses": "/reports/expenses",
   "report-management": "/reports/management",
 
-  // HR & Operations
   employees: "/operations/employees",
   attendance: "/operations/attendance",
   leaves: "/operations/leaves",
   bonuses: "/operations/bonuses",
   assets: "/operations/fixed-assets",
 
-  // Admin
   admin: "/administration/users",
 };
 
@@ -73,7 +66,6 @@ export interface PageMeta {
 export const PAGE_META: Record<string, PageMeta> = {
   "/dashboard": { eyebrow: "Overview", title: "Executive Dashboard" },
 
-  // Commercial - Sales
   "/commercial/quotations": {
     eyebrow: "Commercial",
     title: "Quotations & Project Proposals",
@@ -95,7 +87,6 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: "Sales Returns / Credit Notes",
   },
 
-  // Commercial - Purchases
   "/commercial/purchase-requests": {
     eyebrow: "Commercial",
     title: "Purchase Requests (Requisitions)",
@@ -121,7 +112,6 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: "Purchase Returns / Debit Notes",
   },
 
-  // Master Data & Inventory
   "/commercial/customers": {
     eyebrow: "Master Data",
     title: "Customers Directory & Statements",
@@ -159,7 +149,6 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: "Warehouses & Storage Facilities",
   },
 
-  // Finance & Accounts
   "/finance/accounts": {
     eyebrow: "Finance & Accounts",
     title: "Chart of Accounts",
@@ -181,7 +170,6 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: "Financial Statements & Analytics",
   },
 
-  // HR & Operations
   "/operations/employees": {
     eyebrow: "HR & Operations",
     title: "Employee Directory & Profiles",

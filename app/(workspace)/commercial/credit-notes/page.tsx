@@ -40,7 +40,6 @@ export default function CreditNotesPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<CreditNote | null>(null);
 
-  // Form State
   const [creditNoteNumber, setCreditNoteNumber] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [customerName, setCustomerName] = useState("");
@@ -101,7 +100,6 @@ export default function CreditNotesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -113,7 +111,9 @@ export default function CreditNotesPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Issue client credit notes, record scope cancellations, reduce Accounts Receivable, and adjust Output VAT.
+            AGM FITOUT TECHNICAL SERVICES LLC — Issue client credit notes,
+            record scope cancellations, reduce Accounts Receivable, and adjust
+            Output VAT.
           </p>
         </div>
 
@@ -130,14 +130,16 @@ export default function CreditNotesPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-rose-50/60 border border-rose-100 flex flex-col justify-between space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-rose-800">
             Total Credit Notes Issued
           </p>
           <p className="text-xl font-black text-rose-950 font-mono">
-            AED {totalCreditAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalCreditAmount.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </p>
         </div>
 
@@ -160,7 +162,6 @@ export default function CreditNotesPage() {
         </div>
       </div>
 
-      {/* Search */}
       <div className="flex items-center gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
         <Search size={14} className="text-slate-400 ml-2" />
         <input
@@ -172,7 +173,6 @@ export default function CreditNotesPage() {
         />
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">
           <TableHead className="bg-slate-50/95 border-b border-slate-200">
@@ -233,7 +233,9 @@ export default function CreditNotesPage() {
                     {cn.salesInvoice?.invoiceNumber || "Direct AR Adjustment"}
                   </TableCell>
                   <TableCell className="py-3 px-3 text-slate-600">
-                    {cn.returnDate ? new Date(cn.returnDate).toISOString().slice(0, 10) : "—"}
+                    {cn.returnDate
+                      ? new Date(cn.returnDate).toISOString().slice(0, 10)
+                      : "—"}
                   </TableCell>
                   <TableCell className="py-3 px-4 text-slate-600 max-w-xs truncate">
                     {cn.reason}
@@ -242,7 +244,10 @@ export default function CreditNotesPage() {
                     align="right"
                     className="py-3 px-4 text-right font-mono font-black text-rose-950"
                   >
-                    AED {Number(cn.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    AED{" "}
+                    {Number(cn.totalAmount).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
                   </TableCell>
                   <TableCell className="py-3 px-3">
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
@@ -266,7 +271,6 @@ export default function CreditNotesPage() {
         </Table>
       </div>
 
-      {/* Create Modal */}
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
@@ -284,7 +288,9 @@ export default function CreditNotesPage() {
                   value={customerId}
                   onChange={(e) => {
                     setCustomerId(e.target.value);
-                    const c = customers.find((cust) => cust.id === e.target.value);
+                    const c = customers.find(
+                      (cust) => cust.id === e.target.value,
+                    );
                     if (c) setCustomerName(c.name);
                   }}
                 >
@@ -374,7 +380,6 @@ export default function CreditNotesPage() {
         </Modal>
       )}
 
-      {/* Credit Note Detail Modal */}
       {selectedNote && (
         <Modal
           isOpen={!!selectedNote}
@@ -388,15 +393,17 @@ export default function CreditNotesPage() {
                   {selectedNote.creditNoteNumber}
                 </span>
                 <span className="text-slate-500">
-                  {selectedNote.returnDate ? new Date(selectedNote.returnDate).toISOString().slice(0, 10) : ""}
+                  {selectedNote.returnDate
+                    ? new Date(selectedNote.returnDate)
+                        .toISOString()
+                        .slice(0, 10)
+                    : ""}
                 </span>
               </div>
               <p className="font-bold text-slate-900">
                 Customer: {selectedNote.customerName}
               </p>
-              <p className="text-slate-600">
-                Reason: {selectedNote.reason}
-              </p>
+              <p className="text-slate-600">Reason: {selectedNote.reason}</p>
             </div>
 
             <div className="p-4 bg-rose-50 rounded-xl border border-rose-100 text-center font-mono space-y-1">
@@ -404,7 +411,10 @@ export default function CreditNotesPage() {
                 Total Credit Amount (Incl. 5% VAT)
               </p>
               <p className="text-2xl font-black text-rose-950">
-                AED {Number(selectedNote.totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                AED{" "}
+                {Number(selectedNote.totalAmount).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
               </p>
             </div>
 

@@ -1,12 +1,3 @@
-/**
- * Shared formatting utilities used across all workspace pages.
- * Import from here instead of redefining inline.
- */
-
-/**
- * Format a number as AED currency.
- * @example formatAed(4850) → "AED 4,850.00"
- */
 export function formatAed(val: number | string | undefined | null): string {
   const num = Number(val || 0);
   return `AED ${num.toLocaleString(undefined, {

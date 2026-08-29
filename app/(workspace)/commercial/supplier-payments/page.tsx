@@ -40,49 +40,66 @@ export default function SupplierPaymentsPage() {
 
   type PaymentMethod = "BANK_TRANSFER" | "CHEQUE" | "CASH" | "CARD";
   interface FormState {
-    supplierId: string; supplierName: string; supplierBillId: string;
-    paymentDate: string; amount: string; paymentMethod: PaymentMethod;
-    referenceNumber: string; notes: string;
+    supplierId: string;
+    supplierName: string;
+    supplierBillId: string;
+    paymentDate: string;
+    amount: string;
+    paymentMethod: PaymentMethod;
+    referenceNumber: string;
+    notes: string;
   }
   const EMPTY_FORM: FormState = {
-    supplierId: "", supplierName: "", supplierBillId: "",
+    supplierId: "",
+    supplierName: "",
+    supplierBillId: "",
     paymentDate: new Date().toISOString().slice(0, 10),
-    amount: "", paymentMethod: "BANK_TRANSFER", referenceNumber: "", notes: "",
+    amount: "",
+    paymentMethod: "BANK_TRANSFER",
+    referenceNumber: "",
+    notes: "",
   };
   const [form, setForm] = useState<FormState>({ ...EMPTY_FORM });
-  const setField = useCallback(<K extends keyof FormState>(k: K, v: FormState[K]) =>
-    setForm((p) => ({ ...p, [k]: v })), []);
+  const setField = useCallback(
+    <K extends keyof FormState>(k: K, v: FormState[K]) =>
+      setForm((p) => ({ ...p, [k]: v })),
+    [],
+  );
 
   const handleCloseCreate = useCallback(() => {
     setIsCreateOpen(false);
     setForm({ ...EMPTY_FORM });
   }, []);
 
-  const handleCreatePayment = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await createPaymentMutation.mutateAsync({
-        supplierId: form.supplierId || undefined,
-        supplierName: form.supplierName || "Vendor",
-        supplierBillId: form.supplierBillId || undefined,
-        paymentDate: form.paymentDate,
-        amount: parseFloat(form.amount),
-        paymentMethod: form.paymentMethod,
-        referenceNumber: form.referenceNumber,
-        notes: form.notes,
-      });
-      handleCloseCreate();
-    } catch (err: any) {
-      alert(`Error recording supplier payment: ${err.message}`);
-    }
-  }, [createPaymentMutation, form, handleCloseCreate]);
+  const handleCreatePayment = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+        await createPaymentMutation.mutateAsync({
+          supplierId: form.supplierId || undefined,
+          supplierName: form.supplierName || "Vendor",
+          supplierBillId: form.supplierBillId || undefined,
+          paymentDate: form.paymentDate,
+          amount: parseFloat(form.amount),
+          paymentMethod: form.paymentMethod,
+          referenceNumber: form.referenceNumber,
+          notes: form.notes,
+        });
+        handleCloseCreate();
+      } catch (err: any) {
+        alert(`Error recording supplier payment: ${err.message}`);
+      }
+    },
+    [createPaymentMutation, form, handleCloseCreate],
+  );
 
   const filteredPayments = useMemo(() => {
     const q = search.toLowerCase();
-    return payments.filter((p) =>
-      p.paymentNumber.toLowerCase().includes(q) ||
-      p.supplierName.toLowerCase().includes(q) ||
-      (p.referenceNumber && p.referenceNumber.toLowerCase().includes(q)),
+    return payments.filter(
+      (p) =>
+        p.paymentNumber.toLowerCase().includes(q) ||
+        p.supplierName.toLowerCase().includes(q) ||
+        (p.referenceNumber && p.referenceNumber.toLowerCase().includes(q)),
     );
   }, [payments, search]);
 
@@ -93,7 +110,6 @@ export default function SupplierPaymentsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 print:p-0 print:m-0">
-      {/* Official Print Header */}
       <div className="hidden print:block mb-6">
         <QuotationHeader />
         <div className="px-10 pt-4 pb-2 border-b border-slate-200 flex justify-between items-end">
@@ -102,7 +118,8 @@ export default function SupplierPaymentsPage() {
               Supplier Payment Disbursal Voucher
             </h1>
             <p className="text-xs text-slate-500">
-              AGM FITOUT TECHNICAL SERVICES LLC — Accounts Payable Settlement & Vendor Payment Schedule
+              AGM FITOUT TECHNICAL SERVICES LLC — Accounts Payable Settlement &
+              Vendor Payment Schedule
             </p>
           </div>
           <p className="text-[10px] text-slate-400 font-mono">
@@ -111,7 +128,6 @@ export default function SupplierPaymentsPage() {
         </div>
       </div>
 
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5 print:hidden">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -123,7 +139,8 @@ export default function SupplierPaymentsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Disburse payments to suppliers, clear open Accounts Payable bills, and track bank reconciliations.
+            AGM FITOUT TECHNICAL SERVICES LLC — Disburse payments to suppliers,
+            clear open Accounts Payable bills, and track bank reconciliations.
           </p>
         </div>
 
@@ -140,14 +157,16 @@ export default function SupplierPaymentsPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:grid-cols-3">
         <div className="p-4 rounded-2xl bg-slate-900 text-white flex flex-col justify-between space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
             Total Disbursed
           </p>
           <p className="text-xl font-black text-blue-300 font-mono">
-            AED {totalDisbursed.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalDisbursed.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </p>
         </div>
 
@@ -170,7 +189,6 @@ export default function SupplierPaymentsPage() {
         </div>
       </div>
 
-      {/* Reusable Input Component Search */}
       <div className="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm print:hidden">
         <Input
           leftIcon={<Search size={15} />}
@@ -181,7 +199,6 @@ export default function SupplierPaymentsPage() {
         />
       </div>
 
-      {/* Design System Table */}
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm bg-white">
         <Table>
           <TableHead className="bg-slate-50/95 border-b border-slate-200">
@@ -210,7 +227,10 @@ export default function SupplierPaymentsPage() {
 
           <TableBody className="divide-y divide-slate-100">
             {isLoading ? (
-              <TableLoading colSpan={6} message="Loading supplier payment records..." />
+              <TableLoading
+                colSpan={6}
+                message="Loading supplier payment records..."
+              />
             ) : filteredPayments.length === 0 ? (
               <TableEmpty
                 colSpan={6}
@@ -219,8 +239,12 @@ export default function SupplierPaymentsPage() {
               />
             ) : (
               filteredPayments.map((pmt) => {
-                const isBank = pmt.paymentMethod === "BANK_TRANSFER" || pmt.paymentMethod === "CHEQUE";
-                const creditAccount = isBank ? "1020 - RAK Bank" : "1010 - Petty Cash";
+                const isBank =
+                  pmt.paymentMethod === "BANK_TRANSFER" ||
+                  pmt.paymentMethod === "CHEQUE";
+                const creditAccount = isBank
+                  ? "1020 - RAK Bank"
+                  : "1010 - Petty Cash";
 
                 return (
                   <TableRow
@@ -229,7 +253,10 @@ export default function SupplierPaymentsPage() {
                   >
                     <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
                       <div className="flex items-center gap-1.5">
-                        <Banknote size={14} className="text-blue-600 shrink-0" />
+                        <Banknote
+                          size={14}
+                          className="text-blue-600 shrink-0"
+                        />
                         <span>{pmt.paymentNumber}</span>
                       </div>
                       <p className="text-[10px] text-slate-400 font-sans">
@@ -238,20 +265,28 @@ export default function SupplierPaymentsPage() {
                     </TableCell>
 
                     <TableCell className="py-3 px-4">
-                      <p className="font-bold text-slate-900">{pmt.supplierName}</p>
+                      <p className="font-bold text-slate-900">
+                        {pmt.supplierName}
+                      </p>
                       <p className="text-[10px] text-blue-700 font-mono">
-                        {pmt.supplierBill?.billNumber ? `Bill: ${pmt.supplierBill.billNumber}` : "Direct Disbursal (On Account)"}
+                        {pmt.supplierBill?.billNumber
+                          ? `Bill: ${pmt.supplierBill.billNumber}`
+                          : "Direct Disbursal (On Account)"}
                       </p>
                     </TableCell>
 
                     <TableCell className="py-3 px-4 font-mono text-[10.5px]">
-                      <div className="text-blue-700 font-semibold">Dr. 2000 - Accounts Payable</div>
+                      <div className="text-blue-700 font-semibold">
+                        Dr. 2000 - Accounts Payable
+                      </div>
                       <div className="text-slate-500">Cr. {creditAccount}</div>
                     </TableCell>
 
                     <TableCell className="py-3 px-3">
                       <p className="font-mono text-slate-700">
-                        {pmt.paymentDate ? new Date(pmt.paymentDate).toISOString().slice(0, 10) : "—"}
+                        {pmt.paymentDate
+                          ? new Date(pmt.paymentDate).toISOString().slice(0, 10)
+                          : "—"}
                       </p>
                       <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-slate-100 text-slate-600">
                         {pmt.paymentMethod?.replace("_", " ")}
@@ -262,7 +297,10 @@ export default function SupplierPaymentsPage() {
                       align="right"
                       className="py-3 px-4 text-right font-mono font-black text-rose-800 text-sm"
                     >
-                      AED {Number(pmt.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      AED{" "}
+                      {Number(pmt.amount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}
                     </TableCell>
 
                     <TableCell className="py-3 px-3 text-center print:hidden">
@@ -283,7 +321,6 @@ export default function SupplierPaymentsPage() {
         </Table>
       </div>
 
-      {/* Component Modal for Creation */}
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
@@ -328,7 +365,8 @@ export default function SupplierPaymentsPage() {
                   .filter((b) => Number(b.remainingBalance) > 0)
                   .map((b) => (
                     <option key={b.id} value={b.id}>
-                      {b.billNumber} - {b.supplierName} (Due: AED {Number(b.remainingBalance).toFixed(2)})
+                      {b.billNumber} - {b.supplierName} (Due: AED{" "}
+                      {Number(b.remainingBalance).toFixed(2)})
                     </option>
                   ))}
               </Select>
@@ -348,7 +386,9 @@ export default function SupplierPaymentsPage() {
               <Select
                 label="Payment Method"
                 value={form.paymentMethod}
-                onChange={(e) => setField("paymentMethod", e.target.value as any)}
+                onChange={(e) =>
+                  setField("paymentMethod", e.target.value as any)
+                }
               >
                 <option value="BANK_TRANSFER">Bank Transfer (RAK Bank)</option>
                 <option value="CHEQUE">Corporate Cheque</option>
@@ -398,14 +438,15 @@ export default function SupplierPaymentsPage() {
                 disabled={createPaymentMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
               >
-                {createPaymentMutation.isPending ? "Posting..." : "Disburse & Post"}
+                {createPaymentMutation.isPending
+                  ? "Posting..."
+                  : "Disburse & Post"}
               </Button>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* Component Modal for Audit View */}
       {selectedPayment && (
         <Modal
           isOpen={!!selectedPayment}
@@ -415,24 +456,36 @@ export default function SupplierPaymentsPage() {
         >
           <div className="space-y-4 text-xs text-slate-700">
             <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
-              <p className="text-[10px] font-bold uppercase text-slate-400">Paid To (Supplier / Vendor)</p>
-              <p className="font-bold text-slate-900 text-sm mt-0.5">{selectedPayment.supplierName}</p>
+              <p className="text-[10px] font-bold uppercase text-slate-400">
+                Paid To (Supplier / Vendor)
+              </p>
+              <p className="font-bold text-slate-900 text-sm mt-0.5">
+                {selectedPayment.supplierName}
+              </p>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                Applied Bill: {selectedPayment.supplierBill?.billNumber || "General Supplier Credit"}
+                Applied Bill:{" "}
+                {selectedPayment.supplierBill?.billNumber ||
+                  "General Supplier Credit"}
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200/80">
-                <p className="text-[10px] font-bold uppercase text-blue-800">Debit (Liability Cleared)</p>
+                <p className="text-[10px] font-bold uppercase text-blue-800">
+                  Debit (Liability Cleared)
+                </p>
                 <p className="font-mono font-bold text-blue-950 mt-0.5">
                   2000 - Accounts Payable
                 </p>
               </div>
               <div className="p-3 bg-rose-50/60 rounded-xl border border-rose-200/80">
-                <p className="text-[10px] font-bold uppercase text-rose-800">Credit (Paid From)</p>
+                <p className="text-[10px] font-bold uppercase text-rose-800">
+                  Credit (Paid From)
+                </p>
                 <p className="font-mono font-bold text-rose-950 mt-0.5">
-                  {selectedPayment.paymentMethod === "CASH" ? "1010 - Petty Cash" : "1020 - RAK Bank"}
+                  {selectedPayment.paymentMethod === "CASH"
+                    ? "1010 - Petty Cash"
+                    : "1020 - RAK Bank"}
                 </p>
               </div>
             </div>
@@ -441,22 +494,35 @@ export default function SupplierPaymentsPage() {
               <div className="flex justify-between">
                 <span className="text-slate-500">Payment Date:</span>
                 <span className="font-mono font-medium text-slate-800">
-                  {selectedPayment.paymentDate ? new Date(selectedPayment.paymentDate).toISOString().slice(0, 10) : "—"}
+                  {selectedPayment.paymentDate
+                    ? new Date(selectedPayment.paymentDate)
+                        .toISOString()
+                        .slice(0, 10)
+                    : "—"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Payment Method:</span>
-                <span className="font-bold text-slate-800">{selectedPayment.paymentMethod}</span>
+                <span className="font-bold text-slate-800">
+                  {selectedPayment.paymentMethod}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Transaction / Cheque Ref:</span>
-                <span className="font-mono text-slate-800">{selectedPayment.referenceNumber || "—"}</span>
+                <span className="text-slate-500">
+                  Transaction / Cheque Ref:
+                </span>
+                <span className="font-mono text-slate-800">
+                  {selectedPayment.referenceNumber || "—"}
+                </span>
               </div>
               <div className="h-px bg-slate-200 my-1" />
               <div className="flex justify-between text-sm font-bold bg-blue-100/60 p-2 rounded-xl text-blue-950">
                 <span>Total Amount Disbursed:</span>
                 <span className="font-mono text-blue-900">
-                  AED {Number(selectedPayment.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  AED{" "}
+                  {Number(selectedPayment.amount).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
                 </span>
               </div>
             </div>
@@ -484,7 +550,6 @@ export default function SupplierPaymentsPage() {
         </Modal>
       )}
 
-      {/* Official Print Footer */}
       <div className="hidden print:block">
         <QuotationFooter />
       </div>

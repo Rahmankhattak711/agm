@@ -159,7 +159,6 @@ export default function GlobalCreateMenu() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
-  // Close on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -173,7 +172,6 @@ export default function GlobalCreateMenu() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close on Escape key
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -221,14 +219,14 @@ export default function GlobalCreateMenu() {
           className="fixed md:absolute right-4 md:right-0 top-[70px] md:top-full mt-2 w-[92vw] sm:w-[480px] md:w-[500px] rounded-2xl border border-slate-200/90 p-4 animate-fade-in text-slate-800"
           style={{
             backgroundColor: "#ffffff",
-            boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.05)",
+            boxShadow:
+              "0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.05)",
             zIndex: 99999,
             maxHeight: "calc(100vh - 90px)",
             overflowY: "auto",
             opacity: 1,
           }}
         >
-          {/* Header */}
           <div className="pb-3 mb-3 border-b border-slate-100 flex items-center justify-between">
             <div>
               <span className="text-xs font-black text-slate-900 uppercase tracking-wider block">
@@ -247,9 +245,7 @@ export default function GlobalCreateMenu() {
             </button>
           </div>
 
-          {/* 2-Column Responsive Layout */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Left Column: Sales & Purchases */}
             <div className="space-y-4">
               {leftGroups.map((group) => (
                 <div key={group.category} className="space-y-1.5">
@@ -289,7 +285,6 @@ export default function GlobalCreateMenu() {
               ))}
             </div>
 
-            {/* Right Column: Accounting, Other */}
             <div className="space-y-4 sm:border-l sm:border-slate-100 sm:pl-4">
               {rightGroups.map((group) => (
                 <div key={group.category} className="space-y-1.5">

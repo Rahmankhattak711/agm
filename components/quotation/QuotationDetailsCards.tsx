@@ -18,7 +18,6 @@ export const QuotationDetailsCards: React.FC<QuotationDetailsCardsProps> = ({
 
   return (
     <div className="grid grid-cols-2 gap-4 print:gap-2 px-10 py-3.5 print:px-8 print:py-1 text-[12px] print:text-[9.5px] print-avoid-break">
-      {/* Client / Bill To Card */}
       <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl shadow-2xs">
         <div className="font-bold mb-2 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-0.5">
           <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -78,7 +77,6 @@ export const QuotationDetailsCards: React.FC<QuotationDetailsCardsProps> = ({
         </div>
       </div>
 
-      {/* Project / Site Details Card */}
       <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2 rounded-xl shadow-2xs">
         <div className="font-bold mb-2 text-slate-900 uppercase text-[11px] print:text-[9.5px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1">
           <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>

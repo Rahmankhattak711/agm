@@ -59,7 +59,6 @@ export async function POST(
       },
     });
 
-    // Update customer outstanding balance
     if (invoice.customerId) {
       await prisma.customer.update({
         where: { id: invoice.customerId },

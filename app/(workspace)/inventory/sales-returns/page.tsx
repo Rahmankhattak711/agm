@@ -18,10 +18,6 @@ import {
 } from "@/components/ui";
 import { formatAed } from "@/lib/utils/format";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 type ReturnStatus =
   "DRAFT" | "SUBMITTED" | "APPROVED" | "COMPLETED" | "REJECTED";
 
@@ -36,10 +32,6 @@ interface SalesReturnItem {
   totalAmount: number;
   status: ReturnStatus;
 }
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
 
 const STATUS_BADGE_CLASSES: Record<ReturnStatus, string> = {
   COMPLETED: "bg-emerald-100 text-emerald-800",
@@ -206,7 +198,6 @@ export default function SalesReturnsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -236,7 +227,6 @@ export default function SalesReturnsPage() {
         </Button>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard
           label="Total Sales Credit Notes"
@@ -258,7 +248,6 @@ export default function SalesReturnsPage() {
         />
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
         <div className="w-full sm:w-96">
           <Input
@@ -288,7 +277,6 @@ export default function SalesReturnsPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm bg-white">
         <Table className="w-full text-xs text-left">
           <TableHead className="bg-slate-50/95 border-b border-slate-200">
@@ -362,7 +350,6 @@ export default function SalesReturnsPage() {
         </Table>
       </div>
 
-      {/* Create Modal */}
       <Modal
         isOpen={isCreateOpen}
         onClose={handleCloseCreate}
@@ -428,11 +415,7 @@ export default function SalesReturnsPage() {
             >
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              size="lg"
-              type="submit"
-            >
+            <Button variant="primary" size="lg" type="submit">
               Submit Sales Return
             </Button>
           </div>

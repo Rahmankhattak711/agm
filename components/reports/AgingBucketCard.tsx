@@ -25,7 +25,8 @@ export const AgingBucketCard: React.FC<AgingBucketCardProps> = ({
   subtitle,
   buckets,
   totalOverdue,
-  formatCurrency = (v) => `AED ${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+  formatCurrency = (v) =>
+    `AED ${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
 }) => {
   const totalAmount = Math.max(
     buckets.reduce((sum, b) => sum + b.amount, 0),
@@ -42,18 +43,21 @@ export const AgingBucketCard: React.FC<AgingBucketCardProps> = ({
             </span>
             <h3 className="font-bold text-sm text-slate-900">{title}</h3>
           </div>
-          {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-500">Total Open:</span>
+          <span className="text-xs font-semibold text-slate-500">
+            Total Open:
+          </span>
           <span className="text-sm font-black font-mono text-slate-900">
             {formatCurrency(totalOverdue)}
           </span>
         </div>
       </div>
 
-      {/* Visual Stacked Progress Bar */}
       <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden flex gap-0.5 p-0.5">
         {buckets.map((b, i) => {
           const pct = Math.max((b.amount / totalAmount) * 100, 0);
@@ -72,7 +76,6 @@ export const AgingBucketCard: React.FC<AgingBucketCardProps> = ({
         })}
       </div>
 
-      {/* Grid of 4 Aging Buckets */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
         {buckets.map((b, idx) => {
           const pct = ((b.amount / totalAmount) * 100).toFixed(1);

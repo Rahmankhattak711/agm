@@ -62,7 +62,6 @@ body {
     print-color-adjust: exact !important;
   }
 
-  /* Reset all fixed/hidden containers that cause print clipping to 1 page */
   html,
   body {
     height: auto !important;
@@ -82,7 +81,6 @@ body {
     max-height: none !important;
   }
 
-  /* Hide app navigation, headers, and tabs during print */
   aside,
   header,
   nav,
@@ -112,7 +110,6 @@ body {
     display: block !important;
   }
 
-  /* Table structure for repeating header & footer across all printed pages */
   .print-page-table {
     width: 100% !important;
     border-collapse: collapse !important;
@@ -125,7 +122,6 @@ body {
     display: table-header-group !important;
   }
 
-  /* Inner tables (e.g. Quotation items table) header prints only once on the first page and does not repeat */
   .print-page-table table thead,
   thead:not(.print-page-header-group) {
     display: table-row-group !important;

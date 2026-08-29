@@ -14,7 +14,14 @@ export async function POST(
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
-    if (!hasRole(authUser, ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT", "INVENTORY_MANAGER"])) {
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "ACCOUNTANT",
+        "INVENTORY_MANAGER",
+      ])
+    ) {
       return forbidden();
     }
 
@@ -34,7 +41,6 @@ export async function POST(
       );
     }
 
-    // Default supplier or selected supplier
     let supId = supplierId;
     if (!supId) {
       const firstSupplier = await prisma.supplier.findFirst({
