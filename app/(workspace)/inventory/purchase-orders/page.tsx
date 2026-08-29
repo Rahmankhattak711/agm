@@ -36,6 +36,23 @@ import {
   FormTextarea,
   FormSubmit,
 } from "@/components/ui";
+import {
+  ShoppingCart,
+  Clock,
+  Truck,
+  CheckCircle2,
+  AlertCircle,
+  FileSpreadsheet,
+  Printer,
+  Plus,
+  Search,
+  Building2,
+  Package,
+  Trash2,
+  Eye,
+  FileText,
+  Boxes,
+} from "lucide-react";
 
 interface ItemRow {
   productId: string;
@@ -85,6 +102,14 @@ export default function PurchaseOrdersPage() {
   const formatCurrency = (val: number | string | undefined) => {
     const num = Number(val || 0);
     return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  const formatNumber = (val: number | string | undefined) => {
+    const num = Number(val || 0);
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
   const filteredPOs = useMemo(() => {
@@ -326,25 +351,25 @@ export default function PurchaseOrdersPage() {
     switch (status) {
       case "DRAFT":
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
             Draft
           </span>
         );
       case "ORDERED":
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">
             Ordered
           </span>
         );
       case "RECEIVED":
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
             Received
           </span>
         );
       case "CANCELLED":
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
             Cancelled
           </span>
         );
@@ -360,11 +385,12 @@ export default function PurchaseOrdersPage() {
         header: "PO Number",
         cell: ({ row }) => (
           <div>
-            <span className="font-mono font-bold text-slate-900 block">
+            <span className="font-mono font-bold text-slate-900 text-xs flex items-center gap-1.5">
+              <ShoppingCart size={13} className="text-teal-700 shrink-0" />
               {row.original.poNumber}
             </span>
             {row.original.vendorReference && (
-              <span className="text-[10px] text-emerald-700 font-mono font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 inline-block mt-0.5">
+              <span className="text-[10px] text-teal-800 font-mono font-semibold bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200 inline-block mt-0.5">
                 Ref: {row.original.vendorReference}
               </span>
             )}
@@ -378,10 +404,10 @@ export default function PurchaseOrdersPage() {
       },
       {
         accessorKey: "supplier",
-        header: "Vendor / Shop",
+        header: "Vendor / Shop Name",
         cell: ({ row }) => (
           <div>
-            <span className="font-bold text-slate-900 block">
+            <span className="font-bold text-slate-900 block text-xs">
               {row.original.supplier?.name ||
                 row.original.shopName ||
                 "External Shop"}
@@ -392,7 +418,7 @@ export default function PurchaseOrdersPage() {
                   Store: {row.original.shopName}
                 </span>
               )}
-            <span className="font-mono text-[10px] text-slate-500 font-medium">
+            <span className="font-mono text-[10px] text-slate-400 font-medium">
               TRN: {row.original.supplier?.trn || "N/A"}
             </span>
           </div>
@@ -402,46 +428,50 @@ export default function PurchaseOrdersPage() {
         accessorKey: "orderDate",
         header: "Order Date",
         cell: ({ row }) => (
-          <span className="text-slate-600 text-xs font-mono font-medium">
+          <span className="text-slate-700 text-xs font-mono font-semibold">
             {new Date(row.original.orderDate).toLocaleDateString("en-GB")}
           </span>
         ),
       },
       {
         accessorKey: "itemsCount",
-        header: "Line Items",
+        header: "Items Ordered",
         cell: ({ row }) => (
           <div>
-            <span className="text-slate-700 text-xs font-semibold block">
+            <span className="text-slate-800 text-xs font-bold block">
               {row.original.items?.length || 0} Products
             </span>
             <span className="text-[10px] text-slate-400">
               {row.original.items?.some(
                 (it) => it.product?.brand || it.supplierSku,
               )
-                ? "Includes External Items"
-                : "Standard Items"}
+                ? "Includes Custom Items"
+                : "Standard Catalog"}
             </span>
           </div>
         ),
       },
       {
         accessorKey: "totalAmount",
-        header: "Total Amount",
+        header: () => <div className="text-right">Total Amount</div>,
         cell: ({ row }) => (
-          <span className="font-mono font-bold text-slate-900 text-xs">
-            {formatCurrency(row.original.totalAmount)}
-          </span>
+          <div className="text-right">
+            <span className="font-mono font-black text-slate-900 text-xs block">
+              {formatCurrency(row.original.totalAmount)}
+            </span>
+          </div>
         ),
       },
       {
         accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => getStatusBadge(row.original.status),
+        header: () => <div className="text-center">Status</div>,
+        cell: ({ row }) => (
+          <div className="text-center">{getStatusBadge(row.original.status)}</div>
+        ),
       },
       {
         id: "actions",
-        header: "Actions",
+        header: () => <div className="text-center">Actions</div>,
         cell: ({ row }) => {
           const isDraft = row.original.status === "DRAFT";
           const isOrdered = row.original.status === "ORDERED";
@@ -451,23 +481,24 @@ export default function PurchaseOrdersPage() {
           ]);
 
           return (
-            <div className="flex items-center justify-end gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
+            <div className="flex items-center justify-center gap-1.5">
+              <button
+                type="button"
                 onClick={() => setSelectedPO(row.original)}
+                className="p-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-600 transition-colors cursor-pointer"
+                title="View PO Details"
               >
-                View
-              </Button>
+                <Eye size={13} />
+              </button>
 
-              <Button
-                variant="outline"
-                size="sm"
-                icon={<PrintIcon className="w-3.5 h-3.5" />}
+              <button
+                type="button"
                 onClick={() => setPrintModalPO(row.original)}
+                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+                title="Print Official PO PDF"
               >
-                PDF
-              </Button>
+                <Printer size={13} />
+              </button>
 
               {isDraft && canEdit && (
                 <Button
@@ -480,8 +511,9 @@ export default function PurchaseOrdersPage() {
                       status: "ORDERED",
                     })
                   }
+                  className="text-xs font-bold cursor-pointer"
                 >
-                  Send Order
+                  Send
                 </Button>
               )}
 
@@ -490,16 +522,15 @@ export default function PurchaseOrdersPage() {
                   variant="primary"
                   size="sm"
                   onClick={() => handleOpenReceive(row.original)}
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold cursor-pointer"
                 >
-                  Receive Stock
+                  Receive
                 </Button>
               )}
 
               {isDraft && canEdit && (
-                <Button
-                  variant="danger"
-                  size="sm"
-                  loading={deletePO.isPending}
+                <button
+                  type="button"
                   onClick={() => {
                     if (
                       confirm(
@@ -509,9 +540,11 @@ export default function PurchaseOrdersPage() {
                       deletePO.mutate(row.original.id);
                     }
                   }}
+                  className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer"
+                  title="Delete PO"
                 >
-                  Delete
-                </Button>
+                  <Trash2 size={13} />
+                </button>
               )}
             </div>
           );
@@ -523,133 +556,225 @@ export default function PurchaseOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Simple Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">
-            Purchase Orders & Procurement
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Purchase Orders &amp; Procurement
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Procure products from external companies, hardware shops, and
-            material suppliers with vendor references.
+          <p className="text-xs text-slate-500 mt-0.5">
+            AGM FITOUT TECHNICAL SERVICES LLC — Procure products from external companies, hardware shops, <br /> and material suppliers with vendor references.
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={handleOpenCreate}
-          icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-        >
-          Create Purchase Order
-        </Button>
-      </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+            icon={<Printer size={14} />}
+          >
+            Print Register
+          </Button>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Purchase Orders
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{totalPOs}</p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            All created procurement orders
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Draft POs
-          </p>
-          <p className="text-2xl font-black text-amber-600 mt-1">
-            {draftCount}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Awaiting supplier issuance
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Pending Deliveries
-          </p>
-          <p className="text-2xl font-black text-blue-700 mt-1">
-            {orderedCount}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Awaiting warehouse receipt
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Procurement Commitments
-          </p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">
-            {formatCurrency(totalPurchasesValue)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Cumulative purchase volume
-          </p>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleOpenCreate}
+            icon={<Plus size={14} strokeWidth={2.5} />}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+          >
+            Create Purchase Order
+          </Button>
         </div>
       </div>
 
+      {/* 4 Elevated Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+        {/* 1. Total POs */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              1. Total Purchase Orders
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              All procurement records
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {totalPOs}
+            </span>
+            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
+              Orders
+            </span>
+          </div>
+        </div>
+
+        {/* 2. Draft Orders */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              2. Draft Orders
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Awaiting supplier issuance
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-amber-700 font-mono">
+              {draftCount}
+            </span>
+            <span className="text-xs font-bold text-amber-700 font-sans ml-1.5">
+              Drafts
+            </span>
+          </div>
+        </div>
+
+        {/* 3. Pending Deliveries */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-blue-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              3. Pending Deliveries
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Awaiting warehouse receipt
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-blue-800 font-mono">
+              {orderedCount}
+            </span>
+            <span className="text-xs font-bold text-blue-700 font-sans ml-1.5">
+              Ordered
+            </span>
+          </div>
+        </div>
+
+        {/* 4. Procurement Volume */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                4. Procurement Spend
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                Active
+              </span>
+            </div>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Cumulative purchase volume
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-xl font-black text-emerald-800 font-mono">
+              {formatNumber(totalPurchasesValue)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
-          <div className="w-full lg:w-80">
-            <Input
-              placeholder="Search PO #, supplier, shop, quote ref..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              leftIcon={
-                <SearchIcon
-                  className="w-4 h-4 text-slate-400"
-                  strokeWidth={2}
-                />
-              }
-            />
+        {/* Search & Filter Strip */}
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Status Quick Pills */}
+            <div className="flex flex-wrap items-center gap-1">
+              {[
+                { id: "ALL", label: "All POs" },
+                { id: "DRAFT", label: "Draft" },
+                { id: "ORDERED", label: "Ordered" },
+                { id: "RECEIVED", label: "Received" },
+                { id: "CANCELLED", label: "Cancelled" },
+              ].map((tab) => {
+                const isActive = statusFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setStatusFilter(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <span className="text-[11px] font-bold text-slate-500 font-mono">
+              {filteredPOs.length} Orders Listed
+            </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              containerClassName="w-full sm:w-44"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="DRAFT">Draft</option>
-              <option value="ORDERED">Ordered</option>
-              <option value="RECEIVED">Received</option>
-              <option value="CANCELLED">Cancelled</option>
-            </Select>
+          <div className="flex flex-col sm:flex-row gap-2.5 items-center justify-between pt-1 border-t border-slate-200/60">
+            <div className="w-full sm:w-80 relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search PO #, supplier, shop, quote ref..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
 
-            <Select
-              value={supplierFilter}
-              onChange={(e) => setSupplierFilter(e.target.value)}
-              containerClassName="w-full sm:w-56"
-            >
-              <option value="">All Suppliers</option>
-              {suppliers.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </Select>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <select
+                className="w-full sm:w-56 text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
+                value={supplierFilter}
+                onChange={(e) => setSupplierFilter(e.target.value)}
+              >
+                <option value="">All Suppliers</option>
+                {suppliers.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">
+          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
             Error loading POs: {(error as any).message}
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={filteredPOs}
-            isLoading={isLoading}
-            emptyTitle="No purchase orders found"
-            emptyMessage='Click "Create Purchase Order" to register your vendor orders.'
-          />
+          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+              <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                Procurement &amp; Purchase Orders Register
+              </h4>
+              <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                {filteredPOs.length} Records
+              </span>
+            </div>
+
+            <DataTable
+              columns={columns}
+              data={filteredPOs}
+              isLoading={isLoading}
+              emptyTitle="No purchase orders found"
+              emptyMessage='Click "Create Purchase Order" to register your vendor orders.'
+            />
+          </div>
         )}
       </div>
 
+      {/* Modal for Creating Purchase Order */}
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
@@ -662,10 +787,10 @@ export default function PurchaseOrdersPage() {
             e.stopPropagation();
             poForm.handleSubmit();
           }}
-          className="space-y-4"
+          className="space-y-4 text-xs"
         >
           {formError && (
-            <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
+            <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
               {formError}
             </div>
           )}
@@ -820,8 +945,7 @@ export default function PurchaseOrdersPage() {
                         Procurement Line Items
                       </span>
                       <p className="text-[11px] text-slate-500">
-                        Select catalog products or click quick add to register
-                        items bought from other shops.
+                        Select catalog products or click quick add to register items bought from other shops.
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -830,7 +954,7 @@ export default function PurchaseOrdersPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenQuickProduct(null)}
-                        className="text-xs text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100"
+                        className="text-xs text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 cursor-pointer"
                         icon={<PlusIcon className="w-3.5 h-3.5" />}
                       >
                         + New Shop Product
@@ -840,7 +964,7 @@ export default function PurchaseOrdersPage() {
                         variant="secondary"
                         size="sm"
                         onClick={addItem}
-                        className="text-xs"
+                        className="text-xs font-bold cursor-pointer"
                       >
                         + Add Row
                       </Button>
@@ -849,9 +973,6 @@ export default function PurchaseOrdersPage() {
 
                   <div className="space-y-2">
                     {currentItems.map((row, idx) => {
-                      const selectedProduct = products.find(
-                        (p) => p.id === row.productId,
-                      );
                       return (
                         <div
                           key={idx}
@@ -884,7 +1005,7 @@ export default function PurchaseOrdersPage() {
                               type="button"
                               onClick={() => handleOpenQuickProduct(idx)}
                               title="Create and select a new shop product for this row"
-                              className="text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg whitespace-nowrap cursor-pointer"
+                              className="text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg whitespace-nowrap cursor-pointer"
                             >
                               + New Product
                             </button>
@@ -930,7 +1051,7 @@ export default function PurchaseOrdersPage() {
                               type="button"
                               onClick={() => removeItem(idx)}
                               disabled={currentItems.length === 1}
-                              className="text-slate-400 hover:text-red-600 disabled:opacity-30 cursor-pointer px-1.5 py-1"
+                              className="text-slate-400 hover:text-rose-600 disabled:opacity-30 cursor-pointer px-1.5 py-1"
                             >
                               ✕
                             </button>
@@ -991,13 +1112,18 @@ export default function PurchaseOrdersPage() {
             >
               Cancel
             </Button>
-            <FormSubmit form={poForm} loading={createPO.isPending}>
+            <FormSubmit
+              form={poForm}
+              loading={createPO.isPending}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+            >
               Save Purchase Order
             </FormSubmit>
           </div>
         </form>
       </Modal>
 
+      {/* Quick Add Product Modal */}
       <Modal
         isOpen={isQuickProductOpen}
         onClose={() => setIsQuickProductOpen(false)}
@@ -1010,18 +1136,17 @@ export default function PurchaseOrdersPage() {
             e.stopPropagation();
             quickProductForm.handleSubmit();
           }}
-          className="space-y-3.5"
+          className="space-y-3.5 text-xs"
         >
           {quickProductError && (
-            <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
+            <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
               {quickProductError}
             </div>
           )}
 
           <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-900 text-xs">
             <span className="font-bold block">💡 External Shop Product</span>
-            Register a material or item purchased from an external shop, vendor,
-            or marketplace to inventory.
+            Register a material or item purchased from an external shop, vendor, or marketplace to inventory.
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1140,13 +1265,15 @@ export default function PurchaseOrdersPage() {
             <FormSubmit
               form={quickProductForm}
               loading={createProduct.isPending}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
             >
-              Create & Add to PO
+              Create &amp; Add to PO
             </FormSubmit>
           </div>
         </form>
       </Modal>
 
+      {/* Receive Shipment Modal */}
       <Modal
         isOpen={!!receiveModalPO}
         onClose={() => setReceiveModalPO(null)}
@@ -1159,7 +1286,7 @@ export default function PurchaseOrdersPage() {
             e.stopPropagation();
             receiveForm.handleSubmit();
           }}
-          className="space-y-3.5"
+          className="space-y-3.5 text-xs"
         >
           <receiveForm.Field
             name="receiveWarehouseId"
@@ -1213,13 +1340,18 @@ export default function PurchaseOrdersPage() {
             >
               Cancel
             </Button>
-            <FormSubmit form={receiveForm} loading={updatePO.isPending}>
-              Confirm & Update Stock
+            <FormSubmit
+              form={receiveForm}
+              loading={updatePO.isPending}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+            >
+              Confirm &amp; Update Stock
             </FormSubmit>
           </div>
         </form>
       </Modal>
 
+      {/* PO View Details Modal */}
       <Modal
         isOpen={!!selectedPO}
         onClose={() => setSelectedPO(null)}
@@ -1229,7 +1361,7 @@ export default function PurchaseOrdersPage() {
         maxWidth="2xl"
       >
         {selectedPO && (
-          <div className="space-y-4">
+          <div className="space-y-4 text-xs">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-bold text-base text-slate-900">
@@ -1237,7 +1369,7 @@ export default function PurchaseOrdersPage() {
                 </h3>
                 <p className="text-[11px] text-slate-400">
                   Order Date:{" "}
-                  {new Date(selectedPO.orderDate).toLocaleDateString()}
+                  {new Date(selectedPO.orderDate).toLocaleDateString("en-GB")}
                 </p>
               </div>
               <div>{getStatusBadge(selectedPO.status)}</div>
@@ -1264,7 +1396,7 @@ export default function PurchaseOrdersPage() {
               </div>
               <div className="text-right">
                 <span className="text-[10px] font-bold text-slate-400 uppercase block">
-                  Vendor Reference & Delivery
+                  Vendor Reference &amp; Delivery
                 </span>
                 {selectedPO.vendorReference && (
                   <span className="font-mono font-bold text-emerald-800 block">
@@ -1274,7 +1406,7 @@ export default function PurchaseOrdersPage() {
                 <span className="font-medium text-slate-700 block">
                   Due:{" "}
                   {selectedPO.expectedDate
-                    ? new Date(selectedPO.expectedDate).toLocaleDateString()
+                    ? new Date(selectedPO.expectedDate).toLocaleDateString("en-GB")
                     : "Not specified"}
                 </span>
               </div>
@@ -1282,12 +1414,14 @@ export default function PurchaseOrdersPage() {
 
             <Table>
               <TableHead>
-                <TableHeaderCell>Product / Item</TableHeaderCell>
-                <TableHeaderCell>Shop Reference</TableHeaderCell>
-                <TableHeaderCell align="center">Ordered</TableHeaderCell>
-                <TableHeaderCell align="center">Received</TableHeaderCell>
-                <TableHeaderCell align="right">Unit Cost</TableHeaderCell>
-                <TableHeaderCell align="right">Total</TableHeaderCell>
+                <TableRow>
+                  <TableHeaderCell>Product / Item</TableHeaderCell>
+                  <TableHeaderCell>Shop Reference</TableHeaderCell>
+                  <TableHeaderCell align="center">Ordered</TableHeaderCell>
+                  <TableHeaderCell align="center">Received</TableHeaderCell>
+                  <TableHeaderCell align="right">Unit Cost</TableHeaderCell>
+                  <TableHeaderCell align="right">Total</TableHeaderCell>
+                </TableRow>
               </TableHead>
               <TableBody>
                 {selectedPO.items.map((it) => (
@@ -1361,6 +1495,7 @@ export default function PurchaseOrdersPage() {
                 onClick={() => {
                   setPrintModalPO(selectedPO);
                 }}
+                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
               >
                 Print / Save PDF
               </Button>

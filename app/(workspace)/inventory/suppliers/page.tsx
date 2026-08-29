@@ -19,9 +19,28 @@ import {
   FormInput,
   FormSubmit,
 } from "@/components/ui";
+import {
+  Building2,
+  Phone,
+  Mail,
+  MapPin,
+  FileSpreadsheet,
+  Printer,
+  Plus,
+  Search,
+  CheckCircle2,
+  ShieldCheck,
+  Package,
+  Edit2,
+  Trash2,
+  Layers,
+} from "lucide-react";
 
 export default function SuppliersPage() {
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "TRN" | "NON_TRN">(
+    "ALL",
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [formError, setFormError] = useState("");
@@ -31,17 +50,34 @@ export default function SuppliersPage() {
   const updateSupplier = useUpdateSupplier();
   const deleteSupplier = useDeleteSupplier();
 
-  const filteredSuppliers = useMemo(
-    () =>
-      suppliers.filter(
-        (s) =>
-          s.name.toLowerCase().includes(search.toLowerCase()) ||
-          s.supplierCode.toLowerCase().includes(search.toLowerCase()) ||
-          (s.contactPerson &&
-            s.contactPerson.toLowerCase().includes(search.toLowerCase())) ||
-          (s.trn && s.trn.includes(search)),
-      ),
-    [suppliers, search],
+  const filteredSuppliers = useMemo(() => {
+    return suppliers.filter((s) => {
+      const q = search.toLowerCase();
+      const matchesSearch =
+        !q ||
+        s.name.toLowerCase().includes(q) ||
+        s.supplierCode.toLowerCase().includes(q) ||
+        (s.contactPerson && s.contactPerson.toLowerCase().includes(q)) ||
+        (s.trn && s.trn.includes(q)) ||
+        (s.email && s.email.toLowerCase().includes(q)) ||
+        (s.phone && s.phone.includes(q));
+
+      let matchesStatus = true;
+      if (statusFilter === "TRN") matchesStatus = Boolean(s.trn);
+      if (statusFilter === "NON_TRN") matchesStatus = !s.trn;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [suppliers, search, statusFilter]);
+
+  const totalCatalogSkus = useMemo(
+    () => suppliers.reduce((acc, s) => acc + (s._count?.products || 0), 0),
+    [suppliers],
+  );
+
+  const trnCount = useMemo(
+    () => suppliers.filter((s) => s.trn).length,
+    [suppliers],
   );
 
   const form = useForm({
@@ -121,23 +157,24 @@ export default function SuppliersPage() {
     () => [
       {
         accessorKey: "supplierCode",
-        header: "Code",
+        header: "Supplier Code",
         cell: ({ row }) => (
-          <span className="font-mono font-bold text-slate-800">
+          <span className="font-mono font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded text-xs inline-flex items-center gap-1">
+            <Building2 size={11} className="text-teal-700" />
             {row.original.supplierCode}
           </span>
         ),
       },
       {
         accessorKey: "name",
-        header: "Company Name",
+        header: "Company Name & Location",
         cell: ({ row }) => (
           <div>
-            <span className="font-semibold text-slate-900 block">
+            <span className="font-bold text-slate-900 block text-xs">
               {row.original.name}
             </span>
             {row.original.address && (
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[10px] text-slate-400 block mt-0.5 truncate max-w-xs">
                 {row.original.address}
               </span>
             )}
@@ -148,9 +185,9 @@ export default function SuppliersPage() {
         accessorKey: "contactPerson",
         header: "Contact Person",
         cell: ({ row }) => (
-          <span className="text-slate-700">
+          <span className="text-slate-800 text-xs font-semibold">
             {row.original.contactPerson || (
-              <span className="text-slate-300">-</span>
+              <span className="text-slate-300">—</span>
             )}
           </span>
         ),
@@ -159,9 +196,9 @@ export default function SuppliersPage() {
         accessorKey: "contact",
         header: "Phone & Email",
         cell: ({ row }) => (
-          <div className="text-slate-600">
+          <div className="text-xs">
             {row.original.phone && (
-              <span className="block text-slate-800 font-medium">
+              <span className="block text-slate-800 font-mono font-medium">
                 {row.original.phone}
               </span>
             )}
@@ -171,7 +208,7 @@ export default function SuppliersPage() {
               </span>
             )}
             {!row.original.phone && !row.original.email && (
-              <span className="text-slate-300">-</span>
+              <span className="text-slate-300">—</span>
             )}
           </div>
         ),
@@ -181,45 +218,47 @@ export default function SuppliersPage() {
         header: "UAE TRN",
         cell: ({ row }) =>
           row.original.trn ? (
-            <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-800 font-semibold text-[11px] font-mono">
+            <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-mono font-bold">
               {row.original.trn}
             </span>
           ) : (
-            <span className="text-slate-300">-</span>
+            <span className="text-slate-300 font-mono text-xs">—</span>
           ),
       },
       {
         accessorKey: "catalogCount",
-        header: "Catalog SKUs",
+        header: () => <div className="text-center">Catalog SKUs</div>,
         cell: ({ row }) => (
-          <div className="text-center font-bold text-slate-800">
+          <span className="text-center font-mono font-bold text-slate-800 text-xs block">
             {row.original._count?.products || 0}
-          </div>
+          </span>
         ),
       },
       {
         id: "actions",
-        header: "Actions",
+        header: () => <div className="text-center">Actions</div>,
         cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
+          <div className="flex items-center justify-center gap-1.5">
+            <button
+              type="button"
               onClick={() => handleOpenEdit(row.original)}
+              className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+              title="Edit Supplier"
             >
-              Edit
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
+              <Edit2 size={13} />
+            </button>
+            <button
+              type="button"
               onClick={async () => {
                 if (confirm(`Delete supplier "${row.original.name}"?`)) {
                   await deleteSupplier.mutateAsync(row.original.id);
                 }
               }}
+              className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer"
+              title="Delete Supplier"
             >
-              Delete
-            </Button>
+              <Trash2 size={13} />
+            </button>
           </div>
         ),
       },
@@ -229,92 +268,205 @@ export default function SuppliersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Simple Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <h2 className="text-xl font-black text-slate-900">
-            Suppliers & Vendor Management
-          </h2>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Suppliers &amp; Vendor Management
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Vendor master registry, Tax Registration Numbers (TRN), and
-            procurement contacts.
+            AGM FITOUT TECHNICAL SERVICES LLC — Vendor master registry, Tax Registration Numbers (TRN), <br /> and procurement contacts.
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={handleOpenCreate}
-          icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-        >
-          Add New Supplier
-        </Button>
-      </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+            icon={<Printer size={14} />}
+          >
+            Print Register
+          </Button>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Suppliers
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {suppliers.length}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Approved vendor network
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Tax Registered (TRN)
-          </p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">
-            {suppliers.filter((s) => s.trn).length}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            VAT compliant invoices
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Active Supply Lines
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {suppliers.reduce((acc, s) => acc + (s._count?.products || 0), 0)}{" "}
-            SKUs
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Supplied materials catalog
-          </p>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleOpenCreate}
+            icon={<Plus size={14} strokeWidth={2.5} />}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+          >
+            Add New Supplier
+          </Button>
         </div>
       </div>
 
+      {/* 4 Elevated Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+        {/* 1. Total Suppliers */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              1. Total Approved Suppliers
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Active vendor network
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {suppliers.length}
+            </span>
+            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
+              Vendors
+            </span>
+          </div>
+        </div>
+
+        {/* 2. Tax Registered (TRN) */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              2. VAT Registered (TRN)
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              VAT compliant invoices
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-emerald-800 font-mono">
+              {trnCount}
+            </span>
+            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
+              Tax Compliant
+            </span>
+          </div>
+        </div>
+
+        {/* 3. Active Supply Lines */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              3. Sourced Catalog SKUs
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Supplied materials catalog
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-purple-800 font-mono">
+              {totalCatalogSkus}
+            </span>
+            <span className="text-xs font-bold text-purple-700 font-sans ml-1.5">
+              Products
+            </span>
+          </div>
+        </div>
+
+        {/* 4. Verification Network */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                4. Partner Status
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
+                Verified
+              </span>
+            </div>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Direct supplier relations
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xl font-black text-teal-900 font-sans">
+              100% Direct
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="w-full sm:w-80">
-            <Input
-              placeholder="Search code, company name, TRN, contact..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              leftIcon={<SearchIcon className="w-4 h-4" strokeWidth={2} />}
-            />
+        {/* Search & Filter Strip */}
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Status Quick Pills */}
+            <div className="flex flex-wrap items-center gap-1">
+              {[
+                { id: "ALL", label: "All Suppliers" },
+                { id: "TRN", label: "Tax Registered (TRN)" },
+                { id: "NON_TRN", label: "General Vendors" },
+              ].map((tab) => {
+                const isActive = statusFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setStatusFilter(tab.id as any)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <span className="text-[11px] font-bold text-slate-500 font-mono">
+              {filteredSuppliers.length} Vendors Listed
+            </span>
+          </div>
+
+          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
+            <div className="w-full sm:w-80 relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search code, company name, TRN, contact..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
           </div>
         </div>
 
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">
+          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
             Error loading suppliers: {(error as any).message}
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={filteredSuppliers}
-            isLoading={isLoading}
-            emptyTitle="No suppliers found"
-            emptyMessage='Click "Add New Supplier" to register your vendor partners.'
-          />
+          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+              <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                Master Suppliers &amp; Vendors Registry
+              </h4>
+              <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                {filteredSuppliers.length} Active Partners
+              </span>
+            </div>
+
+            <DataTable
+              columns={columns}
+              data={filteredSuppliers}
+              isLoading={isLoading}
+              emptyTitle="No suppliers found"
+              emptyMessage='Click "Add New Supplier" to register your vendor partners.'
+            />
+          </div>
         )}
       </div>
 
+      {/* Modal for Creating / Editing Supplier */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -327,10 +479,10 @@ export default function SuppliersPage() {
             e.stopPropagation();
             form.handleSubmit();
           }}
-          className="space-y-3.5"
+          className="space-y-3.5 text-xs"
         >
           {formError && (
-            <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
+            <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
               {formError}
             </div>
           )}
@@ -348,7 +500,7 @@ export default function SuppliersPage() {
                   field={field}
                   label="Supplier Code *"
                   required
-                  className="uppercase"
+                  className="uppercase font-mono font-bold"
                 />
               )}
             </form.Field>
@@ -365,7 +517,7 @@ export default function SuppliersPage() {
                   field={field}
                   label="Company Name *"
                   required
-                  placeholder="e.g. Al Futtaim Hardware"
+                  placeholder="e.g. Al Futtaim Hardware LLC"
                 />
               )}
             </form.Field>
@@ -411,6 +563,7 @@ export default function SuppliersPage() {
                   field={field}
                   label="Tax TRN"
                   placeholder="100XXXXXXXXX003"
+                  className="font-mono"
                 />
               )}
             </form.Field>
@@ -421,7 +574,7 @@ export default function SuppliersPage() {
               <FormInput
                 field={field}
                 label="Address / Location"
-                placeholder="Al Quoz Ind. 3, Dubai"
+                placeholder="Al Quoz Ind. 3, Dubai, UAE"
               />
             )}
           </form.Field>
@@ -431,12 +584,14 @@ export default function SuppliersPage() {
               type="button"
               variant="outline"
               onClick={() => setIsModalOpen(false)}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
             <FormSubmit
               form={form}
               loading={createSupplier.isPending || updateSupplier.isPending}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
             >
               Save Supplier
             </FormSubmit>

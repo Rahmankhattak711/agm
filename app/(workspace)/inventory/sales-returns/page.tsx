@@ -1,7 +1,19 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Printer,
+  RotateCcw,
+  FileSpreadsheet,
+  FileText,
+  CheckCircle2,
+  Clock,
+  Building2,
+  Eye,
+  ShieldCheck,
+} from "lucide-react";
 import {
   Button,
   Table,
@@ -16,10 +28,13 @@ import {
   Select,
   Textarea,
 } from "@/components/ui";
-import { formatAed } from "@/lib/utils/format";
 
 type ReturnStatus =
-  "DRAFT" | "SUBMITTED" | "APPROVED" | "COMPLETED" | "REJECTED";
+  | "DRAFT"
+  | "SUBMITTED"
+  | "APPROVED"
+  | "COMPLETED"
+  | "REJECTED";
 
 interface SalesReturnItem {
   id: string;
@@ -34,59 +49,36 @@ interface SalesReturnItem {
 }
 
 const STATUS_BADGE_CLASSES: Record<ReturnStatus, string> = {
-  COMPLETED: "bg-emerald-100 text-emerald-800",
-  APPROVED: "bg-emerald-100 text-emerald-800",
-  SUBMITTED: "bg-amber-100  text-amber-800",
-  DRAFT: "bg-slate-100  text-slate-700",
-  REJECTED: "bg-rose-100   text-rose-800",
+  COMPLETED: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  APPROVED: "bg-sky-50 text-sky-800 border-sky-200",
+  SUBMITTED: "bg-amber-50 text-amber-800 border-amber-200",
+  DRAFT: "bg-slate-100 text-slate-700 border-slate-200",
+  REJECTED: "bg-rose-50 text-rose-800 border-rose-200",
 };
 
-const STATUS_FILTERS = ["ALL", "SUBMITTED", "APPROVED", "COMPLETED"] as const;
+const STATUS_FILTERS = [
+  { id: "ALL", label: "All Returns" },
+  { id: "SUBMITTED", label: "Submitted" },
+  { id: "APPROVED", label: "Approved" },
+  { id: "COMPLETED", label: "Completed" },
+  { id: "DRAFT", label: "Drafts" },
+] as const;
 
 function generateReturnNumber(count: number): string {
   return `SR-2026-${String(count + 1).padStart(3, "0")}`;
 }
 
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
-
-function KpiCard({
-  label,
-  value,
-  colorClass = "bg-white border-slate-200",
-  valueClass = "text-slate-900",
-}: {
-  label: string;
-  value: React.ReactNode;
-  colorClass?: string;
-  valueClass?: string;
-}) {
-  return (
-    <div
-      className={`p-4 rounded-2xl border flex flex-col justify-between space-y-2 ${colorClass}`}
-    >
-      <p className="text-[11px] font-bold uppercase tracking-wider opacity-70">
-        {label}
-      </p>
-      <p className={`text-xl font-black font-mono ${valueClass}`}>{value}</p>
-    </div>
-  );
+function formatNumber(val: number | string | undefined): string {
+  const num = Number(val || 0);
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
-function StatusBadge({ status }: { status: ReturnStatus }) {
-  return (
-    <span
-      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_BADGE_CLASSES[status]}`}
-    >
-      {status}
-    </span>
-  );
+function formatAed(amount: number): string {
+  return `AED ${formatNumber(amount)}`;
 }
-
-// ---------------------------------------------------------------------------
-// Form state
-// ---------------------------------------------------------------------------
 
 interface ReturnFormState {
   invoiceReference: string;
@@ -104,18 +96,14 @@ const EMPTY_FORM: ReturnFormState = {
   returnAmount: "",
 };
 
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
 export default function SalesReturnsPage() {
   const [returnsList, setReturnsList] = useState<SalesReturnItem[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedReturn, setSelectedReturn] =
+    useState<SalesReturnItem | null>(null);
   const [form, setForm] = useState<ReturnFormState>(EMPTY_FORM);
-
-  // Derived -----------------------------------------------------------------
 
   const currentReturnNumber = useMemo(
     () => generateReturnNumber(returnsList.length),
@@ -129,7 +117,8 @@ export default function SalesReturnsPage() {
         item.returnNumber.toLowerCase().includes(q) ||
         item.invoiceReference.toLowerCase().includes(q) ||
         item.customerName.toLowerCase().includes(q) ||
-        item.projectScope.toLowerCase().includes(q);
+        item.projectScope.toLowerCase().includes(q) ||
+        item.reason.toLowerCase().includes(q);
       const matchesStatus =
         statusFilter === "ALL" || item.status === statusFilter;
       return matchesSearch && matchesStatus;
@@ -156,8 +145,6 @@ export default function SalesReturnsPage() {
       ).length,
     [returnsList],
   );
-
-  // Handlers ----------------------------------------------------------------
 
   const setField = useCallback(
     <K extends keyof ReturnFormState>(key: K, value: ReturnFormState[K]) =>
@@ -194,174 +181,305 @@ export default function SalesReturnsPage() {
     [form, currentReturnNumber, handleCloseCreate],
   );
 
-  // Render ------------------------------------------------------------------
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+      {/* Simple Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Sales Returns (Credit Notes)
-            </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-              Customer Credit Vouchers
-            </span>
-          </div>
-          <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Manage client credit notes,
-            scope reductions, and invoice credit adjustments.
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Sales Returns (Credit Notes)
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            AGM FITOUT TECHNICAL SERVICES LLC — Manage client credit notes, scope reductions, <br /> and invoice credit adjustments.
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => {
-            setForm(EMPTY_FORM);
-            setIsCreateOpen(true);
-          }}
-          icon={<Plus size={14} />}
-        >
-          Create Sales Return
-        </Button>
-      </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+            icon={<Printer size={14} />}
+          >
+            Print Register
+          </Button>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <KpiCard
-          label="Total Sales Credit Notes"
-          value={formatAed(totalReturnAmount)}
-          colorClass="bg-rose-50/60 border-rose-100"
-          valueClass="text-rose-950"
-        />
-        <KpiCard
-          label="Approved Credit Notes"
-          value={`${approvedCount} Vouchers`}
-          colorClass="bg-emerald-50/60 border-emerald-100"
-          valueClass="text-emerald-950"
-        />
-        <KpiCard
-          label="Pending Approval"
-          value={`${pendingCount} Vouchers`}
-          colorClass="bg-slate-50 border-slate-200"
-          valueClass="text-slate-900"
-        />
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
-        <div className="w-full sm:w-96">
-          <Input
-            leftIcon={<Search size={15} />}
-            placeholder="Search return number, invoice ref, client..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border-none bg-slate-50 focus:bg-white"
-          />
-        </div>
-
-        <div className="flex items-center gap-1.5 text-xs">
-          {STATUS_FILTERS.map((st) => (
-            <button
-              key={st}
-              type="button"
-              onClick={() => setStatusFilter(st)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                statusFilter === st
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
-              }`}
-            >
-              {st}
-            </button>
-          ))}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => {
+              setForm(EMPTY_FORM);
+              setIsCreateOpen(true);
+            }}
+            icon={<Plus size={14} strokeWidth={2.5} />}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+          >
+            Create Sales Return
+          </Button>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm bg-white">
-        <Table className="w-full text-xs text-left">
-          <TableHead className="bg-slate-50/95 border-b border-slate-200">
-            <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[11px]">
-              Credit Note Voucher
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[11px]">
-              Invoice / QTN Ref
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[11px]">
-              Client Name
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[11px]">
-              Date
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[11px]">
-              Scope / Reason
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[11px]">
-              Status
-            </TableHeaderCell>
-            <TableHeaderCell
-              align="right"
-              className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[11px]"
-            >
-              Credit Amount (AED)
-            </TableHeaderCell>
-          </TableHead>
+      {/* 4 Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+        {/* 1. Total Sales Credit Notes */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              1. Total Sales Credit Notes
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Cumulative client credits
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-rose-500 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-xl font-black text-rose-700 font-mono">
+              {formatNumber(totalReturnAmount)}
+            </span>
+          </div>
+        </div>
 
-          <TableBody className="divide-y divide-slate-100">
-            {filteredReturns.length === 0 ? (
-              <TableEmpty
-                colSpan={7}
-                title="No sales return credit notes found."
-                message="Create a new sales return to get started."
-              />
-            ) : (
-              filteredReturns.map((item) => (
-                <TableRow
-                  key={item.id}
-                  className="hover:bg-slate-50/60 text-slate-700 transition"
-                >
-                  <TableCell className="py-3 px-4 font-mono font-bold text-rose-900">
-                    {item.returnNumber}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 font-mono font-semibold text-slate-800">
-                    {item.invoiceReference}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 font-bold text-slate-900">
-                    {item.customerName}
-                  </TableCell>
-                  <TableCell className="py-3 px-3 text-slate-600">
-                    {item.returnDate}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 max-w-xs truncate text-slate-600">
-                    {item.reason}
-                  </TableCell>
-                  <TableCell className="py-3 px-3">
-                    <StatusBadge status={item.status} />
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    className="py-3 px-4 text-right font-mono font-black text-rose-950"
+        {/* 2. Total Vouchers */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              2. Total Credit Vouchers
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Registered credit memos
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {returnsList.length}
+            </span>
+            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
+              Vouchers
+            </span>
+          </div>
+        </div>
+
+        {/* 3. Approved Reversals */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              3. Approved Reversals
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Settled customer credits
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-emerald-800 font-mono">
+              {approvedCount}
+            </span>
+            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
+              Approved
+            </span>
+          </div>
+        </div>
+
+        {/* 4. In-Review Requests */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              4. In-Review Requests
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Pending management approval
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-amber-700 font-mono">
+              {pendingCount}
+            </span>
+            <span className="text-xs font-bold text-amber-700 font-sans ml-1.5">
+              Pending
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Filter & Table Card */}
+      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+        {/* Search & Filter Strip */}
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Status Quick Pills */}
+            <div className="flex flex-wrap items-center gap-1">
+              {STATUS_FILTERS.map((tab) => {
+                const isActive = statusFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setStatusFilter(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                    }`}
                   >
-                    {formatAed(item.totalAmount)}
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <span className="text-[11px] font-bold text-slate-500 font-mono">
+              {filteredReturns.length} Vouchers Listed
+            </span>
+          </div>
+
+          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
+            <div className="w-full sm:w-96 relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search return number, invoice ref, client..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Sales Returns Table */}
+        <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+          <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+            <h4 className="font-black text-xs uppercase tracking-wider text-white">
+              Sales Returns &amp; Client Credit Notes Register
+            </h4>
+            <span className="text-[11px] font-mono text-emerald-300 font-bold">
+              {filteredReturns.length} Active Records
+            </span>
+          </div>
+
+          <Table className="w-full text-xs text-left">
+            <TableHead className="bg-slate-50 border-b border-slate-200">
+              <TableRow>
+                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Credit Note Voucher
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Invoice / QTN Ref
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Client Name &amp; Scope
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Date
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Scope / Reason
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Status
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
+                >
+                  Credit Amount (AED)
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider print:hidden">
+                  Actions
+                </TableHeaderCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody className="divide-y divide-slate-100 font-medium">
+              {filteredReturns.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className="py-12 text-center text-slate-400 italic"
+                  >
+                    No sales return credit notes found. Click &quot;Create Sales Return&quot; to log a client credit note.
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                filteredReturns.map((item) => (
+                  <TableRow
+                    key={item.id}
+                    className="hover:bg-slate-50/60 text-slate-700 transition"
+                  >
+                    <TableCell className="py-3 px-4 font-mono font-bold text-teal-800">
+                      <div className="flex items-center gap-1.5">
+                        <RotateCcw size={13} className="text-teal-700 shrink-0" />
+                        <span>{item.returnNumber}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 px-4 font-mono font-semibold text-slate-800">
+                      {item.invoiceReference}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 font-bold text-slate-900">
+                      <div>{item.customerName}</div>
+                      {item.projectScope && (
+                        <div className="text-[10px] text-slate-400 font-normal">
+                          {item.projectScope}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
+                      {new Date(item.returnDate).toLocaleDateString("en-GB")}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 max-w-xs truncate text-slate-600">
+                      {item.reason}
+                    </TableCell>
+                    <TableCell className="py-3 px-3 text-center">
+                      <span
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status]}`}
+                      >
+                        {item.status}
+                      </span>
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      className="py-3 px-4 text-right font-mono font-black text-rose-700 text-xs"
+                    >
+                      {formatAed(item.totalAmount)}
+                    </TableCell>
+                    <TableCell className="py-3 px-3 text-center print:hidden">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedReturn(item)}
+                        className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 transition cursor-pointer"
+                      >
+                        Audit View
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
+      {/* Modal for Creating Sales Return */}
       <Modal
         isOpen={isCreateOpen}
         onClose={handleCloseCreate}
         title="Create Sales Return (Credit Note)"
+        maxWidth="md"
       >
-        <form onSubmit={handleCreateReturn} className="space-y-4 text-xs">
+        <form onSubmit={handleCreateReturn} className="space-y-3.5 text-xs">
           <div className="grid grid-cols-2 gap-3">
             <Input
               label="Credit Note No"
               value={currentReturnNumber}
               readOnly
               disabled
+              className="font-mono font-bold"
             />
             <Input
               label="Invoice / QTN Ref *"
@@ -369,6 +487,7 @@ export default function SalesReturnsPage() {
               value={form.invoiceReference}
               onChange={(e) => setField("invoiceReference", e.target.value)}
               required
+              className="font-mono"
             />
           </div>
 
@@ -388,11 +507,12 @@ export default function SalesReturnsPage() {
           />
 
           <Textarea
-            label="Reason for Credit Note / Return"
+            label="Reason for Credit Note / Return *"
             rows={2}
             placeholder="Reason for scope reduction or return..."
             value={form.returnReason}
             onChange={(e) => setField("returnReason", e.target.value)}
+            required
           />
 
           <Input
@@ -404,23 +524,100 @@ export default function SalesReturnsPage() {
             value={form.returnAmount}
             onChange={(e) => setField("returnAmount", e.target.value)}
             required
+            className="font-mono font-bold"
           />
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
             <Button
               variant="outline"
-              size="lg"
               type="button"
               onClick={handleCloseCreate}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
-            <Button variant="primary" size="lg" type="submit">
+            <Button
+              variant="primary"
+              type="submit"
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+            >
               Submit Sales Return
             </Button>
           </div>
         </form>
       </Modal>
+
+      {/* Audit View Modal */}
+      {selectedReturn && (
+        <Modal
+          isOpen={!!selectedReturn}
+          onClose={() => setSelectedReturn(null)}
+          title={`Sales Credit Note — ${selectedReturn.returnNumber}`}
+          maxWidth="md"
+        >
+          <div className="space-y-4 text-xs text-slate-700">
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+              <p className="text-[10px] font-bold uppercase text-slate-400">
+                Client / Project
+              </p>
+              <p className="font-bold text-slate-900 text-sm">
+                {selectedReturn.customerName}
+              </p>
+              <p className="text-slate-600 font-medium">
+                Scope: {selectedReturn.projectScope}
+              </p>
+              <p className="text-[11px] text-slate-500 font-mono">
+                Invoice Ref: {selectedReturn.invoiceReference}
+              </p>
+            </div>
+
+            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
+              <p className="text-[10px] font-bold uppercase text-amber-800">
+                Credit Adjustment Reason
+              </p>
+              <p className="text-slate-800 font-medium">
+                {selectedReturn.reason}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-bold text-slate-600">Status</span>
+              <span
+                className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[selectedReturn.status]}`}
+              >
+                {selectedReturn.status}
+              </span>
+            </div>
+
+            <div className="flex justify-between text-sm font-bold bg-slate-100 p-3 rounded-xl text-slate-900">
+              <span>Total Credit Note Amount:</span>
+              <span className="font-mono text-rose-700 font-black">
+                {formatAed(selectedReturn.totalAmount)}
+              </span>
+            </div>
+
+            <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.print()}
+                className="text-xs flex items-center gap-1.5 cursor-pointer"
+                icon={<Printer size={13} />}
+              >
+                Print Voucher
+              </Button>
+              <Button
+                variant="dark"
+                size="sm"
+                onClick={() => setSelectedReturn(null)}
+                className="text-xs bg-slate-800 hover:bg-slate-900 text-white cursor-pointer"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
