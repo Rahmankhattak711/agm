@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import BarChart from "@/components/BarChart";
+import DoughnutChart from "@/components/DoughnutChart";
 import {
   JournalEntriesIcon,
-  PlusIcon,
-  ProductsIcon,
   ReportsIcon,
 } from "@/components/icons";
 import StatCard from "@/components/StatCard";
@@ -15,7 +14,6 @@ import {
   useJournalEntries,
   useExpenses,
   useProfitLoss,
-  useVatSummary,
   useSalesInvoices,
   useSupplierBills,
   useAccounts,
@@ -23,30 +21,31 @@ import {
 } from "@/lib/hooks/api-hooks";
 import {
   Landmark,
-  FileText,
   DollarSign,
   Receipt,
+  CreditCard,
+  Percent,
   Clock,
   AlertCircle,
   AlertTriangle,
-  ChevronDown,
-  Calendar,
-  Wallet,
   ArrowRight,
-  CreditCard,
-  ArrowDownLeft,
-  RefreshCw,
   FileCheck,
   FileClock,
-  Plus,
   Scale,
   TrendingUp,
+  Activity,
+  ArrowUpRight as ArrowUpRightIcon,
+  ShieldCheck,
+  Calendar,
+  Sparkles,
 } from "lucide-react";
 
 type PeriodOption = "THIS_MONTH" | "THIS_QUARTER" | "THIS_YEAR" | "CUSTOM";
+type ChartViewMode = "P_AND_L" | "CASH_FLOW";
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<PeriodOption>("THIS_MONTH");
+  const [chartView, setChartView] = useState<ChartViewMode>("P_AND_L");
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
 
@@ -99,7 +98,7 @@ export default function DashboardPage() {
   const { data: balanceSheet, isLoading: bsLoading } = useBalanceSheet();
   const { data: journalEntries = [], isLoading: jeLoading } =
     useJournalEntries();
-  const { data: expensesData, isLoading: expLoading } = useExpenses();
+  const { data: expensesData } = useExpenses();
   const { data: invoices = [], isLoading: invLoading } = useSalesInvoices();
   const { data: bills = [], isLoading: billsLoading } = useSupplierBills();
   const { data: accounts = [], isLoading: accLoading } = useAccounts();
@@ -118,7 +117,10 @@ export default function DashboardPage() {
     if (Math.abs(num) >= 1_000_000)
       return `AED ${(num / 1_000_000).toFixed(2)}M`;
     if (Math.abs(num) >= 1_000) return `AED ${(num / 1_000).toFixed(1)}k`;
-    return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    return `AED ${num.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })}`;
   };
 
   // 1. Cash & Bank Balances (Treasury)
@@ -211,21 +213,26 @@ export default function DashboardPage() {
   }, [bills]);
 
   // 4. Financial Performance (Revenue, Expenses, Net Profit)
-  const revenue =
+  const revenue = Math.max(
+    0,
     typeof profitLoss?.revenue === "number"
       ? profitLoss.revenue
-      : Number(profitLoss?.totalIncome || 0);
-  const prevRevenue = Number(profitLoss?.prevTotalIncome || 0);
+      : Number(profitLoss?.totalIncome || 0),
+  );
+  const prevRevenue = Math.max(0, Number(profitLoss?.prevTotalIncome || 0));
 
-  const expenses =
+  const expenses = Math.abs(
     typeof profitLoss?.expenses === "number"
       ? profitLoss.expenses
-      : Number(profitLoss?.totalExpenses || 0);
+      : Number(profitLoss?.totalExpenses || 0),
+  );
 
   const netIncome =
     typeof profitLoss?.netIncome === "number"
       ? profitLoss.netIncome
-      : Number(profitLoss?.netProfit || revenue - expenses);
+      : (typeof profitLoss?.netProfit === "number"
+          ? profitLoss.netProfit
+          : revenue - expenses);
   const prevNetIncome = Number(profitLoss?.prevNetProfit || 0);
 
   const revenueChangePct =
@@ -289,7 +296,19 @@ export default function DashboardPage() {
     return { moneyIn, moneyOut, netCashFlow };
   }, [payments, expensesData, bills, dateRange, revenue, expenses]);
 
-  // 7. Action Required: Compact 3–4 Priority Items
+  // 7. VAT Metrics (UAE 5% FTA)
+  const vatMetrics = useMemo(() => {
+    const outputVat = invoices
+      .filter((i) => i.status !== "CANCELLED")
+      .reduce((sum, i) => sum + Number(i.vatAmount || 0), 0);
+    const inputVat = bills
+      .filter((b) => b.status !== "CANCELLED")
+      .reduce((sum, b) => sum + Number(b.vatAmount || 0), 0);
+    const netVatPayable = outputVat - inputVat;
+    return { outputVat, inputVat, netVatPayable };
+  }, [invoices, bills]);
+
+  // 7. Action Required Items
   const actionItems = useMemo(() => {
     const items = [];
 
@@ -299,7 +318,7 @@ export default function DashboardPage() {
         title: `${arMetrics.overdueCount} Overdue Invoices`,
         description: `${formatCurrency(arMetrics.overdue)} pending collection`,
         link: "/commercial/sales-invoices",
-        actionText: "View Receivables",
+        actionText: "Collect Invoices",
         icon: <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />,
         badge: "Overdue",
         badgeColor: "bg-rose-50 text-rose-700 border-rose-200",
@@ -312,7 +331,7 @@ export default function DashboardPage() {
         title: `${apMetrics.overdueCount} Supplier Bills Due`,
         description: `${formatCurrency(apMetrics.overdue)} awaiting payment`,
         link: "/commercial/supplier-bills",
-        actionText: "Disburse",
+        actionText: "Disburse Payment",
         icon: <Clock className="w-4 h-4 text-amber-500 flex-shrink-0" />,
         badge: "Due Soon",
         badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
@@ -323,10 +342,10 @@ export default function DashboardPage() {
     if (draftJournals.length > 0) {
       items.push({
         id: "draft-je",
-        title: `${draftJournals.length} Draft Journal Entries`,
+        title: `${draftJournals.length} Draft Journals`,
         description: "Unposted double-entry vouchers",
         link: "/finance/journal-entries",
-        actionText: "Post",
+        actionText: "Post Entries",
         icon: <FileClock className="w-4 h-4 text-blue-500 flex-shrink-0" />,
         badge: "Draft",
         badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
@@ -341,7 +360,7 @@ export default function DashboardPage() {
         title: `${pendingExpenses.length} Direct Expenses`,
         description: "Draft status awaiting approval",
         link: "/finance/expenses",
-        actionText: "Review",
+        actionText: "Review Expenses",
         icon: <FileCheck className="w-4 h-4 text-purple-500 flex-shrink-0" />,
         badge: "Draft",
         badgeColor: "bg-purple-50 text-purple-700 border-purple-200",
@@ -351,89 +370,163 @@ export default function DashboardPage() {
     return items.slice(0, 4);
   }, [arMetrics, apMetrics, journalEntries, expensesData]);
 
-  // Chart Data
-  const comparisonChartData = [
-    { label: "Revenue", value: revenue, color: "#2e7d32" },
-    { label: "Expenses", value: expenses, color: "#d32f2f" },
+  // Chart Datasets
+  const plChartData = [
+    {
+      label: "Revenue",
+      value: revenue,
+      color: "#10b981",
+    },
+    {
+      label: "Operating Costs",
+      value: expenses,
+      color: "#f43f5e",
+    },
     {
       label: "Net Profit",
       value: netIncome,
-      color: netIncome >= 0 ? "#1976d2" : "#f57c00",
+      color: netIncome >= 0 ? "#0284c7" : "#ea580c",
     },
   ];
 
-  const bsChartData = [
-    { label: "Total Assets", value: totalAssets, color: "#0284c7" },
-    { label: "Liabilities", value: totalLiabilities, color: "#ea580c" },
-    { label: "Equity", value: totalEquity, color: "#16a34a" },
+  const cashFlowChartData = [
+    {
+      label: "Cash Inflow",
+      value: Math.abs(cashFlowMetrics.moneyIn),
+      color: "#10b981",
+    },
+    {
+      label: "Cash Outflow",
+      value: Math.abs(cashFlowMetrics.moneyOut),
+      color: "#f43f5e",
+    },
+    {
+      label: "Net Cash Flow",
+      value: cashFlowMetrics.netCashFlow,
+      color: cashFlowMetrics.netCashFlow >= 0 ? "#0284c7" : "#ea580c",
+    },
   ];
 
-  const recentEntries = journalEntries.slice(0, 5);
+  const recentEntries = journalEntries.slice(0, 6);
 
   return (
     <div className="space-y-6 max-w-full">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-[#284257] to-[#1c3243] text-white shadow-md">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-300">
-              Enterprise Accounting Command Center
-            </span>
-          </div>
-          <h1 className="text-xl md:text-2xl font-black text-white tracking-tight">
-            Finance &amp; Operations Dashboard
-          </h1>
+      {/* Executive Command Ribbon */}
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] p-5 md:p-6 text-white shadow-[6px_0_30px_rgba(15,23,42,0.18)]">
+        {/* Subtle Ambient Brand Geometric Watermark */}
+        <div className="pointer-events-none absolute right-[-40px] top-[-30px] w-[260px] opacity-15">
+          <svg aria-hidden="true" viewBox="0 0 240 240" className="h-full w-full">
+            <path
+              d="M14 180V60L125 10l108 50v120M52 150V70L164 20v100"
+              fill="none"
+              stroke="#edf7ee"
+              strokeWidth="1.5"
+            />
+          </svg>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-white/10 rounded-xl p-1 border border-white/15 backdrop-blur-xs">
-            {(
-              [
-                "THIS_MONTH",
-                "THIS_QUARTER",
-                "THIS_YEAR",
-                "CUSTOM",
-              ] as PeriodOption[]
-            ).map((p) => {
-              const labels: Record<PeriodOption, string> = {
-                THIS_MONTH: "Month",
-                THIS_QUARTER: "Quarter",
-                THIS_YEAR: "Year",
-                CUSTOM: "Custom",
-              };
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPeriod(p)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition min-h-[34px] cursor-pointer ${
-                    period === p
-                      ? "bg-white text-[#284257] shadow-xs"
-                      : "text-white/80 hover:text-white hover:bg-white/5"
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          {/* Left Title & Live Heartbeat */}
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300 backdrop-blur-xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Live Ledger &bull; Real-time Accounting
+              </span>
+              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                <Sparkles size={12} className="text-amber-400" />
+                UAE FTA Tax Compliant
+              </span>
+            </div>
+
+            <div>
+              <h1 className="text-xl md:text-2xl font-black text-white tracking-tight">
+                Finance &amp; Operations Executive Dashboard
+              </h1>
+              <p className="text-xs text-slate-300/80 font-normal mt-0.5">
+                Real-time financial telemetry, cash liquidity &bull; AGM Interiors &amp; Fitout
+              </p>
+            </div>
+
+            {/* Quick Live Snapshot Chips */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <div className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-2.5 py-1 text-[11px] text-slate-300">
+                <span className="text-slate-400">Treasury:</span>
+                <span className="font-mono font-bold text-white">
+                  {formatCompact(treasuryMetrics.totalLiquid)}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-2.5 py-1 text-[11px] text-slate-300">
+                <span className="text-slate-400">Net Margin:</span>
+                <span className="font-mono font-bold text-emerald-300">
+                  {marginPct.toFixed(1)}%
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-2.5 py-1 text-[11px] text-slate-300">
+                <span className="text-slate-400">Audit Status:</span>
+                <span
+                  className={`font-semibold ${
+                    isBalanced ? "text-emerald-300" : "text-amber-300"
                   }`}
                 >
-                  {labels[p]}
-                </button>
-              );
-            })}
+                  {isBalanced ? "Balanced" : "Review"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Period Selector Filter */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center bg-black/25 rounded-xl p-1 border border-white/15 backdrop-blur-md shadow-inner">
+              {(
+                [
+                  "THIS_MONTH",
+                  "THIS_QUARTER",
+                  "THIS_YEAR",
+                  "CUSTOM",
+                ] as PeriodOption[]
+              ).map((p) => {
+                const labels: Record<PeriodOption, string> = {
+                  THIS_MONTH: "Month",
+                  THIS_QUARTER: "Quarter",
+                  THIS_YEAR: "Year",
+                  CUSTOM: "Custom",
+                };
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPeriod(p)}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      period === p
+                        ? "bg-white text-slate-900 shadow-sm scale-100"
+                        : "text-slate-300 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {labels[p]}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Custom Date Range Picker */}
       {period === "CUSTOM" && (
-        <div className="flex flex-wrap items-center gap-3 p-3.5 bg-white rounded-2xl border border-slate-200/80 text-xs shadow-xs">
+        <div className="flex flex-wrap items-center gap-3 p-3 bg-white rounded-xl border border-slate-200/80 text-xs shadow-2xs animate-in fade-in">
           <span className="font-bold text-slate-700">Custom Date Range:</span>
           <div className="flex items-center gap-2">
             <input
               type="date"
-              className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-mono font-semibold"
+              className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs font-mono font-semibold"
               value={customStartDate}
               onChange={(e) => setCustomStartDate(e.target.value)}
             />
-            <span className="text-slate-400 font-bold">→</span>
+            <span className="text-slate-400 font-bold">&rarr;</span>
             <input
               type="date"
-              className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-mono font-semibold"
+              className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs font-mono font-semibold"
               value={customEndDate}
               onChange={(e) => setCustomEndDate(e.target.value)}
             />
@@ -441,42 +534,32 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
+      {/* 4 Cards Per Row (8 Stat Cards Total) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 1. Cash & Bank */}
         <StatCard
           id="stat-cash-bank"
           title="Cash & Bank"
           value={formatCurrency(treasuryMetrics.totalLiquid)}
           subtitle="RAK Bank & Petty Cash"
-          gradient="bg-gradient-to-br from-[#1b4b2d] via-[#153e24] to-[#0f2c1a]"
+          accentColor="emerald"
           loading={accLoading}
-          icon={
-            <Landmark
-              size={20}
-              className="w-5 h-5 text-white"
-              strokeWidth={2}
-            />
-          }
+          icon={<Landmark size={18} strokeWidth={2.2} />}
           trend={{
             label: `${cashFlowMetrics.netCashFlow >= 0 ? "+" : ""}${formatCompact(cashFlowMetrics.netCashFlow)} Net`,
             up: cashFlowMetrics.netCashFlow >= 0,
           }}
-          sparkline={[30, 45, 60, 65, 80, 95]}
         />
 
+        {/* 2. Accounts Receivable */}
         <StatCard
           id="stat-receivables"
-          title="Accounts Receivable"
+          title="Receivables"
           value={formatCurrency(arMetrics.totalOutstanding)}
           subtitle={`${arMetrics.openCount} Open Invoices`}
-          gradient="bg-gradient-to-br from-[#2a4d69] via-[#213f56] to-[#172c3d]"
+          accentColor="blue"
           loading={invLoading}
-          icon={
-            <DollarSign
-              size={20}
-              className="w-5 h-5 text-white"
-              strokeWidth={2}
-            />
-          }
+          icon={<DollarSign size={18} strokeWidth={2.2} />}
           trend={{
             label:
               arMetrics.overdueCount > 0
@@ -484,19 +567,17 @@ export default function DashboardPage() {
                 : "Current",
             up: arMetrics.overdueCount === 0,
           }}
-          sparkline={[40, 50, 55, 70, 75, 85]}
         />
 
+        {/* 3. Accounts Payable */}
         <StatCard
           id="stat-payables"
-          title="Accounts Payable"
+          title="Payables"
           value={formatCurrency(apMetrics.totalOutstanding)}
           subtitle={`${apMetrics.openCount} Supplier Bills`}
-          gradient="bg-gradient-to-br from-[#3b5368] via-[#2d4052] to-[#202f3d]"
+          accentColor="amber"
           loading={billsLoading}
-          icon={
-            <Receipt size={20} className="w-5 h-5 text-white" strokeWidth={2} />
-          }
+          icon={<Receipt size={18} strokeWidth={2.2} />}
           trend={{
             label:
               apMetrics.overdueCount > 0
@@ -504,136 +585,217 @@ export default function DashboardPage() {
                 : "Settled",
             up: apMetrics.overdueCount === 0,
           }}
-          sparkline={[35, 45, 50, 60, 65, 70]}
         />
 
+        {/* 4. Net Working Capital */}
+        <StatCard
+          id="stat-working-capital"
+          title="Working Capital"
+          value={formatCurrency(totalAssets - totalLiabilities)}
+          subtitle={`${totalLiabilities > 0 ? (totalAssets / totalLiabilities).toFixed(2) : "1.00"}x Liquidity Ratio`}
+          accentColor="slate"
+          loading={bsLoading}
+          icon={<Scale size={18} strokeWidth={2.2} />}
+          trend={{
+            label: isBalanced ? "Balanced" : "Audit Review",
+            up: isBalanced,
+          }}
+        />
+
+        {/* 5. Total Revenue */}
         <StatCard
           id="stat-revenue"
           title="Total Revenue"
           value={formatCurrency(revenue)}
           subtitle="Operating Income"
-          gradient="bg-gradient-to-br from-[#215a36] via-[#1b4b2d] to-[#123620]"
+          accentColor="emerald"
           loading={plLoading}
-          icon={
-            <ReportsIcon
-              size={20}
-              className="w-5 h-5 text-white"
-              strokeWidth={2}
-            />
-          }
+          icon={<ReportsIcon size={18} strokeWidth={2.2} />}
           trend={{
             label: `${revenueChangePct >= 0 ? "+" : ""}${revenueChangePct.toFixed(1)}% vs prev`,
             up: revenueChangePct >= 0,
           }}
-          sparkline={[20, 35, 45, 60, 80, 95]}
         />
 
+        {/* 6. Total Operating Costs */}
+        <StatCard
+          id="stat-expenses"
+          title="Total Costs"
+          value={formatCurrency(expenses)}
+          subtitle={`${revenue > 0 ? ((expenses / revenue) * 100).toFixed(1) : "0.0"}% of Revenue`}
+          accentColor="rose"
+          loading={plLoading}
+          icon={<CreditCard size={18} strokeWidth={2.2} />}
+          trend={{
+            label: "COGS & OPEX",
+            up: false,
+            neutral: true,
+          }}
+        />
+
+        {/* 7. Net Profit */}
         <StatCard
           id="stat-net-income"
           title="Net Profit"
           value={formatCurrency(netIncome)}
           subtitle={`${marginPct.toFixed(1)}% Margin`}
-          gradient="bg-gradient-to-br from-[#1d425f] via-[#163349] to-[#0f2434]"
+          accentColor="indigo"
           loading={plLoading}
-          icon={
-            <JournalEntriesIcon
-              size={20}
-              className="w-5 h-5 text-white"
-              strokeWidth={2}
-            />
-          }
+          icon={<JournalEntriesIcon size={18} strokeWidth={2.2} />}
           trend={{
             label: `${netIncomeChangePct >= 0 ? "+" : ""}${netIncomeChangePct.toFixed(1)}% vs prev`,
             up: netIncome >= 0,
           }}
-          sparkline={[10, 25, 30, 45, 55, 70]}
+        />
+
+        {/* 8. VAT Liability (5% UAE FTA) */}
+        <StatCard
+          id="stat-vat"
+          title="VAT Liability (5%)"
+          value={formatCurrency(vatMetrics.netVatPayable)}
+          subtitle={`Out: ${formatCompact(vatMetrics.outputVat)} • In: ${formatCompact(vatMetrics.inputVat)}`}
+          accentColor="blue"
+          loading={invLoading || billsLoading}
+          icon={<Percent size={18} strokeWidth={2.2} />}
+          trend={{
+            label:
+              vatMetrics.netVatPayable >= 0 ? "Payable to FTA" : "Tax Refund",
+            up: vatMetrics.netVatPayable <= 0,
+          }}
         />
       </div>
 
+      {/* Main Charts & Balance Sheet Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-7 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        {/* Left: Financial Performance Bar Chart */}
+        <div className="lg:col-span-7 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <h3 className="font-bold text-sm text-slate-900">
-                Income Statement &amp; Net Margin
+              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <TrendingUp size={16} className="text-emerald-700" />
+                {chartView === "P_AND_L"
+                  ? "Income Statement & Margins"
+                  : "Cash Inflows vs. Outflows"}
               </h3>
               <p className="text-xs text-slate-500">
-                Operating revenue vs total costs and net profit margin
+                {chartView === "P_AND_L"
+                  ? `Operating revenue vs total costs and net profit margin`
+                  : "Cash movements across customer receipts, bills & expenses"}
               </p>
             </div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="font-semibold text-slate-500">Net Flow:</span>
-              <span
-                className={`font-mono font-bold ${cashFlowMetrics.netCashFlow >= 0 ? "text-emerald-700" : "text-rose-700"}`}
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setChartView("P_AND_L")}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+                  chartView === "P_AND_L"
+                    ? "bg-white text-slate-900 shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
               >
-                {cashFlowMetrics.netCashFlow >= 0 ? "+" : ""}
-                {formatCompact(cashFlowMetrics.netCashFlow)}
-              </span>
+                P&amp;L Performance
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartView("CASH_FLOW")}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+                  chartView === "CASH_FLOW"
+                    ? "bg-white text-slate-900 shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Cash Flow
+              </button>
             </div>
           </div>
 
           <BarChart
-            title=""
-            subtitle=""
-            data={comparisonChartData}
-            formatValue={(v) => `AED ${v.toLocaleString()}`}
-            height={160}
+            data={chartView === "P_AND_L" ? plChartData : cashFlowChartData}
+            formatValue={(v) => `AED ${Number(v).toLocaleString()}`}
+            height={165}
           />
         </div>
 
-        <div className="lg:col-span-5 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3 flex flex-col justify-between">
+        {/* Right: Balance Sheet Position & Working Capital */}
+        <div className="lg:col-span-5 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <span className="p-1 rounded-lg bg-blue-50 text-blue-700">
-                  <Scale size={15} />
+                <span className="p-1.5 rounded-lg bg-blue-50 text-blue-700">
+                  <Scale size={16} />
                 </span>
-                <h3 className="font-bold text-sm text-slate-900">
-                  Balance Sheet Position
-                </h3>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">
+                    Balance Sheet Position
+                  </h3>
+                  <span className="text-[11px] text-slate-400">
+                    Assets = Liabilities + Equity
+                  </span>
+                </div>
               </div>
               <span
-                className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${
+                className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold flex items-center gap-1 border ${
                   isBalanced
-                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                    : "bg-amber-50 text-amber-800 border border-amber-200"
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                    : "bg-amber-50 text-amber-800 border-amber-200"
                 }`}
               >
-                {isBalanced ? "Balanced" : "Review"}
+                <ShieldCheck size={12} />
+                {isBalanced ? "Balanced" : "Audit Review"}
               </span>
             </div>
 
-            <div className="space-y-2.5 pt-3 text-xs">
-              <div className="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="text-slate-600 font-medium">
-                  Total Assets:
-                </span>
-                <span className="font-mono font-bold text-slate-900">
-                  {formatCurrency(totalAssets)}
-                </span>
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-3 items-center">
+              <div className="sm:col-span-6">
+                <DoughnutChart
+                  data={[
+                    { label: "Assets", value: totalAssets, color: "#0284c7" },
+                    {
+                      label: "Liabilities",
+                      value: totalLiabilities,
+                      color: "#ea580c",
+                    },
+                    { label: "Equity", value: totalEquity, color: "#16a34a" },
+                  ]}
+                  height={125}
+                  formatValue={(v) => `AED ${Number(v).toLocaleString()}`}
+                />
               </div>
-              <div className="flex justify-between items-center p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="text-slate-600 font-medium">
-                  Total Liabilities:
-                </span>
-                <span className="font-mono font-bold text-slate-900">
-                  {formatCurrency(totalLiabilities)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100">
-                <span className="text-emerald-900 font-medium">
-                  Net Equity:
-                </span>
-                <span className="font-mono font-bold text-emerald-800">
-                  {formatCurrency(totalEquity)}
-                </span>
+
+              <div className="sm:col-span-6 space-y-2 text-xs">
+                <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                  <div className="text-[10.5px] text-slate-500 font-medium">
+                    Total Assets
+                  </div>
+                  <div className="font-mono font-bold text-slate-900 text-xs">
+                    {formatCurrency(totalAssets)}
+                  </div>
+                </div>
+                <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                  <div className="text-[10.5px] text-slate-500 font-medium">
+                    Total Liabilities
+                  </div>
+                  <div className="font-mono font-bold text-slate-900 text-xs">
+                    {formatCurrency(totalLiabilities)}
+                  </div>
+                </div>
+                <div className="p-2 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                  <div className="text-[10.5px] text-emerald-800 font-medium">
+                    Owner Equity
+                  </div>
+                  <div className="font-mono font-bold text-emerald-900 text-xs">
+                    {formatCurrency(totalEquity)}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="pt-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100">
-            <span>Working Capital Ratio</span>
-            <span className="font-bold text-slate-800">
+          <div className="pt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100">
+            <span className="font-semibold">Working Capital Ratio:</span>
+            <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
               {totalLiabilities > 0
                 ? `${(totalAssets / totalLiabilities).toFixed(2)}x`
                 : "1.00x"}
@@ -642,24 +804,31 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Middle Row: Action Required & Aging Progress */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Financial Tasks & Actions */}
         <div className="lg:col-span-7 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <span className="p-1 rounded-lg bg-amber-50 text-amber-700">
-                <AlertTriangle size={15} />
+              <span className="p-1.5 rounded-lg bg-amber-50 text-amber-700">
+                <AlertTriangle size={16} />
               </span>
-              <h3 className="font-bold text-sm text-slate-900">
-                Action Required &bull; Financial Tasks
-              </h3>
+              <div>
+                <h3 className="font-bold text-sm text-slate-900">
+                  Action Required &bull; Financial Tasks
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Pending receivables, due supplier bills &amp; draft entries
+                </p>
+              </div>
             </div>
-            <span className="text-[11px] font-bold text-slate-400">
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
               {actionItems.length} Pending
             </span>
           </div>
 
           {actionItems.length === 0 ? (
-            <div className="py-6 text-center text-xs text-slate-400">
+            <div className="py-8 text-center text-xs text-slate-400">
               All financial items and reconciliation tasks are up to date.
             </div>
           ) : (
@@ -667,10 +836,10 @@ export default function DashboardPage() {
               {actionItems.map((item) => (
                 <div
                   key={item.id}
-                  className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/70 hover:border-slate-300 transition flex flex-col justify-between space-y-2"
+                  className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/70 hover:border-slate-300 hover:shadow-xs transition flex flex-col justify-between space-y-3"
                 >
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
                         {item.icon}
                         {item.title}
@@ -688,10 +857,13 @@ export default function DashboardPage() {
 
                   <Link
                     href={item.link}
-                    className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center justify-between pt-1.5 border-t border-slate-200/60"
+                    className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center justify-between pt-2 border-t border-slate-200/60 transition group"
                   >
                     <span>{item.actionText}</span>
-                    <ArrowRight size={12} />
+                    <ArrowRight
+                      size={13}
+                      className="group-hover:translate-x-0.5 transition-transform"
+                    />
                   </Link>
                 </div>
               ))}
@@ -699,14 +871,22 @@ export default function DashboardPage() {
           )}
         </div>
 
+        {/* Right: Receivables & Payables Aging Visualizer */}
         <div className="lg:col-span-5 p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 flex flex-col justify-between">
           <div>
-            <h3 className="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">
-              Receivables &amp; Payables Aging
-            </h3>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <Activity size={16} className="text-emerald-700" />
+                Receivables &amp; Payables Aging
+              </h3>
+              <span className="text-[11px] text-slate-400 font-medium">
+                Live Liquidity
+              </span>
+            </div>
 
-            <div className="space-y-3 pt-3 text-xs">
-              <div className="space-y-1.5">
+            <div className="space-y-4 pt-3 text-xs">
+              {/* A/R Customer Progress */}
+              <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="font-semibold text-slate-700">
                     A/R Customer Inflows:
@@ -715,31 +895,34 @@ export default function DashboardPage() {
                     {formatCurrency(arMetrics.totalOutstanding)}
                   </span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2 flex overflow-hidden">
+                <div className="w-full bg-slate-100 rounded-full h-2.5 flex overflow-hidden">
                   <div
-                    className="bg-emerald-500 h-full"
+                    className="bg-emerald-500 h-full transition-all"
                     style={{
                       width: `${arMetrics.totalOutstanding > 0 ? (arMetrics.dueSoon / arMetrics.totalOutstanding) * 100 : 100}%`,
                     }}
                     title={`Current: ${formatCurrency(arMetrics.dueSoon)}`}
                   />
                   <div
-                    className="bg-rose-500 h-full"
+                    className="bg-rose-500 h-full transition-all"
                     style={{
                       width: `${arMetrics.totalOutstanding > 0 ? (arMetrics.overdue / arMetrics.totalOutstanding) * 100 : 0}%`,
                     }}
                     title={`Overdue: ${formatCurrency(arMetrics.overdue)}`}
                   />
                 </div>
-                <div className="flex justify-between text-[10px] text-slate-400">
-                  <span>Current: {formatCompact(arMetrics.dueSoon)}</span>
+                <div className="flex justify-between text-[10.5px]">
+                  <span className="text-slate-500 font-medium">
+                    Current: {formatCompact(arMetrics.dueSoon)}
+                  </span>
                   <span className="text-rose-600 font-bold">
                     Overdue: {formatCompact(arMetrics.overdue)}
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-1.5 pt-1">
+              {/* A/P Supplier Progress */}
+              <div className="space-y-2 pt-1">
                 <div className="flex justify-between items-center">
                   <span className="font-semibold text-slate-700">
                     A/P Supplier Commitments:
@@ -748,24 +931,26 @@ export default function DashboardPage() {
                     {formatCurrency(apMetrics.totalOutstanding)}
                   </span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2 flex overflow-hidden">
+                <div className="w-full bg-slate-100 rounded-full h-2.5 flex overflow-hidden">
                   <div
-                    className="bg-emerald-500 h-full"
+                    className="bg-emerald-500 h-full transition-all"
                     style={{
                       width: `${apMetrics.totalOutstanding > 0 ? (apMetrics.dueSoon / apMetrics.totalOutstanding) * 100 : 100}%`,
                     }}
                     title={`Current: ${formatCurrency(apMetrics.dueSoon)}`}
                   />
                   <div
-                    className="bg-amber-500 h-full"
+                    className="bg-amber-500 h-full transition-all"
                     style={{
                       width: `${apMetrics.totalOutstanding > 0 ? (apMetrics.overdue / apMetrics.totalOutstanding) * 100 : 0}%`,
                     }}
                     title={`Due: ${formatCurrency(apMetrics.overdue)}`}
                   />
                 </div>
-                <div className="flex justify-between text-[10px] text-slate-400">
-                  <span>Current: {formatCompact(apMetrics.dueSoon)}</span>
+                <div className="flex justify-between text-[10.5px]">
+                  <span className="text-slate-500 font-medium">
+                    Current: {formatCompact(apMetrics.dueSoon)}
+                  </span>
                   <span className="text-amber-700 font-bold">
                     Due/Overdue: {formatCompact(apMetrics.overdue)}
                   </span>
@@ -774,16 +959,16 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex justify-between items-center pt-2 text-xs border-t border-slate-100">
+          <div className="flex justify-between items-center pt-3 text-xs border-t border-slate-100 font-bold">
             <Link
-              href="/reports/customers"
-              className="font-bold text-emerald-700 hover:underline"
+              href="/finance/reports?tab=receivables"
+              className="text-emerald-700 hover:text-emerald-900 flex items-center gap-1 hover:underline"
             >
-              Customer Aging &rarr;
+              Customer Aging Report &rarr;
             </Link>
             <Link
-              href="/reports/suppliers"
-              className="font-bold text-slate-600 hover:underline"
+              href="/finance/reports?tab=payables"
+              className="text-slate-600 hover:text-slate-900 flex items-center gap-1 hover:underline"
             >
               Supplier Schedule &rarr;
             </Link>
@@ -791,21 +976,23 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Bottom Table: Recent Journal Entries & Transactions */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 className="font-bold text-sm text-slate-900">
-              Recent Journal Entries &amp; Transactions
+              Recent General Journal Entries &amp; Transactions
             </h3>
             <p className="text-xs text-slate-500">
-              Latest double-entry accounting transactions
+              Latest double-entry accounting transactions and audit trails
             </p>
           </div>
           <Link
             href="/finance/journal-entries"
-            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
+            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:underline flex items-center gap-1"
           >
-            View All Entries →
+            <span>View All Entries</span>
+            <ArrowUpRightIcon size={14} />
           </Link>
         </div>
 
@@ -819,7 +1006,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs min-w-[600px]">
+            <table className="w-full text-left text-xs min-w-[650px]">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-wider font-semibold">
                   <th className="pb-2.5">Entry #</th>
@@ -863,7 +1050,7 @@ export default function DashboardPage() {
                         {je.reference || "—"}
                       </td>
                       <td
-                        className="py-3 text-slate-600 max-w-[200px] truncate"
+                        className="py-3 text-slate-600 max-w-[220px] truncate font-medium"
                         title={je.description || "General Entry"}
                       >
                         {je.description || "General Entry"}
@@ -876,7 +1063,7 @@ export default function DashboardPage() {
                       </td>
                       <td className="py-3 text-center">
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                             je.isPosted
                               ? "bg-emerald-100 text-emerald-800"
                               : "bg-slate-100 text-slate-700"
