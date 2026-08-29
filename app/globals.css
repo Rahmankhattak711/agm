@@ -135,6 +135,7 @@ body {
   tfoot.print-page-footer-group {
     display: table-footer-group !important;
     height: 88px !important;
+    width: 93% !important;
   }
 
   .print-page-table > tbody > tr,
@@ -154,5 +155,20 @@ body {
   [class*="print:break-after-avoid"] {
     break-after: avoid !important;
     page-break-after: avoid !important;
+  }
+
+  .print-half-width,
+  .print-w-50 {
+    width: 20% !important;
+    max-width: 50% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .print-w-90 {
+    width: 20% !important;
+    max-width: 20% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
 }

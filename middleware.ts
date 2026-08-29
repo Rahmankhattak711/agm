@@ -17,7 +17,6 @@ const PROTECTED_API_PREFIXES = [
   "/api/accounts",
   "/api/finance",
   "/api/journal-entries",
-  "/api/petty-cash",
   "/api/reports",
   "/api/users",
 ];
