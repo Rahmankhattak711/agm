@@ -106,22 +106,17 @@ export const getApiDocs = async () => {
         createdBy: { type: "string" },
       },
     },
-    PettyCashRequest: {
+    ExpenseRequest: {
       type: "object",
       properties: {
-        transactionDate: { type: "string" },
-        voucherNumber: { type: "string" },
+        expenseDate: { type: "string" },
         category: { type: "string" },
+        payee: { type: "string" },
         amount: { type: "number" },
-        transactionType: { type: "string" },
+        taxAmount: { type: "number" },
+        paymentMethod: { type: "string" },
       },
-      required: [
-        "transactionDate",
-        "voucherNumber",
-        "category",
-        "amount",
-        "transactionType",
-      ],
+      required: ["category", "amount"],
     },
     Employee: {
       type: "object",
@@ -319,22 +314,22 @@ export const getApiDocs = async () => {
         responses: { "201": { description: "Created" } },
       },
     },
-    "/api/petty-cash": {
+    "/api/finance/expenses": {
       post: {
-        tags: ["Petty Cash"],
-        summary: "Create petty cash transaction",
+        tags: ["Expenses"],
+        summary: "Create direct operating expense",
         requestBody: {
           content: {
             "application/json": {
-              schema: { $ref: "#/components/schemas/PettyCashRequest" },
+              schema: { $ref: "#/components/schemas/ExpenseRequest" },
             },
           },
         },
         responses: { "201": { description: "Created" } },
       },
       get: {
-        tags: ["Petty Cash"],
-        summary: "List petty cash transactions",
+        tags: ["Expenses"],
+        summary: "List operating expenses",
         responses: { "200": { description: "OK" } },
       },
     },
