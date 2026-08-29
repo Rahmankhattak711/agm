@@ -5,7 +5,7 @@
 <h1 align="center">AGM Aesthetic House ERP & Financial Management System</h1>
 
 <p align="center">
-  <strong>Enterprise-grade ERP, Accounting, Inventory & Operations Management Platform</strong><br>
+  <strong>Enterprise-grade ERP, Double-Entry Accounting, Commercial Vouchers Engine, Inventory & Operations Platform</strong><br>
   Designed for <em>AGM Aesthetic House Fitout Technical Services L.L.C</em> (Dubai, UAE)
 </p>
 
@@ -22,60 +22,138 @@
 
 ## 🌟 Key Modules & Capabilities
 
-### 1. 💼 Financial Accounting & Statutory Reports (`/finance`)
+### 1. 📑 Commercial Vouchers Engine (`/commercial`)
+
+Transform commercial transactions into an end-to-end connected workflow spanning Sales, Purchasing, Inventory, Payments, and Automated Accounting.
+
+#### **A. Sales Transaction Flow**
+
+`Quotation ➔ Sales Order ➔ Sales Invoice ➔ Customer Payment ➔ Credit Note (Sales Return)`
+
+- **Commercial Quotations (`/commercial/quotations`)**:
+  - Multi-point Bill of Quantities (BOQ) scope builder with live product catalogs.
+  - Dynamic 5% UAE VAT, payment terms, discounts, and official A4 PDF printable format.
+  - One-click **"Convert to Sales Order"** upon customer acceptance.
+- **Sales Orders & Contracts (`/commercial/sales-orders`)**:
+  - Tracks confirmed client orders, delivery milestones, project scopes, and order pipelines (`CONFIRMED`, `PROCESSING`, `COMPLETED`).
+  - One-click **"Convert to Sales Invoice"**.
+- **Sales Invoices & Tax Billing (`/commercial/sales-invoices`)**:
+  - UAE FTA-compliant tax invoices with TRN tracking, 5% Output VAT calculation, and printable invoice documents.
+  - **Automated Double-Entry Accounting**: One-click **"Post to GL"** creates general journal entries:
+    - `Dr. Accounts Receivable (Asset)`
+    - `Cr. Sales Revenue (Revenue)`
+    - `Cr. VAT Output Tax Payable (Liability)`
+- **Customer Payments & Receipts (`/commercial/customer-payments`)**:
+  - Records payments (Bank Transfer, Cheque, Cash, Card), automatically deducts invoice balances, and creates payment receipts.
+  - Automated GL posting (`Dr. Bank/Cash`, `Cr. Accounts Receivable`).
+- **Sales Returns & Credit Notes (`/commercial/credit-notes`)**:
+  - Issues credit notes for project scope adjustments or material returns, automatically reversing Accounts Receivable and Output VAT.
+
+---
+
+#### **B. Purchasing & Procurement Flow**
+
+`Purchase Request ➔ Purchase Order ➔ Goods Received (GRN) ➔ Supplier Bill ➔ Supplier Payment ➔ Debit Note (Purchase Return)`
+
+- **Purchase Requests & Requisitions (`/commercial/purchase-requests`)**:
+  - Site team material requisitions, required-by dates, and department approval workflows (`PENDING_APPROVAL`, `APPROVED`, `REJECTED`, `CONVERTED`).
+  - One-click **"Convert to Purchase Order"**.
+- **Purchase Orders (`/commercial/purchase-orders` & `/inventory/purchase-orders`)**:
+  - Supplier procurement orders, pricing lines, status tracking (`ORDERED`, `RECEIVED`), and printable POs.
+- **Goods Received Notes - GRN (`/commercial/goods-received`)**:
+  - Receives supplier deliveries with warehouse facility routing and delivery note tracking.
+  - Records accepted vs. damaged quantities and **automatically increments warehouse inventory on hand** with `PURCHASE_IN` stock movements.
+- **Supplier Bills & Accounts Payable (`/commercial/supplier-bills`)**:
+  - Vendor tax bills, 5% Input VAT recovery, and automated AP posting:
+    - `Dr. Purchase Materials / Direct Cost (Expense)`
+    - `Dr. VAT Input Tax Payable (Asset/Liability)`
+    - `Cr. Accounts Payable (Liability)`
+- **Supplier Payments & Disbursals (`/commercial/supplier-payments`)**:
+  - Disburses payments to vendors via RAK Bank / Cheque, clearing open bills (`Dr. Accounts Payable`, `Cr. Bank/Cash`).
+- **Purchase Returns & Debit Notes (`/commercial/debit-notes`)**:
+  - Issues debit notes for rejected or damaged shipments, automatically deducting Accounts Payable liabilities.
+
+---
+
+#### **C. Master Data & Statements**
+
+- **Customer Directory & Statements (`/commercial/customers`)**:
+  - Comprehensive client database with credit limits, TRN numbers, and a live **Statement of Account Ledger** tracking chronological debits, credits, and running balances.
+- **Suppliers & Vendors (`/inventory/suppliers`)**:
+  - Vendor master directory with payment terms and purchase history.
+- **Products & Materials Catalog (`/inventory/products`)**:
+  - SKU catalogs, unit pricing, cost rates, and warehouse reorder points.
+- **Warehouses & Storage Facilities (`/inventory/warehouses`)**:
+  - Multi-warehouse location and facility management.
+
+---
+
+### 2. 💼 Financial Accounting & General Ledger (`/finance`)
 
 - **Interactive Financial & Operations Dashboard (`/dashboard`)**:
-  - Live revenue, net margins, asset balances, and WPS-compliant workforce statistics.
-  - Real-time double-entry ledger sync and balance sheet validation alerts.
+  - Real-time revenue metrics, gross/net margins, asset balances, and WPS workforce statistics.
 - **Chart of Accounts (`/finance/accounts`)**:
-  - Full double-entry general ledger with Assets, Liabilities, Equity, Revenue, and Expense hierarchies.
+  - Full double-entry general ledger with Assets, Liabilities, Equity, Revenue, and Expense account hierarchies.
 - **General Journal Entries (`/finance/journal-entries`)**:
-  - Standardized double-entry transaction posting, line-level 5% UAE VAT generation, draft/posted status controls, and balance integrity checks.
-- **Financial Statements & Reports (`/finance/reports`)**:
-  - **Profit & Loss Statement (Income Statement)**: Operating revenue, direct expenses, operating expenses, and net profit margins.
-  - **Balance Sheet**: Assets vs. Liabilities & Equity snapshot with balance audit indicators.
-  - **Trial Balance**: Debit/Credit ledger balances by account category.
-  - **General Ledger Statement**: Running account balances and transaction histories.
-  - **UAE VAT Position (FTA Form 201)**: Live automated calculation of 5% Output VAT (sales) and 5% Input VAT (purchases) with quarterly and box schedule breakdowns.
-  - **Executive Summary & Financial Health Ratios**: Liquidity ratios, profit margins, and audit checklists.
-- **Commercial Quotation & Proposal Generator (`/finance/reports` -> Quotation Tab)**:
-  - Interactive quotation builder with live catalog item selection, unit pricing, dynamic 5% VAT calculations, discount fields, amount in words (AED), signature blocks, and official A4 print layouts.
-- **Petty Cash Float & Disbursements (`/finance/petty-cash`)**:
-  - Daily custodian disbursements, top-ups, receipt image attachments, voucher approval workflows, and live float balances.
+  - Standardized double-entry transaction posting, draft/posted controls, and debit/credit balance integrity checks.
 
-### 2. 📦 Inventory & Procurement (`/inventory`)
+---
 
-- **Products & Raw Materials (`/inventory/products`)**: SKU catalog, category classification, unit measurements (PCS, SQM, MTR, LOT, KG), reorder alert thresholds, and pricing.
-- **Warehouses & Storage Locations (`/inventory/warehouses`)**: Multi-warehouse capacity tracking, manager assignment, and zone locations across UAE.
-- **Stock Movements & Transfers (`/inventory/stock-movements`)**: IN, OUT, and TRANSFER transaction auditing with balance updates.
-- **Purchase Orders (`/inventory/purchase-orders`)**: Supplier procurement orders, approval workflows, and receiving status.
-- **Vendors & Suppliers (`/inventory/suppliers`)**: Vendor registry, Tax Registration Numbers (TRN), contact management, and catalog lines.
+### 3. 📊 Financial Reports & Statutory Statements (`/finance/reports`)
 
-### 3. 👥 Human Capital & Workforce Operations (`/operations`)
+- **Executive Summary (`/finance/reports?tab=summary`)**:
+  - High-level financial KPIs, liquidity ratios, working capital, and audit health indicators.
+- **Statement of Profit & Loss (`/finance/reports?tab=profit-loss`)**:
+  - Dynamic Period Reporting: Daily, Weekly, Monthly, Yearly (Fiscal), and Custom date ranges.
+  - Comparative Analysis: Live variance metrics ($\Delta\text{AED}$ and $\Delta\%$) comparing against previous periods.
+  - Account Drill-Down & one-click CSV export / PDF print.
+- **Balance Sheet (`/finance/reports?tab=balance-sheet`)**:
+  - Assets vs. Liabilities & Owner Equity with balance audit indicators.
+- **Trial Balance (`/finance/reports?tab=trial-balance`)**:
+  - Net Debit and Credit ledger balances grouped by account classification.
+- **Accounts Receivable (A/R) Aging Report (`/finance/reports?tab=receivables`)**:
+  - Standard aging brackets: `Current (0–30d)`, `31–60d`, `61–90d`, `90+d (Overdue)`.
+- **Accounts Payable (A/P) Aging Report (`/finance/reports?tab=payables`)**:
+  - Supplier aging analysis with vendor TRN and payment schedules.
+- **General Ledger (`/finance/reports?tab=ledger`)**:
+  - Account-by-account transaction audit logs with running balances.
+- **UAE VAT Returns & Tax Position (`/finance/reports?tab=vat-summary`)**:
+  - Live calculation of FTA Form 201: **Output VAT 5%** (Box 1a), **Input VAT 5%** (Box 9), and **Net VAT Due / Recoverable**.
 
-- **Employee Master Directory (`/operations/employees`)**: Automatically synchronized with registered user accounts, UAE labor compliance, Emirates ID tracking, visa expiries, and WPS bank details (IBAN/CBUAE SIF ready).
-- **Daily Attendance & Timesheets (`/operations/attendance`)**: Check-in / check-out timestamps, working hours, overtime tracking, site notes, and one-click `Mark All Present` batch actions.
-- **Leave Management (`/operations/leaves`)**: Annual, Sick, Unpaid, and Emergency leave balances, duration calculators, and approval pipelines.
-- **Bonuses & Performance Incentives (`/operations/bonuses`)**: Commission and performance bonus approvals and payout tracking.
-- **Fixed Asset Management (`/operations/fixed-assets`)**: Fixed asset registry, vehicle and equipment tracking, and straight-line depreciation schedules.
+---
 
-### 4. 🛡️ Role-Based Access Control & Administration (`/administration`)
+### 4. 👥 Human Capital & Workforce Operations (`/operations`)
 
-- **User Management (`/administration/users`)**: JWT authentication with refresh token rotation and activity tracking.
-- **Roles**: `SUPER_ADMIN`, `ADMIN`, `ACCOUNTANT`, `HR`, `INVENTORY_MANAGER`, and `USER`.
+- **Employee Master Directory (`/operations/employees`)**:
+  - UAE labor compliance, Emirates ID tracking, visa expiries, and WPS bank details (IBAN/CBUAE SIF ready).
+- **Daily Attendance & Timesheets (`/operations/attendance`)**:
+  - Timestamps, working hours, overtime tracking, site notes, and `Mark All Present` batch actions.
+- **Leave Management (`/operations/leaves`)**:
+  - Annual, Sick, Unpaid, and Emergency leave balances.
+- **Bonuses & Performance Incentives (`/operations/bonuses`)**:
+  - Performance bonus approvals and payout logs.
+- **Fixed Asset Management (`/operations/fixed-assets`)**:
+  - Tools, vehicles, and equipment registry with straight-line depreciation schedules.
+
+---
+
+### 5. 🛡️ Role-Based Access Control & Administration (`/administration`)
+
+- **User & Role Management (`/administration/users`)**:
+  - JWT authentication with refresh token rotation and activity tracking.
+  - Roles: `SUPER_ADMIN`, `ADMIN`, `ACCOUNTANT`, `HR`, `INVENTORY_MANAGER`, and `USER`.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Framework**: [Next.js 15](https://nextjs.org/) (App Router, Server Actions, API Routes)
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router, Server Actions, Route Handlers)
 - **Frontend Library**: [React 19](https://react.dev/)
 - **Database & ORM**: PostgreSQL with [Prisma ORM](https://www.prisma.io/)
-- **State & Server Cache**: [@tanstack/react-query](https://tanstack.com/query) v5 with optimistic mutations and automatic cache invalidation
+- **State & Server Cache**: [@tanstack/react-query](https://tanstack.com/query) v5
 - **Data Tables & Forms**: [@tanstack/react-table](https://tanstack.com/table) v8 & [@tanstack/react-form](https://tanstack.com/form)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) with AGM Design System tokens (Forest Green, Navy, Charcoal, Warm Ivory `#f6f5f0`)
 - **Code Quality**: [ESLint](https://eslint.org/) & [Prettier](https://prettier.io/)
-- **API Documentation**: OpenAPI / Swagger UI via `swagger-ui-react` at `/api/doc` and `/docs`
 
 ---
 
@@ -85,129 +163,39 @@
 
 - **Node.js**: v18.18.0 or later
 - **pnpm**: v9 or later (or npm / yarn)
-- **PostgreSQL**: Running locally or via Docker / Supabase / Neon
+- **PostgreSQL**: Running locally or via Docker / Neon / Supabase
 
-### 1. Clone & Install Dependencies
+### 1. Install Dependencies & Generate Prisma Client
 
 ```bash
-# Clone the repository
-git clone <repo-url>
-cd agm
-
-# Install dependencies using pnpm
+# Install dependencies
 pnpm install
+
+# Generate Prisma Client
+npx prisma generate --no-engine
 ```
 
 ### 2. Configure Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the root directory:
 
 ```env
-# PostgreSQL Database URL
 DATABASE_URL="postgresql://postgres:password@localhost:5432/agm_db?schema=public"
-
-# JWT Authentication Secrets
 JWT_SECRET="your-super-secret-jwt-key"
 JWT_REFRESH_SECRET="your-super-secret-refresh-key"
-
-# App Configuration
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
-### 3. Setup Database Schema
-
-```bash
-# Generate Prisma client
-pnpm prisma:generate
-
-# Push schema to PostgreSQL database
-pnpm prisma:migrate
-# or
-npx prisma db push
-
-# (Optional) Open Prisma Studio to browse data
-pnpm prisma:studio
-```
-
-### 4. Run Development Server
+### 3. Run the Development Server
 
 ```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Visit `http://localhost:3000` to access the AGM ERP platform.
 
 ---
 
-## 📂 Project Structure
+## 📄 License & Ownership
 
-```text
-agm/
-├── app/
-│   ├── (auth)/                   # Authentication routes (login, signup)
-│   ├── (workspace)/              # Protected ERP workspace routes
-│   │   ├── administration/       # User & role management
-│   │   ├── dashboard/            # Financial & operational KPI dashboard
-│   │   ├── finance/              # Accounts, journal entries, petty cash, reports & quotations
-│   │   ├── inventory/            # Products, warehouses, movements, purchase orders, suppliers
-│   │   └── operations/           # Employees, attendance, leaves, bonuses, fixed assets
-│   ├── api/                      # RESTful backend API routes
-│   │   ├── accounts/             # Chart of accounts endpoints
-│   │   ├── auth/                 # Sign-in, sign-up, refresh, sign-out
-│   │   ├── doc/                  # Swagger JSON specification
-│   │   ├── employees/            # Employee master, attendance, leaves, bonuses
-│   │   ├── finance/              # Quotation endpoints
-│   │   ├── inventory/            # Products, stock, POs, suppliers, warehouses
-│   │   ├── journal-entries/      # General ledger transactions
-│   │   ├── petty-cash/           # Petty cash vouchers & approval
-│   │   ├── reports/              # P&L, Balance sheet, Trial balance, VAT returns, Ledger
-│   │   └── users/                # User administration endpoints
-│   ├── docs/                     # Swagger UI interactive documentation page
-│   ├── globals.css               # Design system tokens and global styles
-│   ├── layout.tsx                # Root layout with QueryClientProvider & AuthProvider
-│   └── page.tsx                  # Landing / login redirection
-├── components/
-│   ├── icons/                    # Standardized SVG icon components
-│   ├── layout/                   # Workspace layout & header
-│   ├── quotation/                # Quotation generator subcomponents & constants
-│   ├── ui/                       # Reusable design system primitives (Button, Input, Select, Table, Modal)
-│   ├── AgmLogo.tsx               # Official responsive SVG/image brand logo
-│   ├── BarChart.tsx              # Interactive bar chart component
-│   ├── QuotationTemplate.tsx     # Official UAE quotation template with print banner
-│   ├── Sidebar.tsx               # Collapsible navigation sidebar
-│   └── StatCard.tsx              # KPI metric cards with sparklines & trend pills
-├── context/
-│   └── AuthContext.tsx           # Authentication state & session manager
-├── lib/
-│   ├── hooks/
-│   │   └── api-hooks.ts          # Comprehensive TanStack Query hooks
-│   ├── api-client.ts             # Authenticated fetch wrapper with token refresh
-│   ├── auth-server.ts            # Server-side auth & role verification
-│   ├── navigation.ts             # Workspace routing metadata & breadcrumbs
-│   ├── prisma.ts                 # Global Prisma client instance
-│   └── swagger.ts                # Swagger/OpenAPI definition generator
-└── prisma/
-    └── schema.prisma             # Full relational ERP database schema
-```
-
----
-
-## 📜 Available Scripts
-
-| Command                | Description                                          |
-| :--------------------- | :--------------------------------------------------- |
-| `pnpm dev`             | Starts the Next.js development server on port 3000   |
-| `pnpm build`           | Compiles the production build (runs Prisma generate) |
-| `pnpm start`           | Runs the compiled production application             |
-| `pnpm lint`            | Runs ESLint checks                                   |
-| `pnpm format`          | Formats the entire codebase with Prettier            |
-| `pnpm format:check`    | Checks formatting without modifying files            |
-| `pnpm prisma:generate` | Generates the Prisma Client                          |
-| `pnpm prisma:migrate`  | Runs database migrations                             |
-| `pnpm prisma:studio`   | Launches visual Prisma Studio database manager       |
-
----
-
-## 📄 License
-
-Private & Proprietary. All rights reserved by **AGM Aesthetic House Fitout Technical Services L.L.C**, Dubai, UAE.
+Designed and maintained for **AGM Aesthetic House Fitout Technical Services L.L.C**, Dubai, United Arab Emirates. All rights reserved.

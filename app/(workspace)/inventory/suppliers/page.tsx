@@ -31,13 +31,17 @@ export default function SuppliersPage() {
   const updateSupplier = useUpdateSupplier();
   const deleteSupplier = useDeleteSupplier();
 
-  const filteredSuppliers = suppliers.filter(
-    (s) =>
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.supplierCode.toLowerCase().includes(search.toLowerCase()) ||
-      (s.contactPerson &&
-        s.contactPerson.toLowerCase().includes(search.toLowerCase())) ||
-      (s.trn && s.trn.includes(search)),
+  const filteredSuppliers = useMemo(
+    () =>
+      suppliers.filter(
+        (s) =>
+          s.name.toLowerCase().includes(search.toLowerCase()) ||
+          s.supplierCode.toLowerCase().includes(search.toLowerCase()) ||
+          (s.contactPerson &&
+            s.contactPerson.toLowerCase().includes(search.toLowerCase())) ||
+          (s.trn && s.trn.includes(search)),
+      ),
+    [suppliers, search],
   );
 
   const form = useForm({

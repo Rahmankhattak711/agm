@@ -58,6 +58,8 @@ export async function POST(request: Request) {
       expectedDate,
       status,
       notes,
+      vendorReference,
+      shopName,
       items,
     } = body;
 
@@ -93,10 +95,14 @@ export async function POST(request: Request) {
         status: status || "DRAFT",
         totalAmount,
         notes: notes?.trim() || null,
+        vendorReference: vendorReference?.trim() || null,
+        shopName: shopName?.trim() || null,
         createdBy: user.id,
         items: {
           create: items.map((item: any) => ({
             productId: item.productId,
+            supplierSku: item.supplierSku?.trim() || null,
+            itemNotes: item.itemNotes?.trim() || null,
             quantityOrdered: Number(item.quantityOrdered),
             unitCost: Number(item.unitCost),
             totalCost: Number(item.quantityOrdered) * Number(item.unitCost),

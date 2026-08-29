@@ -1,3 +1,5 @@
+"use client";
+
 import { SpinnerIcon } from "@/components/icons";
 import React, { ButtonHTMLAttributes } from "react";
 

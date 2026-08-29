@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useAuth } from "@/context/AuthContext";
+import { formatAed } from "@/lib/utils/format";
 import {
   useAccounts,
   useCreateJournalEntry,
@@ -48,11 +49,6 @@ export default function JournalEntriesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
-
-  const formatCurrency = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
 
   const getVatAccount = (nature: "INPUT" | "OUTPUT") => {
     if (!accounts || accounts.length === 0) return "";
@@ -159,7 +155,7 @@ export default function JournalEntriesPage() {
 
       if (Math.abs(totalDebit - totalCredit) > 0.01) {
         setFormError(
-          `Journal entry is unbalanced. Total Debit (${formatCurrency(totalDebit)}) must equal Total Credit (${formatCurrency(totalCredit)}).`,
+          `Journal entry is unbalanced. Total Debit (${formatAed(totalDebit)}) must equal Total Credit (${formatAed(totalCredit)}).`,
         );
         return;
       }
@@ -199,17 +195,19 @@ export default function JournalEntriesPage() {
     },
   });
 
-  const filteredEntries = (journalEntries || []).filter((entry) => {
+  const filteredEntries = useMemo(() => {
     const q = search.toLowerCase();
-    const matchesSearch =
-      entry.entryNumber.toLowerCase().includes(q) ||
-      (entry.description && entry.description.toLowerCase().includes(q)) ||
-      (entry.reference && entry.reference.toLowerCase().includes(q));
+    return (journalEntries || []).filter((entry) => {
+      const matchesSearch =
+        entry.entryNumber.toLowerCase().includes(q) ||
+        (entry.description && entry.description.toLowerCase().includes(q)) ||
+        (entry.reference && entry.reference.toLowerCase().includes(q));
 
-    if (statusFilter === "POSTED") return matchesSearch && entry.isPosted;
-    if (statusFilter === "DRAFT") return matchesSearch && !entry.isPosted;
-    return matchesSearch;
-  });
+      if (statusFilter === "POSTED") return matchesSearch && entry.isPosted;
+      if (statusFilter === "DRAFT") return matchesSearch && !entry.isPosted;
+      return matchesSearch;
+    });
+  }, [journalEntries, search, statusFilter]);
 
   const handleOpenAddModal = () => {
     setEditingId(null);
@@ -477,7 +475,7 @@ export default function JournalEntriesPage() {
                           Total Amount
                         </span>
                         <span className="font-mono font-bold text-slate-900 text-sm">
-                          {formatCurrency(totalDebit)}
+                          {formatAed(totalDebit)}
                         </span>
                       </div>
 
@@ -589,12 +587,12 @@ export default function JournalEntriesPage() {
                                 </td>
                                 <td className="py-2 text-right font-mono font-bold text-slate-800">
                                   {Number(line.debit) > 0
-                                    ? formatCurrency(line.debit)
+                                    ? formatAed(line.debit)
                                     : "—"}
                                 </td>
                                 <td className="py-2 text-right font-mono font-bold text-slate-800">
                                   {Number(line.credit) > 0
-                                    ? formatCurrency(line.credit)
+                                    ? formatAed(line.credit)
                                     : "—"}
                                 </td>
                               </tr>
@@ -609,10 +607,10 @@ export default function JournalEntriesPage() {
                                 Balanced Totals:
                               </td>
                               <td className="py-2 text-right font-mono text-emerald-800">
-                                {formatCurrency(totalDebit)}
+                                {formatAed(totalDebit)}
                               </td>
                               <td className="py-2 text-right font-mono text-emerald-800">
-                                {formatCurrency(totalDebit)}
+                                {formatAed(totalDebit)}
                               </td>
                             </tr>
                           </tfoot>
@@ -947,7 +945,7 @@ export default function JournalEntriesPage() {
                             title={`Base: ${baseAmt.toFixed(2)} | VAT: ${vatAmt.toFixed(2)} | Gross: ${totalWithVat.toFixed(2)}`}
                           >
                             {totalWithVat > 0
-                              ? formatCurrency(totalWithVat)
+                              ? formatAed(totalWithVat)
                               : "AED 0.00"}
                           </div>
 

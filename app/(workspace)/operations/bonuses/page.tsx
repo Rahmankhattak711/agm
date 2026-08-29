@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import { useAuth } from "@/context/AuthContext";
+import { formatAed } from "@/lib/utils/format";
 import {
   useBonuses,
   useCreateBonus,
@@ -52,11 +53,6 @@ export default function BonusesPage() {
   const createBonus = useCreateBonus();
   const updateBonus = useUpdateBonus();
   const deleteBonus = useDeleteBonus();
-
-  const formatCurrency = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
 
   const totalBonusesCount = bonuses.length;
   const approvedTotal = bonuses
@@ -145,7 +141,7 @@ export default function BonusesPage() {
         header: "Bonus Amount",
         cell: ({ row }) => (
           <span className="font-mono font-bold text-emerald-800 text-sm">
-            {formatCurrency(row.original.amount)}
+            {formatAed(row.original.amount)}
           </span>
         ),
       },
@@ -277,7 +273,7 @@ export default function BonusesPage() {
             Approved Pool Total
           </p>
           <p className="text-2xl font-black text-emerald-800 mt-1">
-            {formatCurrency(approvedTotal)}
+            {formatAed(approvedTotal)}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
             Ready for payroll disbursement

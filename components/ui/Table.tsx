@@ -1,3 +1,5 @@
+"use client";
+
 import React, { TableHTMLAttributes } from "react";
 
 export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
@@ -110,16 +112,35 @@ export const TableEmpty: React.FC<{
 export const TableLoading: React.FC<{
   message?: string;
   colSpan?: number;
-}> = ({ message = "Loading records...", colSpan = 8 }) => {
+  rows?: number;
+}> = ({ colSpan = 8, rows = 5 }) => {
+  const widths = [
+    "w-3/4",
+    "w-1/2",
+    "w-4/5",
+    "w-2/3",
+    "w-5/6",
+    "w-3/5",
+    "w-4/6",
+  ];
+
   return (
-    <tr>
-      <td
-        colSpan={colSpan}
-        className="py-12 text-center text-xs text-slate-400 animate-pulse"
-      >
-        {message}
-      </td>
-    </tr>
+    <>
+      {Array.from({ length: rows }).map((_, rowIdx) => (
+        <tr key={rowIdx} className="hover:bg-slate-50/40">
+          {Array.from({ length: colSpan }).map((_, colIdx) => {
+            const width = widths[(rowIdx + colIdx) % widths.length];
+            return (
+              <td key={colIdx} className="py-3.5 px-3">
+                <div
+                  className={`h-3.5 ${width} rounded-md bg-slate-200/75 animate-pulse`}
+                />
+              </td>
+            );
+          })}
+        </tr>
+      ))}
+    </>
   );
 };
 
@@ -131,7 +152,7 @@ export interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
+  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
   closeOnOutsideClick?: boolean;
 }
 
@@ -162,6 +183,8 @@ export const Modal: React.FC<ModalProps> = ({
     lg: "max-w-lg",
     xl: "max-w-xl",
     "2xl": "max-w-2xl",
+    "3xl": "max-w-3xl",
+    "4xl": "max-w-4xl",
   };
 
   return (

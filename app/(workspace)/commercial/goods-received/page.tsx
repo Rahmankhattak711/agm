@@ -1,0 +1,590 @@
+"use client";
+
+import { useState } from "react";
+import {
+  CheckCircle2,
+  Eye,
+  PackageCheck,
+  Plus,
+  Printer,
+  Search,
+  Trash2,
+  Warehouse,
+} from "lucide-react";
+import {
+  Button,
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableLoading,
+  Modal,
+} from "@/components/ui";
+import {
+  useGoodsReceipts,
+  useCreateGoodsReceipt,
+  usePurchaseOrders,
+  useSuppliers,
+  useWarehouses,
+  useProducts,
+  GoodsReceipt,
+} from "@/lib/hooks/api-hooks";
+
+export default function GoodsReceivedPage() {
+  const { data: grns = [], isLoading } = useGoodsReceipts();
+  const { data: purchaseOrders = [] } = usePurchaseOrders();
+  const { data: suppliers = [] } = useSuppliers();
+  const { data: warehouses = [] } = useWarehouses();
+  const { data: products = [] } = useProducts();
+
+  const createGrnMutation = useCreateGoodsReceipt();
+
+  const [search, setSearch] = useState("");
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedGrn, setSelectedGrn] = useState<GoodsReceipt | null>(null);
+
+  const [grnNumber, setGrnNumber] = useState("");
+  const [purchaseOrderId, setPurchaseOrderId] = useState("");
+  const [supplierId, setSupplierId] = useState("");
+  const [warehouseId, setWarehouseId] = useState("");
+  const [deliveryNoteNumber, setDeliveryNoteNumber] = useState("");
+  const [receiptDate, setReceiptDate] = useState(
+    new Date().toISOString().slice(0, 10),
+  );
+  const [notes, setNotes] = useState("");
+  const [items, setItems] = useState([
+    {
+      productId: "",
+      quantityReceived: 1,
+      quantityAccepted: 1,
+      quantityDamaged: 0,
+      notes: "",
+    },
+  ]);
+
+  const addItem = () => {
+    setItems([
+      ...items,
+      {
+        productId: "",
+        quantityReceived: 1,
+        quantityAccepted: 1,
+        quantityDamaged: 0,
+        notes: "",
+      },
+    ]);
+  };
+
+  const removeItem = (idx: number) => {
+    if (items.length <= 1) return;
+    setItems(items.filter((_, i) => i !== idx));
+  };
+
+  const updateItem = (idx: number, field: string, value: any) => {
+    const next = [...items];
+    (next[idx] as any)[field] = value;
+    setItems(next);
+  };
+
+  const handleSelectPo = (poId: string) => {
+    setPurchaseOrderId(poId);
+    const po = purchaseOrders.find((p) => p.id === poId);
+    if (po) {
+      if (po.supplierId) setSupplierId(po.supplierId);
+      if (po.items && po.items.length > 0) {
+        setItems(
+          po.items.map((i) => {
+            const rem = Math.max(
+              0,
+              Number(i.quantityOrdered) - Number(i.quantityReceived),
+            );
+            return {
+              productId: i.productId,
+              quantityReceived: rem > 0 ? rem : Number(i.quantityOrdered),
+              quantityAccepted: rem > 0 ? rem : Number(i.quantityOrdered),
+              quantityDamaged: 0,
+              notes: "",
+            };
+          }),
+        );
+      }
+    }
+  };
+
+  const handleCreateGrn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createGrnMutation.mutateAsync({
+        grnNumber: grnNumber || undefined,
+        purchaseOrderId: purchaseOrderId || undefined,
+        supplierId: supplierId || undefined,
+        warehouseId: warehouseId || warehouses[0]?.id,
+        deliveryNoteNumber: deliveryNoteNumber || undefined,
+        receiptDate,
+        notes,
+        items,
+      });
+      setIsCreateOpen(false);
+      setDeliveryNoteNumber("");
+      setNotes("");
+      setItems([
+        {
+          productId: "",
+          quantityReceived: 1,
+          quantityAccepted: 1,
+          quantityDamaged: 0,
+          notes: "",
+        },
+      ]);
+      alert("Goods Receipt created and warehouse inventory updated!");
+    } catch (err: any) {
+      alert(`Error creating Goods Receipt: ${err.message}`);
+    }
+  };
+
+  const filteredGrns = grns.filter((g) => {
+    const matchesSearch =
+      g.grnNumber.toLowerCase().includes(search.toLowerCase()) ||
+      (g.deliveryNoteNumber &&
+        g.deliveryNoteNumber.toLowerCase().includes(search.toLowerCase())) ||
+      (g.supplier?.name &&
+        g.supplier.name.toLowerCase().includes(search.toLowerCase()));
+
+    return matchesSearch;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              Goods Received Notes (GRN)
+            </h2>
+            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-teal-50 text-teal-800 border border-teal-200">
+              Procurement Cycle — Step 2
+            </span>
+          </div>
+          <p className="text-xs text-slate-500">
+            AGM FITOUT TECHNICAL SERVICES LLC — Receive warehouse shipments,
+            verify delivery notes, record accepted and damaged quantities, and
+            auto-update stock on hand.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="dark"
+            size="sm"
+            onClick={() => setIsCreateOpen(true)}
+            icon={<Plus size={14} />}
+            className="text-xs font-bold bg-slate-900 text-white hover:bg-slate-800"
+          >
+            Create Goods Receipt
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-2xl bg-teal-50/60 border border-teal-100 flex flex-col justify-between space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-teal-800">
+            Total Receipts Processed
+          </p>
+          <p className="text-xl font-black text-teal-950 font-mono">
+            {grns.length} GRNs
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+            Inventory Sync Status
+          </p>
+          <p className="text-xl font-black text-emerald-950 font-mono">
+            Real-Time Stock Updates
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-800">
+            Active Warehouses
+          </p>
+          <p className="text-xl font-black text-blue-950 font-mono">
+            {warehouses.length} Facilities
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
+        <Search size={14} className="text-slate-400 ml-2" />
+        <input
+          type="text"
+          placeholder="Search GRN number, delivery note, supplier..."
+          className="w-full text-xs bg-transparent outline-none text-slate-800"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
+        <Table className="w-full text-xs text-left">
+          <TableHead className="bg-slate-50/95 border-b border-slate-200">
+            <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[11px]">
+              GRN No
+            </TableHeaderCell>
+            <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[11px]">
+              Supplier / Vendor
+            </TableHeaderCell>
+            <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[11px]">
+              Delivery Note
+            </TableHeaderCell>
+            <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[11px]">
+              Destination Warehouse
+            </TableHeaderCell>
+            <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[11px]">
+              Date Received
+            </TableHeaderCell>
+            <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[11px]">
+              Status
+            </TableHeaderCell>
+            <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[11px]">
+              View
+            </TableHeaderCell>
+          </TableHead>
+
+          <TableBody className="divide-y divide-slate-100">
+            {isLoading ? (
+              <TableLoading colSpan={7} rows={5} />
+            ) : filteredGrns.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="py-8 text-center text-slate-400 italic"
+                >
+                  No goods receipts found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredGrns.map((g) => (
+                <TableRow
+                  key={g.id}
+                  className="hover:bg-slate-50/60 text-slate-700 transition"
+                >
+                  <TableCell className="py-3 px-4 font-mono font-bold text-teal-950">
+                    {g.grnNumber}
+                  </TableCell>
+                  <TableCell className="py-3 px-4 font-bold text-slate-900">
+                    {g.supplier?.name || "Vendor"}
+                  </TableCell>
+                  <TableCell className="py-3 px-4 font-mono text-slate-600">
+                    {g.deliveryNoteNumber || "—"}
+                  </TableCell>
+                  <TableCell className="py-3 px-4 text-slate-700">
+                    {g.warehouse?.name || "Main Warehouse"}
+                  </TableCell>
+                  <TableCell className="py-3 px-3 text-slate-600">
+                    {g.receiptDate
+                      ? new Date(g.receiptDate).toISOString().slice(0, 10)
+                      : "—"}
+                  </TableCell>
+                  <TableCell className="py-3 px-3">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      {g.status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="py-3 px-3 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedGrn(g)}
+                      className="p-1 text-slate-400 hover:text-teal-700 rounded-md hover:bg-teal-50"
+                      title="View GRN"
+                    >
+                      <Eye size={13} />
+                    </button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {isCreateOpen && (
+        <Modal
+          isOpen={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          title="Create Goods Received Note (GRN)"
+        >
+          <form onSubmit={handleCreateGrn} className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Link Purchase Order (Optional)
+                </label>
+                <select
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-mono"
+                  value={purchaseOrderId}
+                  onChange={(e) => handleSelectPo(e.target.value)}
+                >
+                  <option value="">Direct Receiving (No PO)</option>
+                  {purchaseOrders
+                    .filter(
+                      (p) =>
+                        p.status !== "RECEIVED" && p.status !== "CANCELLED",
+                    )
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.poNumber} - {p.supplier?.name} (AED{" "}
+                        {Number(p.totalAmount).toFixed(2)})
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Destination Warehouse *
+                </label>
+                <select
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-semibold"
+                  value={warehouseId}
+                  onChange={(e) => setWarehouseId(e.target.value)}
+                >
+                  {warehouses.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name} ({w.location || "Warehouse"})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Supplier / Vendor
+                </label>
+                <select
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-semibold"
+                  value={supplierId}
+                  onChange={(e) => setSupplierId(e.target.value)}
+                >
+                  <option value="">Select supplier...</option>
+                  {suppliers.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Supplier Delivery Note No (DN)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. DN-92837"
+                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-mono"
+                  value={deliveryNoteNumber}
+                  onChange={(e) => setDeliveryNoteNumber(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-800">Received Items</span>
+                <button
+                  type="button"
+                  onClick={addItem}
+                  className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1"
+                >
+                  <Plus size={13} /> Add Line
+                </button>
+              </div>
+
+              <div className="space-y-2 max-h-56 overflow-y-auto">
+                {items.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200/60"
+                  >
+                    <div className="col-span-5">
+                      <select
+                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500"
+                        value={item.productId}
+                        onChange={(e) =>
+                          updateItem(idx, "productId", e.target.value)
+                        }
+                        required
+                      >
+                        <option value="">Select Product...</option>
+                        {products.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} ({p.sku})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-span-3">
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="Qty Recv"
+                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-mono"
+                        value={item.quantityReceived}
+                        onChange={(e) =>
+                          updateItem(idx, "quantityReceived", e.target.value)
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="col-span-3">
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="Qty Accepted"
+                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-mono font-bold"
+                        value={item.quantityAccepted}
+                        onChange={(e) =>
+                          updateItem(idx, "quantityAccepted", e.target.value)
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="col-span-1 text-center">
+                      <button
+                        type="button"
+                        onClick={() => removeItem(idx)}
+                        className="text-slate-400 hover:text-rose-600 p-1"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={() => setIsCreateOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="dark"
+                size="sm"
+                type="submit"
+                className="bg-teal-700 text-white hover:bg-teal-800"
+              >
+                Confirm Receipt & Update Stock
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {selectedGrn && (
+        <Modal
+          isOpen={!!selectedGrn}
+          onClose={() => setSelectedGrn(null)}
+          title={`Goods Receipt: ${selectedGrn.grnNumber}`}
+        >
+          <div className="space-y-4 text-xs">
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+              <div className="flex justify-between font-mono">
+                <span className="font-bold text-teal-950">
+                  {selectedGrn.grnNumber}
+                </span>
+                <span className="text-slate-500">
+                  {selectedGrn.receiptDate
+                    ? new Date(selectedGrn.receiptDate)
+                        .toISOString()
+                        .slice(0, 10)
+                    : ""}
+                </span>
+              </div>
+              <p className="font-bold text-slate-900">
+                Supplier: {selectedGrn.supplier?.name || "Vendor"}
+              </p>
+              <p className="text-slate-600">
+                Warehouse: {selectedGrn.warehouse?.name || "Main Warehouse"}
+              </p>
+              <p className="text-slate-500 font-mono">
+                Delivery Note: {selectedGrn.deliveryNoteNumber || "N/A"}
+              </p>
+            </div>
+
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <Table className="w-full text-xs">
+                <TableHead className="bg-slate-50">
+                  <TableHeaderCell className="py-2 px-3">
+                    Product
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Received
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Accepted
+                  </TableHeaderCell>
+                  <TableHeaderCell align="right" className="py-2 px-3">
+                    Damaged
+                  </TableHeaderCell>
+                </TableHead>
+                <TableBody>
+                  {selectedGrn.items?.map((item: any) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="py-2 px-3">
+                        {item.product?.name || "Product"}
+                      </TableCell>
+                      <TableCell align="right" className="py-2 px-3 font-mono">
+                        {item.quantityReceived}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className="py-2 px-3 font-mono font-bold text-emerald-800"
+                      >
+                        {item.quantityAccepted}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className="py-2 px-3 font-mono text-rose-700"
+                      >
+                        {item.quantityDamaged}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedGrn(null)}
+              >
+                Close
+              </Button>
+              <Button
+                variant="dark"
+                size="sm"
+                onClick={() => window.print()}
+                icon={<Printer size={13} />}
+                className="bg-slate-900 text-white"
+              >
+                Print GRN
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}

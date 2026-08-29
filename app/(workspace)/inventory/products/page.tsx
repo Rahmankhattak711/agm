@@ -25,6 +25,7 @@ import {
   Modal,
   FormInput,
   FormSelect,
+  FormTextarea,
   FormSubmit,
 } from "@/components/ui";
 
@@ -34,6 +35,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [selectedType, setSelectedType] = useState<string>("ALL");
+  const [selectedOrigin, setSelectedOrigin] = useState<string>("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [adjustStockProduct, setAdjustStockProduct] = useState<Product | null>(
@@ -65,6 +67,13 @@ export default function ProductsPage() {
     return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
+  const filteredProducts = useMemo(() => {
+    if (selectedOrigin === "ALL") return products;
+    return products.filter(
+      (p) => (p.productOrigin || "PURCHASED_EXTERNAL") === selectedOrigin,
+    );
+  }, [products, selectedOrigin]);
+
   const totalProducts = products.length;
   const totalStockItems = products.reduce(
     (acc, p) => acc + (p.totalOnHand || 0),
@@ -81,6 +90,11 @@ export default function ProductsPage() {
       sku: "",
       name: "",
       description: "",
+      brand: "",
+      supplierSku: "",
+      originCompany: "",
+      shopLocation: "",
+      productOrigin: "PURCHASED_EXTERNAL",
       type: "RAW_MATERIAL" as ProductType,
       unit: "PCS",
       barcode: "",
@@ -102,6 +116,11 @@ export default function ProductsPage() {
             sku: value.sku.trim(),
             name: value.name.trim(),
             description: value.description.trim() || undefined,
+            brand: value.brand.trim() || null,
+            supplierSku: value.supplierSku.trim() || null,
+            originCompany: value.originCompany.trim() || null,
+            shopLocation: value.shopLocation.trim() || null,
+            productOrigin: value.productOrigin,
             type: value.type,
             unit: value.unit.trim() || "PCS",
             barcode: value.barcode.trim() || undefined,
@@ -117,6 +136,11 @@ export default function ProductsPage() {
             sku: value.sku.trim(),
             name: value.name.trim(),
             description: value.description.trim() || undefined,
+            brand: value.brand.trim() || null,
+            supplierSku: value.supplierSku.trim() || null,
+            originCompany: value.originCompany.trim() || null,
+            shopLocation: value.shopLocation.trim() || null,
+            productOrigin: value.productOrigin,
             type: value.type,
             unit: value.unit.trim() || "PCS",
             barcode: value.barcode.trim() || undefined,
@@ -149,16 +173,19 @@ export default function ProductsPage() {
     onSubmit: async ({ value }) => {
       if (!adjustStockProduct || !value.warehouseId || !value.quantity) return;
 
-      await createMovement.mutateAsync({
-        productId: adjustStockProduct.id,
-        warehouseId: value.warehouseId,
-        movementType: value.movementType,
-        quantity: Number(value.quantity),
-        unitCost: Number(adjustStockProduct.costPrice),
-        notes: value.notes.trim() || "Stock adjustment",
-      });
+      try {
+        await createMovement.mutateAsync({
+          productId: adjustStockProduct.id,
+          warehouseId: value.warehouseId,
+          movementType: value.movementType,
+          quantity: Number(value.quantity),
+          notes: value.notes.trim() || undefined,
+        });
 
-      setAdjustStockProduct(null);
+        setAdjustStockProduct(null);
+      } catch (err: any) {
+        alert(err.message || "Failed to record stock movement");
+      }
     },
   });
 
@@ -166,9 +193,14 @@ export default function ProductsPage() {
     setEditingProduct(null);
     setFormError("");
     productForm.reset({
-      sku: "",
+      sku: `PRD-${Date.now().toString().slice(-4)}`,
       name: "",
       description: "",
+      brand: "",
+      supplierSku: "",
+      originCompany: "",
+      shopLocation: "",
+      productOrigin: "PURCHASED_EXTERNAL",
       type: "RAW_MATERIAL",
       unit: "PCS",
       barcode: "",
@@ -191,6 +223,11 @@ export default function ProductsPage() {
       sku: p.sku,
       name: p.name,
       description: p.description || "",
+      brand: p.brand || "",
+      supplierSku: p.supplierSku || "",
+      originCompany: p.originCompany || "",
+      shopLocation: p.shopLocation || "",
+      productOrigin: p.productOrigin || "PURCHASED_EXTERNAL",
       type: p.type,
       unit: p.unit,
       barcode: p.barcode || "",
@@ -220,23 +257,19 @@ export default function ProductsPage() {
     () => [
       {
         accessorKey: "sku",
-        header: "SKU / Code",
-        cell: ({ row }) => (
-          <span className="font-mono font-bold text-slate-800">
-            {row.original.sku}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "name",
-        header: "Product Name",
+        header: "SKU & Shop Ref",
         cell: ({ row }) => (
           <div>
-            <div className="font-semibold text-slate-900">
-              {row.original.name}
-            </div>
+            <span className="font-mono font-bold text-slate-900 block">
+              {row.original.sku}
+            </span>
+            {row.original.supplierSku && (
+              <span className="text-[10px] text-emerald-800 font-mono font-medium block">
+                Shop Ref: {row.original.supplierSku}
+              </span>
+            )}
             {row.original.barcode && (
-              <span className="text-[10px] text-slate-400 font-mono">
+              <span className="text-[10px] text-slate-400 font-mono block">
                 [{row.original.barcode}]
               </span>
             )}
@@ -244,8 +277,31 @@ export default function ProductsPage() {
         ),
       },
       {
+        accessorKey: "name",
+        header: "Product / Material Name",
+        cell: ({ row }) => (
+          <div>
+            <div className="font-semibold text-slate-900">
+              {row.original.name}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+              {row.original.brand && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                  {row.original.brand}
+                </span>
+              )}
+              {row.original.originCompany && (
+                <span className="text-[10px] text-slate-500 font-medium">
+                  • {row.original.originCompany}
+                </span>
+              )}
+            </div>
+          </div>
+        ),
+      },
+      {
         accessorKey: "type",
-        header: "Category & Type",
+        header: "Type & Category",
         cell: ({ row }) => (
           <div>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
@@ -283,7 +339,7 @@ export default function ProductsPage() {
             <span className="font-bold text-slate-900 font-mono text-sm">
               {row.original.totalOnHand ?? 0}
             </span>{" "}
-            <span className="text-[10px] text-slate-400">
+            <span className="text-[10px] text-slate-400 font-medium">
               {row.original.unit}
             </span>
           </div>
@@ -328,10 +384,10 @@ export default function ProductsPage() {
                 size="sm"
                 onClick={() => handleOpenAdjust(row.original)}
               >
-                Adjust
+                Stock Move
               </Button>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => handleOpenEdit(row.original)}
               >
@@ -340,9 +396,14 @@ export default function ProductsPage() {
               <Button
                 variant="danger"
                 size="sm"
-                onClick={async () => {
-                  if (confirm(`Delete product "${row.original.name}"?`)) {
-                    await deleteProduct.mutateAsync(row.original.id);
+                loading={deleteProduct.isPending}
+                onClick={() => {
+                  if (
+                    confirm(
+                      `Are you sure you want to delete SKU ${row.original.sku}?`,
+                    )
+                  ) {
+                    deleteProduct.mutate(row.original.id);
                   }
                 }}
               >
@@ -360,12 +421,12 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">
-            Product & Raw Materials Catalog
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage inventory SKUs, technical fitout supplies, unit costs, and
-            reorder levels.
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">
+            Products & Materials Catalog
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Manage internal catalogs and materials procured from external shops,
+            suppliers, and brands.
           </p>
         </div>
 
@@ -375,7 +436,7 @@ export default function ProductsPage() {
             onClick={handleOpenCreate}
             icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
           >
-            New Product
+            Add Product / SKU
           </Button>
         )}
       </div>
@@ -383,69 +444,68 @@ export default function ProductsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total SKUs
+            Total Unique SKUs
           </p>
           <p className="text-2xl font-black text-slate-900 mt-1">
             {totalProducts}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
-            Registered catalogue lines
+            Active stock keeping units
           </p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Units in Stock
+            Total Units on Hand
           </p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">
-            {totalStockItems.toLocaleString()}
+          <p className="text-2xl font-black text-slate-900 mt-1">
+            {totalStockItems}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Across all registered warehouses
-          </p>
+          <p className="text-xs text-slate-500 mt-0.5">Across all facilities</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Low Stock Warnings
+            Low Stock Alerts
           </p>
           <p className="text-2xl font-black text-amber-600 mt-1">
             {lowStockCount}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Below reorder trigger level
-          </p>
+          <p className="text-xs text-slate-500 mt-0.5">Below reorder trigger</p>
         </div>
 
         <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
             Inventory Valuation
           </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
+          <p className="text-2xl font-black text-emerald-800 mt-1">
             {formatCurrency(totalInventoryValue)}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Cost price holding value
-          </p>
+          <p className="text-xs text-slate-500 mt-0.5">Based on cost price</p>
         </div>
       </div>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="w-full sm:w-80">
+        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
+          <div className="w-full lg:w-80">
             <Input
-              placeholder="Search SKU, name, barcode..."
+              placeholder="Search product, brand, shop code, SKU..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              leftIcon={<SearchIcon className="w-4 h-4" strokeWidth={2} />}
+              leftIcon={
+                <SearchIcon
+                  className="w-4 h-4 text-slate-400"
+                  strokeWidth={2}
+                />
+              }
             />
           </div>
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
             <Select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full sm:w-44"
+              containerClassName="w-full sm:w-44"
             >
               <option value="ALL">All Categories</option>
               {categories.map((c) => (
@@ -458,13 +518,23 @@ export default function ProductsPage() {
             <Select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full sm:w-44"
+              containerClassName="w-full sm:w-40"
             >
               <option value="ALL">All Types</option>
               <option value="RAW_MATERIAL">Raw Material</option>
               <option value="FINISHED_GOOD">Finished Good</option>
               <option value="CONSUMABLE">Consumable</option>
-              <option value="TOOL_EQUIPMENT">Tools & Equip</option>
+              <option value="TOOL_EQUIPMENT">Tool & Equipment</option>
+            </Select>
+
+            <Select
+              value={selectedOrigin}
+              onChange={(e) => setSelectedOrigin(e.target.value)}
+              containerClassName="w-full sm:w-44"
+            >
+              <option value="ALL">All Origins</option>
+              <option value="PURCHASED_EXTERNAL">Purchased External</option>
+              <option value="INTERNAL">Internal Product</option>
             </Select>
           </div>
         </div>
@@ -476,7 +546,7 @@ export default function ProductsPage() {
         ) : (
           <DataTable
             columns={columns}
-            data={products}
+            data={filteredProducts}
             isLoading={isLoading}
             emptyTitle="No products found"
             emptyMessage='Click "Add Product / SKU" to create your first stock item.'
@@ -490,7 +560,7 @@ export default function ProductsPage() {
         title={
           editingProduct ? "Edit Product Details" : "Add New SKU to Inventory"
         }
-        maxWidth="lg"
+        maxWidth="2xl"
       >
         <form
           onSubmit={(e) => {
@@ -520,7 +590,7 @@ export default function ProductsPage() {
                   label="SKU Code *"
                   required
                   placeholder="e.g. MAT-WOD-001"
-                  className="uppercase"
+                  className="uppercase font-mono font-bold"
                 />
               )}
             </productForm.Field>
@@ -535,10 +605,57 @@ export default function ProductsPage() {
               {(field) => (
                 <FormInput
                   field={field}
-                  label="Product Name *"
+                  label="Product / Material Name *"
                   required
-                  placeholder="e.g. 18mm MDF Board"
+                  placeholder="e.g. 18mm MDF Board / Dulux Paint"
                 />
+              )}
+            </productForm.Field>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <productForm.Field name="brand">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Brand / Manufacturer"
+                  placeholder="e.g. Dulux, Jotun, Bosch, Saint-Gobain"
+                />
+              )}
+            </productForm.Field>
+
+            <productForm.Field name="supplierSku">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Shop Reference / Vendor Part #"
+                  placeholder="e.g. Shop Item Code, Catalog Ref #"
+                />
+              )}
+            </productForm.Field>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <productForm.Field name="originCompany">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Origin Company / Shop Name"
+                  placeholder="e.g. Deira Hardware Store, Al Gurg LLC"
+                />
+              )}
+            </productForm.Field>
+
+            <productForm.Field name="productOrigin">
+              {(field) => (
+                <FormSelect field={field} label="Product Source">
+                  <option value="PURCHASED_EXTERNAL">
+                    Purchased from External Shop / Vendor
+                  </option>
+                  <option value="INTERNAL">
+                    Internal / Self-Produced Product
+                  </option>
+                </FormSelect>
               )}
             </productForm.Field>
           </div>
@@ -560,7 +677,7 @@ export default function ProductsPage() {
                 <FormInput
                   field={field}
                   label="Unit of Measure"
-                  placeholder="PCS, SQM, KG, LTR, BOX"
+                  placeholder="PCS, SQM, LM, KG, LTR, BOX"
                 />
               )}
             </productForm.Field>
@@ -582,7 +699,7 @@ export default function ProductsPage() {
 
             <productForm.Field name="supplierId">
               {(field) => (
-                <FormSelect field={field} label="Supplier">
+                <FormSelect field={field} label="Supplier / Vendor Master">
                   <option value="">-- None --</option>
                   {suppliers.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -639,6 +756,17 @@ export default function ProductsPage() {
               )}
             </productForm.Field>
           </div>
+
+          <productForm.Field name="description">
+            {(field) => (
+              <FormTextarea
+                field={field}
+                label="Product Details / Specifications"
+                rows={2}
+                placeholder="Dimensions, grade, vendor warranty, technical specs..."
+              />
+            )}
+          </productForm.Field>
 
           {!editingProduct && warehouses.length > 0 && (
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">

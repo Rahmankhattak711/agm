@@ -20,6 +20,7 @@ export interface QuotationItem {
   section?: string;
   productId?: string;
   desc: string;
+  points?: string[];
   qty: number | string;
   unit?: string;
   rate: number | string;
@@ -71,12 +72,12 @@ export const DEFAULT_TERMS_AND_CONDITIONS = [
   {
     id: 7,
     title: "Quality and Finish Disclaimer:",
-    text: "The Client acknowledges and agrees that item related to repairs, remodelling, and refurbishment materials, such as doors, walls, and cabinets etc may be not result in a 100% perfect finish due to the condition of item.",
+    text: "The Client acknowledges and agrees that items related to repairs, remodeling, and refurbishment materials, such as doors, walls, and cabinets etc. may not result in a 100% perfect finish due to the condition of the existing items.",
   },
   {
     id: 8,
     title: "Third-Party Contractor Liability:",
-    text: "The Client acknowledges that other contractors working on-site. AGM Fitout Technical Services LLC shall not be held liable for any major or minor damage caused by (Whom). The Client shall ensure proper coordination among all parties on-site. Any repair or rework required because of such damage shall be carried out at the Client’s cost.",
+    text: "The Client acknowledges that other contractors may be working on-site. AGM Fitout Technical Services LLC shall not be held liable for any major or minor damage caused by them. The Client shall ensure proper coordination among all parties on-site. Any repair or rework required because of such damage shall be carried out at the Client’s cost.",
   },
   {
     id: 9,
@@ -149,64 +150,66 @@ export const DEFAULT_PAYMENT_TERMS = [
   "5 % Upon handing over",
 ];
 
+export const extractSubItems = (desc: string): string[] => {
+  if (!desc) return [""];
+  const lines = desc
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (lines.length <= 1) return [desc];
+  return lines.map((l) => l.replace(/^(\d+[\.\)]\s*|[-•*]\s*)/, "").trim());
+};
+
 export const SAMPLE_SCOPE_ITEMS: QuotationItem[] = [
   {
     id: 1,
     section: "Preliminaries",
-    desc: "Preliminaries and mobilization for the project. Includes site protection where required, and demobilization upon completion. All as per local contract conditions, Rate covers standard site protection to common areas. Extensive protection to furniture/artworks charged extra.",
+    desc: "Preliminaries and mobilization for the project. Includes site protection where required, and demobilization upon completion. All as per local contract conditions.",
     qty: "Free",
     rate: "Free",
     isFree: true,
   },
   {
     id: 2,
-    section: "Garage Work",
-    desc: "Removal of existing aluminum frames from site including careful dismantling, Loading, Transportation & Disposal of debris to Dubai Municipality approved landfill.",
+    section: "External Work",
+    desc: "build plantes pots, tiling with LED lighting *",
     qty: 1,
-    rate: 3600,
+    rate: 4300,
   },
   {
     id: 3,
-    section: "Garage Work",
-    desc: "Heavy duty aluminum garage door, powder coated, double skin insulated panels, with thermal break. Color:(client will choose), Supply & install aluminum frame with all necessary fixing brackets and anchors.",
+    section: "External Work",
+    desc: "MEP work, testing and remodeling the irrigation system *",
     qty: 1,
-    rate: 3900,
+    rate: 8700,
   },
   {
     id: 4,
-    section: "Garage Work",
-    desc: "Supply and installation of\nGlass: double glass Fixed unit 6 mm-16 mm air space - 6mm external glass to be reflective\nFrame Finish: Aluminum powder coated.",
-    qty: 2,
-    rate: 5400,
+    section: "External Work",
+    desc: "Aluminum Pergola for the car parking *",
+    qty: 1,
+    rate: 6600,
   },
   {
     id: 5,
-    section: "Entrance",
-    desc: "Dismantling, removal, and site clearance of the existing main entrance door and frame assembly.\nSupply and installation of Wooden Main Entrance Door with Sidelight.\nSupply, fitting, and finishing of a new wooden entrance door assembly with an integrated glass side panel, including framing and standard ironmongery (hinges, handles, and locks).",
+    section: "Guest Bathroom",
+    desc: "1. Remove the existing wall and floor tiles, ceiling, counters,fittings, and sanitary, transfer and dump\n2. Remodule the piping and the dranage to match the new design and install all the elictromechanical work (Basin, Basin Mixer, angle valves, bottle trap, waste, mirror, angle valves, etc.)\n3. Gypsum ceiling including installation and ceiling light, and access panel, including walls paint\n4. Install Wall & floor tiles, including waterproofing, selefleveling if required, glue and grout, niche where is required (client to provide the tiles)",
     qty: 1,
-    rate: 14500,
+    rate: 11000,
   },
   {
     id: 6,
-    section: "Tiling work (Ground Floor)",
-    desc: "Remove the existing floor tiles. Supply and professional laying of floor tiles. (Note: The quoted rate is applicable for porcelain tiles wooden-finish, Italian or Spanish made as per client selection). Inspection and preparation of the existing subfloor, including the application of a self-leveling compound (where required) to ensure a perfectly flat and sound base for installation.",
-    qty: 98,
-    rate: 250,
+    section: "Majlis Washroom",
+    desc: "1. Remove the existing wall and floor tiles, ceiling, counters,fittings, and sanitary, transfer and dump\n2. Remodule the piping and the dranage to match the new design and install all the elictromechanical work (Basin, Basin Mixer, angle valves, bottle trap, waste, mirror, angle valves, etc.)\n3. Gypsum ceiling including installation and ceiling light, and access panel, including walls paint\n4. Install Wall & floor tiles, including waterproofing, selefleveling if required, glue and grout, niche where is required (client to provide the tiles)",
+    qty: 1,
+    rate: 11000,
   },
   {
     id: 7,
-    section: "Kitchen",
-    desc: "Fabrication and installation of kitchen cabinets made of MR MDF, laminated white carcass, center island cabinets with quartz countertop, Blum soft close hinges and drawer railings. Drawing & design to be issued after client confirmation.",
-    qty: 1,
-    rate: 76200,
-  },
-  {
-    id: 8,
-    section: "Others",
-    desc: "Complimentary site inspection after 3 month of handing over.",
-    qty: 1,
-    rate: "Free",
-    isFree: true,
+    section: "Kids Bathroom 1 & 2",
+    desc: "1. Remove the existing wall and floor tiles, ceiling, counters,fittings, and sanitary, transfer and dump\n2. Remodule the piping and the dranage to match the new design and install all the elictromechanical work (Basin, Basin Mixer, angle valves, bottle trap, waste, mirror, angle valves, etc.)\n3. Gypsum ceiling including installation and ceiling light, and access panel, including walls paint\n4. Install Wall & floor tiles, including waterproofing, selefleveling if required, glue and grout, niche where is required (client to provide the tiles)",
+    qty: 2,
+    rate: 11000,
   },
 ];
 

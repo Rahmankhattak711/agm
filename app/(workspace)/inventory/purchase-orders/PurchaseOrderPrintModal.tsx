@@ -103,12 +103,23 @@ export const PurchaseOrderPrintModal: React.FC<
             <div className="grid grid-cols-2 gap-4 px-10 py-3 text-[11.5px] print-avoid-break">
               <div className="bg-slate-50/80 p-3 rounded-xl border border-slate-200/80">
                 <div className="font-bold text-emerald-800 text-[10.5px] tracking-wider uppercase mb-1.5">
-                  Vendor / Supplier Information
+                  Vendor / Supplier & Shop Information
                 </div>
                 <div className="space-y-0.5 text-slate-700">
                   <div className="text-[12.5px] font-bold text-slate-900">
-                    {po.supplier?.name || "N/A"}
+                    {po.supplier?.name || po.shopName || "External Vendor"}
                   </div>
+                  {po.shopName && po.supplier?.name !== po.shopName && (
+                    <div className="text-emerald-900 font-medium">
+                      <span className="text-slate-400">Store / Branch:</span>{" "}
+                      {po.shopName}
+                    </div>
+                  )}
+                  {po.vendorReference && (
+                    <div className="font-mono text-emerald-800 font-bold bg-emerald-100/60 px-1.5 py-0.5 rounded inline-block my-0.5">
+                      Quote / Bill Ref: {po.vendorReference}
+                    </div>
+                  )}
                   {po.supplier?.supplierCode && (
                     <div>
                       <span className="text-slate-400">Code:</span>{" "}
@@ -199,7 +210,7 @@ export const PurchaseOrderPrintModal: React.FC<
                   <tr className="bg-emerald-900 text-white font-bold">
                     <th className="py-2 px-3 text-left w-10">#</th>
                     <th className="py-2 px-3 text-left">Item Description</th>
-                    <th className="py-2 px-3 text-left w-28">SKU</th>
+                    <th className="py-2 px-3 text-left w-36">SKU / Shop Ref</th>
                     <th className="py-2 px-3 text-center w-16">Unit</th>
                     <th className="py-2 px-3 text-center w-20">Qty</th>
                     <th className="py-2 px-3 text-right w-28">
@@ -213,6 +224,7 @@ export const PurchaseOrderPrintModal: React.FC<
                     const lineTotal =
                       Number(it.quantityOrdered || 0) *
                       Number(it.unitCost || 0);
+                    const shopRef = it.supplierSku || it.product?.supplierSku;
                     return (
                       <tr
                         key={it.id || idx}
@@ -223,16 +235,35 @@ export const PurchaseOrderPrintModal: React.FC<
                         <td className="py-2 px-3 font-mono text-slate-500">
                           {idx + 1}
                         </td>
-                        <td className="py-2 px-3 font-semibold text-slate-900">
-                          {it.product?.name || "Product Item"}
+                        <td className="py-2 px-3 text-slate-900">
+                          <div className="font-bold">
+                            {it.product?.name || "Product Item"}
+                          </div>
+                          {it.product?.brand && (
+                            <div className="text-[10px] text-emerald-800 font-semibold">
+                              Brand: {it.product.brand}
+                            </div>
+                          )}
+                          {it.itemNotes && (
+                            <div className="text-[10px] text-slate-600 italic">
+                              Spec: {it.itemNotes}
+                            </div>
+                          )}
                           {it.product?.description && (
                             <div className="text-[10px] font-normal text-slate-500">
                               {it.product.description}
                             </div>
                           )}
                         </td>
-                        <td className="py-2 px-3 font-mono text-slate-600">
-                          {it.product?.sku || "-"}
+                        <td className="py-2 px-3 text-slate-600">
+                          <div className="font-mono text-[11px] font-semibold text-slate-800">
+                            {it.product?.sku || "-"}
+                          </div>
+                          {shopRef && (
+                            <div className="text-[10px] font-mono text-emerald-700">
+                              Ref: {shopRef}
+                            </div>
+                          )}
                         </td>
                         <td className="py-2 px-3 text-center font-medium text-slate-600">
                           {it.product?.unit || "PCS"}

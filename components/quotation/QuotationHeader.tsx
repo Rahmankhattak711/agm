@@ -1,23 +1,31 @@
 import React from "react";
 import Image from "next/image";
 
-export const QuotationHeader: React.FC = () => {
+interface QuotationHeaderProps {
+  className?: string;
+}
+
+export const QuotationHeader: React.FC<QuotationHeaderProps> = ({
+  className = "",
+}) => {
   return (
-    <div className="flex items-start justify-between px-10 pt-8 pb-6 border-b border-slate-100 bg-white">
+    <div
+      className={`flex items-start justify-between px-10 pt-8 pb-6 print:px-8 print:pt-2 print:pb-1.5 border-b border-slate-100 bg-white ${className}`}
+    >
       <div className="flex flex-col items-start">
         <Image
           src="/assets/logo.png"
           alt="AGM Aesthetic House"
-          width={150}
-          height={150}
+          width={120}
+          height={120}
           sizes="100vh"
           quality={100}
-          className="object-cover"
+          className="object-cover print:w-[95px] print:h-auto"
           priority
         />
       </div>
-      <div className="text-right text-[12px] leading-5 text-slate-800 max-w-[440px]">
-        <div className="font-bold text-[15px] mb-1 text-agm-green">
+      <div className="text-right text-[12px] print:text-[9.5px] leading-5 print:leading-3.5 text-slate-800 max-w-[440px]">
+        <div className="font-bold text-[15px] print:text-[11.5px] mb-1 print:mb-0.5 text-agm-green">
           A G M FITOUT TECHNICAL SERVICES L.L.C
         </div>
         <div>

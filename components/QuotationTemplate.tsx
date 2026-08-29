@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui";
 import {
   QuotationRecord,
   useAccounts,
@@ -21,7 +21,7 @@ import {
   Save,
   Zap,
 } from "lucide-react";
-import { Button } from "@/components/ui";
+import React, { useEffect, useState } from "react";
 import {
   DEFAULT_PAYMENT_TERMS,
   DEFAULT_TERMS_AND_CONDITIONS,
@@ -35,20 +35,20 @@ import {
   QuotationItem,
   QuotationItemsTable,
   QuotationMeta,
+  QuotationPaymentTerms,
   QuotationSavedModal,
-  QuotationSignatures,
   QuotationTemplateProps,
   QuotationTerms,
   QuotationTotalsTable,
   SAMPLE_SCOPE_ITEMS,
 } from "./quotation";
 
-export type { QuotationMeta, QuotationItem, QuotationTemplateProps };
 export {
-  DEFAULT_TERMS_AND_CONDITIONS,
   DEFAULT_PAYMENT_TERMS,
+  DEFAULT_TERMS_AND_CONDITIONS,
   SAMPLE_SCOPE_ITEMS,
 };
+export type { QuotationItem, QuotationMeta, QuotationTemplateProps };
 
 export default function QuotationTemplate({
   initialMeta,
@@ -76,19 +76,14 @@ export default function QuotationTemplate({
   const createJournalEntryMutation = useCreateJournalEntry();
 
   const [meta, setMeta] = useState<QuotationMeta>({
-    quotationNo:
-      initialMeta?.quotationNo ||
-      `AGM-QTN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
-    date: initialMeta?.date || new Date().toLocaleDateString("en-GB"),
-    validUntil:
-      initialMeta?.validUntil ||
-      new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString(
-        "en-GB",
-      ),
+    quotationNo: initialMeta?.quotationNo || "AGM-QTN-2026-01217",
+    date: initialMeta?.date || "06/08/2026",
+    validUntil: initialMeta?.validUntil || "16/08/2026",
     customer: initialMeta?.customer || "Brian Berthelsen",
     attention: initialMeta?.attention || "",
     address: initialMeta?.address || "Dubai, UAE",
     trn: initialMeta?.trn || "",
+    email: initialMeta?.email || "brian@example.com",
     mobile: initialMeta?.mobile || "+971 56 545 3103",
     project: initialMeta?.project || "Proposed G+1 Townhouses",
     location: initialMeta?.location || "Al Furjan, Dubai - UAE",
@@ -124,6 +119,14 @@ export default function QuotationTemplate({
 
   const updatePaymentTerm = (idx: number, val: string) => {
     setPaymentTerms((prev) => prev.map((term, i) => (i === idx ? val : term)));
+  };
+
+  const addPaymentTerm = () => {
+    setPaymentTerms((prev) => [...prev, "Payment milestone term"]);
+  };
+
+  const removePaymentTerm = (idx: number) => {
+    setPaymentTerms((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleProductSelect = (id: number | string, productId: string) => {
@@ -627,9 +630,26 @@ export default function QuotationTemplate({
           </thead>
 
           <tfoot className="print-page-footer-group">
-            <tr>
-              <td className="p-0 border-none">
-                <QuotationFooter />
+            <tr style={{ height: "220px" }}>
+              <td
+                className="p-0 border-none"
+                style={{
+                  height: "220px",
+                  padding: 0,
+                  border: "none",
+                }}
+              >
+                <div
+                  style={{
+                    height: "220px",
+                    width: "100%",
+                    display: "block",
+                  }}
+                  className="hidden print:block"
+                />
+                <div className="print:hidden">
+                  <QuotationFooter />
+                </div>
               </td>
             </tr>
           </tfoot>
@@ -641,12 +661,16 @@ export default function QuotationTemplate({
                   docType={docType}
                   meta={meta}
                   onUpdateMeta={updateMeta}
-                  paymentTerms={paymentTerms}
-                  onUpdatePaymentTerm={updatePaymentTerm}
                 />
-
+              </td>
+            </tr>
+            <tr>
+              <td className="p-0 border-none align-top">
                 <QuotationDetailsCards meta={meta} onUpdateMeta={updateMeta} />
-
+              </td>
+            </tr>
+            <tr>
+              <td className="p-0 border-none align-top">
                 <QuotationItemsTable
                   items={items}
                   availableProducts={availableProducts}
@@ -656,7 +680,10 @@ export default function QuotationTemplate({
                   onRemoveItem={removeItem}
                   calculateRowTotal={calculateRowTotal}
                 />
-
+              </td>
+            </tr>
+            <tr>
+              <td className="p-0 border-none align-top">
                 <QuotationTotalsTable
                   subtotal={subtotal}
                   vatPct={vatPct}
@@ -666,14 +693,29 @@ export default function QuotationTemplate({
                   onUpdateVatPct={(val) => setVatPct(val)}
                   onUpdateDiscount={(val) => setDiscount(val)}
                 />
-
+              </td>
+            </tr>
+            <tr>
+              <td className="p-0 border-none align-top">
                 <QuotationTerms termsList={DEFAULT_TERMS_AND_CONDITIONS} />
-
-                <QuotationSignatures />
+              </td>
+            </tr>
+            <tr>
+              <td className="p-0 border-none align-top">
+                <QuotationPaymentTerms
+                  paymentTerms={paymentTerms}
+                  onUpdatePaymentTerm={updatePaymentTerm}
+                  onAddPaymentTerm={addPaymentTerm}
+                  onRemovePaymentTerm={removePaymentTerm}
+                />
               </td>
             </tr>
           </tbody>
         </table>
+
+        <div className="fixed-print-footer hidden print:block">
+          <QuotationFooter />
+        </div>
       </div>
     </div>
   );

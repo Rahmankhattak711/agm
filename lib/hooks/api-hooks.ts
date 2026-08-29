@@ -8,11 +8,26 @@ export interface ChartOfAccount {
   type: "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE";
   isActive: boolean;
   parentId?: string | null;
+  parent?: {
+    id: string;
+    accountCode: string;
+    accountName: string;
+  } | null;
+  children?: {
+    id: string;
+    accountCode: string;
+    accountName: string;
+    type: string;
+  }[];
+  balance?: number;
+  totalDebit?: number;
+  totalCredit?: number;
+  isSystem?: boolean;
   _count?: {
     journalLines?: number;
   };
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface JournalEntryLine {
@@ -47,31 +62,38 @@ export interface JournalEntry {
   updatedAt: string;
 }
 
-export interface PettyCashTransaction {
+export interface Expense {
   id: string;
-  transactionDate: string;
-  voucherNumber: string;
-  categoryType: "BANK_CHARGE" | "LOCAL_GOVERNMENT" | "OPERATIONAL_EXPENSE";
+  expenseNumber: string;
+  expenseDate: string;
   category: string;
-  amount: string | number;
-  transactionType: "TOP_UP" | "DISBURSEMENT";
-  receiptImageUrl?: string | null;
-  notes?: string | null;
-  accountId?: string | null;
-  approvedBy?: string | null;
-  isApproved: boolean;
-  approvedAt?: string | null;
-  createdAt: string;
-  approver?: {
-    id: string;
-    fullName: string;
-    email: string;
-  } | null;
-  account?: {
+  payee?: string | null;
+  description?: string | null;
+  amount: number | string;
+  taxAmount: number | string;
+  totalAmount: number | string;
+  paymentMethod: "BANK_TRANSFER" | "CREDIT_CARD" | "CASH" | "CHEQUE";
+  reference?: string | null;
+  receiptUrl?: string | null;
+  status: "DRAFT" | "APPROVED" | "PAID" | "CANCELLED";
+  expenseAccountId?: string | null;
+  paymentAccountId?: string | null;
+  expenseAccount?: {
     id: string;
     accountCode: string;
     accountName: string;
   } | null;
+  paymentAccount?: {
+    id: string;
+    accountCode: string;
+    accountName: string;
+  } | null;
+  createdById: string;
+  createdBy?: { id: string; fullName: string; email: string };
+  journalEntryId?: string | null;
+  journalEntry?: { id: string; entryNumber: string; isPosted: boolean } | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface FixedAsset {
@@ -359,6 +381,13 @@ export interface Product {
   unit: string;
   barcode?: string | null;
   imageUrl?: string | null;
+
+  brand?: string | null;
+  supplierSku?: string | null;
+  originCompany?: string | null;
+  shopLocation?: string | null;
+  productOrigin?: string;
+
   categoryId?: string | null;
   category?: ProductCategory | null;
   supplierId?: string | null;
@@ -401,6 +430,8 @@ export interface PurchaseOrderItem {
   purchaseOrderId: string;
   productId: string;
   product?: Product;
+  supplierSku?: string | null;
+  itemNotes?: string | null;
   quantityOrdered: string | number;
   quantityReceived: string | number;
   unitCost: string | number;
@@ -417,6 +448,8 @@ export interface PurchaseOrder {
   status: PurchaseOrderStatus;
   totalAmount: string | number;
   notes?: string | null;
+  vendorReference?: string | null;
+  shopName?: string | null;
   createdBy?: string | null;
   creator?: { fullName: string; email: string } | null;
   items: PurchaseOrderItem[];
@@ -461,24 +494,39 @@ export interface UsersResponse {
 
 export interface ProfitLossItem {
   id?: string;
-  section: string;
+  section?: string;
   accountCode?: string;
   accountName: string;
   amount: number;
+  prevAmount?: number;
+  variance?: number;
+  variancePct?: number;
 }
 
 export interface ProfitLossReport {
   companyName?: string;
   reportTitle?: string;
+  period?: string;
+  periodLabel?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  prevStartDate?: string | null;
+  prevEndDate?: string | null;
+  compare?: boolean;
   income?: ProfitLossItem[];
   totalIncome?: number;
+  prevTotalIncome?: number;
   directExpenses?: ProfitLossItem[];
   totalDirectExpenses?: number;
+  prevTotalDirectExpenses?: number;
   grossProfit?: number;
+  prevGrossProfit?: number;
   operatingExpenses?: ProfitLossItem[];
   totalOperatingExpenses?: number;
+  prevTotalOperatingExpenses?: number;
   totalExpenses?: number;
   netProfit?: number;
+  prevNetProfit?: number;
   revenue: number;
   expenses: number;
   netIncome: number;
@@ -569,6 +617,63 @@ export interface VatTransactionRecord {
   accountCode: string;
 }
 
+export interface ReceivableItem {
+  id: string;
+  reference: string;
+  customer: string;
+  project: string;
+  date: string;
+  status: string;
+  totalAmount: number;
+  daysOutstanding: number;
+  agingBucket: "current" | "days30" | "days60" | "days90Plus";
+  mobile?: string;
+  trn?: string;
+}
+
+export interface ReceivablesReport {
+  companyName: string;
+  reportTitle: string;
+  totalReceivables: number;
+  totalArLedger: number;
+  aging: {
+    current: number;
+    days30: number;
+    days60: number;
+    days90Plus: number;
+  };
+  items: ReceivableItem[];
+  count: number;
+}
+
+export interface PayableItem {
+  id: string;
+  poNumber: string;
+  supplierName: string;
+  supplierTrn: string;
+  supplierContact: string;
+  orderDate: string;
+  status: string;
+  totalAmount: number;
+  daysOutstanding: number;
+  agingBucket: "current" | "days30" | "days60" | "days90Plus";
+}
+
+export interface PayablesReport {
+  companyName: string;
+  reportTitle: string;
+  totalPayables: number;
+  totalApLedger: number;
+  aging: {
+    current: number;
+    days30: number;
+    days60: number;
+    days90Plus: number;
+  };
+  items: PayableItem[];
+  count: number;
+}
+
 export interface VatQuarterDetail {
   key?: string;
   quarter: string;
@@ -632,6 +737,31 @@ export function useAccounts() {
   });
 }
 
+export interface AccountLedgerEntry {
+  id: string;
+  journalEntryId: string;
+  entryNumber: string;
+  entryDate: string;
+  description?: string;
+  reference?: string;
+  isPosted: boolean;
+  debit: number;
+  credit: number;
+  runningBalance: number;
+}
+
+export interface AccountWithLedger extends ChartOfAccount {
+  ledger: AccountLedgerEntry[];
+}
+
+export function useAccountLedger(id: string) {
+  return useQuery<AccountWithLedger>({
+    queryKey: ["account-ledger", id],
+    queryFn: () => fetchJson<AccountWithLedger>(`/api/accounts/${id}`),
+    enabled: Boolean(id),
+  });
+}
+
 export function useCreateAccount() {
   const qc = useQueryClient();
   return useMutation({
@@ -639,10 +769,42 @@ export function useCreateAccount() {
       accountCode: string;
       accountName: string;
       type: string;
+      parentId?: string | null;
+      isActive?: boolean;
     }) =>
       fetchJson<ChartOfAccount>("/api/accounts", {
         method: "POST",
         body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["accounts"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+}
+
+export function useUpdateAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<ChartOfAccount> }) =>
+      fetchJson<ChartOfAccount>(`/api/accounts/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: ["accounts"] });
+      qc.invalidateQueries({ queryKey: ["account-ledger", id] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+}
+
+export function useDeleteAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ message: string }>(`/api/accounts/${id}`, {
+        method: "DELETE",
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["accounts"] });
@@ -733,77 +895,97 @@ export function useDeleteJournalEntry() {
   });
 }
 
-export function usePettyCash() {
-  return useQuery<PettyCashTransaction[]>({
-    queryKey: ["petty-cash"],
-    queryFn: () => fetchJson<PettyCashTransaction[]>("/api/petty-cash"),
+export function useExpenses(filters?: {
+  category?: string;
+  status?: string;
+  paymentMethod?: string;
+  startDate?: string;
+  endDate?: string;
+  search?: string;
+}) {
+  const queryParams = new URLSearchParams();
+  if (filters?.category) queryParams.set("category", filters.category);
+  if (filters?.status) queryParams.set("status", filters.status);
+  if (filters?.paymentMethod)
+    queryParams.set("paymentMethod", filters.paymentMethod);
+  if (filters?.startDate) queryParams.set("startDate", filters.startDate);
+  if (filters?.endDate) queryParams.set("endDate", filters.endDate);
+  if (filters?.search) queryParams.set("search", filters.search);
+
+  const qs = queryParams.toString() ? `?${queryParams.toString()}` : "";
+
+  return useQuery<{
+    expenses: Expense[];
+    summary: { totalAmount: number; totalTax: number; count: number };
+  }>({
+    queryKey: ["expenses", filters],
+    queryFn: () =>
+      fetchJson<{
+        expenses: Expense[];
+        summary: { totalAmount: number; totalTax: number; count: number };
+      }>(`/api/finance/expenses${qs}`),
   });
 }
 
-export function useCreatePettyCash() {
+export function useCreateExpense() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: {
-      transactionDate: string;
-      voucherNumber: string;
+      expenseDate: string;
       category: string;
-      categoryType?: "BANK_CHARGE" | "LOCAL_GOVERNMENT" | "OPERATIONAL_EXPENSE";
+      payee?: string;
+      description?: string;
       amount: number;
-      transactionType: "TOP_UP" | "DISBURSEMENT";
-      receiptImageUrl?: string;
-      notes?: string;
-      accountId?: string;
-      approvedBy?: string;
-      isApproved?: boolean;
+      taxAmount?: number;
+      paymentMethod?: "BANK_TRANSFER" | "CREDIT_CARD" | "CASH" | "CHEQUE";
+      reference?: string;
+      receiptUrl?: string;
+      status?: "DRAFT" | "APPROVED" | "PAID" | "CANCELLED";
+      expenseAccountId?: string;
+      paymentAccountId?: string;
+      createJournal?: boolean;
     }) =>
-      fetchJson<PettyCashTransaction>("/api/petty-cash", {
+      fetchJson<Expense>("/api/finance/expenses", {
         method: "POST",
         body: JSON.stringify(data),
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["petty-cash"] });
+      qc.invalidateQueries({ queryKey: ["expenses"] });
+      qc.invalidateQueries({ queryKey: ["journal-entries"] });
       qc.invalidateQueries({ queryKey: ["reports"] });
     },
   });
 }
 
-export function useUpdatePettyCash() {
+export function useUpdateExpense() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      id: string;
-      isApproved?: boolean;
-      approvedBy?: string | null;
-      category?: string;
-      categoryType?: "BANK_CHARGE" | "LOCAL_GOVERNMENT" | "OPERATIONAL_EXPENSE";
-      amount?: number;
-      transactionType?: "TOP_UP" | "DISBURSEMENT";
-      receiptImageUrl?: string | null;
-      notes?: string | null;
-      transactionDate?: string;
-      voucherNumber?: string;
-    }) =>
-      fetchJson<PettyCashTransaction>("/api/petty-cash", {
+    mutationFn: ({ id, ...data }: Partial<Expense> & { id: string }) =>
+      fetchJson<Expense>(`/api/finance/expenses/${id}`, {
         method: "PATCH",
         body: JSON.stringify(data),
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["petty-cash"] });
+      qc.invalidateQueries({ queryKey: ["expenses"] });
+      qc.invalidateQueries({ queryKey: ["journal-entries"] });
       qc.invalidateQueries({ queryKey: ["reports"] });
     },
   });
 }
 
-export function useDeletePettyCash() {
+export function useDeleteExpense() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      fetchJson<{ success: boolean; message: string }>("/api/petty-cash", {
-        method: "DELETE",
-        body: JSON.stringify({ id }),
-      }),
+      fetchJson<{ success: boolean; message: string }>(
+        `/api/finance/expenses/${id}`,
+        {
+          method: "DELETE",
+        },
+      ),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["petty-cash"] });
+      qc.invalidateQueries({ queryKey: ["expenses"] });
+      qc.invalidateQueries({ queryKey: ["journal-entries"] });
       qc.invalidateQueries({ queryKey: ["reports"] });
     },
   });
@@ -1370,12 +1552,16 @@ export function useCreatePurchaseOrder() {
     mutationFn: (data: {
       poNumber: string;
       supplierId: string;
+      shopName?: string;
+      vendorReference?: string;
       orderDate: string;
       expectedDate?: string;
       status?: PurchaseOrderStatus;
       notes?: string;
       items: Array<{
         productId: string;
+        supplierSku?: string;
+        itemNotes?: string;
         quantityOrdered: number;
         unitCost: number;
         totalCost?: number;
@@ -1493,10 +1679,27 @@ export function useDeleteUser() {
   });
 }
 
-export function useProfitLoss() {
+export function useProfitLoss(params?: {
+  period?: string;
+  startDate?: string;
+  endDate?: string;
+  compare?: boolean;
+}) {
+  const queryParams = new URLSearchParams();
+  if (params?.period) queryParams.set("period", params.period);
+  if (params?.startDate) queryParams.set("startDate", params.startDate);
+  if (params?.endDate) queryParams.set("endDate", params.endDate);
+  if (params?.compare !== undefined)
+    queryParams.set("compare", String(params.compare));
+
+  const qs = queryParams.toString();
+  const url = qs
+    ? `/api/reports/profit-loss?${qs}`
+    : "/api/reports/profit-loss";
+
   return useQuery<ProfitLossReport>({
-    queryKey: ["reports", "profit-loss"],
-    queryFn: () => fetchJson<ProfitLossReport>("/api/reports/profit-loss"),
+    queryKey: ["reports", "profit-loss", params],
+    queryFn: () => fetchJson<ProfitLossReport>(url),
   });
 }
 
@@ -1527,6 +1730,20 @@ export function useLedger(accountId: string | null) {
     queryFn: () =>
       fetchJson<LedgerReport>(`/api/reports/ledger?accountId=${accountId}`),
     enabled: !!accountId,
+  });
+}
+
+export function useReceivables() {
+  return useQuery<ReceivablesReport>({
+    queryKey: ["reports", "receivables"],
+    queryFn: () => fetchJson<ReceivablesReport>("/api/reports/receivables"),
+  });
+}
+
+export function usePayables() {
+  return useQuery<PayablesReport>({
+    queryKey: ["reports", "payables"],
+    queryFn: () => fetchJson<PayablesReport>("/api/reports/payables"),
   });
 }
 
@@ -1619,6 +1836,582 @@ export function useDeleteQuotation() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quotations"] });
+    },
+  });
+}
+
+export function useConvertQuotationToSalesOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<any>(`/api/finance/quotations/${id}/convert-order`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["quotations"] });
+      qc.invalidateQueries({ queryKey: ["sales-orders"] });
+    },
+  });
+}
+
+// ==========================================
+// COMMERCIAL VOUCHERS HOOKS
+// ==========================================
+
+export interface Customer {
+  id: string;
+  customerCode: string;
+  name: string;
+  companyName?: string | null;
+  trn?: string | null;
+  contactPerson?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  creditLimit: number;
+  currentBalance: number;
+  isActive: boolean;
+  createdAt: string;
+  _count?: {
+    quotations: number;
+    salesOrders: number;
+    salesInvoices: number;
+    customerPayments: number;
+  };
+}
+
+export function useCustomers(search?: string) {
+  const qStr = search ? `?search=${encodeURIComponent(search)}` : "";
+  return useQuery<Customer[]>({
+    queryKey: ["customers", search],
+    queryFn: () => fetchJson<Customer[]>(`/api/commercial/customers${qStr}`),
+  });
+}
+
+export function useCustomerStatement(id?: string | null) {
+  return useQuery<{
+    customer: Customer;
+    statement: any[];
+    summary: {
+      totalBilled: number;
+      totalPaid: number;
+      totalCredits: number;
+      currentOutstanding: number;
+    };
+  }>({
+    queryKey: ["customer-statement", id],
+    queryFn: () => fetchJson<any>(`/api/commercial/customers/${id}/statement`),
+    enabled: !!id,
+  });
+}
+
+export function useCreateCustomer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<Customer>) =>
+      fetchJson<Customer>("/api/commercial/customers", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    },
+  });
+}
+
+export interface SalesOrder {
+  id: string;
+  orderNumber: string;
+  customerId?: string | null;
+  customerName: string;
+  quotationId?: string | null;
+  orderDate: string;
+  deliveryDate?: string | null;
+  projectScope?: string | null;
+  status: "DRAFT" | "CONFIRMED" | "PROCESSING" | "COMPLETED" | "CANCELLED";
+  subtotal: number;
+  discount: number;
+  vatRate: number;
+  vatAmount: number;
+  totalAmount: number;
+  notes?: string | null;
+  terms?: string | null;
+  items: any[];
+  customerRel?: Customer;
+  createdAt: string;
+}
+
+export function useSalesOrders(params?: { search?: string; status?: string }) {
+  const q = new URLSearchParams();
+  if (params?.search) q.append("search", params.search);
+  if (params?.status) q.append("status", params.status);
+  const qStr = q.toString() ? `?${q.toString()}` : "";
+
+  return useQuery<SalesOrder[]>({
+    queryKey: ["sales-orders", params],
+    queryFn: () =>
+      fetchJson<SalesOrder[]>(`/api/commercial/sales-orders${qStr}`),
+  });
+}
+
+export function useCreateSalesOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      fetchJson<SalesOrder>("/api/commercial/sales-orders", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sales-orders"] });
+      qc.invalidateQueries({ queryKey: ["quotations"] });
+    },
+  });
+}
+
+export function useConvertSalesOrderToInvoice() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<any>(`/api/commercial/sales-orders/${id}/convert-invoice`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sales-orders"] });
+      qc.invalidateQueries({ queryKey: ["sales-invoices"] });
+    },
+  });
+}
+
+export interface SalesInvoice {
+  id: string;
+  invoiceNumber: string;
+  customerId?: string | null;
+  customerName: string;
+  customerTrn?: string | null;
+  quotationRef?: string | null;
+  salesOrderId?: string | null;
+  invoiceDate: string;
+  dueDate?: string | null;
+  projectScope?: string | null;
+  status:
+    "DRAFT" | "POSTED" | "PARTIALLY_PAID" | "PAID" | "OVERDUE" | "CANCELLED";
+  subtotal: number;
+  discount: number;
+  vatRate: number;
+  vatAmount: number;
+  totalAmount: number;
+  paidAmount: number;
+  remainingBalance: number;
+  notes?: string | null;
+  terms?: string | null;
+  items: any[];
+  customerRel?: Customer;
+  journalEntryId?: string | null;
+  createdAt: string;
+}
+
+export function useSalesInvoices(params?: {
+  search?: string;
+  status?: string;
+}) {
+  const q = new URLSearchParams();
+  if (params?.search) q.append("search", params.search);
+  if (params?.status) q.append("status", params.status);
+  const qStr = q.toString() ? `?${q.toString()}` : "";
+
+  return useQuery<SalesInvoice[]>({
+    queryKey: ["sales-invoices", params],
+    queryFn: () =>
+      fetchJson<SalesInvoice[]>(`/api/commercial/sales-invoices${qStr}`),
+  });
+}
+
+export function useCreateSalesInvoice() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      fetchJson<SalesInvoice>("/api/commercial/sales-invoices", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sales-invoices"] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    },
+  });
+}
+
+export function usePostSalesInvoice() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<any>(`/api/commercial/sales-invoices/${id}/post`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sales-invoices"] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["journal-entries"] });
+      qc.invalidateQueries({ queryKey: ["profit-loss"] });
+    },
+  });
+}
+
+export interface CustomerPayment {
+  id: string;
+  receiptNumber: string;
+  customerId?: string | null;
+  customerName: string;
+  salesInvoiceId?: string | null;
+  paymentDate: string;
+  amount: number;
+  paymentMethod: "CASH" | "BANK_TRANSFER" | "CHEQUE" | "CARD";
+  referenceNumber?: string | null;
+  notes?: string | null;
+  salesInvoice?: SalesInvoice;
+  customerRel?: Customer;
+  createdAt: string;
+}
+
+export function useCustomerPayments(search?: string) {
+  const qStr = search ? `?search=${encodeURIComponent(search)}` : "";
+  return useQuery<CustomerPayment[]>({
+    queryKey: ["customer-payments", search],
+    queryFn: () =>
+      fetchJson<CustomerPayment[]>(`/api/commercial/customer-payments${qStr}`),
+  });
+}
+
+export function useCreateCustomerPayment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      fetchJson<CustomerPayment>("/api/commercial/customer-payments", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["customer-payments"] });
+      qc.invalidateQueries({ queryKey: ["sales-invoices"] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["journal-entries"] });
+    },
+  });
+}
+
+export interface CreditNote {
+  id: string;
+  creditNoteNumber: string;
+  customerId?: string | null;
+  customerName: string;
+  salesInvoiceId?: string | null;
+  returnDate: string;
+  reason?: string | null;
+  subtotal: number;
+  vatAmount: number;
+  totalAmount: number;
+  status: "DRAFT" | "POSTED" | "CANCELLED";
+  items: any[];
+  salesInvoice?: SalesInvoice;
+  customerRel?: Customer;
+  createdAt: string;
+}
+
+export function useCreditNotes(search?: string) {
+  const qStr = search ? `?search=${encodeURIComponent(search)}` : "";
+  return useQuery<CreditNote[]>({
+    queryKey: ["credit-notes", search],
+    queryFn: () =>
+      fetchJson<CreditNote[]>(`/api/commercial/credit-notes${qStr}`),
+  });
+}
+
+export function useCreateCreditNote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      fetchJson<CreditNote>("/api/commercial/credit-notes", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["credit-notes"] });
+      qc.invalidateQueries({ queryKey: ["sales-invoices"] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["journal-entries"] });
+    },
+  });
+}
+
+export interface PurchaseRequest {
+  id: string;
+  requestNumber: string;
+  requesterName: string;
+  department?: string | null;
+  requestDate: string;
+  requiredDate?: string | null;
+  reason?: string | null;
+  notes?: string | null;
+  status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED" | "CONVERTED";
+  items: any[];
+  createdAt: string;
+}
+
+export function usePurchaseRequests(params?: {
+  search?: string;
+  status?: string;
+}) {
+  const q = new URLSearchParams();
+  if (params?.search) q.append("search", params.search);
+  if (params?.status) q.append("status", params.status);
+  const qStr = q.toString() ? `?${q.toString()}` : "";
+
+  return useQuery<PurchaseRequest[]>({
+    queryKey: ["purchase-requests", params],
+    queryFn: () =>
+      fetchJson<PurchaseRequest[]>(`/api/commercial/purchase-requests${qStr}`),
+  });
+}
+
+export function useCreatePurchaseRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      fetchJson<PurchaseRequest>("/api/commercial/purchase-requests", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["purchase-requests"] });
+    },
+  });
+}
+
+export function useApprovePurchaseRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      action,
+    }: {
+      id: string;
+      action: "APPROVE" | "REJECT";
+    }) =>
+      fetchJson<any>(`/api/commercial/purchase-requests/${id}/approve`, {
+        method: "POST",
+        body: JSON.stringify({ action }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["purchase-requests"] });
+    },
+  });
+}
+
+export function useConvertPurchaseRequestToPo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, supplierId }: { id: string; supplierId?: string }) =>
+      fetchJson<any>(`/api/commercial/purchase-requests/${id}/convert-po`, {
+        method: "POST",
+        body: JSON.stringify({ supplierId }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["purchase-requests"] });
+      qc.invalidateQueries({ queryKey: ["purchaseOrders"] });
+    },
+  });
+}
+
+export interface GoodsReceipt {
+  id: string;
+  grnNumber: string;
+  purchaseOrderId?: string | null;
+  supplierId?: string | null;
+  warehouseId?: string | null;
+  receiptDate: string;
+  deliveryNoteNumber?: string | null;
+  status: "DRAFT" | "COMPLETED" | "CANCELLED";
+  notes?: string | null;
+  items: any[];
+  supplier?: any;
+  warehouse?: any;
+  purchaseOrder?: any;
+  createdAt: string;
+}
+
+export function useGoodsReceipts(search?: string) {
+  const qStr = search ? `?search=${encodeURIComponent(search)}` : "";
+  return useQuery<GoodsReceipt[]>({
+    queryKey: ["goods-receipts", search],
+    queryFn: () =>
+      fetchJson<GoodsReceipt[]>(`/api/commercial/goods-received${qStr}`),
+  });
+}
+
+export function useCreateGoodsReceipt() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      fetchJson<GoodsReceipt>("/api/commercial/goods-received", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["goods-receipts"] });
+      qc.invalidateQueries({ queryKey: ["purchaseOrders"] });
+      qc.invalidateQueries({ queryKey: ["stockLevels"] });
+    },
+  });
+}
+
+export interface SupplierBill {
+  id: string;
+  billNumber: string;
+  supplierId?: string | null;
+  supplierName: string;
+  supplierTrn?: string | null;
+  purchaseOrderId?: string | null;
+  goodsReceiptId?: string | null;
+  billDate: string;
+  dueDate?: string | null;
+  status: "DRAFT" | "POSTED" | "PARTIALLY_PAID" | "PAID" | "CANCELLED";
+  subtotal: number;
+  discount: number;
+  vatRate: number;
+  vatAmount: number;
+  totalAmount: number;
+  paidAmount: number;
+  remainingBalance: number;
+  items: any[];
+  supplier?: any;
+  createdAt: string;
+}
+
+export function useSupplierBills(params?: {
+  search?: string;
+  status?: string;
+}) {
+  const q = new URLSearchParams();
+  if (params?.search) q.append("search", params.search);
+  if (params?.status) q.append("status", params.status);
+  const qStr = q.toString() ? `?${q.toString()}` : "";
+
+  return useQuery<SupplierBill[]>({
+    queryKey: ["supplier-bills", params],
+    queryFn: () =>
+      fetchJson<SupplierBill[]>(`/api/commercial/supplier-bills${qStr}`),
+  });
+}
+
+export function useCreateSupplierBill() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      fetchJson<SupplierBill>("/api/commercial/supplier-bills", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["supplier-bills"] });
+    },
+  });
+}
+
+export function usePostSupplierBill() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<any>(`/api/commercial/supplier-bills/${id}/post`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["supplier-bills"] });
+      qc.invalidateQueries({ queryKey: ["journal-entries"] });
+    },
+  });
+}
+
+export interface SupplierPayment {
+  id: string;
+  paymentNumber: string;
+  supplierId?: string | null;
+  supplierName: string;
+  supplierBillId?: string | null;
+  paymentDate: string;
+  amount: number;
+  paymentMethod: "CASH" | "BANK_TRANSFER" | "CHEQUE";
+  referenceNumber?: string | null;
+  notes?: string | null;
+  supplierBill?: SupplierBill;
+  supplier?: any;
+  createdAt: string;
+}
+
+export function useSupplierPayments(search?: string) {
+  const qStr = search ? `?search=${encodeURIComponent(search)}` : "";
+  return useQuery<SupplierPayment[]>({
+    queryKey: ["supplier-payments", search],
+    queryFn: () =>
+      fetchJson<SupplierPayment[]>(`/api/commercial/supplier-payments${qStr}`),
+  });
+}
+
+export function useCreateSupplierPayment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      fetchJson<SupplierPayment>("/api/commercial/supplier-payments", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["supplier-payments"] });
+      qc.invalidateQueries({ queryKey: ["supplier-bills"] });
+      qc.invalidateQueries({ queryKey: ["journal-entries"] });
+    },
+  });
+}
+
+export interface DebitNote {
+  id: string;
+  debitNoteNumber: string;
+  supplierId?: string | null;
+  supplierName: string;
+  supplierBillId?: string | null;
+  purchaseOrderId?: string | null;
+  returnDate: string;
+  reason?: string | null;
+  subtotal: number;
+  vatAmount: number;
+  totalAmount: number;
+  status: "DRAFT" | "POSTED" | "CANCELLED";
+  items: any[];
+  supplier?: any;
+  supplierBill?: SupplierBill;
+  createdAt: string;
+}
+
+export function useDebitNotes(search?: string) {
+  const qStr = search ? `?search=${encodeURIComponent(search)}` : "";
+  return useQuery<DebitNote[]>({
+    queryKey: ["debit-notes", search],
+    queryFn: () => fetchJson<DebitNote[]>(`/api/commercial/debit-notes${qStr}`),
+  });
+}
+
+export function useCreateDebitNote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      fetchJson<DebitNote>("/api/commercial/debit-notes", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["debit-notes"] });
+      qc.invalidateQueries({ queryKey: ["supplier-bills"] });
+      qc.invalidateQueries({ queryKey: ["journal-entries"] });
     },
   });
 }

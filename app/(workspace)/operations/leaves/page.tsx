@@ -47,9 +47,14 @@ export default function LeavesPage() {
   const updateStatus = useUpdateLeaveStatus();
   const deleteLeave = useDeleteLeaveRequest();
 
-  const pendingCount = leaves.filter((l) => l.status === "PENDING").length;
-  const approvedCount = leaves.filter((l) => l.status === "APPROVED").length;
-  const rejectedCount = leaves.filter((l) => l.status === "REJECTED").length;
+  const stats = useMemo(
+    () => ({
+      pending: leaves.filter((l) => l.status === "PENDING").length,
+      approved: leaves.filter((l) => l.status === "APPROVED").length,
+      rejected: leaves.filter((l) => l.status === "REJECTED").length,
+    }),
+    [leaves],
+  );
 
   const form = useForm({
     defaultValues: {
@@ -265,7 +270,7 @@ export default function LeavesPage() {
             Pending Review
           </p>
           <p className="text-2xl font-black text-amber-600 mt-1">
-            {pendingCount}
+            {stats.pending}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
             Awaiting HR authorization
@@ -277,7 +282,7 @@ export default function LeavesPage() {
             Approved Leaves
           </p>
           <p className="text-2xl font-black text-emerald-800 mt-1">
-            {approvedCount}
+            {stats.approved}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">Granted time off</p>
         </div>
@@ -287,7 +292,7 @@ export default function LeavesPage() {
             Rejected Requests
           </p>
           <p className="text-2xl font-black text-rose-800 mt-1">
-            {rejectedCount}
+            {stats.rejected}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">Declined applications</p>
         </div>

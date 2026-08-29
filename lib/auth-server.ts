@@ -51,9 +51,13 @@ export function isAdminRole(role: UserRole): boolean {
   return role === "ADMIN" || role === "SUPER_ADMIN";
 }
 
-export function hasRole(actor: AuthUser, ...roles: UserRole[]): boolean {
+export function hasRole(
+  actor: AuthUser,
+  ...roles: (UserRole | UserRole[])[]
+): boolean {
   if (actor.role === "SUPER_ADMIN" || actor.role === "ADMIN") return true;
-  return roles.includes(actor.role);
+  const flatRoles = roles.flat();
+  return flatRoles.includes(actor.role);
 }
 
 export function canModifyResource(

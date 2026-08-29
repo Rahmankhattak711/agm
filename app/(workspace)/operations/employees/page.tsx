@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import { useAuth } from "@/context/AuthContext";
+import { formatAed } from "@/lib/utils/format";
 import {
   useEmployees,
   useUpdateEmployee,
@@ -49,21 +50,24 @@ export default function EmployeesPage() {
   const updateEmployeeMutation = useUpdateEmployee();
   const deleteEmployeeMutation = useDeleteEmployee();
 
-  const totalWorkforce = employees.length;
-  const activeStaff = employees.filter(
-    (e) => e.employmentStatus === "ACTIVE",
-  ).length;
-  const totalMonthlyPayroll = employees
-    .filter((e) => e.employmentStatus === "ACTIVE")
-    .reduce(
-      (sum, e) =>
-        sum +
-        Number(e.basicSalary || 0) +
-        Number(e.housingAllowance || 0) +
-        Number(e.transportAllowance || 0) +
-        Number(e.otherAllowances || 0),
-      0,
-    );
+  const stats = useMemo(
+    () => ({
+      total: employees.length,
+      active: employees.filter((e) => e.employmentStatus === "ACTIVE").length,
+      monthlyPayroll: employees
+        .filter((e) => e.employmentStatus === "ACTIVE")
+        .reduce(
+          (sum, e) =>
+            sum +
+            Number(e.basicSalary || 0) +
+            Number(e.housingAllowance || 0) +
+            Number(e.transportAllowance || 0) +
+            Number(e.otherAllowances || 0),
+          0,
+        ),
+    }),
+    [employees],
+  );
 
   const departments = Array.from(
     new Set(employees.map((e) => e.department).filter(Boolean)),
@@ -379,7 +383,7 @@ export default function EmployeesPage() {
             Total Workforce
           </p>
           <p className="text-2xl font-black text-slate-900 mt-1">
-            {totalWorkforce}
+            {stats.total}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">Registered personnel</p>
         </div>
@@ -389,7 +393,7 @@ export default function EmployeesPage() {
             Active Staff
           </p>
           <p className="text-2xl font-black text-emerald-800 mt-1">
-            {activeStaff}
+            {stats.active}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">On-duty workforce</p>
         </div>
@@ -399,7 +403,7 @@ export default function EmployeesPage() {
             Monthly Payroll Commitment
           </p>
           <p className="text-2xl font-black text-slate-900 mt-1">
-            {formatCurrency(totalMonthlyPayroll)}
+            {formatAed(stats.monthlyPayroll)}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
             Basic + allowances (WPS)
