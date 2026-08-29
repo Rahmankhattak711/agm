@@ -10,16 +10,16 @@ export const QuotationFooter: React.FC<QuotationFooterProps> = ({
   return (
     <div
       className={`mt-4 print:mt-0 print:fixed print:bottom-0 print:left-0 print:right-0 print:w-full print:z-50 relative w-full bg-transparent print-avoid-break overflow-hidden ${className}`}
-      style={{ aspectRatio: "1536 / 100" }}
+      style={{ aspectRatio: "1336 / 100" }}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 1536 100"
-        width="100%"
-        height="100%"
+        width="93%"
+        height="93%"
         preserveAspectRatio="xMidYMid meet"
-        style={{ display: "block" }}
-        fontFamily="Arial, Helvetica, sans-serif"
+        style={{ display: "flex", justifySelf: "center", margin: "auto" }}
+        // fontFamily="Arial, Helvetica, sans-serif"
       >
         <rect x="0" y="0" width="1536" height="100" fill="#ffffff" />
 

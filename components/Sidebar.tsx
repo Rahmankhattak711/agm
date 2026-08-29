@@ -3,138 +3,143 @@
 import { useAuth } from "@/context/AuthContext";
 import { getSectionFromPath, SECTION_PATHS } from "@/lib/navigation";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import AgmLogo from "./AgmLogo";
 import {
   AccountsIcon,
   AttendanceIcon,
   BonusesIcon,
   ChevronsLeftIcon,
+  CustomersIcon,
   DashboardIcon,
   EmployeesIcon,
+  ExpensesIcon,
   FixedAssetsIcon,
   JournalEntriesIcon,
   LeavesIcon,
   LogoutIcon,
-  PettyCashIcon,
-  ProductsIcon,
+  PayablesIcon,
   PurchaseOrdersIcon,
+  PurchaseReturnsIcon,
+  QuotationsIcon,
+  ReceivablesIcon,
   ReportsIcon,
-  StockMovementsIcon,
+  SalesReturnsIcon,
+  SalesVouchersIcon,
   SuppliersIcon,
+  TaxVatIcon,
   UserAdminIcon,
   WarehousesIcon,
 } from "./icons";
+import { ChevronDown, ChevronRight, ShoppingCart, Landmark, DollarSign, Wallet } from "lucide-react";
 
 interface SidebarProps {
   activeSection?: string;
   onNavigate?: (section: string) => void;
 }
 
-interface NavItem {
+export interface SubNavItem {
+  id: string;
+  label: string;
+  href: string;
+}
+
+export interface NavItem {
   id: string;
   label: string;
   icon: React.ReactNode;
+  href?: string;
+  children?: SubNavItem[];
 }
 
-interface NavGroup {
+export interface NavGroup {
   label: string;
   items: NavItem[];
 }
 
 const navGroups: NavGroup[] = [
   {
-    label: "Overview",
+    label: "Finance",
     items: [
       {
         id: "dashboard",
         label: "Dashboard",
         icon: <DashboardIcon />,
-      },
-    ],
-  },
-  {
-    label: "Inventory Management",
-    items: [
-      {
-        id: "products",
-        label: "Products & Stock",
-        icon: <ProductsIcon />,
+        href: "/dashboard",
       },
       {
-        id: "stock-movements",
-        label: "Stock Movements",
-        icon: <StockMovementsIcon />,
+        id: "sales-group",
+        label: "Sales",
+        icon: <QuotationsIcon />,
+        href: "/commercial/sales-invoices",
+        children: [
+          { id: "quotations", label: "Quotations", href: "/commercial/quotations" },
+          { id: "sales-invoices", label: "Sales Invoices", href: "/commercial/sales-invoices" },
+          { id: "sales-returns", label: "Sales Returns", href: "/inventory/sales-returns" },
+          { id: "customers", label: "Customers", href: "/commercial/customers" },
+        ],
       },
       {
-        id: "purchase-orders",
-        label: "Purchase Orders",
+        id: "purchases-group",
+        label: "Purchases",
         icon: <PurchaseOrdersIcon />,
+        href: "/commercial/supplier-bills",
+        children: [
+          { id: "purchase-orders", label: "Purchase Orders", href: "/inventory/purchase-orders" },
+          { id: "supplier-bills", label: "Purchase Invoices", href: "/commercial/supplier-bills" },
+          { id: "purchase-returns", label: "Purchase Returns", href: "/inventory/purchase-returns" },
+          { id: "suppliers", label: "Suppliers", href: "/inventory/suppliers" },
+        ],
       },
       {
-        id: "suppliers",
-        label: "Suppliers / Vendors",
-        icon: <SuppliersIcon />,
+        id: "accounts-group",
+        label: "Accounts",
+        icon: <AccountsIcon />,
+        href: "/finance/accounts",
+        children: [
+          { id: "accounts", label: "Chart of Accounts", href: "/finance/accounts" },
+          { id: "journals", label: "Journal Entries", href: "/finance/journal-entries" },
+          { id: "expenses", label: "Direct Expenses", href: "/finance/expenses" },
+        ],
       },
       {
-        id: "warehouses",
-        label: "Warehouses",
-        icon: <WarehousesIcon />,
+        id: "reports-group",
+        label: "Reports",
+        icon: <ReportsIcon />,
+        href: "/finance/reports",
+        children: [
+          { id: "finance-reports", label: "Financial Statements", href: "/finance/reports" },
+          { id: "report-sales", label: "Sales Reports", href: "/reports/sales" },
+          { id: "report-purchases", label: "Purchase Reports", href: "/reports/purchases" },
+          { id: "report-vat", label: "VAT & Tax Return", href: "/reports/vat" },
+          { id: "report-management", label: "Executive Summary", href: "/reports/management" },
+        ],
       },
     ],
   },
   {
-    label: "HR & Operations",
+    label: "Operations",
     items: [
       {
-        id: "employees",
-        label: "Employees Directory",
+        id: "hr-group",
+        label: "Human Resources",
         icon: <EmployeesIcon />,
+        href: "/operations/employees",
+        children: [
+          { id: "employees", label: "Employees Directory", href: "/operations/employees" },
+          { id: "attendance", label: "Daily Attendance", href: "/operations/attendance" },
+          { id: "leaves", label: "Leave Management", href: "/operations/leaves" },
+          { id: "bonuses", label: "Bonuses & Payroll", href: "/operations/bonuses" },
+        ],
       },
       {
-        id: "attendance",
-        label: "Daily Attendance",
-        icon: <AttendanceIcon />,
-      },
-      {
-        id: "leaves",
-        label: "Leave Management",
-        icon: <LeavesIcon />,
-      },
-      {
-        id: "bonuses",
-        label: "Bonuses & Incentives",
-        icon: <BonusesIcon />,
-      },
-      {
-        id: "assets",
+        id: "assets-group",
         label: "Fixed Assets",
         icon: <FixedAssetsIcon />,
-      },
-    ],
-  },
-  {
-    label: "Finance & Accounts",
-    items: [
-      {
-        id: "accounts",
-        label: "Chart of Accounts",
-        icon: <AccountsIcon />,
-      },
-      {
-        id: "journals",
-        label: "Journal Entries",
-        icon: <JournalEntriesIcon />,
-      },
-      {
-        id: "petty-cash",
-        label: "Petty Cash",
-        icon: <PettyCashIcon />,
-      },
-      {
-        id: "reports",
-        label: "Financial Reports",
-        icon: <ReportsIcon />,
+        href: "/operations/fixed-assets",
+        children: [
+          { id: "assets", label: "Asset Registry & Depreciation", href: "/operations/fixed-assets" },
+        ],
       },
     ],
   },
@@ -145,6 +150,7 @@ const navGroups: NavGroup[] = [
         id: "admin",
         label: "User Management",
         icon: <UserAdminIcon />,
+        href: "/administration/users",
       },
     ],
   },
@@ -152,27 +158,53 @@ const navGroups: NavGroup[] = [
 
 export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+    "sales-group": true,
+    "purchases-group": false,
+    "accounts-group": false,
+    "reports-group": false,
+    "hr-group": false,
+    "assets-group": false,
+  });
+
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, loading } = useAuth();
 
-  const currentSection = activeSection ?? getSectionFromPath(pathname);
-  const handleNavigation = (section: string) => {
-    if (onNavigate) {
-      onNavigate(section);
-      return;
-    }
-    router.push(SECTION_PATHS[section] ?? "/dashboard");
+  // Auto-expand group if current pathname matches a child
+  useEffect(() => {
+    navGroups.forEach((g) => {
+      g.items.forEach((item) => {
+        if (item.children) {
+          const hasMatchingChild = item.children.some(
+            (c) => pathname === c.href || pathname.startsWith(`${c.href}/`),
+          );
+          if (hasMatchingChild) {
+            setExpandedGroups((prev) => ({ ...prev, [item.id]: true }));
+          }
+        }
+      });
+    });
+  }, [pathname]);
+
+  const toggleGroup = (groupId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
   };
 
-  const groups = navGroups;
+  const handleNavigateHref = (href: string) => {
+    router.push(href);
+  };
 
   if (loading) {
     return (
       <aside
         className="w-[240px] transition-all duration-300 flex flex-col h-screen sticky top-0 z-40 bg-gradient-to-b from-[#2c455a] via-[#233a4d] to-[#1d3345] border-r border-white/12 shadow-[4px_0_28px_rgba(38,59,77,0.18)] overflow-hidden"
         style={{
-          width: collapsed ? 68 : 240,
+          width: collapsed ? 74 : 240,
         }}
       >
         <div className="p-4 text-white/60">Loading...</div>
@@ -196,6 +228,7 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
         width: collapsed ? 74 : 240,
       }}
     >
+      {/* Architectural Wireframe Background */}
       <div className="pointer-events-none absolute inset-y-0 right-[-90px] w-[260px] opacity-20">
         <svg aria-hidden="true" viewBox="0 0 240 720" className="h-full w-full">
           <path
@@ -207,7 +240,8 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
         </svg>
       </div>
 
-      <div className="relative z-10 flex items-center gap-2 border-b border-white/8 px-3 min-h-[78px]">
+      {/* Header with Logo and Collapse Toggle */}
+      <div className="relative z-10 flex items-center gap-2 border-b border-white/8 px-3 min-h-[72px]">
         {!collapsed ? (
           <div className="w-full flex items-center">
             <AgmLogo size="sm" collapsed={false} theme="dark" />
@@ -231,8 +265,9 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
         </button>
       </div>
 
+      {/* Navigation List */}
       <nav className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden p-3 custom-scrollbar">
-        {groups.map((group) => (
+        {navGroups.map((group) => (
           <div key={group.label} className="mb-3">
             {!collapsed && (
               <p className="px-2.5 pb-1.5 pt-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/35">
@@ -242,49 +277,112 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
             {collapsed && <div className="h-1.5" />}
 
             {group.items.map((item) => {
-              const active = currentSection === item.id;
+              const hasChildren = Boolean(item.children && item.children.length > 0);
+              const isExpanded = Boolean(expandedGroups[item.id]);
+
+              const isDirectActive = item.href ? pathname === item.href : false;
+              const isChildActive = hasChildren
+                ? item.children!.some(
+                    (c) => pathname === c.href || pathname.startsWith(`${c.href}/`),
+                  )
+                : false;
+
+              const active = isDirectActive || isChildActive;
 
               return (
-                <button
-                  key={item.id}
-                  id={`nav-${item.id}`}
-                  onClick={() => handleNavigation(item.id)}
-                  title={collapsed ? item.label : undefined}
-                  className={`group relative mb-1 flex w-full items-center rounded-[12px] border-none text-left transition-all duration-200 cursor-pointer ${
-                    collapsed ? "justify-center" : "justify-start"
-                  } ${
-                    active
-                      ? "bg-gradient-to-r from-white/16 to-white/6 text-white shadow-[inset_0_0_0_1px_rgba(233,242,234,0.16)]"
-                      : "text-white/65 hover:bg-white/6 hover:text-white"
-                  }`}
-                  style={{ padding: collapsed ? "10px 0" : "8px 10px" }}
-                >
-                  {active && (
-                    <span className="absolute left-0 top-1/2 h-[18px] w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-[#dff7e6] to-[#9ec7a7]" />
-                  )}
+                <div key={item.id} className="mb-1">
+                  <div
+                    onClick={() => {
+                      if (hasChildren && !collapsed) {
+                        setExpandedGroups((prev) => ({
+                          ...prev,
+                          [item.id]: !prev[item.id],
+                        }));
+                      } else if (item.href) {
+                        handleNavigateHref(item.href);
+                      }
+                    }}
+                    title={collapsed ? item.label : undefined}
+                    className={`group relative flex w-full items-center rounded-[12px] border-none text-left transition-all duration-200 cursor-pointer ${
+                      collapsed ? "justify-center" : "justify-start"
+                    } ${
+                      active && (!hasChildren || collapsed)
+                        ? "bg-gradient-to-r from-white/16 to-white/6 text-white shadow-[inset_0_0_0_1px_rgba(233,242,234,0.16)]"
+                        : active && hasChildren
+                        ? "text-white font-bold bg-white/6"
+                        : "text-white/65 hover:bg-white/6 hover:text-white"
+                    }`}
+                    style={{ padding: collapsed ? "10px 0" : "7px 10px" }}
+                  >
+                    {active && (!hasChildren || collapsed) && (
+                      <span className="absolute left-0 top-1/2 h-[18px] w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-[#dff7e6] to-[#9ec7a7]" />
+                    )}
 
-                  <span className="flex shrink-0 items-center justify-center">
-                    {item.icon}
-                  </span>
-
-                  {!collapsed && (
-                    <span
-                      className={`ml-2.5 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] ${
-                        active ? "font-bold text-white" : "font-medium"
-                      }`}
-                    >
-                      {item.label}
+                    <span className="flex shrink-0 items-center justify-center w-5 text-center">
+                      {item.icon}
                     </span>
+
+                    {!collapsed && (
+                      <div className="flex items-center justify-between flex-1 ml-2.5 min-w-0">
+                        <span
+                          className={`overflow-hidden text-ellipsis whitespace-nowrap text-[12.5px] ${
+                            active ? "font-bold text-white" : "font-medium"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+
+                        {hasChildren && (
+                          <span
+                            onClick={(e) => toggleGroup(item.id, e)}
+                            className="p-1 rounded-md hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                          >
+                            <ChevronDown
+                              size={12}
+                              className={`transition-transform duration-200 ${
+                                isExpanded ? "rotate-0" : "-rotate-90"
+                              }`}
+                            />
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Expandable Sub-items */}
+                  {hasChildren && isExpanded && !collapsed && (
+                    <div className="ml-6 pl-2 mt-0.5 border-l border-white/10 space-y-0.5">
+                      {item.children!.map((child) => {
+                        const childActive =
+                          pathname === child.href || pathname.startsWith(`${child.href}/`);
+                        return (
+                          <button
+                            key={child.id}
+                            type="button"
+                            onClick={() => handleNavigateHref(child.href)}
+                            className={`flex items-center w-full px-2.5 py-1.5 rounded-lg text-[11.5px] text-left transition-colors cursor-pointer ${
+                              childActive
+                                ? "font-bold text-emerald-300 bg-white/10"
+                                : "font-medium text-white/60 hover:text-white hover:bg-white/5"
+                            }`}
+                          >
+                            <span className="truncate">{child.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   )}
-                </button>
+                </div>
               );
             })}
           </div>
         ))}
       </nav>
 
+      {/* Divider */}
       <div className="relative z-10 mx-2.5 h-px bg-white/8" />
 
+      {/* User Footer Profile Card */}
       <div className="relative z-10 p-2.5">
         {!collapsed ? (
           <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/6 p-2.5 backdrop-blur-sm">

@@ -2,6 +2,7 @@
 
 import React, { useEffect, type ReactNode } from "react";
 import Sidebar from "@/components/Sidebar";
+import GlobalCreateMenu from "@/components/GlobalCreateMenu";
 import { SpinnerIcon } from "@/components/icons";
 import { useAuth } from "@/context/AuthContext";
 import { getPageMeta } from "@/lib/navigation";
@@ -51,7 +52,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
     >
       <Sidebar />
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <header className="flex-shrink-0 flex items-center justify-between gap-4 h-[72px] px-8 border-b border-slate-200/80 bg-white/80 backdrop-blur-xl shadow-xs">
+        <header className="relative z-50 flex-shrink-0 flex items-center justify-between gap-4 h-[72px] px-8 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs">
           <div className="flex flex-col justify-center">
             {eyebrow && (
               <div className="flex items-center gap-1.5 mb-1">
@@ -66,21 +67,25 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
             </h1>
           </div>
 
-          {user && (
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-950 text-white font-black text-xs flex items-center justify-center shadow-2xs border border-emerald-700/40 select-none">
-                {userInitials}
+          <div className="flex items-center gap-4">
+            <GlobalCreateMenu />
+
+            {user && (
+              <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-950 text-white font-black text-xs flex items-center justify-center shadow-2xs border border-emerald-700/40 select-none">
+                  {userInitials}
+                </div>
+                <div className="hidden md:flex flex-col text-left">
+                  <span className="text-xs font-bold text-slate-900 leading-tight">
+                    {user.fullName || user.email}
+                  </span>
+                  <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">
+                    {user.role ? user.role.replace("_", " ") : "Member"}
+                  </span>
+                </div>
               </div>
-              <div className="hidden md:flex flex-col text-left">
-                <span className="text-xs font-bold text-slate-900 leading-tight">
-                  {user.fullName || user.email}
-                </span>
-                <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">
-                  {user.role ? user.role.replace("_", " ") : "Member"}
-                </span>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto px-8 py-6">{children}</main>

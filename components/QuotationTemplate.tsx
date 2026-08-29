@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui";
 import {
   QuotationRecord,
   useAccounts,
@@ -21,7 +21,7 @@ import {
   Save,
   Zap,
 } from "lucide-react";
-import { Button } from "@/components/ui";
+import React, { useEffect, useState } from "react";
 import {
   DEFAULT_PAYMENT_TERMS,
   DEFAULT_TERMS_AND_CONDITIONS,
@@ -37,19 +37,18 @@ import {
   QuotationMeta,
   QuotationPaymentTerms,
   QuotationSavedModal,
-  QuotationSignatures,
   QuotationTemplateProps,
   QuotationTerms,
   QuotationTotalsTable,
   SAMPLE_SCOPE_ITEMS,
 } from "./quotation";
 
-export type { QuotationMeta, QuotationItem, QuotationTemplateProps };
 export {
-  DEFAULT_TERMS_AND_CONDITIONS,
   DEFAULT_PAYMENT_TERMS,
+  DEFAULT_TERMS_AND_CONDITIONS,
   SAMPLE_SCOPE_ITEMS,
 };
+export type { QuotationItem, QuotationMeta, QuotationTemplateProps };
 
 export default function QuotationTemplate({
   initialMeta,
@@ -633,7 +632,7 @@ export default function QuotationTemplate({
           <tfoot className="print-page-footer-group">
             <tr>
               <td className="p-0 border-none">
-                <div className="h-[75px] w-full hidden print:block" />
+                <div className="h-[88px] w-full hidden print:block" />
                 <div className="print:hidden">
                   <QuotationFooter />
                 </div>
