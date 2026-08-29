@@ -11,7 +11,6 @@ import {
   UserItem,
 } from "@/lib/hooks/api-hooks";
 import { useAuth } from "@/context/AuthContext";
-import { PlusIcon } from "@/components/icons";
 import {
   Button,
   Input,
@@ -22,38 +21,53 @@ import {
   FormSelect,
   FormSubmit,
 } from "@/components/ui";
-import { Trash2, Edit3 } from "lucide-react";
+import {
+  Users,
+  UserCheck,
+  Shield,
+  ShieldCheck,
+  Building2,
+  Printer,
+  Plus,
+  Search,
+  Trash2,
+  Edit3,
+  CheckCircle2,
+  Lock,
+  Mail,
+  Layers,
+} from "lucide-react";
 
 const ROLES = [
   {
     value: "SUPER_ADMIN",
     label: "Super Admin",
-    color: "bg-purple-100 text-purple-800 border border-purple-200",
+    color: "bg-purple-50 text-purple-800 border-purple-200",
   },
   {
     value: "ADMIN",
     label: "Admin",
-    color: "bg-blue-100 text-blue-800 border border-blue-200",
+    color: "bg-sky-50 text-sky-800 border-sky-200",
   },
   {
     value: "ACCOUNTANT",
     label: "Accountant",
-    color: "bg-emerald-100 text-emerald-800 border border-emerald-200",
+    color: "bg-emerald-50 text-emerald-800 border-emerald-200",
   },
   {
     value: "HR",
     label: "HR Specialist",
-    color: "bg-pink-100 text-pink-800 border border-pink-200",
+    color: "bg-teal-50 text-teal-800 border-teal-200",
   },
   {
     value: "INVENTORY_MANAGER",
     label: "Inventory Manager",
-    color: "bg-amber-100 text-amber-800 border border-amber-200",
+    color: "bg-amber-50 text-amber-800 border-amber-200",
   },
   {
     value: "USER",
     label: "Standard User",
-    color: "bg-slate-100 text-slate-700 border border-slate-200",
+    color: "bg-slate-100 text-slate-700 border-slate-200",
   },
 ];
 
@@ -79,12 +93,34 @@ export default function UsersPage() {
     return (users || []).filter((u) => {
       const q = search.toLowerCase();
       const matchesSearch =
+        !q ||
         u.fullName.toLowerCase().includes(q) ||
         u.email.toLowerCase().includes(q);
       const matchesRole = roleFilter === "ALL" || u.role === roleFilter;
       return matchesSearch && matchesRole;
     });
   }, [users, search, roleFilter]);
+
+  const superAdminCount = useMemo(
+    () => users.filter((u) => u.role === "SUPER_ADMIN" || u.role === "ADMIN").length,
+    [users],
+  );
+
+  const activeCount = useMemo(
+    () => users.filter((u) => u.isActive).length,
+    [users],
+  );
+
+  const staffCount = useMemo(
+    () =>
+      users.filter(
+        (u) =>
+          u.role === "ACCOUNTANT" ||
+          u.role === "HR" ||
+          u.role === "INVENTORY_MANAGER",
+      ).length,
+    [users],
+  );
 
   const createForm = useForm({
     defaultValues: {
@@ -201,19 +237,19 @@ export default function UsersPage() {
     () => [
       {
         accessorKey: "fullName",
-        header: "User",
+        header: "User Details",
         cell: ({ row }) => (
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4c8b60] to-[#25533d] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            <div className="w-8 h-8 rounded-lg bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
               {row.original.fullName.slice(0, 2).toUpperCase()}
             </div>
             <div>
-              <span className="font-semibold text-slate-900 block text-xs">
+              <span className="font-bold text-slate-900 block text-xs">
                 {row.original.fullName}
               </span>
               {row.original.id === currentUser?.id && (
-                <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
-                  You
+                <span className="text-[9px] font-bold text-teal-800 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
+                  Current Session
                 </span>
               )}
             </div>
@@ -224,35 +260,37 @@ export default function UsersPage() {
         accessorKey: "email",
         header: "Email Address",
         cell: ({ row }) => (
-          <span className="font-mono text-slate-600 text-xs">
+          <span className="font-mono text-slate-700 text-xs">
             {row.original.email}
           </span>
         ),
       },
       {
         accessorKey: "role",
-        header: "Role",
+        header: () => <div className="text-center">Role / Access Level</div>,
         cell: ({ row }) => {
           const roleObj = ROLES.find((r) => r.value === row.original.role);
           return (
-            <span
-              className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${roleObj?.color || "bg-slate-100"}`}
-            >
-              {roleObj?.label || row.original.role}
-            </span>
+            <div className="text-center">
+              <span
+                className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-bold border ${roleObj?.color || "bg-slate-100"}`}
+              >
+                {roleObj?.label || row.original.role}
+              </span>
+            </div>
           );
         },
       },
       {
         accessorKey: "isActive",
-        header: "Status",
+        header: () => <div className="text-center">Account Status</div>,
         cell: ({ row }) => (
           <div className="text-center">
             <span
-              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                 row.original.isActive
-                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                  : "bg-slate-100 text-slate-500 border border-slate-200"
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                  : "bg-slate-100 text-slate-500 border-slate-200"
               }`}
             >
               <span
@@ -265,50 +303,48 @@ export default function UsersPage() {
       },
       {
         accessorKey: "createdAt",
-        header: "Created",
+        header: "Registered Date",
         cell: ({ row }) => (
-          <span className="text-slate-500 text-xs font-mono">
+          <span className="text-slate-600 text-xs font-mono">
             {new Date(row.original.createdAt).toLocaleDateString("en-GB")}
           </span>
         ),
       },
       {
         id: "actions",
-        header: "Actions",
+        header: () => <div className="text-center">Actions</div>,
         cell: ({ row }) => {
           const allowed = canManageTargetUser(row.original);
 
           if (!allowed && row.original.id !== currentUser?.id) {
             return (
-              <div className="flex items-center justify-end">
-                <span className="text-[10px] font-semibold text-slate-400">
-                  Protected
+              <div className="flex items-center justify-center">
+                <span className="text-[10px] font-semibold text-slate-400 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                  Protected 🔒
                 </span>
               </div>
             );
           }
 
           return (
-            <div className="flex items-center justify-end gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-slate-700 hover:bg-slate-50 gap-1 text-xs"
+            <div className="flex items-center justify-center gap-1.5">
+              <button
+                type="button"
                 onClick={() => handleOpenEditModal(row.original)}
-                icon={<Edit3 size={13} />}
+                className="p-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-600 transition cursor-pointer"
+                title="Edit User"
               >
-                Edit
-              </Button>
+                <Edit3 size={13} />
+              </button>
               {row.original.id !== currentUser?.id && allowed && (
-                <Button
-                  variant="danger"
-                  size="sm"
-                  className="gap-1 text-xs"
+                <button
+                  type="button"
                   onClick={() => handleDeleteUser(row.original)}
-                  icon={<Trash2 size={13} />}
+                  className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition cursor-pointer"
+                  title="Delete User"
                 >
-                  Delete
-                </Button>
+                  <Trash2 size={13} />
+                </button>
               )}
             </div>
           );
@@ -320,108 +356,209 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Simple Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <h2 className="text-xl font-black text-slate-900">
-            User & Access Management
-          </h2>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            User &amp; Access Management
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Role-based permissions, credentials management, account status, and
-            system access control.
+            AGM FITOUT TECHNICAL SERVICES LLC — Role-based permissions, credentials management, <br /> account status, and system access control.
           </p>
         </div>
-        {isAdmin && (
+
+        <div className="flex items-center gap-2">
           <Button
-            variant="primary"
-            size="lg"
-            onClick={handleOpenCreateModal}
-            icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-            className="self-start shadow-sm"
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+            icon={<Printer size={14} />}
           >
-            Add New User
+            Print Register
           </Button>
+
+          {isAdmin && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleOpenCreateModal}
+              icon={<Plus size={14} strokeWidth={2.5} />}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            >
+              Add New User
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* 4 Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+        {/* 1. Total Users */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              1. Total System Users
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Registered ERP accounts
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {stats?.total ?? users.length}
+            </span>
+            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
+              Users
+            </span>
+          </div>
+        </div>
+
+        {/* 2. Active Accounts */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              2. Active Accounts
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Operational logins
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-emerald-800 font-mono">
+              {activeCount}
+            </span>
+            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
+              Active
+            </span>
+          </div>
+        </div>
+
+        {/* 3. Super Admins & Admins */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              3. System Admins
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Privileged security roles
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-purple-800 font-mono">
+              {superAdminCount}
+            </span>
+            <span className="text-xs font-bold text-purple-700 font-sans ml-1.5">
+              Admins
+            </span>
+          </div>
+        </div>
+
+        {/* 4. Operations & Finance Managers */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                4. Specialist Roles
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
+                RBAC
+              </span>
+            </div>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Accountant, HR &amp; Inventory
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-teal-900 font-mono">
+              {staffCount}
+            </span>
+            <span className="text-xs font-bold text-teal-700 font-sans ml-1.5">
+              Managers
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Filter & Table Card */}
+      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+        {/* Search & Filter Strip */}
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Status Quick Pills */}
+            <div className="flex flex-wrap items-center gap-1">
+              {[
+                { value: "ALL", label: "All Users" },
+                ...ROLES,
+              ].map((tab) => {
+                const isActive = roleFilter === tab.value;
+                return (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => setRoleFilter(tab.value)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <span className="text-[11px] font-bold text-slate-500 font-mono">
+              {filteredUsers.length} Accounts Listed
+            </span>
+          </div>
+
+          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
+            <div className="w-full sm:w-80 relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search user name or email..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {error ? (
+          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
+            Error loading user accounts: {(error as any).message}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+              <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                Master Users &amp; Permissions Register
+              </h4>
+              <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                {filteredUsers.length} Accounts
+              </span>
+            </div>
+
+            <DataTable
+              columns={columns}
+              data={filteredUsers}
+              isLoading={isLoading}
+              emptyTitle="No users found"
+              emptyMessage="Add users or invite teammates using the button above."
+            />
+          </div>
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Users
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {stats?.total ?? users.length}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Registered ERP user accounts
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-purple-600">
-            Super Admins
-          </p>
-          <p className="text-2xl font-black text-purple-950 mt-1">
-            {stats?.byRole?.SUPER_ADMIN || 0}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Full system superusers
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">
-            Accountants & HR
-          </p>
-          <p className="text-2xl font-black text-emerald-950 mt-1">
-            {(stats?.byRole?.ACCOUNTANT || 0) + (stats?.byRole?.HR || 0)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Finance, payroll & HR managers
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
-            Active Status
-          </p>
-          <p className="text-2xl font-black text-blue-950 mt-1">
-            {stats?.active ?? users.filter((u) => u.isActive).length}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Operational active logins
-          </p>
-        </div>
-      </div>
-
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="w-full sm:w-72">
-            <Input
-              type="text"
-              placeholder="Search user name or email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              options={[{ value: "ALL", label: "All Roles" }, ...ROLES]}
-            />
-          </div>
-        </div>
-
-        <DataTable
-          columns={columns}
-          data={filteredUsers}
-          isLoading={isLoading}
-          emptyTitle="No users found"
-          emptyMessage="Add users or invite teammates using the button above."
-        />
-      </div>
-
+      {/* Modal for Creating User */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -434,10 +571,10 @@ export default function UsersPage() {
             e.stopPropagation();
             createForm.handleSubmit();
           }}
-          className="space-y-4"
+          className="space-y-4 text-xs"
         >
           {formError && (
-            <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
+            <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
               {formError}
             </div>
           )}
@@ -507,57 +644,37 @@ export default function UsersPage() {
             {(field) => (
               <FormSelect
                 field={field}
-                label="Access Role"
-                options={[
-                  ...(isSuperAdmin
-                    ? [
-                        {
-                          value: "SUPER_ADMIN",
-                          label: "Super Admin (Full System Access)",
-                        },
-                        {
-                          value: "ADMIN",
-                          label: "Admin (Operations & Management)",
-                        },
-                      ]
-                    : []),
-                  {
-                    value: "ACCOUNTANT",
-                    label: "Accountant (Finance & Ledgers)",
-                  },
-                  {
-                    value: "HR",
-                    label: "HR (Leaves, Attendance, Staff)",
-                  },
-                  {
-                    value: "INVENTORY_MANAGER",
-                    label: "Inventory Manager (Stock & POs)",
-                  },
-                  { value: "USER", label: "Standard User (Read/Submit)" },
-                ]}
+                label="Assigned System Role *"
+                required
+                options={ROLES.map((r) => ({
+                  value: r.value,
+                  label: r.label,
+                }))}
               />
             )}
           </createForm.Field>
 
-          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsModalOpen(false)}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
             <FormSubmit
               form={createForm}
-              variant="primary"
               loading={createUserMutation.isPending}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
             >
-              Create User
+              Create Account
             </FormSubmit>
           </div>
         </form>
       </Modal>
 
+      {/* Modal for Editing User */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => {
@@ -573,10 +690,10 @@ export default function UsersPage() {
             e.stopPropagation();
             editForm.handleSubmit();
           }}
-          className="space-y-4"
+          className="space-y-4 text-xs"
         >
           {editFormError && (
-            <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
+            <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
               {editFormError}
             </div>
           )}
@@ -589,12 +706,7 @@ export default function UsersPage() {
             }}
           >
             {(field) => (
-              <FormInput
-                field={field}
-                label="Full Name *"
-                placeholder="e.g. John Doe"
-                required
-              />
+              <FormInput field={field} label="Full Name *" required />
             )}
           </editForm.Field>
 
@@ -614,58 +726,35 @@ export default function UsersPage() {
                 field={field}
                 type="email"
                 label="Email Address *"
-                placeholder="user@agm.ae"
                 required
               />
             )}
           </editForm.Field>
 
-          <editForm.Field name="role">
-            {(field) => (
-              <FormSelect
-                field={field}
-                label="Assign Role"
-                disabled={editingUser?.id === currentUser?.id}
-                options={[
-                  ...(isSuperAdmin
-                    ? [
-                        {
-                          value: "SUPER_ADMIN",
-                          label: "Super Admin (Full System Access)",
-                        },
-                        {
-                          value: "ADMIN",
-                          label: "Admin (Operations & Management)",
-                        },
-                      ]
-                    : []),
-                  {
-                    value: "ACCOUNTANT",
-                    label: "Accountant (Finance & Ledgers)",
-                  },
-                  {
-                    value: "HR",
-                    label: "HR (Leaves, Attendance, Staff)",
-                  },
-                  {
-                    value: "INVENTORY_MANAGER",
-                    label: "Inventory Manager (Stock & POs)",
-                  },
-                  { value: "USER", label: "Standard User (Read/Submit)" },
-                ]}
-              />
-            )}
-          </editForm.Field>
+          {isSuperAdmin && (
+            <editForm.Field name="role">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  label="Role *"
+                  required
+                  options={ROLES.map((r) => ({
+                    value: r.value,
+                    label: r.label,
+                  }))}
+                />
+              )}
+            </editForm.Field>
+          )}
 
           <editForm.Field name="isActive">
             {(field) => (
               <FormSelect
                 field={field}
                 label="Account Status"
-                disabled={editingUser?.id === currentUser?.id}
                 options={[
-                  { value: "true", label: "Active (Login allowed)" },
-                  { value: "false", label: "Disabled (Suspended access)" },
+                  { value: "true", label: "Active (Can Log In)" },
+                  { value: "false", label: "Disabled (Blocked)" },
                 ]}
               />
             )}
@@ -684,13 +773,13 @@ export default function UsersPage() {
               <FormInput
                 field={field}
                 type="password"
-                label="Reset Password (leave blank to keep current)"
-                placeholder="New password (optional)"
+                label="Reset Password (Leave blank to keep current)"
+                placeholder="New password..."
               />
             )}
           </editForm.Field>
 
-          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
             <Button
               type="button"
               variant="outline"
@@ -698,15 +787,16 @@ export default function UsersPage() {
                 setIsEditModalOpen(false);
                 setEditingUser(null);
               }}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
             <FormSubmit
               form={editForm}
-              variant="primary"
               loading={updateUserMutation.isPending}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
             >
-              Save Changes
+              Save User Changes
             </FormSubmit>
           </div>
         </form>
