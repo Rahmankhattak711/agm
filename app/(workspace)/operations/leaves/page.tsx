@@ -14,7 +14,6 @@ import {
   LeaveStatus,
   LeaveRequest,
 } from "@/lib/hooks/api-hooks";
-import { PlusIcon } from "@/components/icons";
 import {
   Button,
   Select,
@@ -25,6 +24,22 @@ import {
   FormTextarea,
   FormSubmit,
 } from "@/components/ui";
+import {
+  Calendar,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Users,
+  Printer,
+  Plus,
+  Trash2,
+  Check,
+  X,
+  FileSpreadsheet,
+  ShieldCheck,
+  Search,
+} from "lucide-react";
 
 export default function LeavesPage() {
   const { hasRole, canModify } = useAuth();
@@ -52,6 +67,9 @@ export default function LeavesPage() {
       pending: leaves.filter((l) => l.status === "PENDING").length,
       approved: leaves.filter((l) => l.status === "APPROVED").length,
       rejected: leaves.filter((l) => l.status === "REJECTED").length,
+      totalDays: leaves
+        .filter((l) => l.status === "APPROVED")
+        .reduce((sum, l) => sum + Number(l.totalDays || 0), 0),
     }),
     [leaves],
   );
@@ -100,11 +118,11 @@ export default function LeavesPage() {
   const getStatusBadge = (status: LeaveStatus) => {
     switch (status) {
       case "PENDING":
-        return "bg-amber-100 text-amber-800 border-amber-200";
+        return "bg-amber-50 text-amber-800 border-amber-200";
       case "APPROVED":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200";
+        return "bg-emerald-50 text-emerald-800 border-emerald-200";
       case "REJECTED":
-        return "bg-rose-100 text-rose-800 border-rose-200";
+        return "bg-rose-50 text-rose-800 border-rose-200";
       case "CANCELLED":
         return "bg-slate-100 text-slate-700 border-slate-200";
       default:
@@ -119,11 +137,11 @@ export default function LeavesPage() {
         header: "Employee Details",
         cell: ({ row }) => (
           <div>
-            <span className="font-bold text-slate-900 block">
+            <span className="font-bold text-slate-900 block text-xs">
               {row.original.employee?.firstName}{" "}
               {row.original.employee?.lastName}
             </span>
-            <span className="font-mono text-[10px] text-slate-500 font-semibold uppercase">
+            <span className="font-mono text-[10px] text-teal-800 font-bold bg-teal-50 border border-teal-200 px-1.5 py-0.2 rounded mt-0.5 inline-block">
               {row.original.employee?.employeeCode} &bull;{" "}
               {row.original.employee?.department || "Operations"}
             </span>
@@ -145,10 +163,10 @@ export default function LeavesPage() {
         cell: ({ row }) => (
           <div>
             <span className="font-mono text-xs font-semibold text-slate-800 block">
-              {new Date(row.original.startDate).toLocaleDateString()} &rarr;{" "}
-              {new Date(row.original.endDate).toLocaleDateString()}
+              {new Date(row.original.startDate).toLocaleDateString("en-GB")} &rarr;{" "}
+              {new Date(row.original.endDate).toLocaleDateString("en-GB")}
             </span>
-            <span className="text-[11px] font-bold text-emerald-800">
+            <span className="text-[11px] font-bold text-emerald-800 font-mono">
               {row.original.totalDays} Days
             </span>
           </div>
@@ -156,83 +174,88 @@ export default function LeavesPage() {
       },
       {
         accessorKey: "status",
-        header: "Approval Status",
+        header: () => <div className="text-center">Approval Status</div>,
         cell: ({ row }) => (
-          <span
-            className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusBadge(
-              row.original.status,
-            )}`}
-          >
-            {row.original.status}
-          </span>
+          <div className="text-center">
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(
+                row.original.status,
+              )}`}
+            >
+              {row.original.status}
+            </span>
+          </div>
         ),
       },
       {
         accessorKey: "reason",
         header: "Notes / Reason",
         cell: ({ row }) => (
-          <span className="text-xs text-slate-600 truncate max-w-xs block">
-            {row.original.reason || <span className="text-slate-300">-</span>}
+          <span className="text-xs text-slate-600 truncate max-w-xs block font-medium">
+            {row.original.reason || <span className="text-slate-300">—</span>}
           </span>
         ),
       },
       {
         id: "actions",
-        header: "Actions",
+        header: () => <div className="text-center">Actions</div>,
         cell: ({ row }) => {
           const isPending = row.original.status === "PENDING";
           const canApprove = hasRole("HR");
           const canDelete = canModify(row.original.employeeId, ["HR"]);
 
           return (
-            <div className="flex items-center justify-end gap-1.5">
+            <div className="flex items-center justify-center gap-1.5">
               {!canApprove && !canDelete && (
-                <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
                   View Only
                 </span>
               )}
               {isPending && canApprove && (
                 <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-emerald-700 hover:bg-emerald-50"
+                  <button
+                    type="button"
                     onClick={async () => {
                       await updateStatus.mutateAsync({
                         id: row.original.id,
                         status: "APPROVED",
                       });
                     }}
+                    className="p-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition cursor-pointer text-xs font-bold flex items-center gap-1 px-2 py-1"
+                    title="Approve Leave"
                   >
+                    <Check size={12} strokeWidth={2.5} />
                     Approve
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-rose-700 hover:bg-rose-50"
+                  </button>
+                  <button
+                    type="button"
                     onClick={async () => {
                       await updateStatus.mutateAsync({
                         id: row.original.id,
                         status: "REJECTED",
                       });
                     }}
+                    className="p-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition cursor-pointer text-xs font-bold flex items-center gap-1 px-2 py-1"
+                    title="Reject Leave"
                   >
+                    <X size={12} strokeWidth={2.5} />
                     Reject
-                  </Button>
+                  </button>
                 </>
               )}
               {canDelete && (
-                <Button
-                  variant="danger"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={async () => {
                     if (confirm("Delete this leave application?")) {
                       await deleteLeave.mutateAsync(row.original.id);
                     }
                   }}
+                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 transition cursor-pointer"
+                  title="Delete Application"
                 >
-                  Delete
-                </Button>
+                  <Trash2 size={13} />
+                </button>
               )}
             </div>
           );
@@ -244,166 +267,263 @@ export default function LeavesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Simple Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <h2 className="text-xl font-black text-slate-900">
-            Leave Management & Approvals
-          </h2>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Leave Management &amp; Approvals
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Track annual leaves, medical sick leaves, duration calculators, and
-            supervisor authorizations.
+            AGM FITOUT TECHNICAL SERVICES LLC — Submit and manage employee leave requests, <br /> approve annual/sick leaves, and track time-off balances.
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={handleOpenModal}
-          icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-        >
-          Request Leave
-        </Button>
-      </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+            icon={<Printer size={14} />}
+          >
+            Print Register
+          </Button>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Pending Review
-          </p>
-          <p className="text-2xl font-black text-amber-600 mt-1">
-            {stats.pending}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Awaiting HR authorization
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Approved Leaves
-          </p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">
-            {stats.approved}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Granted time off</p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Rejected Requests
-          </p>
-          <p className="text-2xl font-black text-rose-800 mt-1">
-            {stats.rejected}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Declined applications</p>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleOpenModal}
+            icon={<Plus size={14} strokeWidth={2.5} />}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+          >
+            Apply for Leave
+          </Button>
         </div>
       </div>
 
+      {/* 4 Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+        {/* 1. Pending Approvals */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              1. Pending Approvals
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Awaiting HR review
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-amber-700 font-mono">
+              {stats.pending}
+            </span>
+            <span className="text-xs font-bold text-amber-700 font-sans ml-1.5">
+              Requests
+            </span>
+          </div>
+        </div>
+
+        {/* 2. Approved Leaves */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              2. Approved Leaves
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Granted time-off
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-emerald-800 font-mono">
+              {stats.approved}
+            </span>
+            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
+              Approved
+            </span>
+          </div>
+        </div>
+
+        {/* 3. Approved Days Logged */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              3. Total Leave Days
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Approved leave volume
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {stats.totalDays}
+            </span>
+            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
+              Days Taken
+            </span>
+          </div>
+        </div>
+
+        {/* 4. Rejected Requests */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              4. Rejected Requests
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Denied leave applications
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-rose-700 font-mono">
+              {stats.rejected}
+            </span>
+            <span className="text-xs font-bold text-rose-700 font-sans ml-1.5">
+              Rejected
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="flex gap-2">
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-44"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="PENDING">Pending</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-            </Select>
+        {/* Search & Filter Strip */}
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Status Quick Pills */}
+            <div className="flex flex-wrap items-center gap-1">
+              {[
+                { id: "ALL", label: "All Requests" },
+                { id: "PENDING", label: "Pending" },
+                { id: "APPROVED", label: "Approved" },
+                { id: "REJECTED", label: "Rejected" },
+              ].map((tab) => {
+                const isActive = statusFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setStatusFilter(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
 
-            <Select
-              value={employeeFilter}
-              onChange={(e) => setEmployeeFilter(e.target.value)}
-              className="w-full sm:w-56"
-            >
-              <option value="">All Employees</option>
-              {employees.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.firstName} {e.lastName}
-                </option>
-              ))}
-            </Select>
+            <span className="text-[11px] font-bold text-slate-500 font-mono">
+              {leaves.length} Requests Listed
+            </span>
+          </div>
+
+          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
+            <div className="w-full sm:w-80">
+              <select
+                value={employeeFilter}
+                onChange={(e) => setEmployeeFilter(e.target.value)}
+                className="w-full px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
+              >
+                <option value="">All Employees</option>
+                {employees.map((emp) => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.firstName} {emp.lastName} ({emp.employeeCode})
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">
-            Error loading leave records: {(error as any).message}
+          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
+            Error loading leave requests: {(error as any).message}
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={leaves}
-            isLoading={isLoading}
-            emptyTitle="No leave applications logged"
-            emptyMessage='Click "Request Leave" to submit a new vacation application.'
-          />
+          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+              <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                Leave &amp; Time-Off Applications Register
+              </h4>
+              <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                {leaves.length} Applications
+              </span>
+            </div>
+
+            <DataTable
+              columns={columns}
+              data={leaves}
+              isLoading={isLoading}
+              emptyTitle="No leave requests found"
+              emptyMessage="Click 'Apply for Leave' to submit a new time-off request."
+            />
+          </div>
         )}
       </div>
 
+      {/* Modal for Creating Leave Request */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Submit Leave Request"
+        title="Apply for Leave / Time-Off"
         maxWidth="lg"
       >
+        {formError && (
+          <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold mb-4">
+            {formError}
+          </div>
+        )}
+
         <form
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
             form.handleSubmit();
           }}
-          className="space-y-3.5"
+          className="space-y-4 text-xs"
         >
-          {formError && (
-            <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
-              {formError}
-            </div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form.Field name="employeeId">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  label="Employee *"
+                  required
+                  options={employees.map((e) => ({
+                    value: e.id,
+                    label: `${e.firstName} ${e.lastName} (${e.employeeCode})`,
+                  }))}
+                />
+              )}
+            </form.Field>
 
-          <form.Field
-            name="employeeId"
-            validators={{
-              onChange: ({ value }) =>
-                !value ? "Employee selection is required" : undefined,
-            }}
-          >
-            {(field) => (
-              <FormSelect field={field} label="Employee *" required>
-                <option value="">-- Select Employee --</option>
-                {employees.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.firstName} {e.lastName} ({e.employeeCode}) - Balance:{" "}
-                    {e.annualLeaveBalance ?? 30} days
-                  </option>
-                ))}
-              </FormSelect>
-            )}
-          </form.Field>
+            <form.Field name="leaveType">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  label="Leave Type *"
+                  required
+                  options={[
+                    { value: "ANNUAL", label: "Annual Leave" },
+                    { value: "SICK", label: "Sick Leave" },
+                    { value: "EMERGENCY", label: "Emergency Leave" },
+                    { value: "UNPAID", label: "Unpaid Leave" },
+                    { value: "MATERNITY", label: "Maternity / Paternity" },
+                  ]}
+                />
+              )}
+            </form.Field>
+          </div>
 
-          <form.Field name="leaveType">
-            {(field) => (
-              <FormSelect field={field} label="Leave Type *">
-                <option value="ANNUAL">Annual Leave (Paid)</option>
-                <option value="SICK">Sick Leave</option>
-                <option value="UNPAID">Unpaid Leave</option>
-                <option value="EMERGENCY">Emergency Leave</option>
-                <option value="MATERNITY">Maternity Leave</option>
-                <option value="PATERNITY">Paternity Leave</option>
-                <option value="OTHER">Other</option>
-              </FormSelect>
-            )}
-          </form.Field>
-
-          <div className="grid grid-cols-2 gap-3">
-            <form.Field
-              name="startDate"
-              validators={{
-                onChange: ({ value }) =>
-                  !value ? "Start date is required" : undefined,
-              }}
-            >
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <form.Field name="startDate">
               {(field) => (
                 <FormInput
                   field={field}
@@ -414,13 +534,7 @@ export default function LeavesPage() {
               )}
             </form.Field>
 
-            <form.Field
-              name="endDate"
-              validators={{
-                onChange: ({ value }) =>
-                  !value ? "End date is required" : undefined,
-              }}
-            >
+            <form.Field name="endDate">
               {(field) => (
                 <FormInput
                   field={field}
@@ -430,36 +544,28 @@ export default function LeavesPage() {
                 />
               )}
             </form.Field>
-          </div>
 
-          <form.Field
-            name="totalDays"
-            validators={{
-              onChange: ({ value }) =>
-                !value || Number(value) <= 0
-                  ? "Total days must be greater than 0"
-                  : undefined,
-            }}
-          >
-            {(field) => (
-              <FormInput
-                field={field}
-                label="Total Days *"
-                type="number"
-                min="0.5"
-                step="0.5"
-                required
-              />
-            )}
-          </form.Field>
+            <form.Field name="totalDays">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Total Days *"
+                  type="number"
+                  step="0.5"
+                  required
+                  className="font-mono font-bold"
+                />
+              )}
+            </form.Field>
+          </div>
 
           <form.Field name="reason">
             {(field) => (
               <FormTextarea
                 field={field}
-                label="Reason / Notes"
-                rows={2}
-                placeholder="Vacation travel, personal matter, medical visit..."
+                label="Reason / Remarks"
+                rows={3}
+                placeholder="Travel plans, medical documentation notes..."
               />
             )}
           </form.Field>
@@ -469,11 +575,16 @@ export default function LeavesPage() {
               type="button"
               variant="outline"
               onClick={() => setIsModalOpen(false)}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
-            <FormSubmit form={form} loading={createLeave.isPending}>
-              Submit Request
+            <FormSubmit
+              form={form}
+              loading={createLeave.isPending}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+            >
+              Submit Leave Application
             </FormSubmit>
           </div>
         </form>
