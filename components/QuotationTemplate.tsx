@@ -630,9 +630,23 @@ export default function QuotationTemplate({
           </thead>
 
           <tfoot className="print-page-footer-group">
-            <tr>
-              <td className="p-0 border-none">
-                <div className="h-[88px] w-full hidden print:block" />
+            <tr style={{ height: "220px" }}>
+              <td
+                className="p-0 border-none"
+                style={{
+                  height: "220px",
+                  padding: 0,
+                  border: "none",
+                }}
+              >
+                <div
+                  style={{
+                    height: "220px",
+                    width: "100%",
+                    display: "block",
+                  }}
+                  className="hidden print:block"
+                />
                 <div className="print:hidden">
                   <QuotationFooter />
                 </div>
@@ -648,9 +662,15 @@ export default function QuotationTemplate({
                   meta={meta}
                   onUpdateMeta={updateMeta}
                 />
-
+              </td>
+            </tr>
+            <tr>
+              <td className="p-0 border-none align-top">
                 <QuotationDetailsCards meta={meta} onUpdateMeta={updateMeta} />
-
+              </td>
+            </tr>
+            <tr>
+              <td className="p-0 border-none align-top">
                 <QuotationItemsTable
                   items={items}
                   availableProducts={availableProducts}
@@ -660,7 +680,10 @@ export default function QuotationTemplate({
                   onRemoveItem={removeItem}
                   calculateRowTotal={calculateRowTotal}
                 />
-
+              </td>
+            </tr>
+            <tr>
+              <td className="p-0 border-none align-top">
                 <QuotationTotalsTable
                   subtotal={subtotal}
                   vatPct={vatPct}
@@ -670,8 +693,15 @@ export default function QuotationTemplate({
                   onUpdateVatPct={(val) => setVatPct(val)}
                   onUpdateDiscount={(val) => setDiscount(val)}
                 />
-
+              </td>
+            </tr>
+            <tr>
+              <td className="p-0 border-none align-top">
                 <QuotationTerms termsList={DEFAULT_TERMS_AND_CONDITIONS} />
+              </td>
+            </tr>
+            <tr>
+              <td className="p-0 border-none align-top">
                 <QuotationPaymentTerms
                   paymentTerms={paymentTerms}
                   onUpdatePaymentTerm={updatePaymentTerm}
@@ -683,7 +713,7 @@ export default function QuotationTemplate({
           </tbody>
         </table>
 
-        <div className="hidden print:block">
+        <div className="fixed-print-footer hidden print:block">
           <QuotationFooter />
         </div>
       </div>
