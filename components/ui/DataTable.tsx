@@ -114,14 +114,21 @@ export function DataTable<TData, TValue>({
 
           <tbody className="divide-y divide-slate-100 bg-white">
             {isLoading ? (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="py-14 text-center text-xs text-slate-400 animate-pulse"
-                >
-                  Loading data...
-                </td>
-              </tr>
+              Array.from({ length: Math.min(pageSize, 5) }).map((_, rowIdx) => (
+                <tr key={rowIdx} className="hover:bg-slate-50/40">
+                  {columns.map((_, colIdx) => {
+                    const widths = ["w-3/4", "w-1/2", "w-4/5", "w-2/3", "w-5/6", "w-3/5"];
+                    const width = widths[(rowIdx + colIdx) % widths.length];
+                    return (
+                      <td key={colIdx} className="py-3.5 px-4">
+                        <div
+                          className={`h-3.5 ${width} rounded-md bg-slate-200/75 animate-pulse`}
+                        />
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))
             ) : table.getRowModel().rows.length === 0 ? (
               <tr>
                 <td
