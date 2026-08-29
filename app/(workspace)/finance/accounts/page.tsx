@@ -6,74 +6,171 @@ import { useForm } from "@tanstack/react-form";
 import {
   useAccounts,
   useCreateAccount,
+  useUpdateAccount,
+  useDeleteAccount,
+  useAccountLedger,
   ChartOfAccount,
 } from "@/lib/hooks/api-hooks";
-import { PlusIcon } from "@/components/icons";
+import { SearchIcon, PlusIcon, PrintIcon, EyeIcon } from "@/components/icons";
 import {
   Button,
   Input,
+  Select,
   DataTable,
   Modal,
   FormInput,
   FormSelect,
   FormSubmit,
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
 } from "@/components/ui";
+import { QuotationHeader, QuotationFooter } from "@/components/quotation";
+import {
+  BookOpen,
+  Building2,
+  Lock,
+  Edit2,
+  Trash2,
+  Landmark,
+  Wallet,
+  ArrowUpRight,
+  ArrowDownLeft,
+  DollarSign,
+  TrendingUp,
+  Scale,
+  Calendar,
+  Layers,
+  ChevronRight,
+  ShieldCheck,
+  CheckCircle2,
+} from "lucide-react";
 
 const ACCOUNT_TYPES = [
   {
     value: "ASSET",
-    label: "Asset",
+    label: "Assets",
     color: "bg-blue-50 text-blue-700 border-blue-200",
+    badgeBg: "bg-blue-600",
   },
   {
     value: "LIABILITY",
-    label: "Liability",
+    label: "Liabilities",
     color: "bg-orange-50 text-orange-700 border-orange-200",
+    badgeBg: "bg-orange-600",
   },
   {
     value: "EQUITY",
     label: "Equity",
     color: "bg-purple-50 text-purple-700 border-purple-200",
+    badgeBg: "bg-purple-600",
   },
   {
     value: "REVENUE",
     label: "Revenue",
     color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    badgeBg: "bg-emerald-600",
   },
   {
     value: "EXPENSE",
-    label: "Expense",
+    label: "Expenses",
     color: "bg-rose-50 text-rose-700 border-rose-200",
+    badgeBg: "bg-rose-600",
   },
 ];
 
 export default function AccountsPage() {
   const { data: accounts = [], isLoading, error } = useAccounts();
   const createAccountMutation = useCreateAccount();
+  const updateAccountMutation = useUpdateAccount();
+  const deleteAccountMutation = useDeleteAccount();
 
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState<string>("ALL");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
+  // Modals & Drawers state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<ChartOfAccount | null>(null);
+  const [ledgerAccountId, setLedgerAccountId] = useState<string | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState<ChartOfAccount | null>(null);
   const [formError, setFormError] = useState("");
 
+  // Ledger hook for selected account
+  const { data: accountLedgerData, isLoading: isLedgerLoading } = useAccountLedger(
+    ledgerAccountId || "",
+  );
+
+  const formatCurrency = (val: number | string | undefined) => {
+    const num = Number(val || 0);
+    return `AED ${num.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
+  // Filtered accounts list
   const filteredAccounts = useMemo(() => {
     return (accounts || []).filter((acc) => {
+      const q = search.toLowerCase().trim();
       const matchesSearch =
-        acc.accountCode.toLowerCase().includes(search.toLowerCase()) ||
-        acc.accountName.toLowerCase().includes(search.toLowerCase());
+        !q ||
+        acc.accountCode.toLowerCase().includes(q) ||
+        acc.accountName.toLowerCase().includes(q) ||
+        (acc.parent?.accountName && acc.parent.accountName.toLowerCase().includes(q));
+
       const matchesType = selectedType === "ALL" || acc.type === selectedType;
-      return matchesSearch && matchesType;
+
+      let matchesStatus = true;
+      if (statusFilter === "ACTIVE") matchesStatus = acc.isActive === true;
+      if (statusFilter === "INACTIVE") matchesStatus = acc.isActive === false;
+      if (statusFilter === "SYSTEM") matchesStatus = Boolean(acc.isSystem);
+
+      return matchesSearch && matchesType && matchesStatus;
     });
-  }, [accounts, search, selectedType]);
+  }, [accounts, search, selectedType, statusFilter]);
 
-  const countByType = (accType: string) =>
-    (accounts || []).filter((a) => a.type === accType).length;
+  // Aggregate totals per accounting class
+  const classSummary = useMemo(() => {
+    const map: Record<string, { count: number; totalBalance: number }> = {
+      ASSET: { count: 0, totalBalance: 0 },
+      LIABILITY: { count: 0, totalBalance: 0 },
+      EQUITY: { count: 0, totalBalance: 0 },
+      REVENUE: { count: 0, totalBalance: 0 },
+      EXPENSE: { count: 0, totalBalance: 0 },
+    };
 
-  const form = useForm({
+    (accounts || []).forEach((a) => {
+      if (!map[a.type]) {
+        map[a.type] = { count: 0, totalBalance: 0 };
+      }
+      map[a.type].count += 1;
+      map[a.type].totalBalance += Number(a.balance || 0);
+    });
+
+    return map;
+  }, [accounts]);
+
+  // Bank & Liquid Cash balances
+  const bankAndCashSummary = useMemo(() => {
+    const pettyCash = accounts.find((a) => a.accountCode === "1010")?.balance || 0;
+    const rakBank = accounts.find((a) => a.accountCode === "1020")?.balance || 0;
+    const siteFloat = accounts.find((a) => a.accountCode === "1030")?.balance || 0;
+    const totalLiquid = pettyCash + rakBank + siteFloat;
+
+    return { pettyCash, rakBank, siteFloat, totalLiquid };
+  }, [accounts]);
+
+  // Create Form
+  const createForm = useForm({
     defaultValues: {
       accountCode: "",
       accountName: "",
       type: "ASSET" as "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE",
+      parentId: "" as string,
     },
     onSubmit: async ({ value }) => {
       setFormError("");
@@ -82,51 +179,136 @@ export default function AccountsPage() {
           accountCode: value.accountCode.trim(),
           accountName: value.accountName.trim(),
           type: value.type,
+          parentId: value.parentId || null,
         });
-        setIsModalOpen(false);
+        setIsCreateModalOpen(false);
       } catch (err: any) {
         setFormError(err.message || "Failed to create account");
       }
     },
   });
 
-  const handleOpenModal = () => {
+  // Edit Form
+  const editForm = useForm({
+    defaultValues: {
+      accountCode: editingAccount?.accountCode || "",
+      accountName: editingAccount?.accountName || "",
+      type: (editingAccount?.type || "ASSET") as
+        | "ASSET"
+        | "LIABILITY"
+        | "EQUITY"
+        | "REVENUE"
+        | "EXPENSE",
+      parentId: (editingAccount?.parentId || "") as string,
+      isActive: editingAccount?.isActive ?? true,
+    },
+    onSubmit: async ({ value }) => {
+      if (!editingAccount) return;
+      setFormError("");
+      try {
+        await updateAccountMutation.mutateAsync({
+          id: editingAccount.id,
+          data: {
+            accountCode: value.accountCode.trim(),
+            accountName: value.accountName.trim(),
+            type: value.type,
+            parentId: value.parentId || null,
+            isActive: value.isActive,
+          },
+        });
+        setEditingAccount(null);
+      } catch (err: any) {
+        setFormError(err.message || "Failed to update account");
+      }
+    },
+  });
+
+  const handleOpenCreate = () => {
     setFormError("");
-    form.reset({
+    createForm.reset({
       accountCode: "",
       accountName: "",
       type: "ASSET",
+      parentId: "",
     });
-    setIsModalOpen(true);
+    setIsCreateModalOpen(true);
   };
 
+  const handleOpenEdit = (acc: ChartOfAccount) => {
+    setFormError("");
+    setEditingAccount(acc);
+    editForm.reset({
+      accountCode: acc.accountCode,
+      accountName: acc.accountName,
+      type: acc.type,
+      parentId: acc.parentId || "",
+      isActive: acc.isActive,
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingAccount) return;
+    try {
+      await deleteAccountMutation.mutateAsync(deletingAccount.id);
+      setDeletingAccount(null);
+    } catch (err: any) {
+      alert(err.message || "Failed to delete account");
+    }
+  };
+
+  // TanStack Columns
   const columns = useMemo<ColumnDef<ChartOfAccount>[]>(
     () => [
       {
         accessorKey: "accountCode",
         header: "Code",
-        cell: ({ row }) => (
-          <span className="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-xs">
-            {row.original.accountCode}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const isChild = Boolean(row.original.parentId);
+          return (
+            <div className="flex items-center gap-1.5">
+              {isChild && <span className="text-slate-300 ml-2">↳</span>}
+              <span
+                onClick={() => setLedgerAccountId(row.original.id)}
+                className="font-mono font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded text-xs cursor-pointer transition-colors"
+                title="Click to view Account Register"
+              >
+                {row.original.accountCode}
+              </span>
+              {row.original.isSystem && (
+                <span title="System Control Account (Protected)">
+                  <Lock size={12} className="text-slate-400" />
+                </span>
+              )}
+            </div>
+          );
+        },
       },
       {
         accessorKey: "accountName",
         header: "Account Name",
         cell: ({ row }) => (
-          <span className="font-semibold text-slate-900">
-            {row.original.accountName}
-          </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <span
+                onClick={() => setLedgerAccountId(row.original.id)}
+                className="font-bold text-slate-900 hover:text-emerald-900 cursor-pointer transition-colors block leading-tight"
+              >
+                {row.original.accountName}
+              </span>
+            </div>
+            {row.original.parent && (
+              <span className="text-[10px] text-slate-400 block mt-0.5">
+                Sub-account of: {row.original.parent.accountName} ({row.original.parent.accountCode})
+              </span>
+            )}
+          </div>
         ),
       },
       {
         accessorKey: "type",
-        header: "Type",
+        header: "Class",
         cell: ({ row }) => {
-          const typeObj = ACCOUNT_TYPES.find(
-            (t) => t.value === row.original.type,
-          );
+          const typeObj = ACCOUNT_TYPES.find((t) => t.value === row.original.type);
           return (
             <span
               className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
@@ -139,10 +321,41 @@ export default function AccountsPage() {
         },
       },
       {
+        accessorKey: "balance",
+        header: () => <div className="text-right">Live Balance</div>,
+        cell: ({ row }) => {
+          const bal = Number(row.original.balance || 0);
+          const isExpenseOrAsset =
+            row.original.type === "ASSET" || row.original.type === "EXPENSE";
+
+          let color = "text-slate-900";
+          if (bal !== 0) {
+            if (isExpenseOrAsset) {
+              color = bal > 0 ? "text-emerald-800" : "text-rose-700";
+            } else {
+              color = bal > 0 ? "text-emerald-800" : "text-rose-700";
+            }
+          }
+
+          return (
+            <div className="text-right">
+              <span className={`font-mono font-black text-xs block ${color}`}>
+                {formatCurrency(bal)}
+              </span>
+              <span className="text-[9.5px] text-slate-400 font-mono">
+                {row.original.type === "ASSET" || row.original.type === "EXPENSE"
+                  ? "Dr"
+                  : "Cr"}
+              </span>
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "journalLinesCount",
-        header: "Transactions",
+        header: () => <div className="text-center">Entries</div>,
         cell: ({ row }) => (
-          <span className="text-slate-500 font-medium text-xs">
+          <span className="font-mono text-slate-500 font-semibold text-xs block text-center">
             {row.original._count?.journalLines ?? 0}
           </span>
         ),
@@ -161,9 +374,46 @@ export default function AccountsPage() {
                 row.original.isActive ? "bg-emerald-500" : "bg-slate-300"
               }`}
             />
-            {row.original.isActive ? "Active" : "Inactive"}
+            {row.original.isActive ? "Active" : "Archived"}
           </span>
         ),
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-center">Actions</div>,
+        cell: ({ row }) => {
+          const acc = row.original;
+          return (
+            <div className="flex items-center justify-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setLedgerAccountId(acc.id)}
+                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                title="View Account Register & Ledger"
+              >
+                <BookOpen size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleOpenEdit(acc)}
+                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                title="Edit Account Details"
+              >
+                <Edit2 size={13} />
+              </button>
+              {!acc.isSystem && (
+                <button
+                  type="button"
+                  onClick={() => setDeletingAccount(acc)}
+                  className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors"
+                  title="Archive or Delete Account"
+                >
+                  <Trash2 size={13} />
+                </button>
+              )}
+            </div>
+          );
+        },
       },
     ],
     [],
@@ -171,38 +421,44 @@ export default function AccountsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
-          <h2 className="text-xl font-black text-slate-900">
-            General Ledger & Accounts
-          </h2>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              Chart of Accounts (COA) &amp; General Ledger
+            </h2>
+            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+              General Ledger Hub
+            </span>
+          </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage your Chart of Accounts across standard accounting
-            classification hierarchies.
+            AGM FITOUT TECHNICAL SERVICES LLC — Master chart of accounts, real-time balances, parent-child hierarchies, and one-click account registers.
           </p>
         </div>
 
         <Button
           variant="primary"
-          onClick={handleOpenModal}
+          onClick={handleOpenCreate}
           icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
         >
           Add Account
         </Button>
       </div>
 
+      {/* 5 Accounting Class KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {ACCOUNT_TYPES.map((t) => {
           const isSelected = selectedType === t.value;
-          const count = countByType(t.value);
+          const summary = classSummary[t.value] || { count: 0, totalBalance: 0 };
           return (
             <button
               key={t.value}
               onClick={() => setSelectedType(isSelected ? "ALL" : t.value)}
               className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                 isSelected
-                  ? "bg-white border-emerald-500 ring-2 ring-emerald-500/10 shadow-sm"
-                  : "bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300"
+                  ? "bg-white border-emerald-500 ring-2 ring-emerald-500/10 shadow-xs"
+                  : "bg-white/90 border-slate-200/80 hover:bg-white hover:border-slate-300"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -212,52 +468,152 @@ export default function AccountsPage() {
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${t.color}`}
                 >
-                  {count}
+                  {summary.count} A/C
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 mt-1">Class {t.value}</p>
+              <p className="text-base font-black font-mono text-slate-900 mt-1.5">
+                {formatCurrency(summary.totalBalance)}
+              </p>
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                Class {t.value} Total
+              </p>
             </button>
           );
         })}
       </div>
 
+      {/* Bank & Liquid Cash Float Overview Card */}
+      <div className="p-4.5 rounded-2xl bg-gradient-to-r from-[#1d3345] to-[#233c4d] text-white shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="p-2.5 rounded-xl bg-white/10 text-emerald-400 border border-white/10">
+              <Landmark size={20} />
+            </span>
+            <div>
+              <h3 className="font-extrabold text-sm text-white">
+                Treasury &amp; Liquid Cash Position
+              </h3>
+              <p className="text-xs text-white/70 mt-0.5">
+                Live balances across commercial bank accounts and physical petty cash floats
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 lg:gap-6 text-xs">
+            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+              <p className="text-[10px] text-white/60 uppercase font-semibold">
+                RAK Bank A/C (1020)
+              </p>
+              <p className="font-mono font-bold text-sm text-white mt-0.5">
+                {formatCurrency(bankAndCashSummary.rakBank)}
+              </p>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+              <p className="text-[10px] text-white/60 uppercase font-semibold">
+                Petty Cash H.O. (1010)
+              </p>
+              <p className="font-mono font-bold text-sm text-white mt-0.5">
+                {formatCurrency(bankAndCashSummary.pettyCash)}
+              </p>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+              <p className="text-[10px] text-white/60 uppercase font-semibold">
+                Site Cash Float (1030)
+              </p>
+              <p className="font-mono font-bold text-sm text-white mt-0.5">
+                {formatCurrency(bankAndCashSummary.siteFloat)}
+              </p>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-400/30">
+              <p className="text-[10px] text-emerald-300 uppercase font-bold">
+                Total Net Liquidity
+              </p>
+              <p className="font-mono font-extrabold text-sm text-emerald-400 mt-0.5">
+                {formatCurrency(bankAndCashSummary.totalLiquid)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Table Card Container */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+        {/* Filter Controls Bar */}
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="w-full sm:w-80">
             <Input
               placeholder="Search code or account name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              leftIcon={
+                <SearchIcon
+                  className="w-4 h-4 text-slate-400"
+                  strokeWidth={2}
+                />
+              }
             />
           </div>
 
-          <p className="text-xs text-slate-500 self-end sm:self-auto font-medium">
-            Showing {filteredAccounts.length} of {accounts.length} accounts
-          </p>
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+            <Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              containerClassName="w-full sm:w-44"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="ACTIVE">Active Accounts</option>
+              <option value="INACTIVE">Archived Accounts</option>
+              <option value="SYSTEM">System Accounts (🔒)</option>
+            </Select>
+
+            <Select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              containerClassName="w-full sm:w-44"
+            >
+              <option value="ALL">All Categories</option>
+              <option value="ASSET">Assets</option>
+              <option value="LIABILITY">Liabilities</option>
+              <option value="EQUITY">Equity</option>
+              <option value="REVENUE">Revenue</option>
+              <option value="EXPENSE">Expenses</option>
+            </Select>
+          </div>
         </div>
 
-        <DataTable
-          columns={columns}
-          data={filteredAccounts}
-          isLoading={isLoading}
-          emptyTitle="No accounts match your criteria"
-          emptyMessage="Try resetting the search or adding a new account."
-        />
+        {/* DataTable */}
+        {error ? (
+          <div className="py-8 text-center text-xs text-red-500">
+            Error loading accounts: {(error as any).message}
+          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={filteredAccounts}
+            isLoading={isLoading}
+            emptyTitle="No accounts match your criteria"
+            emptyMessage="Try resetting the search filters or adding a new account."
+          />
+        )}
       </div>
 
+      {/* Add Account Modal */}
       <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Add Chart of Account"
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Add New Chart of Account"
         maxWidth="md"
       >
         <form
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+            createForm.handleSubmit();
           }}
-          className="space-y-4 w-96"
+          className="space-y-4 w-full sm:w-96"
         >
           {formError && (
             <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
@@ -265,7 +621,7 @@ export default function AccountsPage() {
             </div>
           )}
 
-          <form.Field
+          <createForm.Field
             name="accountCode"
             validators={{
               onChange: ({ value }) =>
@@ -280,9 +636,9 @@ export default function AccountsPage() {
                 required
               />
             )}
-          </form.Field>
+          </createForm.Field>
 
-          <form.Field
+          <createForm.Field
             name="accountName"
             validators={{
               onChange: ({ value }) =>
@@ -297,31 +653,47 @@ export default function AccountsPage() {
                 required
               />
             )}
-          </form.Field>
+          </createForm.Field>
 
-          <form.Field name="type">
+          <createForm.Field name="type">
             {(field) => (
               <FormSelect
                 field={field}
-                label="Account Type"
+                label="Account Classification *"
                 options={ACCOUNT_TYPES.map((t) => ({
                   value: t.value,
-                  label: t.label,
+                  label: `${t.label} (${t.value})`,
                 }))}
               />
             )}
-          </form.Field>
+          </createForm.Field>
+
+          <createForm.Field name="parentId">
+            {(field) => (
+              <FormSelect
+                field={field}
+                label="Parent Account (Optional Hierarchy)"
+                options={[
+                  { value: "", label: "-- Top-Level Primary Account --" },
+                  ...accounts.map((a) => ({
+                    value: a.id,
+                    label: `${a.accountCode} - ${a.accountName} (${a.type})`,
+                  })),
+                ]}
+              />
+            )}
+          </createForm.Field>
 
           <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-100">
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => setIsCreateModalOpen(false)}
             >
               Cancel
             </Button>
             <FormSubmit
-              form={form}
+              form={createForm}
               variant="primary"
               loading={createAccountMutation.isPending}
             >
@@ -330,6 +702,293 @@ export default function AccountsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Edit Account Modal */}
+      {editingAccount && (
+        <Modal
+          isOpen={Boolean(editingAccount)}
+          onClose={() => setEditingAccount(null)}
+          title={`Edit Account: ${editingAccount.accountCode}`}
+          maxWidth="md"
+        >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              editForm.handleSubmit();
+            }}
+            className="space-y-4 w-full sm:w-96"
+          >
+            {formError && (
+              <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
+                {formError}
+              </div>
+            )}
+
+            <editForm.Field
+              name="accountCode"
+              validators={{
+                onChange: ({ value }) =>
+                  !value.trim() ? "Account code is required" : undefined,
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Account Code *"
+                  placeholder="e.g. 1050, 4020, 5300"
+                  required
+                />
+              )}
+            </editForm.Field>
+
+            <editForm.Field
+              name="accountName"
+              validators={{
+                onChange: ({ value }) =>
+                  !value.trim() ? "Account name is required" : undefined,
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Account Name *"
+                  placeholder="Account name"
+                  required
+                />
+              )}
+            </editForm.Field>
+
+            <editForm.Field name="type">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  label="Account Classification *"
+                  options={ACCOUNT_TYPES.map((t) => ({
+                    value: t.value,
+                    label: `${t.label} (${t.value})`,
+                  }))}
+                />
+              )}
+            </editForm.Field>
+
+            <editForm.Field name="parentId">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  label="Parent Account (Optional Hierarchy)"
+                  options={[
+                    { value: "", label: "-- Top-Level Primary Account --" },
+                    ...accounts
+                      .filter((a) => a.id !== editingAccount.id)
+                      .map((a) => ({
+                        value: a.id,
+                        label: `${a.accountCode} - ${a.accountName}`,
+                      })),
+                  ]}
+                />
+              )}
+            </editForm.Field>
+
+            <div className="flex items-center gap-2 pt-2">
+              <input
+                type="checkbox"
+                id="isActiveToggle"
+                className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                checked={editForm.state.values.isActive}
+                onChange={(e) =>
+                  editForm.setFieldValue("isActive", e.target.checked)
+                }
+              />
+              <label
+                htmlFor="isActiveToggle"
+                className="text-xs font-semibold text-slate-700 cursor-pointer"
+              >
+                Account is Active (Enabled for Journal Postings)
+              </label>
+            </div>
+
+            <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-100">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditingAccount(null)}
+              >
+                Cancel
+              </Button>
+              <FormSubmit
+                form={editForm}
+                variant="primary"
+                loading={updateAccountMutation.isPending}
+              >
+                Update Account
+              </FormSubmit>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Account Register / General Ledger Modal */}
+      {ledgerAccountId && (
+        <Modal
+          isOpen={Boolean(ledgerAccountId)}
+          onClose={() => setLedgerAccountId(null)}
+          title={`Account Register & General Ledger`}
+          maxWidth="2xl"
+        >
+          <div className="space-y-4">
+            {isLedgerLoading ? (
+              <div className="py-12 text-center text-xs text-slate-400">
+                Loading account ledger transactions...
+              </div>
+            ) : !accountLedgerData ? (
+              <div className="py-8 text-center text-xs text-rose-500">
+                Account register not found.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Account Details Header Strip */}
+                <div className="p-4 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-emerald-400 font-bold text-sm bg-white/10 px-2 py-0.5 rounded">
+                        {accountLedgerData.accountCode}
+                      </span>
+                      <h3 className="font-extrabold text-base text-white">
+                        {accountLedgerData.accountName}
+                      </h3>
+                      {accountLedgerData.isSystem && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                          System Account
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Classification: {accountLedgerData.type}
+                    </p>
+                  </div>
+
+                  <div className="text-right sm:border-l sm:border-white/10 sm:pl-4">
+                    <span className="text-[10.5px] text-slate-400 block uppercase font-bold">
+                      Current Running Balance
+                    </span>
+                    <span className="text-xl font-black font-mono text-emerald-400 block mt-0.5">
+                      {formatCurrency(accountLedgerData.balance)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Ledger Entries Table */}
+                <div className="border border-slate-200 rounded-2xl overflow-hidden max-h-96 overflow-y-auto">
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableHeaderCell>Date</TableHeaderCell>
+                        <TableHeaderCell>Voucher / Ref</TableHeaderCell>
+                        <TableHeaderCell>Description</TableHeaderCell>
+                        <TableHeaderCell className="text-right">Debit</TableHeaderCell>
+                        <TableHeaderCell className="text-right">Credit</TableHeaderCell>
+                        <TableHeaderCell className="text-right">Running Balance</TableHeaderCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {accountLedgerData.ledger.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8 text-xs text-slate-400">
+                            No journal transactions have been posted to this account yet.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        accountLedgerData.ledger.map((row) => (
+                          <TableRow key={row.id}>
+                            <TableCell className="font-mono text-xs text-slate-600 whitespace-nowrap">
+                              {new Date(row.entryDate).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell className="font-mono font-bold text-xs text-slate-800 whitespace-nowrap">
+                              {row.entryNumber}
+                              {row.reference && (
+                                <span className="block text-[10px] text-slate-400 font-normal">
+                                  Ref: {row.reference}
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-xs text-slate-700 max-w-xs truncate">
+                              {row.description || "General Journal Entry"}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-right text-slate-800">
+                              {row.debit > 0 ? formatCurrency(row.debit) : "—"}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs text-right text-slate-800">
+                              {row.credit > 0 ? formatCurrency(row.credit) : "—"}
+                            </TableCell>
+                            <TableCell className="font-mono font-black text-xs text-right text-emerald-800 whitespace-nowrap">
+                              {formatCurrency(row.runningBalance)}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-500 pt-2">
+                  <span>
+                    Showing {accountLedgerData.ledger.length} chronological journal line postings
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setLedgerAccountId(null)}
+                  >
+                    Close Register
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
+
+      {/* Delete / Archive Confirmation Modal */}
+      {deletingAccount && (
+        <Modal
+          isOpen={Boolean(deletingAccount)}
+          onClose={() => setDeletingAccount(null)}
+          title="Archive or Delete Account"
+          maxWidth="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-600">
+              Are you sure you want to remove{" "}
+              <strong className="text-slate-900">
+                {deletingAccount.accountCode} - {deletingAccount.accountName}
+              </strong>
+              ?
+            </p>
+            <p className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+              If this account has historical journal transactions, it will be safely <strong>archived (marked inactive)</strong> so historical financial statements remain balanced. If it has no transactions, it will be permanently deleted.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeletingAccount(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleDeleteConfirm}
+                loading={deleteAccountMutation.isPending}
+              >
+                Confirm Remove
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   ChartOfAccount,
   LedgerReport as LedgerData,
 } from "@/lib/hooks/api-hooks";
+import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
 
 interface GeneralLedgerReportProps {
@@ -42,12 +43,48 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
   );
 
   return (
-    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-        <div>
-          <h3 className="font-bold text-base text-slate-900">
-            General Ledger Drilldown & Running Balance
-          </h3>
+    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+      <table className="print-page-table w-full border-collapse">
+        <thead className="print-page-header-group">
+          <tr>
+            <th className="p-0 font-normal text-left border-none">
+              <div className="hidden print:block mb-4">
+                <QuotationHeader />
+                <div className="px-6 pt-3 pb-2 border-b border-slate-200 flex justify-between items-end">
+                  <div>
+                    <h1 className="text-lg font-black text-slate-900 uppercase">
+                      General Ledger Account Statement
+                    </h1>
+                    <p className="text-xs text-slate-500">
+                      AGM FITOUT TECHNICAL SERVICES LLC — {selectedAccount ? `${selectedAccount.accountCode} - ${selectedAccount.accountName}` : "General Ledger Drilldown"}
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-mono">
+                    Printed: {new Date().toLocaleDateString("en-GB")}
+                  </p>
+                </div>
+              </div>
+            </th>
+          </tr>
+        </thead>
+
+        <tfoot className="print-page-footer-group">
+          <tr>
+            <td className="p-0 border-none">
+              <div className="h-[80px] w-full hidden print:block" />
+            </td>
+          </tr>
+        </tfoot>
+
+        <tbody className="print-page-body-group">
+          <tr>
+            <td className="p-0 border-none align-top">
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 print:hidden">
+                  <div>
+                    <h3 className="font-bold text-base text-slate-900">
+                      General Ledger Drilldown &amp; Running Balance
+                    </h3>
           <p className="text-xs text-slate-500">
             Inspect complete chronological transaction history, debit/credit
             postings, and running balances by account.
@@ -76,7 +113,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
               size="sm"
               icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
               onClick={() => window.print()}
-              className="print:hidden"
             >
               Print / Save PDF
             </Button>
@@ -100,7 +136,7 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
         </div>
       ) : isLoading ? (
         <div className="py-12 text-center text-xs text-slate-400 animate-pulse">
-          Loading Ledger lines & running balance...
+          Loading Ledger lines &amp; running balance...
         </div>
       ) : lines.length === 0 ? (
         <div className="py-12 text-center border border-slate-200 rounded-2xl bg-slate-50/30 text-slate-500 space-y-1">
@@ -118,49 +154,49 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4.5 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
+            <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   1. Total Debits
                 </p>
-                <p className="text-xs text-emerald-700 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Sum of all debit postings
                 </p>
               </div>
-              <p className="text-xl font-black text-emerald-900 font-mono">
+              <p className="text-2xl font-black text-slate-900 font-mono">
                 {formatCurrency(totalDebit)}
               </p>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
+            <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-blue-800">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   2. Total Credits
                 </p>
-                <p className="text-xs text-blue-700 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Sum of all credit postings
                 </p>
               </div>
-              <p className="text-xl font-black text-blue-900 font-mono">
+              <p className="text-2xl font-black text-slate-900 font-mono">
                 {formatCurrency(totalCredit)}
               </p>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-purple-50/60 border border-purple-100 flex flex-col justify-between space-y-2">
+            <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-purple-800">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   3. Transactions Count
                 </p>
-                <p className="text-xs text-purple-700 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Posted journal lines
                 </p>
               </div>
-              <p className="text-xl font-black text-purple-950 font-mono">
+              <p className="text-2xl font-black text-slate-900 font-mono">
                 {lines.length} Line Items
               </p>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-slate-900 text-white flex flex-col justify-between space-y-2 shadow-xs">
+            <div className="p-4.5 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-xs flex flex-col justify-between space-y-2">
               <div>
                 <div className="flex items-center justify-between">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
@@ -176,11 +212,7 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                     : "Credit Normal (Cr - Dr)"}
                 </p>
               </div>
-              <p
-                className={`text-xl font-black font-mono ${
-                  netBalance >= 0 ? "text-emerald-400" : "text-rose-400"
-                }`}
-              >
+              <p className="text-2xl font-black font-mono text-emerald-400">
                 {formatCurrency(netBalance)}
               </p>
             </div>
@@ -313,6 +345,16 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
           </div>
         </div>
       )}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Pinned print footer rendered across all printed sheets */}
+      <div className="hidden print:block">
+        <QuotationFooter />
+      </div>
     </div>
   );
 };

@@ -15,6 +15,7 @@ import {
   BalanceSheetReport as BalanceSheetData,
   BalanceSheetItem,
 } from "@/lib/hooks/api-hooks";
+import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
 
 interface BalanceSheetReportProps {
@@ -90,8 +91,44 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
   const balanceCheck = totalAssets - totalLiabilitiesAndEquity;
 
   return (
-    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+      <table className="print-page-table w-full border-collapse">
+        <thead className="print-page-header-group">
+          <tr>
+            <th className="p-0 font-normal text-left border-none">
+              <div className="hidden print:block mb-4">
+                <QuotationHeader />
+                <div className="px-6 pt-3 pb-2 border-b border-slate-200 flex justify-between items-end">
+                  <div>
+                    <h1 className="text-lg font-black text-slate-900 uppercase">
+                      Statement of Financial Position (Balance Sheet)
+                    </h1>
+                    <p className="text-xs text-slate-500">
+                      AGM FITOUT TECHNICAL SERVICES LLC — Assets, Liabilities and Owners&apos; Equity
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-mono">
+                    Printed: {new Date().toLocaleDateString("en-GB")}
+                  </p>
+                </div>
+              </div>
+            </th>
+          </tr>
+        </thead>
+
+        <tfoot className="print-page-footer-group">
+          <tr>
+            <td className="p-0 border-none">
+              <div className="h-[80px] w-full hidden print:block" />
+            </td>
+          </tr>
+        </tfoot>
+
+        <tbody className="print-page-body-group">
+          <tr>
+            <td className="p-0 border-none align-top">
+              <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
         <div>
           <h3 className="font-bold text-base text-slate-900">
             Balance Sheet Statement
@@ -116,7 +153,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
             size="sm"
             icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
             onClick={() => window.print()}
-            className="print:hidden"
           >
             Print / Save PDF
           </Button>
@@ -130,80 +166,76 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4.5 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
+            <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-blue-800">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   1. Total Assets
                 </p>
-                <p className="text-xs text-blue-700 mt-0.5">
-                  Current & fixed assets
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Current &amp; fixed capital assets
                 </p>
               </div>
-              <p className="text-xl font-black text-blue-900 font-mono">
+              <p className="text-2xl font-black text-blue-900 font-mono">
                 {formatCurrency(totalAssets)}
               </p>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-orange-50/60 border border-orange-100 flex flex-col justify-between space-y-2">
+            <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-orange-800">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   2. Total Liabilities
                 </p>
-                <p className="text-xs text-orange-700 mt-0.5">
-                  Payables, accrued salaries & VAT
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Payables, accrued salaries &amp; VAT
                 </p>
               </div>
-              <p className="text-xl font-black text-orange-950 font-mono">
+              <p className="text-2xl font-black text-amber-700 font-mono">
                 {formatCurrency(totalLiabilities)}
               </p>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-purple-50/60 border border-purple-100 flex flex-col justify-between space-y-2">
+            <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-purple-800">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   3. Total Equity
                 </p>
-                <p className="text-xs text-purple-700 mt-0.5">
-                  Managing partner capital & earnings
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Managing partner capital &amp; earnings
                 </p>
               </div>
               <p
-                className={`text-xl font-black font-mono ${
-                  totalEquity >= 0 ? "text-purple-950" : "text-rose-700"
+                className={`text-2xl font-black font-mono ${
+                  totalEquity >= 0 ? "text-slate-900" : "text-rose-700"
                 }`}
               >
                 {formatCurrency(totalEquity)}
               </p>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-slate-900 text-white flex flex-col justify-between space-y-2 shadow-xs">
+            <div className="p-4.5 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-xs flex flex-col justify-between space-y-2">
               <div>
                 <div className="flex items-center justify-between">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
                     4. Balance Check
                   </p>
                   <span
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
                       Math.abs(balanceCheck) < 0.01
-                        ? "bg-emerald-500/20 text-emerald-300"
-                        : "bg-amber-500/20 text-amber-300"
+                        ? "bg-emerald-400/20 text-emerald-300 border border-emerald-400/30"
+                        : "bg-rose-400/20 text-rose-300 border border-rose-400/30"
                     }`}
                   >
-                    {Math.abs(balanceCheck) < 0.01 ? "Balanced" : "Diff"}
+                    {Math.abs(balanceCheck) < 0.01 ? "Balanced" : "Variance"}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Assets - (Liabilities + Equity)
+                  Assets = Liabilities + Equity
                 </p>
               </div>
-              <p
-                className={`text-xl font-black font-mono ${
-                  Math.abs(balanceCheck) < 0.01
-                    ? "text-emerald-400"
-                    : "text-amber-400"
-                }`}
-              >
-                {formatCurrency(balanceCheck)}
+              <p className="text-2xl font-black font-mono text-emerald-400">
+                {Math.abs(balanceCheck) < 0.01
+                  ? "0.00 AED"
+                  : formatCurrency(balanceCheck)}
               </p>
             </div>
           </div>
@@ -533,6 +565,16 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
           </div>
         </div>
       )}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Pinned print footer rendered across all printed sheets */}
+      <div className="hidden print:block">
+        <QuotationFooter />
+      </div>
     </div>
   );
 };

@@ -17,6 +17,7 @@ import {
   VatMonthlyRow,
   VatMonthlyBreakdownRow,
 } from "@/lib/hooks/api-hooks";
+import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
 
 interface VatPositionReportProps {
@@ -101,27 +102,59 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
   );
 
   return (
-    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+      <table className="print-page-table w-full border-collapse">
+        <thead className="print-page-header-group">
+          <tr>
+            <th className="p-0 font-normal text-left border-none">
+              <div className="hidden print:block mb-4">
+                <QuotationHeader />
+                <div className="px-6 pt-3 pb-2 border-b border-slate-200 flex justify-between items-end">
+                  <div>
+                    <h1 className="text-lg font-black text-slate-900 uppercase">
+                      VAT Return &amp; Tax Position Statement (FTA Form 201)
+                    </h1>
+                    <p className="text-xs text-slate-500">
+                      AGM FITOUT TECHNICAL SERVICES LLC — TRN 104094432200003 — 5% Standard Rated Supplies &amp; Recoverable Input Tax
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-mono">
+                    Printed: {new Date().toLocaleDateString("en-GB")}
+                  </p>
+                </div>
+              </div>
+            </th>
+          </tr>
+        </thead>
+
+        <tfoot className="print-page-footer-group">
+          <tr>
+            <td className="p-0 border-none">
+              <div className="h-[80px] w-full hidden print:block" />
+            </td>
+          </tr>
+        </tfoot>
+
+        <tbody className="print-page-body-group">
+          <tr>
+            <td className="p-0 border-none align-top">
+              <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
         <div>
           <h3 className="font-bold text-base text-slate-900">
-            VAT Summary Report & Returns (FTA Form 201 Ready)
+            VAT Summary Report &amp; Returns (FTA Form 201 Ready)
           </h3>
           <p className="text-xs text-slate-500">
             AGM FITOUT TECHNICAL SERVICES LLC — Quarterly returns, monthly net
-            tax, purchase expense summary, and sales income VAT breakdown.
+            tax, purchase <br /> expense summary, and sales income VAT breakdown.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            FTA Form 201 Compliant
-          </span>
           <Button
             variant="outline"
             size="sm"
             icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
             onClick={() => window.print()}
-            className="print:hidden"
           >
             Print / Save PDF
           </Button>
@@ -135,73 +168,69 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
       ) : (
         <div className="space-y-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4.5 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
+            <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-blue-800">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   1. Taxable Turnover
                 </p>
-                <p className="text-xs text-blue-700 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Total sales (excl. VAT)
                 </p>
               </div>
-              <p className="text-xl font-black text-blue-900 font-mono">
+              <p className="text-2xl font-black text-slate-900 font-mono">
                 {formatCurrency(totalIncomeTaxable)}
               </p>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-rose-50/60 border border-rose-100 flex flex-col justify-between space-y-2">
+            <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-rose-800">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   2. Output VAT (5%)
                 </p>
-                <p className="text-xs text-rose-700 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Tax collected on sales
                 </p>
               </div>
-              <p className="text-xl font-black text-rose-900 font-mono">
+              <p className="text-2xl font-black text-amber-700 font-mono">
                 {formatCurrency(totalOutputVat)}
               </p>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
+            <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
-                  3. Input VAT (5%)
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  3. Recoverable Input VAT
                 </p>
-                <p className="text-xs text-emerald-700 mt-0.5">
-                  Recoverable tax on expenses
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Tax paid on local purchases
                 </p>
               </div>
-              <p className="text-xl font-black text-emerald-900 font-mono">
+              <p className="text-2xl font-black text-emerald-800 font-mono">
                 {formatCurrency(totalInputVat)}
               </p>
             </div>
 
-            <div className="p-4.5 rounded-2xl bg-slate-900 text-white flex flex-col justify-between space-y-2 shadow-xs">
+            <div className="p-4.5 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-xs flex flex-col justify-between space-y-2">
               <div>
                 <div className="flex items-center justify-between">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                    4. Net VAT Position
+                    4. Net Tax Position
                   </p>
                   <span
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
                       netVat >= 0
-                        ? "bg-amber-500/20 text-amber-300"
-                        : "bg-emerald-500/20 text-emerald-300"
+                        ? "bg-amber-400/20 text-amber-300 border border-amber-400/30"
+                        : "bg-emerald-400/20 text-emerald-300 border border-emerald-400/30"
                     }`}
                   >
-                    {netVat >= 0 ? "Payable to FTA" : "Refund from FTA"}
+                    {netVat >= 0 ? "Payable to FTA" : "Refund Claim"}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Output VAT - Input VAT
+                  Box 14: Output minus Input VAT
                 </p>
               </div>
-              <p
-                className={`text-xl font-black font-mono ${
-                  netVat >= 0 ? "text-amber-400" : "text-emerald-400"
-                }`}
-              >
+              <p className="text-2xl font-black font-mono text-amber-400">
                 {formatCurrency(netVat)}
               </p>
             </div>
@@ -785,6 +814,16 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
           </div>
         </div>
       )}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Pinned print footer rendered across all printed sheets */}
+      <div className="hidden print:block">
+        <QuotationFooter />
+      </div>
     </div>
   );
 };

@@ -4,6 +4,8 @@ export * from "./QuotationReport";
 export * from "./ProfitLossReport";
 export * from "./BalanceSheetReport";
 export * from "./TrialBalanceReport";
+export * from "./AccountsReceivableReport";
+export * from "./AccountsPayableReport";
 export * from "./GeneralLedgerReport";
 export * from "./VatPositionReport";
 export * from "./QuotationPrintModal";

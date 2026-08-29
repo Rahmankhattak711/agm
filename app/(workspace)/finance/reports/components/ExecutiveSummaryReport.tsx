@@ -17,6 +17,7 @@ import {
   VatSummaryReport as VatSummaryData,
   VatQuarterDetail,
 } from "@/lib/hooks/api-hooks";
+import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { ReportTab, QuarterTab, formatCurrency, formatNumber } from "./types";
 
 interface ExecutiveSummaryReportProps {
@@ -124,8 +125,44 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
   };
 
   return (
-    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-8 print:p-0 print:m-0 print:border-none">
+      <table className="print-page-table w-full border-collapse">
+        <thead className="print-page-header-group">
+          <tr>
+            <th className="p-0 font-normal text-left border-none">
+              <div className="hidden print:block mb-4">
+                <QuotationHeader />
+                <div className="px-6 pt-3 pb-2 border-b border-slate-200 flex justify-between items-end">
+                  <div>
+                    <h1 className="text-lg font-black text-slate-900 uppercase">
+                      Executive KPI &amp; Financial Summary Statement
+                    </h1>
+                    <p className="text-xs text-slate-500">
+                      AGM FITOUT TECHNICAL SERVICES LLC — High-Level Revenue, Cost and Liquidity Analytics
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-mono">
+                    Printed: {new Date().toLocaleDateString("en-GB")}
+                  </p>
+                </div>
+              </div>
+            </th>
+          </tr>
+        </thead>
+
+        <tfoot className="print-page-footer-group">
+          <tr>
+            <td className="p-0 border-none">
+              <div className="h-[80px] w-full hidden print:block" />
+            </td>
+          </tr>
+        </tfoot>
+
+        <tbody className="print-page-body-group">
+          <tr>
+            <td className="p-0 border-none align-top">
+              <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-lg bg-emerald-600 text-white font-black text-xs">
@@ -142,7 +179,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
             size="sm"
             icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
             onClick={() => window.print()}
-            className="print:hidden"
           >
             Print / Save PDF
           </Button>
@@ -150,118 +186,121 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
+        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
               1. Total Turnover
             </p>
-            <p className="text-[11px] text-emerald-700 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Revenue from Fitout
             </p>
           </div>
-          <p className="text-lg font-black text-emerald-950 font-mono">
+          <p className="text-xl font-black text-slate-900 font-mono">
             {formatCurrency(totalRevenue)}
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
+        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-blue-800">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 2. Gross Profit
               </p>
-              <span className="text-[10px] font-mono font-bold text-blue-700">
+              <span className="text-[10.5px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
                 {grossMargin.toFixed(1)}%
               </span>
             </div>
-            <p className="text-[11px] text-blue-700 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               After Direct Materials
             </p>
           </div>
-          <p className="text-lg font-black text-blue-950 font-mono">
+          <p className="text-xl font-black text-emerald-800 font-mono">
             {formatCurrency(grossProfit)}
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 flex flex-col justify-between space-y-2">
+        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-purple-800">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 3. Net Income
               </p>
-              <span className="text-[10px] font-mono font-bold text-purple-700">
+              <span className="text-[10.5px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-md border border-blue-200">
                 {netMargin.toFixed(1)}%
               </span>
             </div>
-            <p className="text-[11px] text-purple-700 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Bottom Line Margin
             </p>
           </div>
-          <p className="text-lg font-black text-purple-950 font-mono">
+          <p
+            className={`text-xl font-black font-mono ${
+              netProfit >= 0 ? "text-emerald-800" : "text-rose-700"
+            }`}
+          >
             {formatCurrency(netProfit)}
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-2">
+        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
               4. Total Assets
             </p>
-            <p className="text-[11px] text-slate-500 mt-0.5">Current & Fixed</p>
+            <p className="text-xs text-slate-500 mt-0.5">Current &amp; Fixed</p>
           </div>
-          <p className="text-lg font-black text-slate-900 font-mono">
+          <p className="text-xl font-black text-slate-900 font-mono">
             {formatCurrency(totalAssets)}
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-100 flex flex-col justify-between space-y-2">
+        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-rose-800">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
               5. Total Liabilities
             </p>
-            <p className="text-[11px] text-rose-700 mt-0.5">
-              Payables & Accruals
+            <p className="text-xs text-slate-500 mt-0.5">
+              Payables &amp; Accruals
             </p>
           </div>
-          <p className="text-lg font-black text-rose-950 font-mono">
+          <p className="text-xl font-black text-amber-700 font-mono">
             {formatCurrency(totalLiabilities)}
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900 text-white flex flex-col justify-between space-y-2 shadow-xs">
+        <div className="p-4.5 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-xs flex flex-col justify-between space-y-2">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
                 6. UAE VAT Position
               </p>
-              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300">
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
                 {netVat >= 0 ? "Payable" : "Refund"}
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5">
               Output - Input Tax
             </p>
           </div>
-          <p className="text-lg font-black font-mono text-amber-400">
+          <p className="text-xl font-black font-mono text-amber-400">
             {formatCurrency(netVat)}
           </p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 space-y-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="p-1 rounded-lg bg-blue-600 text-white font-bold text-xs">
-                📅
+              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                Quarterly Analytics
               </span>
-              <h4 className="font-bold text-sm text-slate-900">
-                3-Month Group Performance & Quarterly Summary
+              <h4 className="font-black text-sm text-slate-900">
+                3-Month Group Performance &amp; Quarterly Summary
               </h4>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              AGM Financial Year grouped into 4 distinct three-month quarters
-              (Q1, Q2, Q3, Q4).
+              AGM Financial Year grouped into 4 distinct three-month quarters (Q1, Q2, Q3, Q4).
             </p>
           </div>
 
@@ -725,6 +764,16 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
             </div>
           </div>
         </div>
+        </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Pinned print footer rendered across all printed sheets */}
+      <div className="hidden print:block">
+        <QuotationFooter />
       </div>
     </div>
   );

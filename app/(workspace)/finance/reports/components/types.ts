@@ -4,6 +4,8 @@ export type ReportTab =
   | "profit-loss"
   | "balance-sheet"
   | "trial-balance"
+  | "receivables"
+  | "payables"
   | "ledger"
   | "vat-summary";
 
