@@ -13,6 +13,10 @@ import {
   Printer,
   TrendingDown,
   TrendingUp,
+  DollarSign,
+  Briefcase,
+  PieChart,
+  Scale,
 } from "lucide-react";
 import {
   Button,
@@ -93,11 +97,11 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
     label: string;
     icon: React.ReactNode;
   }[] = [
-    { id: "daily", label: "Daily Report", icon: <Clock size={14} /> },
-    { id: "weekly", label: "Weekly Report", icon: <CalendarDays size={14} /> },
-    { id: "monthly", label: "Monthly Report", icon: <Calendar size={14} /> },
-    { id: "yearly", label: "Yearly Report", icon: <CalendarRange size={14} /> },
-    { id: "all", label: "All Time", icon: <Layers size={14} /> },
+    { id: "daily", label: "Daily", icon: <Clock size={13} /> },
+    { id: "weekly", label: "Weekly", icon: <CalendarDays size={13} /> },
+    { id: "monthly", label: "Monthly", icon: <Calendar size={13} /> },
+    { id: "yearly", label: "Yearly", icon: <CalendarRange size={13} /> },
+    { id: "all", label: "All Time", icon: <Layers size={13} /> },
   ];
 
   return (
@@ -130,7 +134,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
         <tfoot className="print-page-footer-group">
           <tr>
             <td className="p-0 border-none">
-              <div className="h-[80px] w-full hidden print:block" />
+              <div className="h-[150px] w-full hidden print:block" />
             </td>
           </tr>
         </tfoot>
@@ -139,9 +143,13 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
           <tr>
             <td className="p-0 border-none align-top">
               <div className="space-y-6">
+                {/* Header Toolbar */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2.5 py-1 rounded-lg bg-emerald-700 text-white font-black text-xs shadow-xs">
+                        P&amp;L
+                      </span>
                       <h3 className="font-black text-lg text-slate-900 tracking-tight">
                         Statement of Profit &amp; Loss (Income Statement)
                       </h3>
@@ -156,7 +164,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                     <button
                       type="button"
                       onClick={() => setCompare(!compare)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                         compare
                           ? "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs"
                           : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
@@ -175,15 +183,16 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                       variant="outline"
                       size="sm"
                       onClick={() => window.print()}
-                      className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50"
+                      className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
                       icon={<Printer size={14} />}
                     >
-                      Print / PDF
+                      Print Statement
                     </Button>
                   </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70 print:hidden">
+                {/* Period Selector Strip */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs print:hidden">
                   <div className="flex flex-wrap items-center gap-1.5">
                     {periodButtons.map((btn) => {
                       const isActive = period === btn.id;
@@ -192,15 +201,15 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           key={btn.id}
                           type="button"
                           onClick={() => setPeriod(btn.id)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                             isActive
-                              ? "bg-white text-slate-900 shadow-xs border border-slate-200 text-emerald-800"
-                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                           }`}
                         >
                           <span
                             className={
-                              isActive ? "text-agm-green" : "text-slate-400"
+                              isActive ? "text-emerald-700" : "text-slate-400"
                             }
                           >
                             {btn.icon}
@@ -214,7 +223,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                   <div className="flex items-center gap-2 text-xs">
                     <input
                       type="date"
-                      className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500"
+                      className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
                       value={customStart}
                       onChange={(e) => {
                         setCustomStart(e.target.value);
@@ -224,7 +233,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                     <span className="text-slate-400 font-bold">to</span>
                     <input
                       type="date"
-                      className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500"
+                      className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
                       value={customEnd}
                       onChange={(e) => {
                         setCustomEnd(e.target.value);
@@ -257,13 +266,16 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+                    {/* 4 Summary KPI Metric Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 print-avoid-break">
+                      {/* 1. Total Income */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
                         <div>
                           <div className="flex items-center justify-between">
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
                               1. Total Income
-                            </p>
+                            </span>
                             {compare && prevTotalIncome > 0 && (
                               <span
                                 className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
@@ -281,96 +293,116 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5">
+                          <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
                             Contract revenue &amp; billings
                           </p>
                         </div>
-                        <div>
-                          <p className="text-2xl font-black text-slate-900 font-mono">
-                            {formatCurrency(totalIncome)}
-                          </p>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
+                            {formatNumber(totalIncome)}
+                          </span>
                           {compare && prevTotalIncome > 0 && (
-                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium">
+                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
                               Prior: {formatCurrency(prevTotalIncome)}
                             </p>
                           )}
                         </div>
                       </div>
 
-                      <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+                      {/* 2. Direct Materials (COGS) */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
                         <div>
                           <div className="flex items-center justify-between">
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                              2. Gross Profit
-                            </p>
-                            <span className="text-[10.5px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
-                              Margin: {grossMargin.toFixed(1)}%
+                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              2. Direct Costs (COGS)
+                            </span>
+                            <span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200/60">
+                              {totalIncome > 0 ? ((totalDirectExpenses / totalIncome) * 100).toFixed(1) : "0.0"}%
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            After Direct Materials (COGS)
+                          <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
+                            Project materials &amp; labor
                           </p>
                         </div>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-rose-800 font-mono">
+                            {formatNumber(totalDirectExpenses)}
+                          </span>
+                          {compare && prevTotalDirectExpenses > 0 && (
+                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
+                              Prior: {formatCurrency(prevTotalDirectExpenses)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 3. Gross Profit */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-600" />
                         <div>
-                          <p className="text-2xl font-black text-emerald-800 font-mono">
-                            {formatCurrency(grossProfit)}
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              3. Gross Profit
+                            </span>
+                            <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                              {grossMargin.toFixed(1)}%
+                            </span>
+                          </div>
+                          <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
+                            Revenue after Direct COGS
                           </p>
+                        </div>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-emerald-800 font-mono">
+                            {formatNumber(grossProfit)}
+                          </span>
                           {compare && prevGrossProfit > 0 && (
-                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium">
+                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
                               Prior: {formatCurrency(prevGrossProfit)}
                             </p>
                           )}
                         </div>
                       </div>
 
-                      <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-                        <div>
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                            3. Operating Overhead
-                          </p>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            Salaries, rent, admin &amp; utilities
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-2xl font-black text-amber-700 font-mono">
-                            {formatCurrency(totalOperatingExpenses)}
-                          </p>
-                          {compare && prevTotalOperatingExpenses > 0 && (
-                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium">
-                              Prior:{" "}
-                              {formatCurrency(prevTotalOperatingExpenses)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="p-4.5 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-xs flex flex-col justify-between space-y-2">
+                      {/* 4. Net Profit / (Loss) */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
                         <div>
                           <div className="flex items-center justify-between">
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                              4. Net Profit / (Loss)
-                            </p>
-                            <span className="text-[10px] font-bold text-slate-400">
-                              Margin: {netMargin.toFixed(1)}%
+                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              4. Net Profit
+                            </span>
+                            <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded-md border border-indigo-200/60">
+                              {netMargin.toFixed(1)}%
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400 mt-0.5">
-                            Gross Profit - Operating Expenses
+                          <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
+                            Bottom line yield
                           </p>
                         </div>
-                        <div>
-                          <p
-                            className={`text-2xl font-black font-mono ${
-                              netProfit >= 0
-                                ? "text-emerald-400"
-                                : "text-rose-400"
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span
+                            className={`text-xl print:text-base font-black font-mono ${
+                              netProfit >= 0 ? "text-slate-900" : "text-rose-700"
                             }`}
                           >
-                            {formatCurrency(netProfit)}
-                          </p>
+                            {formatNumber(netProfit)}
+                          </span>
                           {compare && (
-                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium">
+                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
                               Prior: {formatCurrency(prevNetProfit)}
                             </p>
                           )}
@@ -378,18 +410,28 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                    {/* Financial P&L Statement Table */}
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
+                      <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+                        <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                          Comprehensive Income Statement Ledger
+                        </h4>
+                        <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                          IFRS Accrual Basis
+                        </span>
+                      </div>
+
                       <Table className="w-full text-xs text-left">
                         <TableHead className="bg-slate-50/95 border-b border-slate-200">
-                          <TableHeaderCell className="py-3 px-5 text-slate-600 font-bold uppercase text-[11px] tracking-wider">
+                          <TableHeaderCell className="py-3 px-5 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
                             Account Name
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-3 text-slate-600 font-bold uppercase text-[11px] tracking-wider w-28">
+                          <TableHeaderCell className="py-3 px-3 text-slate-600 font-bold uppercase text-[10px] tracking-wider w-28">
                             Code
                           </TableHeaderCell>
                           <TableHeaderCell
                             align="right"
-                            className="py-3 px-4 text-right font-bold uppercase text-[11px] tracking-wider text-slate-700"
+                            className="py-3 px-4 text-right font-bold uppercase text-[10px] tracking-wider text-slate-700"
                           >
                             Current Period (AED)
                           </TableHeaderCell>
@@ -397,19 +439,19 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             <>
                               <TableHeaderCell
                                 align="right"
-                                className="py-3 px-4 text-right font-bold uppercase text-[11px] tracking-wider text-slate-500"
+                                className="py-3 px-4 text-right font-bold uppercase text-[10px] tracking-wider text-slate-500"
                               >
                                 Prior Period (AED)
                               </TableHeaderCell>
                               <TableHeaderCell
                                 align="right"
-                                className="py-3 px-4 text-right font-bold uppercase text-[11px] tracking-wider text-slate-500"
+                                className="py-3 px-4 text-right font-bold uppercase text-[10px] tracking-wider text-slate-500"
                               >
                                 Variance (AED)
                               </TableHeaderCell>
                               <TableHeaderCell
                                 align="right"
-                                className="py-3 px-4 text-right font-bold uppercase text-[11px] tracking-wider text-slate-500 w-24"
+                                className="py-3 px-4 text-right font-bold uppercase text-[10px] tracking-wider text-slate-500 w-24"
                               >
                                 Change %
                               </TableHeaderCell>
@@ -417,18 +459,19 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           )}
                           {onDrillDownAccount && (
                             <TableHeaderCell className="py-3 px-3 text-center w-12 print:hidden">
-                              Ledger
+                              GL
                             </TableHeaderCell>
                           )}
                         </TableHead>
 
                         <TableBody className="divide-y divide-slate-100">
-                          <TableRow className="bg-emerald-50/50 font-bold text-emerald-950">
+                          {/* 1. INCOME & REVENUE */}
+                          <TableRow className="bg-emerald-50/70 font-bold text-emerald-950">
                             <TableCell
-                              colSpan={compare ? 6 : onDrillDownAccount ? 4 : 3}
+                              colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
                               className="py-2.5 px-5 text-[11px] uppercase tracking-wider flex items-center justify-between"
                             >
-                              <span>1. INCOME & REVENUE</span>
+                              <span>1. INCOME &amp; OPERATING REVENUE</span>
                               <span className="text-[10px] text-emerald-800 font-normal">
                                 {incomeRows.length} accounts
                               </span>
@@ -438,9 +481,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           {incomeRows.length === 0 ? (
                             <TableRow>
                               <TableCell
-                                colSpan={
-                                  compare ? 6 : onDrillDownAccount ? 4 : 3
-                                }
+                                colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
                                 className="py-3 px-5 text-center text-slate-400 italic"
                               >
                                 No revenue transactions recorded for this period
@@ -451,7 +492,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                               (item: ProfitLossItem, idx: number) => (
                                 <TableRow
                                   key={`inc-${idx}`}
-                                  className="hover:bg-slate-50/60 text-slate-700 transition"
+                                  className="hover:bg-slate-50/60 text-slate-700 transition-colors"
                                 >
                                   <TableCell className="py-2.5 px-5 font-semibold text-slate-900">
                                     {item.accountName}
@@ -504,7 +545,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                                         onClick={() =>
                                           onDrillDownAccount(item.id!)
                                         }
-                                        className="p-1 text-slate-400 hover:text-emerald-700 rounded-md hover:bg-emerald-50 transition-colors"
+                                        className="p-1 text-slate-400 hover:text-emerald-700 rounded-md hover:bg-emerald-50 transition-colors cursor-pointer"
                                         title="Drill down to General Ledger"
                                       >
                                         <Eye size={13} />
@@ -516,12 +557,12 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             )
                           )}
 
-                          <TableRow className="bg-emerald-100/60 font-bold text-emerald-950 border-t border-b border-emerald-200">
+                          <TableRow className="bg-emerald-100/70 font-bold text-emerald-950 border-t border-b border-emerald-200">
                             <TableCell
                               colSpan={2}
                               className="py-3 px-5 text-emerald-950 font-bold text-xs uppercase"
                             >
-                              Total Income
+                              Total Operating Income
                             </TableCell>
                             <TableCell
                               align="right"
@@ -566,12 +607,13 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             )}
                           </TableRow>
 
-                          <TableRow className="bg-blue-50/50 font-bold text-blue-950">
+                          {/* 2. DIRECT EXPENSES & COGS */}
+                          <TableRow className="bg-blue-50/70 font-bold text-blue-950">
                             <TableCell
-                              colSpan={compare ? 6 : onDrillDownAccount ? 4 : 3}
+                              colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
                               className="py-2.5 px-5 text-[11px] uppercase tracking-wider flex items-center justify-between"
                             >
-                              <span>2. DIRECT MATERIAL EXPENSES & COGS</span>
+                              <span>2. DIRECT MATERIAL EXPENSES &amp; COGS</span>
                               <span className="text-[10px] text-blue-800 font-normal">
                                 {directExpenseRows.length} accounts
                               </span>
@@ -581,13 +623,10 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           {directExpenseRows.length === 0 ? (
                             <TableRow>
                               <TableCell
-                                colSpan={
-                                  compare ? 6 : onDrillDownAccount ? 4 : 3
-                                }
+                                colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
                                 className="py-3 px-5 text-center text-slate-400 italic"
                               >
-                                No direct project material expenses recorded for
-                                this period
+                                No direct project material expenses recorded for this period
                               </TableCell>
                             </TableRow>
                           ) : (
@@ -595,7 +634,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                               (item: ProfitLossItem, idx: number) => (
                                 <TableRow
                                   key={`dir-${idx}`}
-                                  className="hover:bg-slate-50/60 text-slate-700 transition"
+                                  className="hover:bg-slate-50/60 text-slate-700 transition-colors"
                                 >
                                   <TableCell className="py-2.5 px-5 font-semibold text-slate-900">
                                     {item.accountName}
@@ -640,7 +679,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                                         onClick={() =>
                                           onDrillDownAccount(item.id!)
                                         }
-                                        className="p-1 text-slate-400 hover:text-blue-700 rounded-md hover:bg-blue-50 transition-colors"
+                                        className="p-1 text-slate-400 hover:text-blue-700 rounded-md hover:bg-blue-50 transition-colors cursor-pointer"
                                         title="Drill down to General Ledger"
                                       >
                                         <Eye size={13} />
@@ -702,12 +741,13 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             )}
                           </TableRow>
 
-                          <TableRow className="bg-rose-50/40 font-bold text-rose-950">
+                          {/* 3. OPERATING OVERHEAD */}
+                          <TableRow className="bg-rose-50/70 font-bold text-rose-950">
                             <TableCell
-                              colSpan={compare ? 6 : onDrillDownAccount ? 4 : 3}
+                              colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
                               className="py-2.5 px-5 text-[11px] uppercase tracking-wider flex items-center justify-between"
                             >
-                              <span>3. OPERATING EXPENSES (OVERHEAD)</span>
+                              <span>3. OPERATING EXPENSES (OVERHEAD &amp; ADMIN)</span>
                               <span className="text-[10px] text-rose-800 font-normal">
                                 {operatingExpenseRows.length} accounts
                               </span>
@@ -717,13 +757,10 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           {operatingExpenseRows.length === 0 ? (
                             <TableRow>
                               <TableCell
-                                colSpan={
-                                  compare ? 6 : onDrillDownAccount ? 4 : 3
-                                }
+                                colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
                                 className="py-3 px-5 text-center text-slate-400 italic"
                               >
-                                No operational overhead expenses recorded for
-                                this period
+                                No operational overhead expenses recorded for this period
                               </TableCell>
                             </TableRow>
                           ) : (
@@ -731,7 +768,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                               (item: ProfitLossItem, idx: number) => (
                                 <TableRow
                                   key={`op-${idx}`}
-                                  className="hover:bg-slate-50/60 text-slate-700 transition"
+                                  className="hover:bg-slate-50/60 text-slate-700 transition-colors"
                                 >
                                   <TableCell className="py-2.5 px-5 font-semibold text-slate-900">
                                     {item.accountName}
@@ -776,7 +813,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                                         onClick={() =>
                                           onDrillDownAccount(item.id!)
                                         }
-                                        className="p-1 text-slate-400 hover:text-rose-700 rounded-md hover:bg-rose-50 transition-colors"
+                                        className="p-1 text-slate-400 hover:text-rose-700 rounded-md hover:bg-rose-50 transition-colors cursor-pointer"
                                         title="Drill down to General Ledger"
                                       >
                                         <Eye size={13} />
@@ -788,7 +825,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             )
                           )}
 
-                          <TableRow className="bg-rose-100/60 font-bold text-rose-950 border-t border-b border-rose-200">
+                          <TableRow className="bg-rose-100/70 font-bold text-rose-950 border-t border-b border-rose-200">
                             <TableCell
                               colSpan={2}
                               className="py-3 px-5 text-rose-950 font-bold text-xs uppercase"
@@ -836,6 +873,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             )}
                           </TableRow>
 
+                          {/* 4. NET PROFIT BOTTOM LINE */}
                           <TableRow className="bg-slate-900 text-white font-black">
                             <TableCell
                               colSpan={2}
@@ -900,7 +938,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
         </tbody>
       </table>
 
-      <div className="hidden print:block">
+      <div className="fixed-print-footer hidden print:block">
         <QuotationFooter />
       </div>
     </div>

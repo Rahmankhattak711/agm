@@ -14,6 +14,10 @@ import {
   Mail,
   Receipt,
   X,
+  CreditCard,
+  ShieldCheck,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Button,
@@ -64,16 +68,16 @@ export const AccountsPayableReport: React.FC = () => {
     window.print();
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
-      </div>
-    );
-  }
+  const agingPills = [
+    { key: "ALL", label: "All Vendor Bills" },
+    { key: "current", label: "0–30 Days (Current)" },
+    { key: "days30", label: "31–60 Days" },
+    { key: "days60", label: "61–90 Days" },
+    { key: "days90Plus", label: "90+ Days (Overdue)" },
+  ];
 
   return (
-    <div className="space-y-6 print:p-0 print:m-0">
+    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -86,8 +90,7 @@ export const AccountsPayableReport: React.FC = () => {
                       Accounts Payable &amp; Vendor Aging Statement
                     </h1>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Supplier Liabilities
-                      &amp; Outstanding Procurement Invoices
+                      AGM FITOUT TECHNICAL SERVICES LLC — Supplier Liabilities &amp; Outstanding Procurement Invoices
                     </p>
                   </div>
                   <p className="text-[10px] text-slate-400 font-mono">
@@ -102,7 +105,7 @@ export const AccountsPayableReport: React.FC = () => {
         <tfoot className="print-page-footer-group">
           <tr>
             <td className="p-0 border-none">
-              <div className="h-[80px] w-full hidden print:block" />
+              <div className="h-[150px] w-full hidden print:block" />
             </td>
           </tr>
         </tfoot>
@@ -111,312 +114,388 @@ export const AccountsPayableReport: React.FC = () => {
           <tr>
             <td className="p-0 border-none align-top">
               <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm print:hidden">
+                {/* Header Toolbar */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-4 print:hidden">
                   <div>
-                    <h2 className="text-xl font-bold text-slate-800">
-                      Accounts Payable & Vendor Aging
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Vendor liabilities and procurement bills mapped to GL
-                      Account{" "}
-                      <span className="font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2.5 py-1 rounded-lg bg-amber-600 text-white font-black text-xs shadow-xs">
+                        A/P
+                      </span>
+                      <h3 className="font-black text-lg text-slate-900 tracking-tight">
+                        Accounts Payable &amp; Vendor Aging
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      Vendor liabilities and procurement bills mapped to GL Account{" "}
+                      <span className="font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
                         2000 - Accounts Payable (Liability)
                       </span>
                     </p>
                   </div>
+
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handlePrint}
-                      className="flex items-center gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50 font-medium"
+                      className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+                      icon={<Printer size={14} />}
                     >
-                      <Printer size={15} />
                       Print Statement
                     </Button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 print:grid-cols-5">
-                  <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        Total Payables (AP)
-                      </span>
-                      <ShoppingCart size={16} className="text-amber-700" />
+                {isLoading ? (
+                  <div className="py-16 text-center text-xs text-slate-400 animate-pulse space-y-2">
+                    <div className="w-8 h-8 rounded-full border-2 border-amber-500 border-t-transparent animate-spin mx-auto" />
+                    <p>Calculating Accounts Payable &amp; Vendor Aging Schedule...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* 5 Summary KPI Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 print:grid-cols-5 gap-3.5 print:gap-2 print-avoid-break">
+                      {/* 1. Total Payables */}
+                      <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              Total Payables (AP)
+                            </span>
+                            <ShoppingCart size={14} className="text-amber-600" />
+                          </div>
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
+                            {items.length} Active Vendor Bills
+                          </span>
+                        </div>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-amber-800 font-mono">
+                            {formatNumber(payables?.totalPayables || 0)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 2. Current (0-30d) */}
+                      <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              Current (0–30d)
+                            </span>
+                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                          </div>
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
+                            Within Credit Limit
+                          </span>
+                        </div>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-emerald-800 font-mono">
+                            {formatNumber(aging.current)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 3. 31-60 Days */}
+                      <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-blue-500" />
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              31–60 Days
+                            </span>
+                            <span className="h-2 w-2 rounded-full bg-blue-500" />
+                          </div>
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
+                            Upcoming Due Date
+                          </span>
+                        </div>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-blue-800 font-mono">
+                            {formatNumber(aging.days30)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 4. 61-90 Days */}
+                      <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              61–90 Days
+                            </span>
+                            <span className="h-2 w-2 rounded-full bg-amber-500" />
+                          </div>
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
+                            Payment Scheduled
+                          </span>
+                        </div>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-amber-700 font-mono">
+                            {formatNumber(aging.days60)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 5. 90+ Days */}
+                      <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-600" />
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              90+ Days Overdue
+                            </span>
+                            <span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse" />
+                          </div>
+                          <span className="text-xs print:text-[11px] text-rose-600 font-bold mt-0.5 block truncate">
+                            Immediate Clearance
+                          </span>
+                        </div>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-rose-700 font-mono">
+                            {formatNumber(aging.days90Plus)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-2xl font-black mt-1 text-amber-700 font-mono">
-                      {formatCurrency(payables?.totalPayables || 0)}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {items.length} Active Vendor Bills
-                    </p>
-                  </div>
 
-                  <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        Current (0–30d)
-                      </span>
-                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    {/* Filter & Search Strip */}
+                    <div className="flex flex-col sm:flex-row gap-3 items-center justify-between p-2 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs print:hidden">
+                      <div className="relative flex-1 w-full max-w-sm">
+                        <Search
+                          size={14}
+                          className="absolute left-3 top-2.5 text-slate-400"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Search supplier, bill number, contact, or user..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="w-full pl-8 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-amber-500 shadow-2xs"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto">
+                        {agingPills.map((tab) => (
+                          <button
+                            key={tab.key}
+                            type="button"
+                            onClick={() => setSelectedBucket(tab.key)}
+                            className={`px-3 py-1.5 text-xs font-bold rounded-xl whitespace-nowrap transition-all cursor-pointer ${
+                              selectedBucket === tab.key
+                                ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-amber-800"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                            }`}
+                          >
+                            {tab.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <p className="text-2xl font-black text-emerald-800 mt-1 font-mono">
-                      {formatCurrency(aging.current)}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Within Credit Limit
-                    </p>
-                  </div>
 
-                  <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        31–60 Days
-                      </span>
-                      <span className="h-2 w-2 rounded-full bg-blue-500" />
-                    </div>
-                    <p className="text-2xl font-black text-blue-800 mt-1 font-mono">
-                      {formatCurrency(aging.days30)}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Upcoming Due Date
-                    </p>
-                  </div>
+                    {/* Accounts Payable Table */}
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
+                      <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+                        <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                          Supplier Aging &amp; Outstanding Bills Ledger
+                        </h4>
+                        <span className="text-[11px] font-mono text-amber-300 font-bold">
+                          GL 2000 • Trade Payables
+                        </span>
+                      </div>
 
-                  <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        61–90 Days
-                      </span>
-                      <span className="h-2 w-2 rounded-full bg-amber-500" />
-                    </div>
-                    <p className="text-2xl font-black text-amber-700 mt-1 font-mono">
-                      {formatCurrency(aging.days60)}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Payment Scheduled
-                    </p>
-                  </div>
-
-                  <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        90+ Days Overdue
-                      </span>
-                      <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-                    </div>
-                    <p className="text-2xl font-black text-rose-700 mt-1 font-mono">
-                      {formatCurrency(aging.days90Plus)}
-                    </p>
-                    <p className="text-xs text-rose-600 font-bold mt-0.5">
-                      Immediate Clearance
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm print:hidden">
-                  <div className="relative flex-1 w-full">
-                    <Search
-                      size={16}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Search by supplier name, bill number, contact person, or creator user..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-                    {[
-                      { key: "ALL", label: "All Bills" },
-                      { key: "current", label: "0–30 Days" },
-                      { key: "days30", label: "31–60 Days" },
-                      { key: "days60", label: "61–90 Days" },
-                      { key: "days90Plus", label: "90+ Days" },
-                    ].map((tab) => (
-                      <button
-                        key={tab.key}
-                        onClick={() => setSelectedBucket(tab.key)}
-                        className={`px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition-all cursor-pointer ${
-                          selectedBucket === tab.key
-                            ? "bg-[#1d3345] text-white shadow-sm"
-                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHead>
-                        <TableRow className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                          <TableHeaderCell className="py-3 px-4">
+                      <Table className="w-full text-xs text-left">
+                        <TableHead className="bg-slate-50/95 border-b border-slate-200">
+                          <TableHeaderCell className="py-3 px-4 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
                             Bill / PO #
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-4">
-                            Supplier & TRN
+                          <TableHeaderCell className="py-3 px-4 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
+                            Supplier &amp; TRN
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-4">
-                            Impacted GL Account
+                          <TableHeaderCell className="py-3 px-4 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
+                            Impacted GL
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-4">
-                            Created By (User)
+                          <TableHeaderCell className="py-3 px-4 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
+                            Created By
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-4">
+                          <TableHeaderCell className="py-3 px-4 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
                             Bill Date
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-4">
-                            Aging
+                          <TableHeaderCell className="py-3 px-4 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
+                            Aging Status
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-4 text-right">
-                            Total Bill
+                          <TableHeaderCell
+                            align="right"
+                            className="py-3 px-4 text-right text-slate-700 font-bold uppercase text-[10px] tracking-wider"
+                          >
+                            Total Bill (AED)
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-4 text-right">
-                            Balance Payable
+                          <TableHeaderCell
+                            align="right"
+                            className="py-3 px-4 text-right text-slate-700 font-bold uppercase text-[10px] tracking-wider"
+                          >
+                            Balance Payable (AED)
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-4 text-center print:hidden">
+                          <TableHeaderCell className="py-3 px-4 text-center w-24 text-slate-600 font-bold uppercase text-[10px] tracking-wider print:hidden">
                             Action
                           </TableHeaderCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {filteredItems.length === 0 ? (
-                          <TableRow>
-                            <TableCell
-                              colSpan={9}
-                              className="text-center py-12 text-slate-400 text-sm"
-                            >
-                              No supplier payable records match your search
-                              criteria.
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          filteredItems.map((item: any) => {
-                            const rem =
-                              item.remainingBalance ?? item.totalAmount ?? 0;
+                        </TableHead>
 
-                            return (
-                              <TableRow
-                                key={item.id}
-                                className="hover:bg-slate-50/70 border-b border-slate-100 transition-colors text-xs"
+                        <TableBody className="divide-y divide-slate-100">
+                          {filteredItems.length === 0 ? (
+                            <TableRow>
+                              <TableCell
+                                colSpan={9}
+                                className="text-center py-12 text-slate-400 text-xs italic"
                               >
-                                <TableCell className="py-3 px-4 font-mono font-bold text-slate-800">
-                                  <div className="flex items-center gap-1.5">
-                                    <ShoppingCart
-                                      size={14}
-                                      className="text-blue-600 shrink-0"
-                                    />
-                                    <span>{item.poNumber}</span>
-                                  </div>
-                                  <p className="text-[10px] text-slate-400 font-sans">
-                                    Type:{" "}
-                                    {item.type?.replace("_", " ") || "Bill"}
-                                  </p>
-                                </TableCell>
+                                No supplier payable records match your search criteria.
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filteredItems.map((item: any) => {
+                              const rem =
+                                item.remainingBalance ?? item.totalAmount ?? 0;
 
-                                <TableCell className="py-3 px-4">
-                                  <p className="font-bold text-slate-800">
-                                    {item.supplierName}
-                                  </p>
-                                  <p className="text-[10px] text-slate-400">
-                                    TRN: {item.supplierTrn || "—"}
-                                  </p>
-                                </TableCell>
-
-                                <TableCell className="py-3 px-4">
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200 text-blue-800 text-[10.5px] font-semibold font-mono">
-                                    2000 - AP
-                                  </span>
-                                </TableCell>
-
-                                <TableCell className="py-3 px-4">
-                                  <div className="flex items-center gap-1.5">
-                                    <div className="h-5 w-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[9px] font-bold">
-                                      {(item.createdByUser || "U")[0]}
+                              return (
+                                <TableRow
+                                  key={item.id}
+                                  className="hover:bg-slate-50/60 text-slate-700 transition-colors text-xs"
+                                >
+                                  <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900">
+                                    <div className="flex items-center gap-1.5">
+                                      <ShoppingCart
+                                        size={13}
+                                        className="text-amber-600 shrink-0"
+                                      />
+                                      <span>{item.poNumber}</span>
                                     </div>
-                                    <div>
-                                      <p className="font-medium text-slate-700 text-[11px] leading-tight">
-                                        {item.createdByUser || "System"}
-                                      </p>
-                                      <p className="text-[9.5px] text-slate-400 leading-tight">
-                                        {item.createdUserRole || "Accountant"}
-                                      </p>
+                                    <p className="text-[10px] text-slate-400 font-sans mt-0.5">
+                                      Type: {item.type?.replace("_", " ") || "Bill"}
+                                    </p>
+                                  </TableCell>
+
+                                  <TableCell className="py-2.5 px-4">
+                                    <p className="font-bold text-slate-900">
+                                      {item.supplierName}
+                                    </p>
+                                    <p className="text-[10px] text-slate-400 font-mono">
+                                      TRN: {item.supplierTrn || "—"}
+                                    </p>
+                                  </TableCell>
+
+                                  <TableCell className="py-2.5 px-4">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold font-mono">
+                                      2000 - AP
+                                    </span>
+                                  </TableCell>
+
+                                  <TableCell className="py-2.5 px-4">
+                                    <div className="flex items-center gap-1.5">
+                                      <div className="h-5 w-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[9px] font-bold">
+                                        {(item.createdByUser || "U")[0]}
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-slate-800 text-[11px] leading-tight">
+                                          {item.createdByUser || "System"}
+                                        </p>
+                                        <p className="text-[9.5px] text-slate-400 leading-tight">
+                                          {item.createdUserRole || "Accountant"}
+                                        </p>
+                                      </div>
                                     </div>
-                                  </div>
-                                </TableCell>
+                                  </TableCell>
 
-                                <TableCell className="py-3 px-4 text-slate-600 font-mono text-[11px]">
-                                  {item.orderDate}
-                                </TableCell>
+                                  <TableCell className="py-2.5 px-4 text-slate-600 font-mono text-[11px]">
+                                    {item.orderDate}
+                                  </TableCell>
 
-                                <TableCell className="py-3 px-4">
-                                  <span
-                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                      item.agingBucket === "current"
-                                        ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                                        : item.agingBucket === "days30"
-                                          ? "bg-blue-100 text-blue-800 border border-blue-200"
-                                          : item.agingBucket === "days60"
-                                            ? "bg-amber-100 text-amber-800 border border-amber-200"
-                                            : "bg-rose-100 text-rose-800 border border-rose-200"
-                                    }`}
+                                  <TableCell className="py-2.5 px-4">
+                                    <span
+                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                        item.agingBucket === "current"
+                                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                          : item.agingBucket === "days30"
+                                            ? "bg-blue-50 text-blue-800 border-blue-200"
+                                            : item.agingBucket === "days60"
+                                              ? "bg-amber-50 text-amber-800 border-amber-200"
+                                              : "bg-rose-50 text-rose-800 border-rose-200"
+                                      }`}
+                                    >
+                                      <Clock size={10} />
+                                      {item.daysOutstanding}d ({item.agingBucket})
+                                    </span>
+                                  </TableCell>
+
+                                  <TableCell
+                                    align="right"
+                                    className="py-2.5 px-4 text-right font-mono font-medium text-slate-600"
                                   >
-                                    <Clock size={10} />
-                                    {item.daysOutstanding}d ({item.agingBucket})
-                                  </span>
-                                </TableCell>
+                                    {formatNumber(item.totalAmount)}
+                                  </TableCell>
 
-                                <TableCell className="py-3 px-4 text-right font-mono text-slate-500">
-                                  {formatCurrency(item.totalAmount)}
-                                </TableCell>
-
-                                <TableCell className="py-3 px-4 text-right font-mono font-bold text-blue-700">
-                                  {formatCurrency(rem)}
-                                </TableCell>
-
-                                <TableCell className="py-3 px-4 text-center print:hidden">
-                                  <button
-                                    onClick={() => setSelectedItem(item)}
-                                    className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all cursor-pointer"
+                                  <TableCell
+                                    align="right"
+                                    className="py-2.5 px-4 text-right font-mono font-bold text-amber-800"
                                   >
-                                    View Details
-                                  </button>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
+                                    {formatNumber(rem)}
+                                  </TableCell>
 
-                  <div className="bg-slate-50 p-4 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-600">
-                    <span>
-                      Showing <strong>{filteredItems.length}</strong> of{" "}
-                      <strong>{items.length}</strong> supplier payable records
-                    </span>
-                    <div className="font-bold text-sm text-slate-800">
-                      Filtered Total Payable:{" "}
-                      <span className="text-blue-700 font-mono">
-                        {formatCurrency(totalFilteredAmount)}
-                      </span>
+                                  <TableCell className="py-2.5 px-4 text-center print:hidden">
+                                    <button
+                                      type="button"
+                                      onClick={() => setSelectedItem(item)}
+                                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                                    >
+                                      View Details
+                                    </button>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })
+                          )}
+                        </TableBody>
+                      </Table>
+
+                      <div className="bg-slate-50/95 p-3.5 px-5 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-600">
+                        <span>
+                          Showing <strong>{filteredItems.length}</strong> of{" "}
+                          <strong>{items.length}</strong> supplier payable records
+                        </span>
+                        <div className="font-bold text-xs text-slate-800">
+                          Filtered Total Payable:{" "}
+                          <span className="text-amber-800 font-mono text-sm ml-1">
+                            {formatCurrency(totalFilteredAmount)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
+                {/* Audit Modal Dialog */}
                 {selectedItem && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
                     <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in duration-150">
-                      <div className="bg-gradient-to-r from-[#1d3345] to-[#233c4d] p-5 text-white flex items-center justify-between">
+                      <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] p-5 text-white flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
-                          <Building2 className="text-blue-400" size={20} />
+                          <Building2 className="text-amber-300" size={20} />
                           <div>
                             <h3 className="font-bold text-base">
                               Payable Audit Breakdown
@@ -427,6 +506,7 @@ export const AccountsPayableReport: React.FC = () => {
                           </div>
                         </div>
                         <button
+                          type="button"
                           onClick={() => setSelectedItem(null)}
                           className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition cursor-pointer"
                         >
@@ -440,10 +520,10 @@ export const AccountsPayableReport: React.FC = () => {
                             <p className="text-[10px] font-bold uppercase text-slate-400">
                               Supplier / Vendor
                             </p>
-                            <p className="font-bold text-slate-800 text-sm mt-0.5">
+                            <p className="font-bold text-slate-900 text-sm mt-0.5">
                               {selectedItem.supplierName}
                             </p>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
+                            <p className="text-[11px] text-slate-500 font-mono mt-0.5">
                               TRN: {selectedItem.supplierTrn || "—"}
                             </p>
                           </div>
@@ -461,14 +541,14 @@ export const AccountsPayableReport: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
-                          <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100">
-                            <p className="text-[10px] font-bold uppercase text-blue-800">
+                          <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200">
+                            <p className="text-[10px] font-bold uppercase text-amber-800">
                               Impacted GL Account
                             </p>
-                            <p className="font-mono font-bold text-blue-900 mt-0.5">
+                            <p className="font-mono font-bold text-amber-900 mt-0.5">
                               2000 - Accounts Payable
                             </p>
-                            <p className="text-[10px] text-blue-700 mt-0.5">
+                            <p className="text-[10px] text-amber-700 mt-0.5">
                               Credit Balance (Liability Account)
                             </p>
                           </div>
@@ -488,47 +568,39 @@ export const AccountsPayableReport: React.FC = () => {
 
                         <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                           <div className="flex justify-between">
-                            <span className="text-slate-500">
-                              Bill / Order Date:
-                            </span>
+                            <span className="text-slate-500">Bill / Order Date:</span>
                             <span className="font-mono font-medium text-slate-800">
                               {selectedItem.orderDate}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">
-                              Payment Due Date:
-                            </span>
+                            <span className="text-slate-500">Payment Due Date:</span>
                             <span className="font-mono font-medium text-slate-800">
                               {selectedItem.dueDate || "30 Days Net"}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">
-                              Days Outstanding:
-                            </span>
+                            <span className="text-slate-500">Days Outstanding:</span>
                             <span className="font-bold text-rose-600">
                               {selectedItem.daysOutstanding} Days
                             </span>
                           </div>
                           <div className="h-px bg-slate-200 my-1" />
                           <div className="flex justify-between">
-                            <span className="text-slate-500">
-                              Total Billed Amount:
-                            </span>
+                            <span className="text-slate-500">Total Billed Amount:</span>
                             <span className="font-mono font-bold text-slate-800">
                               {formatCurrency(selectedItem.totalAmount)}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-slate-500">Paid Amount:</span>
-                            <span className="font-mono text-emerald-600 font-bold">
+                            <span className="font-mono text-emerald-700 font-bold">
                               {formatCurrency(selectedItem.paidAmount || 0)}
                             </span>
                           </div>
-                          <div className="flex justify-between text-sm font-bold bg-blue-100/60 p-2 rounded-xl text-blue-950">
+                          <div className="flex justify-between text-xs font-bold bg-amber-50 p-2.5 rounded-xl text-amber-950 border border-amber-200/80">
                             <span>Remaining Payable Liability:</span>
-                            <span className="font-mono text-blue-800">
+                            <span className="font-mono text-amber-800 text-sm">
                               {formatCurrency(
                                 selectedItem.remainingBalance ??
                                   selectedItem.totalAmount,
@@ -543,7 +615,7 @@ export const AccountsPayableReport: React.FC = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedItem(null)}
-                          className="text-xs"
+                          className="text-xs cursor-pointer"
                         >
                           Close Audit View
                         </Button>
@@ -557,9 +629,11 @@ export const AccountsPayableReport: React.FC = () => {
         </tbody>
       </table>
 
-      <div className="hidden print:block">
+      <div className="fixed-print-footer hidden print:block">
         <QuotationFooter />
       </div>
     </div>
   );
 };
+
+export default AccountsPayableReport;
