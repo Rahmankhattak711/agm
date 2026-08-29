@@ -9,6 +9,7 @@ import {
   useCreateAsset,
   FixedAsset,
 } from "@/lib/hooks/api-hooks";
+import { formatAed } from "@/lib/utils/format";
 import { PlusIcon } from "@/components/icons";
 import {
   Button,
@@ -40,14 +41,9 @@ export default function FixedAssetsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const formatCurrency = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
-
-  const totalAssetCost = (assets || []).reduce(
-    (s, a) => s + Number(a.cost || 0),
-    0,
+  const totalAssetCost = useMemo(
+    () => (assets || []).reduce((s, a) => s + Number(a.cost || 0), 0),
+    [assets],
   );
 
   const filteredAssets = useMemo(() => {
@@ -177,7 +173,7 @@ export default function FixedAssetsPage() {
         header: "Cost (AED)",
         cell: ({ row }) => (
           <span className="font-mono font-bold text-xs text-slate-900">
-            {formatCurrency(row.original.cost)}
+            {formatAed(row.original.cost)}
           </span>
         ),
       },
@@ -234,7 +230,7 @@ export default function FixedAssetsPage() {
             Gross Asset Value
           </p>
           <p className="text-2xl font-black text-emerald-800 mt-1">
-            {formatCurrency(totalAssetCost)}
+            {formatAed(totalAssetCost)}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
             Historical acquisition cost
