@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, type ReactNode } from "react";
-import Sidebar from "@/components/Sidebar";
 import GlobalCreateMenu from "@/components/GlobalCreateMenu";
 import { SpinnerIcon } from "@/components/icons";
+import Sidebar from "@/components/Sidebar";
 import { useAuth } from "@/context/AuthContext";
 import { getPageMeta } from "@/lib/navigation";
 import { usePathname } from "next/navigation";
+import { useEffect, type ReactNode } from "react";
 
 export default function WorkspaceLayout({ children }: { children: ReactNode }) {
   const { user, checkAuth, loading } = useAuth();

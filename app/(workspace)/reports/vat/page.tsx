@@ -2,24 +2,20 @@
 
 import { VatPositionReport } from "@/app/(workspace)/finance/reports/components/VatPositionReport";
 import { useVatSummary } from "@/lib/hooks/api-hooks";
-import { Scale } from "lucide-react";
 
 export default function VatReportsPage() {
   const { data: vatSummary, isLoading } = useVatSummary();
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-r from-[#1d3345] to-[#233c4d] p-6 rounded-2xl text-white shadow-lg border border-white/10">
+    <div className="space-y-6">
+      {/* Simple Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
-            <Scale size={16} /> UAE Federal Tax Authority (FTA)
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            VAT & Tax Compliance Reports
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            VAT &amp; Tax Compliance Reports
           </h1>
-          <p className="text-white/70 text-sm mt-1">
-            FTA VAT Form 201 returns, Output 5% Tax, Input 5% Recoverable Tax,
-            and Net Payable audit reports.
+          <p className="text-xs text-slate-500 mt-0.5">
+            AGM FITOUT TECHNICAL SERVICES LLC — FTA Form 201 returns, 5% Output Tax, 5% Recoverable Input Tax, and Net Position.
           </p>
         </div>
       </div>

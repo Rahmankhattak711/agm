@@ -23,6 +23,20 @@ import {
   SearchIcon,
   TrashIcon,
 } from "@/components/icons";
+import {
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  Printer,
+  ShieldCheck,
+  Building2,
+  FileSpreadsheet,
+  AlertTriangle,
+  Receipt,
+  Scale,
+  Plus,
+  Search,
+} from "lucide-react";
 
 interface JournalLineFormItem {
   accountId: string;
@@ -291,98 +305,190 @@ export default function JournalEntriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Simple Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <h2 className="text-xl font-black text-slate-900">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             General Journal Entries
-          </h2>
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Audit-grade double-entry bookkeeping vouchers and general ledger
-            adjustments.
+            AGM FITOUT TECHNICAL SERVICES LLC — Audit-grade double-entry bookkeeping vouchers <br /> and general ledger adjustments.
           </p>
         </div>
 
-        <Button
-          onClick={handleOpenAddModal}
-          variant="primary"
-          icon={<PlusIcon size={16} strokeWidth={2.2} />}
-        >
-          New Journal Entry
-        </Button>
-      </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+            icon={<Printer size={14} />}
+          >
+            Print Register
+          </Button>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Entries
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {journalEntries?.length || 0}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">All ledger vouchers</p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Posted Entries
-          </p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">
-            {journalEntries?.filter((j) => j.isPosted).length || 0}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Active in general ledger
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Draft Entries
-          </p>
-          <p className="text-2xl font-black text-amber-600 mt-1">
-            {journalEntries?.filter((j) => !j.isPosted).length || 0}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Pending posting review
-          </p>
+          <Button
+            onClick={handleOpenAddModal}
+            variant="primary"
+            size="sm"
+            icon={<Plus size={14} strokeWidth={2.5} />}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+          >
+            New Journal Entry
+          </Button>
         </div>
       </div>
 
-      <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="w-full sm:w-80">
-          <Input
-            placeholder="Search entry #, reference, memo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            leftIcon={<SearchIcon size={14} />}
-          />
+      {/* 4 Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+        {/* 1. Total Entries */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              1. Total Journal Vouchers
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              All ledger adjustments
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {journalEntries?.length || 0}
+            </span>
+            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
+              Vouchers
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          {(["ALL", "POSTED", "DRAFT"] as const).map((st) => (
-            <Button
-              key={st}
-              size="sm"
-              variant={statusFilter === st ? "dark" : "outline"}
-              onClick={() => setStatusFilter(st)}
-            >
-              {st === "ALL" ? "All" : st === "POSTED" ? "Posted" : "Drafts"}
-            </Button>
-          ))}
+        {/* 2. Posted Entries */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              2. Posted Entries
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Active in General Ledger
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-emerald-800 font-mono">
+              {journalEntries?.filter((j) => j.isPosted).length || 0}
+            </span>
+            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
+              Posted
+            </span>
+          </div>
+        </div>
+
+        {/* 3. Draft Entries */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              3. Draft Entries
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Pending posting approval
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-amber-700 font-mono">
+              {journalEntries?.filter((j) => !j.isPosted).length || 0}
+            </span>
+            <span className="text-xs font-bold text-amber-700 font-sans ml-1.5">
+              Drafts
+            </span>
+          </div>
+        </div>
+
+        {/* 4. Audit Integrity */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                4. Audit Integrity
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
+                GAAP
+              </span>
+            </div>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Double-entry equality
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xl font-black text-teal-900 font-sans">
+              100% Balanced
+            </span>
+          </div>
         </div>
       </div>
 
+      {/* Main Filter Toolbar */}
+      <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Status Quick Pills */}
+          <div className="flex flex-wrap items-center gap-1">
+            {[
+              { id: "ALL", label: "All Entries" },
+              { id: "POSTED", label: "Posted to GL" },
+              { id: "DRAFT", label: "Drafts" },
+            ].map((tab) => {
+              const isActive = statusFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setStatusFilter(tab.id as any)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <span className="text-[11px] font-bold text-slate-500 font-mono">
+            {filteredEntries.length} Vouchers Listed
+          </span>
+        </div>
+
+        <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
+          <div className="w-full sm:w-80 relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search entry #, reference, memo..."
+              className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Journal Entries List */}
       <div className="space-y-3">
         {isLoading ? (
-          <div className="py-12 text-center text-xs text-slate-400 bg-white rounded-2xl border border-slate-200 animate-pulse">
-            Loading journal transactions...
+          <div className="py-16 text-center text-xs text-slate-400 bg-white rounded-2xl border border-slate-200 animate-pulse space-y-2">
+            <div className="w-8 h-8 rounded-full border-2 border-teal-500 border-t-transparent animate-spin mx-auto" />
+            <p>Loading journal transactions...</p>
           </div>
         ) : error ? (
-          <div className="py-8 text-center text-xs text-red-500 bg-white rounded-2xl border border-slate-200">
+          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-2xl border border-rose-200">
             Error loading entries: {(error as any).message}
           </div>
         ) : filteredEntries.length === 0 ? (
           <div className="py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 space-y-2">
-            <JournalEntriesIcon className="w-8 h-8 mx-auto opacity-40 text-slate-500" />
+            <FileSpreadsheet className="w-8 h-8 mx-auto opacity-40 text-slate-500" />
             <p className="text-sm font-semibold text-slate-600">
               No journal entries found
             </p>
@@ -400,7 +506,7 @@ export default function JournalEntriesPage() {
               return (
                 <div
                   key={je.id}
-                  className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden transition hover:border-slate-300"
+                  className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden transition-all hover:border-slate-300"
                 >
                   <div
                     className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none"
@@ -410,7 +516,7 @@ export default function JournalEntriesPage() {
                       <Button
                         size="sm"
                         variant="secondary"
-                        className="w-8 h-8 !p-0 rounded-xl shrink-0"
+                        className="w-8 h-8 !p-0 rounded-xl shrink-0 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
                           setExpandedId(isExpanded ? null : je.id);
@@ -425,20 +531,21 @@ export default function JournalEntriesPage() {
 
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-slate-900 text-sm">
+                          <span className="font-mono font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                            <FileSpreadsheet size={14} className="text-teal-700 shrink-0" />
                             {je.entryNumber}
                           </span>
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                               je.isPosted
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-slate-100 text-slate-700"
+                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                : "bg-amber-50 text-amber-800 border border-amber-200"
                             }`}
                           >
-                            {je.isPosted ? "Posted" : "Draft"}
+                            {je.isPosted ? "Posted to GL" : "Draft"}
                           </span>
                           {je.reference && (
-                            <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                            <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
                               Ref: {je.reference}
                             </span>
                           )}
@@ -446,14 +553,9 @@ export default function JournalEntriesPage() {
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 mt-1">
                           <span>
                             Date:{" "}
-                            <strong className="text-slate-700">
+                            <strong className="text-slate-700 font-mono font-semibold">
                               {new Date(je.entryDate).toLocaleDateString(
-                                undefined,
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                },
+                                "en-GB",
                               )}
                             </strong>
                           </span>
@@ -474,7 +576,7 @@ export default function JournalEntriesPage() {
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                           Total Amount
                         </span>
-                        <span className="font-mono font-bold text-slate-900 text-sm">
+                        <span className="font-mono font-black text-slate-900 text-sm">
                           {formatAed(totalDebit)}
                         </span>
                       </div>
@@ -493,13 +595,14 @@ export default function JournalEntriesPage() {
                               size="sm"
                               variant={je.isPosted ? "secondary" : "primary"}
                               onClick={(e) => handleToggleStatus(je, e)}
+                              className="cursor-pointer text-xs font-bold"
                             >
-                              {je.isPosted ? "Unpost" : "Post"}
+                              {je.isPosted ? "Unpost" : "Post to GL"}
                             </Button>
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="w-8 h-8 !p-0 rounded-lg text-slate-400 hover:text-slate-700"
+                              className="w-8 h-8 !p-0 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer"
                               onClick={(e) => handleOpenEditModal(je, e)}
                               title="Edit"
                             >
@@ -508,7 +611,7 @@ export default function JournalEntriesPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="w-8 h-8 !p-0 rounded-lg text-slate-400 hover:text-red-600"
+                              className="w-8 h-8 !p-0 rounded-lg text-slate-400 hover:text-rose-600 cursor-pointer"
                               onClick={(e) =>
                                 handleDelete(je.id, je.entryNumber, e)
                               }
@@ -523,74 +626,53 @@ export default function JournalEntriesPage() {
                   </div>
 
                   {isExpanded && (
-                    <div className="border-t border-slate-100 bg-slate-50/60 p-4 sm:p-5">
+                    <div className="border-t border-slate-100 bg-slate-50/70 p-4 sm:p-5">
                       <div className="flex items-center justify-between mb-3 text-xs">
-                        <span className="font-bold text-slate-700">
+                        <span className="font-bold text-slate-800 uppercase text-[10.5px] tracking-wider">
                           Line Items Breakdown
                         </span>
-                        <span className="text-slate-500">
+                        <span className="text-slate-500 text-xs">
                           Created by:{" "}
                           <span className="font-semibold text-slate-700">
                             {je.user?.fullName || "System Admin"}
                           </span>
                         </span>
                       </div>
-                      <div className="overflow-x-auto">
+                      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
                         <table className="w-full text-xs text-left">
-                          <thead>
-                            <tr className="border-b border-slate-100 text-slate-400 font-semibold">
-                              <th className="py-2">Account Code & Name</th>
-                              <th className="py-2">Type</th>
-                              <th className="py-2 text-right">Debit</th>
-                              <th className="py-2 text-right">Credit</th>
+                          <thead className="bg-slate-50 border-b border-slate-200">
+                            <tr className="text-slate-600 font-bold uppercase text-[10px] tracking-wider">
+                              <th className="py-2.5 px-3">Account Code &amp; Name</th>
+                              <th className="py-2.5 px-3">Classification</th>
+                              <th className="py-2.5 px-3 text-right">Debit (AED)</th>
+                              <th className="py-2.5 px-3 text-right">Credit (AED)</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100">
+                          <tbody className="divide-y divide-slate-100 font-medium">
                             {je.lines?.map((line: any) => (
-                              <tr key={line.id}>
-                                <td className="py-2 font-medium text-slate-800">
+                              <tr key={line.id} className="hover:bg-slate-50/50">
+                                <td className="py-2.5 px-3 font-medium text-slate-800">
                                   <div className="flex items-center gap-2">
-                                    <span className="font-mono text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.5 rounded text-[11px]">
+                                    <span className="font-mono text-teal-800 font-bold bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded text-[11px]">
                                       {line.account?.accountCode}
                                     </span>
-                                    <span>{line.account?.accountName}</span>
+                                    <span className="font-bold text-slate-900">{line.account?.accountName}</span>
                                     {line.vatEntry && (
-                                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">
-                                        5% {line.vatEntry.vatType} VAT · Base:
-                                        AED{" "}
-                                        {Number(
-                                          line.vatEntry.taxableAmount ||
-                                            Number(
-                                              line.vatEntry.vatAmount || 0,
-                                            ) / 0.05,
-                                        ).toFixed(2)}{" "}
-                                        + VAT: AED{" "}
-                                        {Number(
-                                          line.vatEntry.vatAmount || 0,
-                                        ).toFixed(2)}{" "}
-                                        = Total: AED{" "}
-                                        {(
-                                          Number(
-                                            line.vatEntry.taxableAmount ||
-                                              Number(
-                                                line.vatEntry.vatAmount || 0,
-                                              ) / 0.05,
-                                          ) +
-                                          Number(line.vatEntry.vatAmount || 0)
-                                        ).toFixed(2)}
+                                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                        5% {line.vatEntry.vatType} VAT
                                       </span>
                                     )}
                                   </div>
                                 </td>
-                                <td className="py-2 text-slate-500 text-[11px]">
+                                <td className="py-2.5 px-3 text-slate-500 text-[11px] font-semibold">
                                   {line.account?.type}
                                 </td>
-                                <td className="py-2 text-right font-mono font-bold text-slate-800">
+                                <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
                                   {Number(line.debit) > 0
                                     ? formatAed(line.debit)
                                     : "—"}
                                 </td>
-                                <td className="py-2 text-right font-mono font-bold text-slate-800">
+                                <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
                                   {Number(line.credit) > 0
                                     ? formatAed(line.credit)
                                     : "—"}
@@ -599,17 +681,17 @@ export default function JournalEntriesPage() {
                             ))}
                           </tbody>
                           <tfoot>
-                            <tr className="border-t border-slate-200 font-bold bg-white/60">
+                            <tr className="border-t border-slate-200 font-black bg-slate-100/80">
                               <td
                                 colSpan={2}
-                                className="py-2 text-right text-slate-600"
+                                className="py-2.5 px-3 text-right text-slate-700 uppercase text-[10px] tracking-wider"
                               >
-                                Balanced Totals:
+                                BALANCED TOTALS:
                               </td>
-                              <td className="py-2 text-right font-mono text-emerald-800">
+                              <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-xs">
                                 {formatAed(totalDebit)}
                               </td>
-                              <td className="py-2 text-right font-mono text-emerald-800">
+                              <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-xs">
                                 {formatAed(totalDebit)}
                               </td>
                             </tr>
@@ -625,6 +707,7 @@ export default function JournalEntriesPage() {
         )}
       </div>
 
+      {/* Modal for Creating / Editing Journal Entry */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -637,10 +720,10 @@ export default function JournalEntriesPage() {
             e.stopPropagation();
             form.handleSubmit();
           }}
-          className="space-y-4"
+          className="space-y-4 text-xs"
         >
           {formError && (
-            <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200">
+            <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
               {formError}
             </div>
           )}
@@ -790,7 +873,8 @@ export default function JournalEntriesPage() {
                       size="sm"
                       variant="primary"
                       onClick={addLine}
-                      icon={<PlusIcon size={13} strokeWidth={2.2} />}
+                      icon={<Plus size={13} strokeWidth={2.2} />}
+                      className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
                     >
                       Add Line
                     </Button>
@@ -955,7 +1039,7 @@ export default function JournalEntriesPage() {
                             variant="ghost"
                             onClick={() => removeLine(idx)}
                             disabled={currentLines.length <= 2}
-                            className="w-7 h-7 !p-0 text-slate-400 hover:text-red-600 disabled:opacity-30 flex-shrink-0"
+                            className="w-7 h-7 !p-0 text-slate-400 hover:text-rose-600 disabled:opacity-30 flex-shrink-0 cursor-pointer"
                             title="Remove line"
                           >
                             <CloseIcon size={13} />
@@ -968,11 +1052,11 @@ export default function JournalEntriesPage() {
                   <div className="p-3 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-between text-xs font-bold">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`w-2.5 h-2.5 rounded-full ${isBalanced ? "bg-emerald-500" : "bg-red-500"}`}
+                        className={`w-2.5 h-2.5 rounded-full ${isBalanced ? "bg-emerald-500" : "bg-rose-500"}`}
                       />
                       <span
                         className={
-                          isBalanced ? "text-emerald-800" : "text-red-700"
+                          isBalanced ? "text-emerald-800" : "text-rose-700"
                         }
                       >
                         {isBalanced
@@ -995,6 +1079,7 @@ export default function JournalEntriesPage() {
               type="button"
               variant="outline"
               onClick={() => setIsModalOpen(false)}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
@@ -1005,6 +1090,7 @@ export default function JournalEntriesPage() {
                 createJournalEntryMutation.isPending ||
                 updateJournalEntryMutation.isPending
               }
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
             >
               {editingId ? "Update Entry" : "Post Entry"}
             </Button>

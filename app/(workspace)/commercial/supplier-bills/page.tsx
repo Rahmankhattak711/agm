@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Banknote,
   CheckCircle2,
@@ -14,6 +14,11 @@ import {
   Receipt,
   Search,
   Trash2,
+  Building2,
+  CreditCard,
+  Layers,
+  ArrowUpRight,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Button,
@@ -37,7 +42,7 @@ import {
 } from "@/lib/hooks/api-hooks";
 
 export default function SupplierBillsPage() {
-  const { data: bills = [], isLoading } = useSupplierBills();
+  const { data: bills = [], isLoading, error } = useSupplierBills();
   const { data: suppliers = [] } = useSuppliers();
   const { data: products = [] } = useProducts();
 
@@ -77,6 +82,14 @@ export default function SupplierBillsPage() {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("BANK_TRANSFER");
   const [paymentRef, setPaymentRef] = useState("");
+
+  const formatNumber = (val: number | string | undefined) => {
+    const num = Number(val || 0);
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
 
   const addItem = () => {
     setItems([
@@ -174,17 +187,19 @@ export default function SupplierBillsPage() {
     }
   };
 
-  const filteredBills = bills.filter((b) => {
-    const matchesSearch =
-      b.billNumber.toLowerCase().includes(search.toLowerCase()) ||
-      b.supplierName.toLowerCase().includes(search.toLowerCase()) ||
-      (b.supplierTrn &&
-        b.supplierTrn.toLowerCase().includes(search.toLowerCase()));
+  const filteredBills = useMemo(() => {
+    return bills.filter((b) => {
+      const matchesSearch =
+        b.billNumber.toLowerCase().includes(search.toLowerCase()) ||
+        b.supplierName.toLowerCase().includes(search.toLowerCase()) ||
+        (b.supplierTrn &&
+          b.supplierTrn.toLowerCase().includes(search.toLowerCase()));
 
-    const matchesStatus = statusFilter === "ALL" || b.status === statusFilter;
+      const matchesStatus = statusFilter === "ALL" || b.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    });
+  }, [bills, search, statusFilter]);
 
   const totalPayables = filteredBills.reduce(
     (s, b) => s + Number(b.totalAmount),
@@ -194,6 +209,7 @@ export default function SupplierBillsPage() {
     (s, b) => s + Number(b.remainingBalance),
     0,
   );
+  const totalSettled = totalPayables - totalOutstanding;
   const totalInputVat = filteredBills.reduce(
     (s, b) => s + Number(b.vatAmount),
     0,
@@ -201,275 +217,378 @@ export default function SupplierBillsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+      {/* Simple Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Supplier Bills & Accounts Payable
-            </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">
-              Procurement Cycle — Step 3
-            </span>
-          </div>
-          <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Record vendor tax invoices,
-            calculate 5% Input VAT, manage <br />
-            Accounts Payable liabilities, and post to General Ledger.
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Supplier Bills &amp; Accounts Payable
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            AGM FITOUT TECHNICAL SERVICES LLC — Record vendor tax invoices, calculate 5% Input VAT, <br /> manage Accounts Payable liabilities, and post to General Ledger.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+            icon={<Printer size={14} />}
+          >
+            Print Register
+          </Button>
+
+          <Button
             variant="primary"
-            size="lg"
+            size="sm"
             onClick={() => setIsCreateOpen(true)}
-            icon={<Plus size={14} />}
+            icon={<Plus size={14} strokeWidth={2.5} />}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Enter Supplier Bill
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-cyan-50/60 border border-cyan-100 flex flex-col justify-between space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-800">
-            Total Billed by Suppliers
-          </p>
-          <p className="text-xl font-black text-cyan-950 font-mono">
-            AED{" "}
-            {totalPayables.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
-          </p>
+      {/* 4 Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+        {/* 1. Total Billed by Suppliers */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              1. Total Invoiced Spend
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              All vendor billings
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-xl font-black text-slate-900 font-mono">
+              {formatNumber(totalPayables)}
+            </span>
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-rose-50/60 border border-rose-100 flex flex-col justify-between space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-rose-800">
-            Outstanding Accounts Payable
-          </p>
-          <p className="text-xl font-black text-rose-950 font-mono">
-            AED{" "}
-            {totalOutstanding.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
-          </p>
+        {/* 2. Outstanding A/P */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              2. Outstanding Accounts Payable
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Open liability balance
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-rose-500 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-xl font-black text-rose-700 font-mono">
+              {formatNumber(totalOutstanding)}
+            </span>
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
-            Recoverable Input VAT (5%)
-          </p>
-          <p className="text-xl font-black text-emerald-950 font-mono">
-            AED{" "}
-            {totalInputVat.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
-          </p>
+        {/* 3. Settled Disbursals */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              3. Settled Disbursals
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Cleared vendor payments
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-emerald-600 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-xl font-black text-emerald-800 font-mono">
+              {formatNumber(totalSettled)}
+            </span>
+          </div>
+        </div>
+
+        {/* 4. Recoverable Input VAT */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                4. Recoverable Input VAT (5%)
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-50 text-purple-800 border border-purple-200">
+                Box 9
+              </span>
+            </div>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              FTA Form 201 Tax Credit
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-purple-600 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-xl font-black text-purple-800 font-mono">
+              {formatNumber(totalInputVat)}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
-        <div className="relative flex-1 max-w-md">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-          <input
-            type="text"
-            placeholder="Search bill number, vendor, TRN..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        <div className="flex items-center gap-1.5 text-xs">
-          {["ALL", "POSTED", "PARTIALLY_PAID", "PAID", "DRAFT"].map((st) => (
-            <button
-              key={st}
-              type="button"
-              onClick={() => setStatusFilter(st)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                statusFilter === st
-                  ? "bg-slate-900 text-white shadow-2xs"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
-              }`}
-            >
-              {st}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
-        <Table className="w-full text-xs text-left">
-          <TableHead className="bg-slate-50/95 border-b border-slate-200">
-            <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[11px]">
-              Bill No
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[11px]">
-              Supplier / Vendor
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[11px]">
-              Bill Date
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[11px]">
-              Due Date
-            </TableHeaderCell>
-            <TableHeaderCell
-              align="right"
-              className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[11px]"
-            >
-              Total (AED)
-            </TableHeaderCell>
-            <TableHeaderCell
-              align="right"
-              className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[11px]"
-            >
-              Balance Due
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[11px]">
-              Status
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[11px]">
-              Actions
-            </TableHeaderCell>
-          </TableHead>
-
-          <TableBody className="divide-y divide-slate-100">
-            {isLoading ? (
-              <TableLoading colSpan={8} rows={5} />
-            ) : filteredBills.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="py-8 text-center text-slate-400 italic"
-                >
-                  No supplier bills found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredBills.map((b) => (
-                <TableRow
-                  key={b.id}
-                  className="hover:bg-slate-50/60 text-slate-700 transition"
-                >
-                  <TableCell className="py-3 px-4 font-mono font-bold text-cyan-950">
-                    {b.billNumber}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 font-bold text-slate-900">
-                    <div>{b.supplierName}</div>
-                    {b.supplierTrn && (
-                      <div className="text-[10px] text-slate-400 font-mono">
-                        TRN: {b.supplierTrn}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-3 px-3 text-slate-600">
-                    {b.billDate
-                      ? new Date(b.billDate).toISOString().slice(0, 10)
-                      : "—"}
-                  </TableCell>
-                  <TableCell className="py-3 px-3 text-slate-600">
-                    {b.dueDate
-                      ? new Date(b.dueDate).toISOString().slice(0, 10)
-                      : "—"}
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    className="py-3 px-3 text-right font-mono font-black text-slate-900"
-                  >
-                    AED{" "}
-                    {Number(b.totalAmount).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                    })}
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    className={`py-3 px-3 text-right font-mono font-bold ${
-                      Number(b.remainingBalance) > 0
-                        ? "text-rose-700"
-                        : "text-emerald-700"
+      {/* Main Filter & Table Card */}
+      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+        {/* Search & Filter Strip */}
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Status Quick Pills */}
+            <div className="flex flex-wrap items-center gap-1">
+              {[
+                { id: "ALL", label: "All Bills" },
+                { id: "POSTED", label: "Posted to GL" },
+                { id: "PARTIALLY_PAID", label: "Partially Paid" },
+                { id: "PAID", label: "Fully Paid" },
+                { id: "DRAFT", label: "Drafts" },
+              ].map((tab) => {
+                const isActive = statusFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setStatusFilter(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
-                    AED{" "}
-                    {Number(b.remainingBalance).toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                    })}
-                  </TableCell>
-                  <TableCell className="py-3 px-3">
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        b.status === "PAID"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : b.status === "POSTED"
-                            ? "bg-blue-100 text-blue-800"
-                            : b.status === "PARTIALLY_PAID"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {b.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-3 px-3 text-center">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedBill(b)}
-                        className="p-1 text-slate-400 hover:text-cyan-700 rounded-md hover:bg-cyan-50"
-                        title="View Bill"
-                      >
-                        <Eye size={13} />
-                      </button>
-                      {b.status === "DRAFT" && (
-                        <Button
-                          variant="dark"
-                          size="sm"
-                          onClick={() => handlePostBill(b.id)}
-                          icon={<FileCheck2 size={12} />}
-                          className="text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800"
-                        >
-                          Post to GL
-                        </Button>
-                      )}
-                      {b.status !== "DRAFT" && b.status !== "PAID" && (
-                        <Button
-                          variant="dark"
-                          size="sm"
-                          onClick={() => {
-                            setPaymentModalBill(b);
-                            setPaymentAmount(String(b.remainingBalance));
-                          }}
-                          icon={<Banknote size={12} />}
-                          className="text-[10px] font-bold bg-cyan-700 text-white hover:bg-cyan-800"
-                        >
-                          Disburse
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <span className="text-[11px] font-bold text-slate-500 font-mono">
+              {filteredBills.length} Invoices Found
+            </span>
+          </div>
+
+          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
+            <div className="w-full sm:w-80 relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search bill number, vendor, TRN..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {error ? (
+          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
+            Error loading supplier bills: {(error as any).message}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+              <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                Accounts Payable &amp; Vendor Invoices Register
+              </h4>
+              <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                {filteredBills.length} Active Records
+              </span>
+            </div>
+
+            <Table className="w-full text-xs text-left">
+              <TableHead className="bg-slate-50 border-b border-slate-200">
+                <TableRow>
+                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Bill No
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Supplier / Vendor
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Bill Date
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Due Date
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    align="right"
+                    className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
+                  >
+                    Total (AED)
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    align="right"
+                    className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
+                  >
+                    Balance Due
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Status
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Actions
+                  </TableHeaderCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              </TableHead>
+
+              <TableBody className="divide-y divide-slate-100 font-medium">
+                {isLoading ? (
+                  <TableLoading colSpan={8} rows={5} />
+                ) : filteredBills.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="py-12 text-center text-slate-400 italic"
+                    >
+                      No supplier bills match your search criteria.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredBills.map((b) => (
+                    <TableRow
+                      key={b.id}
+                      className="hover:bg-slate-50/60 text-slate-700 transition"
+                    >
+                      <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
+                        <div className="flex items-center gap-1.5">
+                          <Receipt size={13} className="text-teal-700 shrink-0" />
+                          <span>{b.billNumber}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 px-4 font-bold text-slate-900">
+                        <div>{b.supplierName}</div>
+                        {b.supplierTrn && (
+                          <div className="text-[10px] text-slate-400 font-mono font-normal">
+                            TRN: {b.supplierTrn}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
+                        {b.billDate
+                          ? new Date(b.billDate).toLocaleDateString("en-GB")
+                          : "—"}
+                      </TableCell>
+                      <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
+                        {b.dueDate
+                          ? new Date(b.dueDate).toLocaleDateString("en-GB")
+                          : "—"}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className="py-3 px-3 text-right font-mono font-black text-slate-900"
+                      >
+                        {formatNumber(b.totalAmount)}
+                        <span className="text-[10px] text-slate-400 font-normal block">
+                          Incl. 5% VAT: {formatNumber(b.vatAmount)}
+                        </span>
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        className={`py-3 px-3 text-right font-mono font-bold ${
+                          Number(b.remainingBalance) > 0
+                            ? "text-rose-700"
+                            : "text-emerald-700"
+                        }`}
+                      >
+                        {formatNumber(b.remainingBalance)}
+                      </TableCell>
+                      <TableCell className="py-3 px-3 text-center">
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                            b.status === "PAID"
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                              : b.status === "POSTED"
+                                ? "bg-sky-50 text-sky-800 border-sky-200"
+                                : b.status === "PARTIALLY_PAID"
+                                  ? "bg-amber-50 text-amber-800 border-amber-200"
+                                  : "bg-slate-100 text-slate-700 border-slate-200"
+                          }`}
+                        >
+                          {b.status === "PAID"
+                            ? "Paid"
+                            : b.status === "POSTED"
+                              ? "Posted"
+                              : b.status === "PARTIALLY_PAID"
+                                ? "Partial"
+                                : "Draft"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3 px-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedBill(b)}
+                            className="p-1.5 text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
+                            title="View Bill Details"
+                          >
+                            <Eye size={13} />
+                          </button>
+                          {b.status === "DRAFT" && (
+                            <Button
+                              variant="dark"
+                              size="sm"
+                              onClick={() => handlePostBill(b.id)}
+                              icon={<FileCheck2 size={12} />}
+                              className="text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer"
+                            >
+                              Post to GL
+                            </Button>
+                          )}
+                          {b.status !== "DRAFT" && b.status !== "PAID" && (
+                            <Button
+                              variant="dark"
+                              size="sm"
+                              onClick={() => {
+                                setPaymentModalBill(b);
+                                setPaymentAmount(String(b.remainingBalance));
+                              }}
+                              icon={<Banknote size={12} />}
+                              className="text-[10px] font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer"
+                            >
+                              Disburse
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
 
+      {/* Modal for Creating Supplier Bill */}
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
           onClose={() => setIsCreateOpen(false)}
           title="Create Supplier Bill (Accounts Payable)"
+          maxWidth="lg"
         >
           <form onSubmit={handleCreateBill} className="space-y-4 text-xs">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
                   Supplier / Vendor *
                 </label>
                 <select
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500 font-semibold"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold cursor-pointer shadow-2xs"
                   value={supplierId}
                   onChange={(e) => {
                     setSupplierId(e.target.value);
@@ -493,12 +612,12 @@ export default function SupplierBillsPage() {
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
-                  Supplier Name (Manual)
+                  Supplier Name (Manual Override)
                 </label>
                 <input
                   type="text"
                   placeholder="Supplier Name"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500 font-semibold"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs"
                   value={supplierName}
                   onChange={(e) => setSupplierName(e.target.value)}
                   required
@@ -507,14 +626,27 @@ export default function SupplierBillsPage() {
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
-                  Supplier TRN
+                  Supplier TRN (Tax Registration #)
                 </label>
                 <input
                   type="text"
                   placeholder="100XXXXXXXXX003"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500 font-mono"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
                   value={supplierTrn}
                   onChange={(e) => setSupplierTrn(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Vendor Bill / Invoice #
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. INV-94812"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
+                  value={billNumber}
+                  onChange={(e) => setBillNumber(e.target.value)}
                 />
               </div>
             </div>
@@ -522,11 +654,11 @@ export default function SupplierBillsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
-                  Bill Date
+                  Bill Date *
                 </label>
                 <input
                   type="date"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs"
                   value={billDate}
                   onChange={(e) => setBillDate(e.target.value)}
                   required
@@ -535,11 +667,11 @@ export default function SupplierBillsPage() {
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
-                  Due Date
+                  Due Date *
                 </label>
                 <input
                   type="date"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500"
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   required
@@ -549,11 +681,13 @@ export default function SupplierBillsPage() {
 
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-800">Bill Items</span>
+                <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+                  Bill Line Items
+                </span>
                 <button
                   type="button"
                   onClick={addItem}
-                  className="text-xs font-bold text-cyan-700 hover:text-cyan-800 flex items-center gap-1"
+                  className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
                 >
                   <Plus size={13} /> Add Line
                 </button>
@@ -563,13 +697,13 @@ export default function SupplierBillsPage() {
                 {items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200/60"
+                    className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
                   >
                     <div className="col-span-6">
                       <input
                         type="text"
                         placeholder="Description..."
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500"
+                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500"
                         value={item.description}
                         onChange={(e) =>
                           updateItem(idx, "description", e.target.value)
@@ -582,7 +716,7 @@ export default function SupplierBillsPage() {
                         type="number"
                         min="1"
                         placeholder="Qty"
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500 font-mono"
+                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono"
                         value={item.quantity}
                         onChange={(e) =>
                           updateItem(idx, "quantity", e.target.value)
@@ -595,7 +729,7 @@ export default function SupplierBillsPage() {
                         type="number"
                         step="0.01"
                         placeholder="Unit Cost"
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500 font-mono font-bold"
+                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold"
                         value={item.unitCost || ""}
                         onChange={(e) =>
                           updateItem(idx, "unitCost", e.target.value)
@@ -607,7 +741,7 @@ export default function SupplierBillsPage() {
                       <button
                         type="button"
                         onClick={() => removeItem(idx)}
-                        className="text-slate-400 hover:text-rose-600 p-1"
+                        className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -617,7 +751,7 @@ export default function SupplierBillsPage() {
               </div>
             </div>
 
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-xs text-right space-y-1">
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono text-xs text-right space-y-1">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal (Excl. VAT):</span>
                 <span>AED {formSubtotal.toFixed(2)}</span>
@@ -628,7 +762,7 @@ export default function SupplierBillsPage() {
               </div>
               <div className="flex justify-between font-black text-slate-900 text-sm border-t border-slate-200 pt-1">
                 <span>Total Bill Amount:</span>
-                <span className="text-cyan-900">
+                <span className="text-emerald-900">
                   AED {formTotal.toFixed(2)}
                 </span>
               </div>
@@ -640,26 +774,30 @@ export default function SupplierBillsPage() {
                 id="autoPostBill"
                 checked={autoPost}
                 onChange={(e) => setAutoPost(e.target.checked)}
-                className="rounded border-slate-300 text-cyan-600"
+                className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
               />
               <label
                 htmlFor="autoPostBill"
-                className="font-semibold text-slate-700"
+                className="font-semibold text-slate-700 cursor-pointer"
               >
-                Auto-post to General Ledger & update Accounts Payable
+                Auto-post to General Ledger &amp; update Accounts Payable
               </label>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
               <Button
                 variant="outline"
-                size="lg"
                 type="button"
                 onClick={() => setIsCreateOpen(false)}
+                className="cursor-pointer"
               >
                 Cancel
               </Button>
-              <Button variant="primary" size="lg" type="submit">
+              <Button
+                variant="primary"
+                type="submit"
+                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              >
                 Save Supplier Bill
               </Button>
             </div>
@@ -667,33 +805,37 @@ export default function SupplierBillsPage() {
         </Modal>
       )}
 
+      {/* Payment Disbursement Modal */}
       {paymentModalBill && (
         <Modal
           isOpen={!!paymentModalBill}
           onClose={() => setPaymentModalBill(null)}
           title={`Disburse Supplier Payment: ${paymentModalBill.billNumber}`}
+          maxWidth="md"
         >
           <form onSubmit={handleRecordPayment} className="space-y-4 text-xs">
-            <div className="p-3 bg-cyan-50/70 rounded-xl border border-cyan-100 space-y-1">
-              <p className="font-bold text-cyan-950">
+            <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 space-y-1">
+              <p className="font-bold text-emerald-950">
                 Vendor: {paymentModalBill.supplierName}
               </p>
               <p className="text-slate-600">
                 Bill Total: AED{" "}
-                {Number(paymentModalBill.totalAmount).toFixed(2)} | Outstanding:
-                AED {Number(paymentModalBill.remainingBalance).toFixed(2)}
+                {Number(paymentModalBill.totalAmount).toFixed(2)} | Outstanding:{" "}
+                <strong className="text-rose-700">
+                  AED {Number(paymentModalBill.remainingBalance).toFixed(2)}
+                </strong>
               </p>
             </div>
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
-                Payment Amount (AED)
+                Payment Amount (AED) *
               </label>
               <input
                 type="number"
                 step="0.01"
                 placeholder="Amount"
-                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500 font-mono font-bold"
+                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold shadow-2xs"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
                 required
@@ -702,64 +844,70 @@ export default function SupplierBillsPage() {
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
-                Disbursement Account / Method
+                Disbursement Account / Method *
               </label>
               <select
-                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500 font-semibold"
+                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs cursor-pointer"
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
               >
-                <option value="BANK_TRANSFER">RAK Bank Transfer</option>
+                <option value="BANK_TRANSFER">RAK Bank Transfer (A/C 1020)</option>
                 <option value="CHEQUE">Corporate Cheque</option>
-                <option value="CASH">Petty Cash</option>
+                <option value="CASH">Petty Cash Float (A/C 1010)</option>
               </select>
             </div>
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
-                Cheque / Reference Number
+                Cheque / Transaction Reference #
               </label>
               <input
                 type="text"
                 placeholder="e.g. TR-28492 or CHQ-00481"
-                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-cyan-500 font-mono"
+                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
                 value={paymentRef}
                 onChange={(e) => setPaymentRef(e.target.value)}
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
               <Button
                 variant="outline"
-                size="lg"
                 type="button"
                 onClick={() => setPaymentModalBill(null)}
+                className="cursor-pointer"
               >
                 Cancel
               </Button>
-              <Button variant="primary" size="lg" type="submit">
-                Disburse & Post to GL
+              <Button
+                variant="primary"
+                type="submit"
+                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              >
+                Disburse &amp; Post to GL
               </Button>
             </div>
           </form>
         </Modal>
       )}
 
+      {/* Bill Details Modal */}
       {selectedBill && (
         <Modal
           isOpen={!!selectedBill}
           onClose={() => setSelectedBill(null)}
           title={`Supplier Bill: ${selectedBill.billNumber}`}
+          maxWidth="lg"
         >
           <div className="space-y-4 text-xs">
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
               <div className="flex justify-between font-mono">
-                <span className="font-bold text-cyan-950">
+                <span className="font-bold text-slate-900">
                   {selectedBill.billNumber}
                 </span>
                 <span className="text-slate-500">
                   {selectedBill.billDate
-                    ? new Date(selectedBill.billDate).toISOString().slice(0, 10)
+                    ? new Date(selectedBill.billDate).toLocaleDateString("en-GB")
                     : ""}
                 </span>
               </div>
@@ -773,21 +921,23 @@ export default function SupplierBillsPage() {
 
             <div className="border border-slate-200 rounded-xl overflow-hidden">
               <Table className="w-full text-xs">
-                <TableHead className="bg-slate-50">
-                  <TableHeaderCell className="py-2 px-3">
-                    Description
-                  </TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">
-                    Qty
-                  </TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">
-                    Unit Cost
-                  </TableHeaderCell>
-                  <TableHeaderCell align="right" className="py-2 px-3">
-                    Total
-                  </TableHeaderCell>
+                <TableHead className="bg-slate-50 border-b border-slate-200">
+                  <TableRow>
+                    <TableHeaderCell className="py-2 px-3 font-bold text-slate-600">
+                      Description
+                    </TableHeaderCell>
+                    <TableHeaderCell align="right" className="py-2 px-3 font-bold text-slate-600">
+                      Qty
+                    </TableHeaderCell>
+                    <TableHeaderCell align="right" className="py-2 px-3 font-bold text-slate-600">
+                      Unit Cost (AED)
+                    </TableHeaderCell>
+                    <TableHeaderCell align="right" className="py-2 px-3 font-bold text-slate-600">
+                      Total (AED)
+                    </TableHeaderCell>
+                  </TableRow>
                 </TableHead>
-                <TableBody>
+                <TableBody className="divide-y divide-slate-100">
                   {selectedBill.items?.map((item: any) => (
                     <TableRow key={item.id}>
                       <TableCell className="py-2 px-3">
@@ -801,7 +951,7 @@ export default function SupplierBillsPage() {
                       </TableCell>
                       <TableCell
                         align="right"
-                        className="py-2 px-3 font-mono font-bold"
+                        className="py-2 px-3 font-mono font-bold text-slate-900"
                       >
                         {Number(item.totalAmount).toFixed(2)}
                       </TableCell>
@@ -811,7 +961,7 @@ export default function SupplierBillsPage() {
               </Table>
             </div>
 
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono space-y-1 text-right">
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono space-y-1 text-right">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal (AED):</span>
                 <span>{Number(selectedBill.subtotal).toFixed(2)}</span>
@@ -822,25 +972,25 @@ export default function SupplierBillsPage() {
               </div>
               <div className="flex justify-between font-black text-slate-900 text-sm border-t border-slate-200 pt-1">
                 <span>Total Bill Amount:</span>
-                <span className="text-cyan-900">
+                <span className="text-emerald-900">
                   AED {Number(selectedBill.totalAmount).toFixed(2)}
                 </span>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
               <Button
                 variant="outline"
-                size="lg"
                 onClick={() => setSelectedBill(null)}
+                className="cursor-pointer"
               >
                 Close
               </Button>
               <Button
                 variant="primary"
-                size="lg"
                 onClick={() => window.print()}
                 icon={<Printer size={13} />}
+                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
               >
                 Print Bill
               </Button>

@@ -1,17 +1,51 @@
 "use client";
 
-interface StatCardProps {
+import React from "react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+
+export interface StatCardProps {
   id: string;
   title: string;
   value: string | number;
   subtitle?: string;
   icon: React.ReactNode;
-  gradient: string;
+  accentColor?: "emerald" | "blue" | "amber" | "slate" | "indigo" | "rose";
   loading?: boolean;
-  delay?: number;
-  trend?: { label: string; up: boolean };
-  sparkline?: number[];
+  trend?: { label: string; up: boolean; neutral?: boolean };
 }
+
+const ACCENT_STYLES = {
+  emerald: {
+    iconBg: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    topLine: "bg-emerald-500",
+    glow: "hover:border-emerald-200/80 hover:shadow-emerald-500/5",
+  },
+  blue: {
+    iconBg: "bg-sky-50 text-sky-600 border-sky-100",
+    topLine: "bg-sky-500",
+    glow: "hover:border-sky-200/80 hover:shadow-sky-500/5",
+  },
+  amber: {
+    iconBg: "bg-amber-50 text-amber-600 border-amber-100",
+    topLine: "bg-amber-500",
+    glow: "hover:border-amber-200/80 hover:shadow-amber-500/5",
+  },
+  slate: {
+    iconBg: "bg-slate-50 text-slate-600 border-slate-100",
+    topLine: "bg-slate-500",
+    glow: "hover:border-slate-200/80 hover:shadow-slate-500/5",
+  },
+  indigo: {
+    iconBg: "bg-indigo-50 text-indigo-600 border-indigo-100",
+    topLine: "bg-indigo-500",
+    glow: "hover:border-indigo-200/80 hover:shadow-indigo-500/5",
+  },
+  rose: {
+    iconBg: "bg-rose-50 text-rose-600 border-rose-100",
+    topLine: "bg-rose-500",
+    glow: "hover:border-rose-200/80 hover:shadow-rose-500/5",
+  },
+};
 
 export default function StatCard({
   id,
@@ -19,90 +53,115 @@ export default function StatCard({
   value,
   subtitle,
   icon,
-  gradient,
+  accentColor = "emerald",
   loading = false,
-  delay = 0,
   trend,
-  sparkline,
 }: StatCardProps) {
-  const maxSpark = sparkline ? Math.max(...sparkline, 1) : 1;
+  const styles = ACCENT_STYLES[accentColor] ?? ACCENT_STYLES.emerald;
+
+  const valueStr = String(value ?? "AED 0.00");
+  const hasAedPrefix = valueStr.startsWith("AED ");
+  const currencyPrefix = hasAedPrefix ? "AED" : "";
+  const numericDisplay = hasAedPrefix ? valueStr.replace("AED ", "") : valueStr;
 
   return (
     <div
       id={id}
-      className={`${gradient} rounded-2xl relative overflow-hidden fade-up p-5 min-h-[140px] shadow-[0_8px_32px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.12)]`}
-      style={{
-        animationDelay: `${delay}ms`,
-      }}
+      className={`
+        group relative flex min-h-[152px] flex-col justify-between
+        overflow-hidden rounded-2xl border border-slate-200/70
+        bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]
+        transition-all duration-300 ease-out
+        hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-4px_rgba(15,23,42,0.08)]
+        ${styles.glow}
+      `}
     >
+      {/* Top accent bar */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `
-          radial-gradient(ellipse at 15% 15%, rgba(255,255,255,0.22) 0%, transparent 55%),
-          radial-gradient(ellipse at 85% 85%, rgba(255,255,255,0.08) 0%, transparent 45%)
-        `,
-        }}
+        className={`absolute inset-x-0 top-0 h-[2.5px] ${styles.topLine} opacity-90`}
       />
 
-      <div
-        className="absolute inset-0 pointer-events-none opacity-6"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, white 1px, transparent 1px)",
-          backgroundSize: "16px 16px",
-        }}
-      />
-
-      <div className="relative z-10">
-        <div className="flex items-start justify-between mb-3.5">
-          <div className="w-10.5 h-10.5 rounded-[13px] flex items-center justify-center bg-white/22 shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex-shrink-0">
-            {icon}
-          </div>
-          {trend && !loading && (
-            <span className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/22 text-white/95">
-              {trend.up ? "↑" : "↓"} {trend.label}
-            </span>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+            {title}
+          </p>
+          {subtitle && (
+            <p className="mt-0.5 truncate text-[12px] font-medium text-slate-500">
+              {subtitle}
+            </p>
           )}
         </div>
 
+        <div
+          className={`
+            flex h-9 w-9 shrink-0 items-center justify-center
+            rounded-xl border shadow-sm
+            transition-transform duration-300 group-hover:scale-105
+            ${styles.iconBg}
+          `}
+        >
+          {icon}
+        </div>
+      </div>
+
+      {/* Value */}
+      <div className="mt-3 mb-1">
         {loading ? (
-          <div className="flex flex-col gap-2">
-            <div className="h-7 w-24 rounded-lg bg-white/20 animate-shimmer" />
-            <div className="h-3 w-16 rounded bg-white/12 animate-shimmer" />
+          <div className="h-8 w-28 animate-pulse rounded-lg bg-slate-100" />
+        ) : (
+          <div className="flex items-baseline gap-1.5">
+            {currencyPrefix && (
+              <span className="text-[11px] font-semibold tracking-wide text-slate-400">
+                {currencyPrefix}
+              </span>
+            )}
+            <span className="font-mono text-[1.5rem] font-bold leading-none tracking-tight text-slate-900 sm:text-[1.55rem]">
+              {numericDisplay}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-auto flex items-center justify-between border-t border-slate-100/80 pt-3">
+        {trend && !loading ? (
+          <div
+            className={`
+              inline-flex items-center gap-1 rounded-full border px-2 py-0.5
+              text-[10.5px] font-semibold
+              ${
+                trend.neutral
+                  ? "border-slate-200 bg-slate-50 text-slate-600"
+                  : trend.up
+                    ? "border-emerald-200/70 bg-emerald-50 text-emerald-700"
+                    : "border-rose-200/70 bg-rose-50 text-rose-700"
+              }
+            `}
+          >
+            {trend.neutral ? (
+              <Minus size={10} strokeWidth={2.5} />
+            ) : trend.up ? (
+              <TrendingUp size={11} strokeWidth={2.5} />
+            ) : (
+              <TrendingDown size={11} strokeWidth={2.5} />
+            )}
+            <span>{trend.label}</span>
           </div>
         ) : (
-          <>
-            <p className="text-[1.2rem] font-black text-white leading-none tracking-tight">
-              {value}
-            </p>
-            <p className="text-xs font-semibold text-white/65 mt-1 tracking-wide">
-              {title}
-            </p>
-            {subtitle && (
-              <p className="text-[10.5px] text-white/40 mt-0.5">{subtitle}</p>
-            )}
-          </>
+          <span className="text-[11px] font-medium text-slate-400">
+            Real-time balance
+          </span>
         )}
 
-        {sparkline && sparkline.length > 0 && !loading && (
-          <div className="flex items-end gap-0.5 mt-3.5 h-7">
-            {sparkline.map((v, i) => (
-              <div
-                key={i}
-                className="flex-1 rounded"
-                style={{
-                  height: `${Math.max((v / maxSpark) * 100, 10)}%`,
-                  background:
-                    i === sparkline.length - 1
-                      ? "rgba(255,255,255,0.85)"
-                      : "rgba(255,255,255,0.3)",
-                  transition: `height 0.8s cubic-bezier(0.34,1.56,0.64,1) ${i * 60}ms`,
-                }}
-              />
-            ))}
-          </div>
-        )}
+        <span
+          className="
+            h-1.5 w-1.5 rounded-full bg-slate-300
+            transition-colors duration-300
+            group-hover:bg-emerald-500
+          "
+        />
       </div>
     </div>
   );

@@ -1,14 +1,46 @@
 "use client";
 
-interface BarChartItem {
+import React, { useMemo } from "react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Filler,
+  type ChartData,
+  type ChartOptions,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Filler,
+);
+
+export interface BarChartItem {
   label: string;
   value: number;
   color: string;
+  gradient?: string;
 }
 
-interface BarChartProps {
+export interface BarChartProps {
   data: BarChartItem[];
-  title: string;
+  title?: string;
   subtitle?: string;
   height?: number;
   formatValue?: (v: number) => string;
@@ -18,100 +50,155 @@ export default function BarChart({
   data = [],
   title,
   subtitle,
-  height = 180,
+  height = 175,
   formatValue = (v) =>
     `AED ${Number(v || 0).toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`,
 }: BarChartProps) {
-  const safeData = (data || []).map((d) => ({
-    ...d,
-    value:
-      typeof d.value === "number"
-        ? isNaN(d.value)
-          ? 0
-          : d.value
-        : Number(d.value || 0) || 0,
-  }));
-  const maxVal = Math.max(...safeData.map((d) => Math.abs(d.value)), 1);
-  const isAllZero =
-    safeData.length === 0 || safeData.every((d) => d.value === 0);
+  const chartData: ChartData<"bar"> = useMemo(() => {
+    const labels = data.map((d) => d.label);
+    const values = data.map((d) => d.value);
+    const backgroundColors = data.map((d) => d.color);
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Amount (AED)",
+          data: values,
+          backgroundColor: backgroundColors,
+          borderRadius: 6,
+          borderSkipped: false,
+          maxBarThickness: 34,
+          barPercentage: 0.5,
+          categoryPercentage: 0.6,
+        },
+      ],
+    };
+  }, [data]);
+
+  const options: ChartOptions<"bar"> = useMemo(() => {
+    const minVal = Math.min(...data.map((d) => d.value), 0);
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 650,
+        easing: "easeOutQuart",
+      },
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          backgroundColor: "#0f172a",
+          titleColor: "#f8fafc",
+          bodyColor: "#38bdf8",
+          padding: 10,
+          cornerRadius: 10,
+          displayColors: true,
+          boxPadding: 4,
+          titleFont: {
+            size: 11,
+            weight: "bold",
+          },
+          bodyFont: {
+            size: 12,
+            weight: "bold",
+          },
+          callbacks: {
+            label: (context) => {
+              const val = context.parsed.y ?? context.raw ?? 0;
+              return ` ${formatValue(Number(val))}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: {
+            display: false,
+          },
+          ticks: {
+            color: "#475569",
+            font: {
+              size: 11,
+              weight: "bold",
+            },
+            padding: 4,
+          },
+          border: {
+            display: false,
+          },
+        },
+        y: {
+          beginAtZero: minVal >= 0,
+          grid: {
+            color: "rgba(226, 232, 240, 0.75)",
+          },
+          ticks: {
+            color: "#94a3b8",
+            font: {
+              size: 10,
+            },
+            padding: 4,
+            callback: (val) => {
+              const num = Number(val);
+              if (Math.abs(num) >= 1_000_000)
+                return `${(num / 1_000_000).toFixed(1)}M`;
+              if (Math.abs(num) >= 1_000)
+                return `${(num / 1_000).toFixed(0)}k`;
+              return num.toLocaleString();
+            },
+          },
+          border: {
+            display: false,
+          },
+        },
+      },
+    };
+  }, [data, formatValue]);
 
   return (
-    <div className="flex flex-col justify-between h-full space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-bold text-sm text-slate-900">{title}</h3>
-          {subtitle && (
-            <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
-          )}
+    <div className="flex flex-col space-y-3 w-full">
+      {(title || subtitle) && (
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            {title && <h3 className="font-bold text-sm text-slate-900">{title}</h3>}
+            {subtitle && (
+              <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
+            )}
+          </div>
         </div>
-        <span
-          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-            isAllZero
-              ? "bg-slate-50 text-slate-500 border-slate-200"
-              : "bg-emerald-50 text-emerald-700 border-emerald-200"
-          }`}
-        >
-          {isAllZero ? "Baseline (Zero)" : "Live Feed"}
-        </span>
+      )}
+
+      {/* Chart Canvas */}
+      <div
+        className="w-full relative bg-slate-50/40 rounded-xl p-2 border border-slate-100/90 overflow-hidden"
+        style={{ height }}
+      >
+        <Bar data={chartData} options={options} />
       </div>
 
-      <div
-        className="relative flex items-end justify-around gap-3 pt-6 pb-2 px-2 bg-slate-50/60 rounded-2xl border border-slate-100"
-        style={{ minHeight: height }}
-      >
-        <div className="absolute inset-x-4 top-4 bottom-8 flex flex-col justify-between pointer-events-none opacity-40">
-          <div className="border-b border-dashed border-slate-300 w-full" />
-          <div className="border-b border-dashed border-slate-300 w-full" />
-          <div className="border-b border-slate-200 w-full" />
-        </div>
-
-        {safeData.map((item, idx) => {
-          const absVal = Math.abs(item.value);
-          const percentage = isAllZero
-            ? 6
-            : Math.max((absVal / maxVal) * 85, 8);
-
-          return (
-            <div
-              key={idx}
-              className="relative z-10 flex-1 flex flex-col items-center max-w-[120px] group cursor-pointer"
-            >
-              <div className="mb-2 transition-transform duration-200 group-hover:-translate-y-1 text-center">
-                <span className="inline-block px-2 py-0.5 rounded-md bg-white border border-slate-200/80 shadow-xs text-[10px] font-bold text-slate-800 font-mono">
-                  {formatValue(item.value)}
-                </span>
-              </div>
-
-              <div className="w-full h-32 flex items-end justify-center rounded-xl bg-slate-200/40 p-1">
-                <div
-                  className="w-full rounded-lg transition-all duration-500 shadow-xs group-hover:opacity-90"
-                  style={{
-                    height: `${percentage}%`,
-                    backgroundColor: item.color,
-                  }}
-                />
-              </div>
-
-              <span className="mt-2 text-[11px] font-bold text-slate-600 text-center tracking-tight truncate w-full">
+      {/* Clean Bottom Breakdown Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+        {data.map((item, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100"
+          >
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: item.color }}
+              />
+              <span className="text-[11px] text-slate-500 font-medium truncate">
                 {item.label}
               </span>
             </div>
-          );
-        })}
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
-        {safeData.map((item, i) => (
-          <div key={i} className="flex items-center gap-1.5">
-            <span
-              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: item.color }}
-            />
-            <span className="text-slate-500 font-medium">{item.label}:</span>
-            <span className="font-bold text-slate-800 font-mono">
+            <span className="font-bold text-slate-900 font-mono text-[11px] shrink-0 ml-1.5">
               {formatValue(item.value)}
             </span>
           </div>

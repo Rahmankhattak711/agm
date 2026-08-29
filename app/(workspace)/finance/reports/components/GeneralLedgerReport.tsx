@@ -17,6 +17,16 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
+import {
+  BookOpen,
+  Printer,
+  FileSpreadsheet,
+  Scale,
+  Calendar,
+  Receipt,
+  Layers,
+  ArrowRight,
+} from "lucide-react";
 
 interface GeneralLedgerReportProps {
   accounts?: ChartOfAccount[];
@@ -74,7 +84,7 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
         <tfoot className="print-page-footer-group">
           <tr>
             <td className="p-0 border-none">
-              <div className="h-[80px] w-full hidden print:block" />
+              <div className="h-[150px] w-full hidden print:block" />
             </td>
           </tr>
         </tfoot>
@@ -83,27 +93,30 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
           <tr>
             <td className="p-0 border-none align-top">
               <div className="space-y-6">
+                {/* Header Toolbar */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 print:hidden">
                   <div>
-                    <h3 className="font-bold text-base text-slate-900">
-                      General Ledger Drilldown &amp; Running Balance
-                    </h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2.5 py-1 rounded-lg bg-indigo-700 text-white font-black text-xs shadow-xs">
+                        GL
+                      </span>
+                      <h3 className="font-black text-lg text-slate-900 tracking-tight">
+                        General Ledger Drilldown &amp; Running Balance
+                      </h3>
+                    </div>
                     <p className="text-xs text-slate-500">
-                      Inspect complete chronological transaction history,
-                      debit/credit postings, and running balances by account.
+                      Inspect complete chronological transaction history, debit/credit postings, and running balances by account.
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2.5">
                     <div className="w-full sm:w-80">
                       <select
                         value={selectedAccountId}
                         onChange={(e) => setSelectedAccountId(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold text-slate-800"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-indigo-500 font-bold text-slate-800 shadow-2xs cursor-pointer"
                       >
-                        <option value="">
-                          Select an Account to Drill Down...
-                        </option>
+                        <option value="">Select an Account to Drill Down...</option>
                         {accounts?.map((acc) => (
                           <option key={acc.id} value={acc.id}>
                             {acc.accountCode} - {acc.accountName} ({acc.type})
@@ -116,239 +129,275 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        icon={
-                          <PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />
-                        }
+                        icon={<Printer size={14} />}
                         onClick={() => window.print()}
+                        className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
                       >
-                        Print / Save PDF
+                        Print Statement
                       </Button>
                     )}
                   </div>
                 </div>
 
                 {!selectedAccountId ? (
-                  <div className="py-16 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 space-y-2">
-                    <div className="w-12 h-12 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-black">
-                      📖
+                  <div className="py-20 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50 space-y-3">
+                    <div className="w-12 h-12 mx-auto rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-black">
+                      <BookOpen size={24} />
                     </div>
-                    <p className="text-sm font-bold text-slate-800">
-                      Select an Account to View Ledger History
-                    </p>
-                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                      Choose any Asset, Liability, Equity, Revenue, or Expense
-                      account from the dropdown above to view its running
-                      balance and journal lines.
-                    </p>
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">
+                        Select an Account to View Ledger History
+                      </p>
+                      <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+                        Choose any Asset, Liability, Equity, Revenue, or Expense account from the dropdown above to view its running balance and journal lines.
+                      </p>
+                    </div>
                   </div>
                 ) : isLoading ? (
-                  <div className="py-12 text-center text-xs text-slate-400 animate-pulse">
-                    Loading Ledger lines &amp; running balance...
+                  <div className="py-16 text-center text-xs text-slate-400 animate-pulse space-y-2">
+                    <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin mx-auto" />
+                    <p>Calculating General Ledger &amp; Running Balance for {selectedAccount?.accountName}...</p>
                   </div>
                 ) : lines.length === 0 ? (
-                  <div className="py-12 text-center border border-slate-200 rounded-2xl bg-slate-50/30 text-slate-500 space-y-1">
-                    <p className="text-sm font-semibold text-slate-700">
+                  <div className="py-16 text-center border border-slate-200 rounded-2xl bg-slate-50/40 text-slate-500 space-y-2">
+                    <p className="text-sm font-bold text-slate-700">
                       No Journal Lines Recorded Yet
                     </p>
                     <p className="text-xs text-slate-400">
                       There are no transaction lines posted to account{" "}
                       <span className="font-mono font-bold text-slate-700">
-                        {selectedAccount?.accountCode} -{" "}
-                        {selectedAccount?.accountName}
+                        {selectedAccount?.accountCode} - {selectedAccount?.accountName}
                       </span>
                       .
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+                    {/* 4 Summary Metric Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 print-avoid-break">
+                      {/* 1. Total Debits */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
                         <div>
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                             1. Total Debits
-                          </p>
-                          <p className="text-xs text-slate-500 mt-0.5">
+                          </span>
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
                             Sum of all debit postings
-                          </p>
+                          </span>
                         </div>
-                        <p className="text-2xl font-black text-slate-900 font-mono">
-                          {formatCurrency(totalDebit)}
-                        </p>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
+                            {formatNumber(totalDebit)}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+                      {/* 2. Total Credits */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
                         <div>
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                             2. Total Credits
-                          </p>
-                          <p className="text-xs text-slate-500 mt-0.5">
+                          </span>
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
                             Sum of all credit postings
-                          </p>
+                          </span>
                         </div>
-                        <p className="text-2xl font-black text-slate-900 font-mono">
-                          {formatCurrency(totalCredit)}
-                        </p>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
+                            {formatNumber(totalCredit)}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+                      {/* 3. Journal Lines */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
                         <div>
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                            3. Transactions Count
-                          </p>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            Posted journal lines
-                          </p>
+                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                            3. Journal Lines
+                          </span>
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
+                            Posted audit transactions
+                          </span>
                         </div>
-                        <p className="text-2xl font-black text-slate-900 font-mono">
-                          {lines.length} Line Items
-                        </p>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
+                            {lines.length}
+                          </span>
+                          <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
+                            Line Items
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="p-4.5 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-xs flex flex-col justify-between space-y-2">
+                      {/* 4. Net Account Balance */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
                         <div>
                           <div className="flex items-center justify-between">
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
                               4. Net Account Balance
-                            </p>
-                            <span className="text-[10px] font-mono font-bold text-slate-400">
+                            </span>
+                            <span className="text-[10px] font-mono font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/70">
                               {selectedAccount?.type || "ACCOUNT"}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400 mt-0.5">
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
                             {ledger?.isDebitNormal
                               ? "Debit Normal (Dr - Cr)"
                               : "Credit Normal (Cr - Dr)"}
-                          </p>
+                          </span>
                         </div>
-                        <p className="text-2xl font-black font-mono text-emerald-400">
-                          {formatCurrency(netBalance)}
-                        </p>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
+                            {formatNumber(netBalance)}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-wrap items-center justify-between gap-3">
+                    {/* Account Identity Strip */}
+                    <div className="p-3.5 px-5 rounded-2xl bg-slate-100/90 border border-slate-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <span className="font-mono text-sm font-black px-2.5 py-1 rounded-lg bg-slate-900 text-white">
+                        <span className="font-mono text-xs font-black px-2.5 py-1 rounded-lg bg-[#1d2f3f] text-white shadow-2xs">
                           {selectedAccount?.accountCode || "AC"}
                         </span>
                         <div>
-                          <h4 className="font-bold text-slate-900 text-sm">
+                          <h4 className="font-bold text-slate-900 text-xs">
                             {selectedAccount?.accountName}
                           </h4>
-                          <p className="text-[11px] text-slate-500">
-                            Classification: {selectedAccount?.type}
+                          <p className="text-[10.5px] text-slate-500">
+                            Classification: <span className="font-semibold text-slate-700">{selectedAccount?.type}</span> • Currency: AED
                           </p>
                         </div>
                       </div>
-                      <span className="text-xs font-mono font-semibold text-slate-700">
-                        Showing {lines.length} chronological ledger entries
+                      <span className="text-xs font-mono font-bold text-slate-600">
+                        {lines.length} Chronological Transactions
                       </span>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                    {/* General Ledger Table */}
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
+                      <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+                        <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                          General Ledger Journal Lines &amp; Running Balance
+                        </h4>
+                        <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                          Chronological Audit Trail
+                        </span>
+                      </div>
+
                       <Table className="w-full text-xs text-left">
-                        <TableHead className="bg-slate-50/90 border-b border-slate-200">
-                          <TableHeaderCell className="py-3 px-4 w-28 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
+                        <TableHead className="bg-slate-50/95 border-b border-slate-200">
+                          <TableHeaderCell className="py-3 px-4 w-28 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
                             Date
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-4 w-32 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
+                          <TableHeaderCell className="py-3 px-4 w-32 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
                             Voucher #
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-4 w-28 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
+                          <TableHeaderCell className="py-3 px-4 w-28 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
                             Ref / Folio
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-4 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
+                          <TableHeaderCell className="py-3 px-4 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
                             Description / Narration
                           </TableHeaderCell>
                           <TableHeaderCell
                             align="right"
-                            className="py-3 px-4 text-right w-28 text-slate-500 font-bold uppercase text-[11px] tracking-wider"
+                            className="py-3 px-4 text-right w-32 text-slate-700 font-bold uppercase text-[10px] tracking-wider"
                           >
                             Debit (AED)
                           </TableHeaderCell>
                           <TableHeaderCell
                             align="right"
-                            className="py-3 px-4 text-right w-28 text-slate-500 font-bold uppercase text-[11px] tracking-wider"
+                            className="py-3 px-4 text-right w-32 text-slate-700 font-bold uppercase text-[10px] tracking-wider"
                           >
                             Credit (AED)
                           </TableHeaderCell>
                           <TableHeaderCell
                             align="right"
-                            className="py-3 px-4 text-right w-36 bg-slate-100/70 text-slate-500 font-bold uppercase text-[11px] tracking-wider"
+                            className="py-3 px-4 text-right w-36 bg-slate-100/90 text-slate-800 font-bold uppercase text-[10px] tracking-wider"
                           >
                             Running Balance
                           </TableHeaderCell>
                         </TableHead>
+
                         <TableBody className="divide-y divide-slate-100">
                           {lines.map((l: any) => (
                             <TableRow
                               key={l.id}
-                              className="hover:bg-slate-50/50 text-slate-700 transition"
+                              className="hover:bg-slate-50/60 text-slate-700 transition-colors text-xs"
                             >
-                              <TableCell className="py-2.5 px-4 text-slate-600 font-medium whitespace-nowrap">
+                              <TableCell className="py-2.5 px-4 text-slate-600 font-medium whitespace-nowrap text-[11px]">
                                 {l.journalEntry?.entryDate
                                   ? new Date(
                                       l.journalEntry.entryDate,
                                     ).toLocaleDateString("en-GB")
                                   : "—"}
                               </TableCell>
-                              <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900">
+                              <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900 text-[11px]">
                                 {l.journalEntry?.entryNumber || "—"}
                               </TableCell>
-                              <TableCell className="py-2.5 px-4 font-mono text-slate-500">
+                              <TableCell className="py-2.5 px-4 font-mono text-slate-500 text-[11px]">
                                 {l.journalEntry?.reference || "—"}
                               </TableCell>
                               <TableCell className="py-2.5 px-4 text-slate-800 font-medium">
-                                {l.journalEntry?.description ||
-                                  "Journal Posting"}
+                                {l.journalEntry?.description || "Journal Posting"}
                               </TableCell>
                               <TableCell
                                 align="right"
-                                className="py-2.5 px-4 text-right font-mono font-semibold text-slate-900"
+                                className="py-2.5 px-4 text-right font-mono font-bold text-slate-900"
                               >
-                                {Number(l.debit) > 0
-                                  ? formatNumber(l.debit)
-                                  : "—"}
+                                {Number(l.debit) > 0 ? formatNumber(l.debit) : "—"}
                               </TableCell>
                               <TableCell
                                 align="right"
-                                className="py-2.5 px-4 text-right font-mono font-semibold text-slate-900"
+                                className="py-2.5 px-4 text-right font-mono font-bold text-slate-900"
                               >
-                                {Number(l.credit) > 0
-                                  ? formatNumber(l.credit)
-                                  : "—"}
+                                {Number(l.credit) > 0 ? formatNumber(l.credit) : "—"}
                               </TableCell>
                               <TableCell
                                 align="right"
-                                className="py-2.5 px-4 text-right font-mono font-black text-slate-900 bg-slate-50/40"
+                                className="py-2.5 px-4 text-right font-mono font-black text-slate-900 bg-slate-50/70"
                               >
                                 {formatCurrency(l.runningBalance)}
                               </TableCell>
                             </TableRow>
                           ))}
 
+                          {/* TOTAL ROW */}
                           <TableRow className="bg-slate-900 text-white font-black">
                             <TableCell
                               colSpan={4}
-                              className="py-3.5 px-4 text-xs uppercase tracking-wider font-bold"
+                              className="py-4 px-4 text-xs uppercase tracking-wider font-bold"
                             >
                               TOTAL ACCOUNT ACTIVITY
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-3.5 px-4 text-right font-mono font-black text-sm text-emerald-400"
+                              className="py-4 px-4 text-right font-mono font-black text-sm text-emerald-400"
                             >
                               {formatNumber(totalDebit)}
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-3.5 px-4 text-right font-mono font-black text-sm text-emerald-400"
+                              className="py-4 px-4 text-right font-mono font-black text-sm text-emerald-400"
                             >
                               {formatNumber(totalCredit)}
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-3.5 px-4 text-right font-mono font-black text-sm text-emerald-400 bg-slate-950"
+                              className="py-4 px-4 text-right font-mono font-black text-sm text-emerald-400 bg-slate-950"
                             >
                               {formatCurrency(netBalance)}
                             </TableCell>
@@ -364,9 +413,11 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
         </tbody>
       </table>
 
-      <div className="hidden print:block">
+      <div className="fixed-print-footer hidden print:block">
         <QuotationFooter />
       </div>
     </div>
   );
 };
+
+export default GeneralLedgerReport;

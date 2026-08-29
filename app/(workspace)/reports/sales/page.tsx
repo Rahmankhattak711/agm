@@ -22,12 +22,28 @@ import {
   TableCell,
 } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
-import { ReportDateFilter } from "@/components/reports/ReportDateFilter";
 import {
   ReportSummaryChart,
   ChartBarItem,
 } from "@/components/reports/ReportSummaryChart";
-import { Percent, TrendingUp, DollarSign } from "lucide-react";
+import {
+  Percent,
+  TrendingUp,
+  DollarSign,
+  Receipt,
+  Building2,
+  Calendar,
+  Layers,
+  Search,
+  Filter,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Printer,
+  Sparkles,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 
 export default function SalesReportsPage() {
   const [search, setSearch] = useState("");
@@ -50,6 +66,14 @@ export default function SalesReportsPage() {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
+  };
+
+  const formatNumber = (val: number | string | undefined) => {
+    const num = Number(val || 0);
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
   // Filter logic
@@ -208,7 +232,7 @@ export default function SalesReportsPage() {
         sublabel: name,
         value: data.invoiced,
         secondaryValue: data.collected,
-        color: "#1e293b",
+        color: "#233c4d",
         secondaryColor: "#059669",
       }))
       .sort((a, b) => b.value - a.value)
@@ -219,19 +243,28 @@ export default function SalesReportsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PAID":
-        return "bg-emerald-100 text-emerald-800 border border-emerald-200";
+        return "bg-emerald-50 text-emerald-800 border border-emerald-200/80";
       case "POSTED":
-        return "bg-blue-100 text-blue-800 border border-blue-200";
+        return "bg-sky-50 text-sky-800 border border-sky-200/80";
       case "PARTIALLY_PAID":
-        return "bg-amber-100 text-amber-800 border border-amber-200";
+        return "bg-amber-50 text-amber-800 border border-amber-200/80";
       case "DRAFT":
-        return "bg-slate-100 text-slate-700 border border-slate-200";
+        return "bg-slate-50 text-slate-700 border border-slate-200/80";
       case "CANCELLED":
-        return "bg-rose-100 text-rose-800 border border-rose-200";
+        return "bg-rose-50 text-rose-800 border border-rose-200/80";
       default:
-        return "bg-slate-100 text-slate-700 border border-slate-200";
+        return "bg-slate-50 text-slate-700 border border-slate-200/80";
     }
   };
+
+  const periodTabs = [
+    { key: "ALL", label: "All Time" },
+    { key: "THIS_MONTH", label: "This Month" },
+    { key: "LAST_MONTH", label: "Last Month" },
+    { key: "THIS_QUARTER", label: "This Quarter" },
+    { key: "THIS_YEAR", label: "This Year" },
+    { key: "CUSTOM", label: "Custom Date" },
+  ];
 
   // TanStack Table Column Definitions
   const columns = useMemo<ColumnDef<SalesInvoice>[]>(
@@ -243,8 +276,9 @@ export default function SalesReportsPage() {
           <div>
             <span
               onClick={() => setSelectedInvoice(row.original)}
-              className="font-mono font-bold text-blue-950 hover:underline cursor-pointer"
+              className="font-mono font-bold text-blue-950 hover:underline cursor-pointer flex items-center gap-1.5"
             >
+              <Receipt size={13} className="text-emerald-700 shrink-0" />
               {row.original.invoiceNumber}
             </span>
             {row.original.projectScope && (
@@ -276,13 +310,13 @@ export default function SalesReportsPage() {
         header: "Invoice Date",
         cell: ({ row }) => (
           <div>
-            <span className="font-mono text-slate-700 block">
+            <span className="font-mono text-slate-700 block text-[11px]">
               {row.original.invoiceDate
                 ? new Date(row.original.invoiceDate).toISOString().slice(0, 10)
                 : "—"}
             </span>
             {row.original.dueDate && (
-              <span className="text-[10px] text-slate-400 block mt-0.5">
+              <span className="text-[10px] text-slate-400 block mt-0.5 font-mono">
                 Due: {new Date(row.original.dueDate).toISOString().slice(0, 10)}
               </span>
             )}
@@ -294,7 +328,7 @@ export default function SalesReportsPage() {
         header: () => <div className="text-right">Net Sales (AED)</div>,
         cell: ({ row }) => (
           <span className="font-mono font-bold text-slate-700 block text-right">
-            {formatCurrency(row.original.subtotal)}
+            {formatNumber(row.original.subtotal)}
           </span>
         ),
       },
@@ -303,7 +337,7 @@ export default function SalesReportsPage() {
         header: () => <div className="text-right">Output VAT (5%)</div>,
         cell: ({ row }) => (
           <span className="font-mono font-bold text-blue-700 block text-right">
-            {formatCurrency(row.original.vatAmount)}
+            {formatNumber(row.original.vatAmount)}
           </span>
         ),
       },
@@ -311,8 +345,8 @@ export default function SalesReportsPage() {
         accessorKey: "totalAmount",
         header: () => <div className="text-right">Total Invoiced</div>,
         cell: ({ row }) => (
-          <span className="font-mono font-black text-emerald-800 block text-right">
-            {formatCurrency(row.original.totalAmount)}
+          <span className="font-mono font-black text-slate-900 block text-right">
+            {formatNumber(row.original.totalAmount)}
           </span>
         ),
       },
@@ -327,7 +361,7 @@ export default function SalesReportsPage() {
                 balance > 0 ? "text-rose-700" : "text-emerald-700"
               }`}
             >
-              {formatCurrency(balance)}
+              {formatNumber(balance)}
             </span>
           );
         },
@@ -337,7 +371,7 @@ export default function SalesReportsPage() {
         header: "Status",
         cell: ({ row }) => (
           <span
-            className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${getStatusBadge(
+            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusBadge(
               row.original.status,
             )}`}
           >
@@ -347,13 +381,13 @@ export default function SalesReportsPage() {
       },
       {
         id: "actions",
-        header: () => <div className="text-center">Actions</div>,
+        header: () => <div className="text-center">Action</div>,
         cell: ({ row }) => (
           <div className="flex items-center justify-center gap-1.5">
             <button
               type="button"
               onClick={() => setSelectedInvoice(row.original)}
-              className="p-1.5 text-slate-400 hover:text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
+              className="p-1.5 text-slate-500 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors cursor-pointer"
               title="View Invoice Audit"
             >
               <EyeIcon className="w-4 h-4" />
@@ -367,128 +401,210 @@ export default function SalesReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+      {/* Simple Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Sales &amp; Revenue Reports
-            </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-              Commercial Analytics
-            </span>
-          </div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Sales &amp; Revenue Reports
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Track commercial invoicing
-            performance, client receivables,
-            <br /> VAT collection, and revenue realization.
+            AGM FITOUT TECHNICAL SERVICES LLC — Commercial invoicing, payments received, and open balances.
           </p>
         </div>
 
         <Button
-          variant="primary"
+          variant="outline"
+          size="sm"
           onClick={() => setIsPrintSummaryOpen(true)}
-          icon={<PrintIcon className="w-4 h-4" strokeWidth={2.2} />}
+          className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+          icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
         >
-          Print Report
+          Print Statement
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
-            Total Invoiced Sales
-          </p>
-          <p className="text-xl font-black text-slate-900 mt-1">
-            {formatCurrency(totalInvoicedSales)}
-          </p>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            {nonCancelledInvoices.length} billing vouchers
-          </p>
+      {/* 5 Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 print:grid-cols-5">
+        {/* 1. Total Invoiced Sales */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+          <div>
+            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
+              1. Total Invoiced Sales
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              {nonCancelledInvoices.length} billing vouchers
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-xl font-black text-slate-900 font-mono">
+              {formatNumber(totalInvoicedSales)}
+            </span>
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
-            Settled Receipts
-          </p>
-          <p className="text-xl font-black text-emerald-800 mt-1">
-            {formatCurrency(totalCollected)}
-          </p>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            Realized bank &amp; cash
-          </p>
+        {/* 2. Settled Receipts */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+          <div>
+            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
+              2. Settled Receipts
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Realized bank &amp; cash
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-xl font-black text-emerald-800 font-mono">
+              {formatNumber(totalCollected)}
+            </span>
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
-            Outstanding Due
-          </p>
-          <p className="text-xl font-black text-rose-700 mt-1">
-            {formatCurrency(totalOutstanding)}
-          </p>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            Open customer balance
-          </p>
+        {/* 3. Outstanding Due */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
+          <div>
+            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
+              3. Outstanding Due
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Open customer balance
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-xl font-black text-rose-700 font-mono">
+              {formatNumber(totalOutstanding)}
+            </span>
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
-            UAE 5% Output VAT
-          </p>
-          <p className="text-xl font-black text-blue-700 mt-1">
-            {formatCurrency(totalOutputVat)}
-          </p>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            FTA Form 201 Box 1a
-          </p>
+        {/* 4. Output VAT */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
+          <div>
+            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
+              4. UAE 5% Output VAT
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              FTA Form 201 Box 1
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-xl font-black text-amber-800 font-mono">
+              {formatNumber(totalOutputVat)}
+            </span>
+          </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950 to-slate-900 text-white shadow-xs">
-          <p className="text-[10.5px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1">
-            <TrendingUp size={13} /> Collection Rate
-          </p>
-          <p className="text-xl font-black text-white mt-1">
-            {collectionEfficiency.toFixed(1)}%
-          </p>
-          <p className="text-[11px] text-slate-300 mt-0.5">
-            Realization efficiency
-          </p>
+        {/* 5. Collection Rate */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
+                5. Collection Rate
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
+                Yield
+              </span>
+            </div>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Realization efficiency
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xl font-black text-slate-900 font-mono">
+              {collectionEfficiency.toFixed(1)}%
+            </span>
+          </div>
         </div>
       </div>
 
+      {/* Chart: Top Clients by Sales */}
       {topClientsChartData.length > 0 && (
-        <ReportSummaryChart
-          title="Revenue & Collection Breakdown by Top Clients"
-          subtitle="Comparison of total amount billed versus payments collected per client account"
-          data={topClientsChartData}
-          primaryLegend="Total Invoiced"
-          secondaryLegend="Collected Receipts"
-        />
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+          <ReportSummaryChart
+            title="Revenue &amp; Collection Breakdown by Top Clients"
+            subtitle="Comparison of total amount billed versus payments collected per client account"
+            data={topClientsChartData}
+            primaryLegend="Total Invoiced"
+            secondaryLegend="Collected Receipts"
+          />
+        </div>
       )}
 
+      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="space-y-3 pb-3 border-b border-slate-100">
-          <ReportDateFilter
-            periodFilter={periodFilter}
-            onPeriodChange={setPeriodFilter}
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-          />
+        {/* Date Filter & Search Strip */}
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-1">
+              {periodTabs.map((tab) => {
+                const isActive = periodFilter === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setPeriodFilter(tab.key)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
 
-          <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-1">
+            {periodFilter === "CUSTOM" && (
+              <div className="flex items-center gap-2 text-xs">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                />
+                <span className="text-slate-400 font-bold">to</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-1 border-t border-slate-200/60">
             <div className="w-full lg:w-80">
-              <Input
-                placeholder="Search invoice number, client, TRN..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                leftIcon={
-                  <SearchIcon
-                    className="w-4 h-4 text-slate-400"
-                    strokeWidth={2}
-                  />
-                }
-              />
+              <div className="relative">
+                <Search
+                  size={14}
+                  className="absolute left-3 top-2.5 text-slate-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Search invoice #, client, TRN, or project..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                />
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
@@ -522,20 +638,37 @@ export default function SalesReportsPage() {
         </div>
 
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">
+          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
             Error loading sales invoices: {(error as any).message}
           </div>
+        ) : isLoading ? (
+          <div className="py-16 text-center text-xs text-slate-400 animate-pulse space-y-2">
+            <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mx-auto" />
+            <p>Calculating Sales &amp; Commercial Billing Schedules...</p>
+          </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={filteredInvoices}
-            isLoading={isLoading}
-            emptyTitle="No sales invoices found"
-            emptyMessage="No sales transactions match your search or filter criteria."
-          />
+          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+              <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                Sales Invoices &amp; Billing Realization Register
+              </h4>
+              <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                {filteredInvoices.length} Matching Records
+              </span>
+            </div>
+
+            <DataTable
+              columns={columns}
+              data={filteredInvoices}
+              isLoading={false}
+              emptyTitle="No sales invoices found"
+              emptyMessage="No sales transactions match your search or filter criteria."
+            />
+          </div>
         )}
       </div>
 
+      {/* Invoice Detail Audit Modal */}
       {selectedInvoice && (
         <Modal
           isOpen={Boolean(selectedInvoice)}
@@ -587,7 +720,7 @@ export default function SalesReportsPage() {
                   Posting Status
                 </span>
                 <span
-                  className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black mt-1 ${getStatusBadge(
+                  className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-1 ${getStatusBadge(
                     selectedInvoice.status,
                   )}`}
                 >
@@ -597,7 +730,7 @@ export default function SalesReportsPage() {
             </div>
 
             {selectedInvoice.projectScope && (
-              <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100">
+              <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-200">
                 <span className="text-[10px] uppercase font-bold text-blue-800 block mb-0.5">
                   Project Scope &amp; Billing Milestone
                 </span>
@@ -695,6 +828,7 @@ export default function SalesReportsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedInvoice(null)}
+                className="text-xs cursor-pointer"
               >
                 Close Audit
               </Button>
@@ -703,6 +837,7 @@ export default function SalesReportsPage() {
         </Modal>
       )}
 
+      {/* Print Statement Modal */}
       {isPrintSummaryOpen && (
         <Modal
           isOpen={isPrintSummaryOpen}
@@ -729,7 +864,7 @@ export default function SalesReportsPage() {
                 <tfoot className="print-page-footer-group">
                   <tr>
                     <td className="p-0 border-none">
-                      <div className="h-[80px] w-full hidden print:block" />
+                      <div className="h-[150px] w-full hidden print:block" />
                     </td>
                   </tr>
                 </tfoot>
@@ -762,7 +897,7 @@ export default function SalesReportsPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <div className="grid grid-cols-4 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 print-avoid-break">
                           <div>
                             <span className="text-[10px] text-slate-400 uppercase font-bold block">
                               Total Billed
@@ -874,7 +1009,7 @@ export default function SalesReportsPage() {
                   </tr>
                 </tbody>
               </table>
-              <div className="w-full">
+              <div className="fixed-print-footer hidden print:block">
                 <QuotationFooter />
               </div>
             </div>
@@ -884,6 +1019,7 @@ export default function SalesReportsPage() {
                 variant="outline"
                 size="lg"
                 onClick={() => setIsPrintSummaryOpen(false)}
+                className="cursor-pointer"
               >
                 Close
               </Button>
@@ -891,6 +1027,7 @@ export default function SalesReportsPage() {
                 variant="primary"
                 size="lg"
                 onClick={() => window.print()}
+                className="cursor-pointer"
                 icon={<PrintIcon className="w-4 h-4" strokeWidth={2} />}
               >
                 Print Document

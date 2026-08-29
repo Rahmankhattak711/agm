@@ -17,6 +17,16 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
+import {
+  Scale,
+  ShieldCheck,
+  Building2,
+  CreditCard,
+  PieChart,
+  Printer,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
 
 interface BalanceSheetReportProps {
   balanceSheet?: BalanceSheetData;
@@ -89,6 +99,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
 
   const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
   const balanceCheck = totalAssets - totalLiabilitiesAndEquity;
+  const isBalanced = Math.abs(balanceCheck) < 0.01;
 
   return (
     <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
@@ -104,8 +115,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                       Statement of Financial Position (Balance Sheet)
                     </h1>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Assets, Liabilities
-                      and Owners&apos; Equity
+                      AGM FITOUT TECHNICAL SERVICES LLC — Assets, Liabilities and Owners&apos; Equity
                     </p>
                   </div>
                   <p className="text-[10px] text-slate-400 font-mono">
@@ -120,7 +130,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
         <tfoot className="print-page-footer-group">
           <tr>
             <td className="p-0 border-none">
-              <div className="h-[80px] w-full hidden print:block" />
+              <div className="h-[150px] w-full hidden print:block" />
             </td>
           </tr>
         </tfoot>
@@ -129,158 +139,208 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
           <tr>
             <td className="p-0 border-none align-top">
               <div className="space-y-6">
+                {/* Header Toolbar */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
                   <div>
-                    <h3 className="font-bold text-base text-slate-900">
-                      Balance Sheet Statement
-                    </h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2.5 py-1 rounded-lg bg-sky-700 text-white font-black text-xs shadow-xs">
+                        BS
+                      </span>
+                      <h3 className="font-black text-lg text-slate-900 tracking-tight">
+                        Statement of Financial Position (Balance Sheet)
+                      </h3>
+                    </div>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Financial position
-                      overview: Assets = Liabilities + Equity
+                      AGM FITOUT TECHNICAL SERVICES LLC — Statutory GAAP Equation: Assets = Liabilities + Equity
                     </p>
                   </div>
+
                   <div className="flex items-center gap-2">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                        balanceSheet?.balanced
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-amber-50 text-amber-700 border-amber-200"
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                        isBalanced
+                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                          : "bg-amber-50 text-amber-800 border-amber-200"
                       }`}
                     >
-                      {balanceSheet?.balanced
-                        ? "✓ Balanced"
-                        : "Live GAAP Position"}
+                      {isBalanced ? (
+                        <CheckCircle2 size={13} className="text-emerald-700" />
+                      ) : (
+                        <AlertTriangle size={13} className="text-amber-700" />
+                      )}
+                      {isBalanced ? "Equation Balanced" : "Audit Review Required"}
                     </span>
+
                     <Button
                       variant="outline"
                       size="sm"
-                      icon={
-                        <PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />
-                      }
+                      icon={<Printer size={14} />}
                       onClick={() => window.print()}
+                      className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
                     >
-                      Print / Save PDF
+                      Print Statement
                     </Button>
                   </div>
                 </div>
 
                 {isLoading ? (
-                  <div className="py-12 text-center text-xs text-slate-400 animate-pulse">
-                    Loading Balance Sheet...
+                  <div className="py-16 text-center text-xs text-slate-400 animate-pulse space-y-2">
+                    <div className="w-8 h-8 rounded-full border-2 border-sky-500 border-t-transparent animate-spin mx-auto" />
+                    <p>Loading Statutory Balance Sheet...</p>
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+                    {/* 4 Summary Metric Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 print-avoid-break">
+                      {/* 1. Total Assets */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
                         <div>
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                             1. Total Assets
-                          </p>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            Current &amp; fixed capital assets
-                          </p>
+                          </span>
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
+                            Current &amp; Fixed Assets
+                          </span>
                         </div>
-                        <p className="text-2xl font-black text-blue-900 font-mono">
-                          {formatCurrency(totalAssets)}
-                        </p>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
+                            {formatNumber(totalAssets)}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+                      {/* 2. Total Liabilities */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
                         <div>
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                             2. Total Liabilities
-                          </p>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            Payables, accrued salaries &amp; VAT
-                          </p>
+                          </span>
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
+                            Payables &amp; Accruals
+                          </span>
                         </div>
-                        <p className="text-2xl font-black text-amber-700 font-mono">
-                          {formatCurrency(totalLiabilities)}
-                        </p>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span className="text-xl print:text-base font-black text-amber-800 font-mono">
+                            {formatNumber(totalLiabilities)}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+                      {/* 3. Total Equity */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
                         <div>
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                             3. Total Equity
-                          </p>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            Managing partner capital &amp; earnings
-                          </p>
+                          </span>
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
+                            Partner Capital &amp; P&amp;L
+                          </span>
                         </div>
-                        <p
-                          className={`text-2xl font-black font-mono ${
-                            totalEquity >= 0
-                              ? "text-slate-900"
-                              : "text-rose-700"
-                          }`}
-                        >
-                          {formatCurrency(totalEquity)}
-                        </p>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span
+                            className={`text-xl print:text-base font-black font-mono ${
+                              totalEquity >= 0 ? "text-emerald-800" : "text-rose-700"
+                            }`}
+                          >
+                            {formatNumber(totalEquity)}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="p-4.5 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-xs flex flex-col justify-between space-y-2">
+                      {/* 4. Balance Check */}
+                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                        <div className={`absolute inset-x-0 top-0 h-[2.5px] ${isBalanced ? "bg-emerald-500" : "bg-amber-500"}`} />
                         <div>
                           <div className="flex items-center justify-between">
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
                               4. Balance Check
-                            </p>
+                            </span>
                             <span
-                              className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                                Math.abs(balanceCheck) < 0.01
-                                  ? "bg-emerald-400/20 text-emerald-300 border border-emerald-400/30"
-                                  : "bg-rose-400/20 text-rose-300 border border-rose-400/30"
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                                isBalanced
+                                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                  : "bg-amber-50 text-amber-800 border-amber-200"
                               }`}
                             >
-                              {Math.abs(balanceCheck) < 0.01
-                                ? "Balanced"
-                                : "Variance"}
+                              {isBalanced ? "Balanced" : "Variance"}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400 mt-0.5">
-                            Assets = Liabilities + Equity
-                          </p>
+                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
+                            Assets - (Liabilities + Equity)
+                          </span>
                         </div>
-                        <p className="text-2xl font-black font-mono text-emerald-400">
-                          {Math.abs(balanceCheck) < 0.01
-                            ? "0.00 AED"
-                            : formatCurrency(balanceCheck)}
-                        </p>
+                        <div className="pt-2 print:pt-0">
+                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                            AED
+                          </span>
+                          <span
+                            className={`text-xl print:text-base font-black font-mono ${
+                              isBalanced ? "text-emerald-800" : "text-amber-800"
+                            }`}
+                          >
+                            {isBalanced ? "0.00" : formatNumber(balanceCheck)}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                    {/* Balance Sheet Statement Table */}
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
+                      <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+                        <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                          Balance Sheet Ledger Breakdown
+                        </h4>
+                        <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                          Assets = Liabilities + Equity
+                        </span>
+                      </div>
+
                       <Table className="w-full text-xs text-left">
-                        <TableHead className="bg-slate-50/90 border-b border-slate-200">
-                          <TableHeaderCell className="py-3 px-5 w-1/4 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
-                            Section
+                        <TableHead className="bg-slate-50/95 border-b border-slate-200">
+                          <TableHeaderCell className="py-3 px-5 w-1/4 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
+                            Section / Group
                           </TableHeaderCell>
-                          <TableHeaderCell className="py-3 px-5 w-1/2 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
+                          <TableHeaderCell className="py-3 px-5 w-1/2 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
                             Account Name
                           </TableHeaderCell>
                           <TableHeaderCell
                             align="right"
-                            className="py-3 px-5 text-right w-1/4 text-slate-500 font-bold uppercase text-[11px] tracking-wider"
+                            className="py-3 px-5 text-right w-1/4 text-slate-700 font-bold uppercase text-[10px] tracking-wider"
                           >
                             Amount (AED)
                           </TableHeaderCell>
                         </TableHead>
+
                         <TableBody className="divide-y divide-slate-100">
-                          <TableRow className="bg-blue-50/70 font-bold text-blue-950">
+                          {/* ASSETS SECTION */}
+                          <TableRow className="bg-sky-50/70 font-bold text-sky-950">
                             <TableCell
                               colSpan={3}
                               className="py-2.5 px-5 text-[11px] uppercase tracking-wider"
                             >
-                              ASSETS
+                              1. ASSETS
                             </TableCell>
                           </TableRow>
 
-                          <TableRow className="bg-slate-50/60 font-semibold text-slate-700">
+                          {/* Current Assets */}
+                          <TableRow className="bg-slate-50/70 font-semibold text-slate-700">
                             <TableCell
                               colSpan={3}
                               className="py-2 px-5 text-[11px] italic"
                             >
-                              Current Assets
+                              Current Assets (Liquidity &amp; Short-Term Receivables)
                             </TableCell>
                           </TableRow>
                           {currentAssetsRows.length === 0 ? (
@@ -289,7 +349,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                                 colSpan={3}
                                 className="py-2.5 px-5 text-center text-slate-400 italic"
                               >
-                                No current asset accounts
+                                No current asset accounts recorded
                               </TableCell>
                             </TableRow>
                           ) : (
@@ -297,17 +357,17 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                               (item: BalanceSheetItem, idx: number) => (
                                 <TableRow
                                   key={`ca-${idx}`}
-                                  className="hover:bg-slate-50/50 text-slate-700 transition"
+                                  className="hover:bg-slate-50/60 text-slate-700 transition-colors"
                                 >
-                                  <TableCell className="py-2 px-5 text-slate-500">
+                                  <TableCell className="py-2.5 px-5 text-slate-500">
                                     {item.section || "Current Asset"}
                                   </TableCell>
-                                  <TableCell className="py-2 px-5 font-semibold text-slate-900">
+                                  <TableCell className="py-2.5 px-5 font-semibold text-slate-900">
                                     {item.accountName}
                                   </TableCell>
                                   <TableCell
                                     align="right"
-                                    className="py-2 px-5 text-right font-mono font-medium text-slate-800"
+                                    className="py-2.5 px-5 text-right font-mono font-bold text-slate-900"
                                   >
                                     {formatNumber(item.amount)}
                                   </TableCell>
@@ -315,27 +375,28 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                               ),
                             )
                           )}
-                          <TableRow className="bg-blue-50/40 font-bold text-blue-900 border-t border-b border-blue-100">
+                          <TableRow className="bg-sky-50/50 font-bold text-sky-900 border-t border-b border-sky-100">
                             <TableCell
                               colSpan={2}
-                              className="py-2 px-5 text-blue-900 font-bold"
+                              className="py-2 px-5 text-sky-900 font-bold"
                             >
                               Total Current Assets
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-2 px-5 text-right font-mono font-bold text-blue-900"
+                              className="py-2 px-5 text-right font-mono font-bold text-sky-900"
                             >
                               {formatNumber(totalCurrentAssets)}
                             </TableCell>
                           </TableRow>
 
-                          <TableRow className="bg-slate-50/60 font-semibold text-slate-700">
+                          {/* Fixed Assets */}
+                          <TableRow className="bg-slate-50/70 font-semibold text-slate-700">
                             <TableCell
                               colSpan={3}
                               className="py-2 px-5 text-[11px] italic"
                             >
-                              Fixed Assets
+                              Fixed &amp; Non-Current Assets
                             </TableCell>
                           </TableRow>
                           {fixedAssetsRows.length === 0 ? (
@@ -344,7 +405,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                                 colSpan={3}
                                 className="py-2.5 px-5 text-center text-slate-400 italic"
                               >
-                                No fixed asset accounts
+                                No fixed asset accounts recorded
                               </TableCell>
                             </TableRow>
                           ) : (
@@ -352,17 +413,17 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                               (item: BalanceSheetItem, idx: number) => (
                                 <TableRow
                                   key={`fa-${idx}`}
-                                  className="hover:bg-slate-50/50 text-slate-700 transition"
+                                  className="hover:bg-slate-50/60 text-slate-700 transition-colors"
                                 >
-                                  <TableCell className="py-2 px-5 text-slate-500">
+                                  <TableCell className="py-2.5 px-5 text-slate-500">
                                     {item.section || "Fixed Asset"}
                                   </TableCell>
-                                  <TableCell className="py-2 px-5 font-semibold text-slate-900">
+                                  <TableCell className="py-2.5 px-5 font-semibold text-slate-900">
                                     {item.accountName}
                                   </TableCell>
                                   <TableCell
                                     align="right"
-                                    className="py-2 px-5 text-right font-mono font-medium text-slate-800"
+                                    className="py-2.5 px-5 text-right font-mono font-bold text-slate-900"
                                   >
                                     {formatNumber(item.amount)}
                                   </TableCell>
@@ -370,51 +431,52 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                               ),
                             )
                           )}
-                          <TableRow className="bg-blue-50/40 font-bold text-blue-900 border-t border-b border-blue-100">
+                          <TableRow className="bg-sky-50/50 font-bold text-sky-900 border-t border-b border-sky-100">
                             <TableCell
                               colSpan={2}
-                              className="py-2 px-5 text-blue-900 font-bold"
+                              className="py-2 px-5 text-sky-900 font-bold"
                             >
                               Total Fixed Assets
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-2 px-5 text-right font-mono font-bold text-blue-900"
+                              className="py-2 px-5 text-right font-mono font-bold text-sky-900"
                             >
                               {formatNumber(totalFixedAssets)}
                             </TableCell>
                           </TableRow>
 
-                          <TableRow className="bg-blue-100/70 font-bold text-blue-950 border-t-2 border-b-2 border-blue-200">
+                          <TableRow className="bg-sky-100/70 font-bold text-sky-950 border-t-2 border-b-2 border-sky-200">
                             <TableCell
                               colSpan={2}
-                              className="py-2.5 px-5 text-blue-950 font-black text-xs uppercase tracking-wider"
+                              className="py-3 px-5 text-sky-950 font-black text-xs uppercase tracking-wider"
                             >
                               TOTAL ASSETS
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-2.5 px-5 text-right font-mono font-black text-blue-950 text-sm"
+                              className="py-3 px-5 text-right font-mono font-black text-sky-950 text-sm"
                             >
                               {formatNumber(totalAssets)}
                             </TableCell>
                           </TableRow>
 
-                          <TableRow className="bg-orange-50/70 font-bold text-orange-950">
+                          {/* LIABILITIES SECTION */}
+                          <TableRow className="bg-amber-50/70 font-bold text-amber-950">
                             <TableCell
                               colSpan={3}
                               className="py-2.5 px-5 text-[11px] uppercase tracking-wider"
                             >
-                              LIABILITIES
+                              2. LIABILITIES
                             </TableCell>
                           </TableRow>
 
-                          <TableRow className="bg-slate-50/60 font-semibold text-slate-700">
+                          <TableRow className="bg-slate-50/70 font-semibold text-slate-700">
                             <TableCell
                               colSpan={3}
                               className="py-2 px-5 text-[11px] italic"
                             >
-                              Current Liabilities
+                              Current Liabilities (Payables &amp; Tax)
                             </TableCell>
                           </TableRow>
                           {currentLiabilitiesRows.length === 0 ? (
@@ -423,7 +485,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                                 colSpan={3}
                                 className="py-2.5 px-5 text-center text-slate-400 italic"
                               >
-                                No current liability accounts
+                                No current liability accounts recorded
                               </TableCell>
                             </TableRow>
                           ) : (
@@ -431,17 +493,17 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                               (item: BalanceSheetItem, idx: number) => (
                                 <TableRow
                                   key={`cl-${idx}`}
-                                  className="hover:bg-slate-50/50 text-slate-700 transition"
+                                  className="hover:bg-slate-50/60 text-slate-700 transition-colors"
                                 >
-                                  <TableCell className="py-2 px-5 text-slate-500">
+                                  <TableCell className="py-2.5 px-5 text-slate-500">
                                     {item.section || "Current Liability"}
                                   </TableCell>
-                                  <TableCell className="py-2 px-5 font-semibold text-slate-900">
+                                  <TableCell className="py-2.5 px-5 font-semibold text-slate-900">
                                     {item.accountName}
                                   </TableCell>
                                   <TableCell
                                     align="right"
-                                    className="py-2 px-5 text-right font-mono font-medium text-slate-800"
+                                    className="py-2.5 px-5 text-right font-mono font-bold text-slate-900"
                                   >
                                     {formatNumber(item.amount)}
                                   </TableCell>
@@ -449,42 +511,43 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                               ),
                             )
                           )}
-                          <TableRow className="bg-orange-50/40 font-bold text-orange-900 border-t border-b border-orange-100">
+                          <TableRow className="bg-amber-50/50 font-bold text-amber-900 border-t border-b border-amber-100">
                             <TableCell
                               colSpan={2}
-                              className="py-2 px-5 text-orange-900 font-bold"
+                              className="py-2 px-5 text-amber-900 font-bold"
                             >
                               Total Current Liabilities
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-2 px-5 text-right font-mono font-bold text-orange-900"
+                              className="py-2 px-5 text-right font-mono font-bold text-amber-900"
                             >
                               {formatNumber(totalCurrentLiabilities)}
                             </TableCell>
                           </TableRow>
 
-                          <TableRow className="bg-orange-100/70 font-bold text-orange-950 border-t-2 border-b-2 border-orange-200">
+                          <TableRow className="bg-amber-100/70 font-bold text-amber-950 border-t-2 border-b-2 border-amber-200">
                             <TableCell
                               colSpan={2}
-                              className="py-2.5 px-5 text-orange-950 font-black text-xs uppercase tracking-wider"
+                              className="py-3 px-5 text-amber-950 font-black text-xs uppercase tracking-wider"
                             >
                               TOTAL LIABILITIES
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-2.5 px-5 text-right font-mono font-black text-orange-950 text-sm"
+                              className="py-3 px-5 text-right font-mono font-black text-amber-950 text-sm"
                             >
                               {formatNumber(totalLiabilities)}
                             </TableCell>
                           </TableRow>
 
-                          <TableRow className="bg-purple-50/70 font-bold text-purple-950">
+                          {/* EQUITY SECTION */}
+                          <TableRow className="bg-emerald-50/70 font-bold text-emerald-950">
                             <TableCell
                               colSpan={3}
                               className="py-2.5 px-5 text-[11px] uppercase tracking-wider"
                             >
-                              EQUITY
+                              3. PARTNERS&apos; &amp; OWNERS&apos; EQUITY
                             </TableCell>
                           </TableRow>
                           {equityRows.length === 0 ? (
@@ -493,7 +556,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                                 colSpan={3}
                                 className="py-2.5 px-5 text-center text-slate-400 italic"
                               >
-                                No equity accounts
+                                No equity accounts recorded
                               </TableCell>
                             </TableRow>
                           ) : (
@@ -501,17 +564,17 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                               (item: BalanceSheetItem, idx: number) => (
                                 <TableRow
                                   key={`eq-${idx}`}
-                                  className="hover:bg-slate-50/50 text-slate-700 transition"
+                                  className="hover:bg-slate-50/60 text-slate-700 transition-colors"
                                 >
-                                  <TableCell className="py-2 px-5 text-slate-500">
+                                  <TableCell className="py-2.5 px-5 text-slate-500">
                                     {item.section || "Capital"}
                                   </TableCell>
-                                  <TableCell className="py-2 px-5 font-semibold text-slate-900">
+                                  <TableCell className="py-2.5 px-5 font-semibold text-slate-900">
                                     {item.accountName}
                                   </TableCell>
                                   <TableCell
                                     align="right"
-                                    className="py-2 px-5 text-right font-mono font-medium text-slate-800"
+                                    className="py-2.5 px-5 text-right font-mono font-bold text-slate-900"
                                   >
                                     {formatNumber(item.amount)}
                                   </TableCell>
@@ -519,21 +582,22 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                               ),
                             )
                           )}
-                          <TableRow className="bg-purple-100/70 font-bold text-purple-950 border-t-2 border-b-2 border-purple-200">
+                          <TableRow className="bg-emerald-100/70 font-bold text-emerald-950 border-t-2 border-b-2 border-emerald-200">
                             <TableCell
                               colSpan={2}
-                              className="py-2.5 px-5 text-purple-950 font-black text-xs uppercase tracking-wider"
+                              className="py-3 px-5 text-emerald-950 font-black text-xs uppercase tracking-wider"
                             >
                               TOTAL EQUITY
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-2.5 px-5 text-right font-mono font-black text-purple-950 text-sm"
+                              className="py-3 px-5 text-right font-mono font-black text-emerald-950 text-sm"
                             >
                               {formatNumber(totalEquity)}
                             </TableCell>
                           </TableRow>
 
+                          {/* TOTAL LIABILITIES + EQUITY */}
                           <TableRow className="bg-slate-100 font-bold text-slate-900 border-t-2 border-b-2 border-slate-300">
                             <TableCell
                               colSpan={2}
@@ -549,25 +613,24 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                             </TableCell>
                           </TableRow>
 
+                          {/* BALANCE AUDIT CHECK */}
                           <TableRow
                             className={`font-black ${
-                              Math.abs(balanceCheck) < 0.01
+                              isBalanced
                                 ? "bg-emerald-50 text-emerald-950"
                                 : "bg-amber-50 text-amber-950"
                             }`}
                           >
                             <TableCell
                               colSpan={2}
-                              className="py-3 px-5 text-xs uppercase tracking-wider font-bold"
+                              className="py-3.5 px-5 text-xs uppercase tracking-wider font-bold"
                             >
-                              BALANCE CHECK (Assets - Liabilities - Equity)
+                              BALANCE AUDIT RECONCILIATION (Assets - Liabilities - Equity)
                             </TableCell>
                             <TableCell
                               align="right"
-                              className={`py-3 px-5 text-right font-mono font-black text-sm ${
-                                Math.abs(balanceCheck) < 0.01
-                                  ? "text-emerald-700"
-                                  : "text-amber-700"
+                              className={`py-3.5 px-5 text-right font-mono font-black text-sm ${
+                                isBalanced ? "text-emerald-700" : "text-amber-700"
                               }`}
                             >
                               {formatNumber(balanceCheck)}
@@ -584,7 +647,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
         </tbody>
       </table>
 
-      <div className="hidden print:block">
+      <div className="fixed-print-footer hidden print:block">
         <QuotationFooter />
       </div>
     </div>

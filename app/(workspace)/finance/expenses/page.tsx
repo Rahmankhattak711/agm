@@ -22,11 +22,8 @@ import {
   TableCell,
   TableLoading,
   Modal,
-  FormInput,
-  FormSelect,
-  FormTextarea,
-  FormSubmit,
 } from "@/components/ui";
+import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import {
   Plus,
   Search,
@@ -43,6 +40,10 @@ import {
   TrendingUp,
   Tag,
   Scale,
+  Calendar,
+  AlertTriangle,
+  X,
+  FileSpreadsheet,
 } from "lucide-react";
 
 const EXPENSE_CATEGORIES = [
@@ -129,6 +130,14 @@ export default function ExpensesPage() {
     })}`;
   };
 
+  const formatNumber = (val: number | string | undefined) => {
+    const num = Number(val || 0);
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
   const handleOpenCreate = () => {
     setFormCategory(EXPENSE_CATEGORIES[0]);
     setFormPayee("");
@@ -141,7 +150,6 @@ export default function ExpensesPage() {
     setFormCreateJournal(true);
     setFormError("");
 
-    // Set default expense and bank accounts if available
     if (expenseAccounts.length > 0) {
       setFormExpenseAccountId(expenseAccounts[0].id);
     }
@@ -219,304 +227,376 @@ export default function ExpensesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Simple Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight">
-            Direct Operating Expenses & Claims
-          </h2>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Direct Operating Expenses &amp; Claims
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Record company overheads, utilities, government fees, and
-            operational claims with automated General Ledger posting.
+            AGM FITOUT TECHNICAL SERVICES LLC — Record company overheads, utilities, government fees, <br /> and operational claims with automated General Ledger posting.
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={handleOpenCreate}
-          icon={<Plus className="w-4 h-4" strokeWidth={2.5} />}
-          className="bg-[#28633a] hover:bg-[#1f4d2d] text-white font-bold"
-        >
-          Record Expense
-        </Button>
-      </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+            icon={<Printer size={14} />}
+          >
+            Print Register
+          </Button>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Total Expenses
-            </p>
-            <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-800">
-              <Receipt size={16} />
-            </span>
-          </div>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {formatCurrency(summary.totalAmount)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {summary.count} recorded claims & vouchers
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              This Month
-            </p>
-            <span className="p-1.5 rounded-lg bg-blue-50 text-blue-800">
-              <TrendingUp size={16} />
-            </span>
-          </div>
-          <p className="text-2xl font-black text-blue-900 mt-1">
-            {formatCurrency(thisMonthExpenses)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Current calendar month spend
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              VAT Recoverable (5%)
-            </p>
-            <span className="p-1.5 rounded-lg bg-purple-50 text-purple-800">
-              <Scale size={16} />
-            </span>
-          </div>
-          <p className="text-2xl font-black text-purple-900 mt-1">
-            {formatCurrency(summary.totalTax)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Input tax claimable on FTA return
-          </p>
-        </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Payment Methods
-            </p>
-            <span className="p-1.5 rounded-lg bg-amber-50 text-amber-800">
-              <CreditCard size={16} />
-            </span>
-          </div>
-          <p className="text-2xl font-black text-amber-900 mt-1">
-            Bank &amp; Card
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Auto GL ledger reconciliation
-          </p>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleOpenCreate}
+            icon={<Plus size={14} strokeWidth={2.5} />}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+          >
+            Record Expense
+          </Button>
         </div>
       </div>
 
-      <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
-          <div className="w-full lg:w-80 relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search expense #, payee, description..."
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+      {/* 4 Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+        {/* 1. Total Expenses */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              1. Total Recorded Expenses
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              {summary.count} claims &amp; vouchers
+            </span>
           </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {formatNumber(summary.totalAmount)}
+            </span>
+          </div>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-            <select
-              className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              <option value="ALL">All Categories</option>
-              {EXPENSE_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+        {/* 2. This Month */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              2. Current Month Spend
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Monthly operating overhead
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-2xl font-black text-emerald-800 font-mono">
+              {formatNumber(thisMonthExpenses)}
+            </span>
+          </div>
+        </div>
 
-            <select
-              className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-              value={selectedMethod}
-              onChange={(e) => setSelectedMethod(e.target.value)}
-            >
-              <option value="ALL">All Payment Methods</option>
-              <option value="BANK_TRANSFER">Bank Transfer</option>
-              <option value="CREDIT_CARD">Credit Card</option>
-              <option value="CASH">Cash</option>
-              <option value="CHEQUE">Cheque</option>
-            </select>
+        {/* 3. VAT Recoverable */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              3. VAT Recoverable (5%)
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              FTA Form 201 Box 9 input tax
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-2xl font-black text-purple-900 font-mono">
+              {formatNumber(summary.totalTax)}
+            </span>
+          </div>
+        </div>
 
-            <select
-              className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="PAID">Paid</option>
-              <option value="APPROVED">Approved</option>
-              <option value="DRAFT">Draft</option>
-            </select>
+        {/* 4. Automated Posting */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                4. General Ledger
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
+                Auto Sync
+              </span>
+            </div>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Real-time Journal balancing
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xl font-black text-teal-900 font-sans">
+              100% Balanced
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs bg-white">
-        <Table className="w-full text-xs text-left">
-          <TableHead className="bg-slate-50/80 border-b border-slate-200">
-            <TableHeaderCell className="py-3.5 px-4 font-bold text-slate-600">
-              Expense No
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3.5 px-4 font-bold text-slate-600">
-              Date
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3.5 px-4 font-bold text-slate-600">
-              Category &amp; Payee
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3.5 px-4 font-bold text-slate-600">
-              Description &amp; Ref
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3.5 px-4 font-bold text-slate-600">
-              Payment Method
-            </TableHeaderCell>
-            <TableHeaderCell
-              align="right"
-              className="py-3.5 px-4 text-right font-bold text-slate-600"
-            >
-              Total (AED)
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3.5 px-3 font-bold text-slate-600">
-              Status
-            </TableHeaderCell>
-            <TableHeaderCell className="py-3.5 px-3 text-center font-bold text-slate-600">
-              Actions
-            </TableHeaderCell>
-          </TableHead>
+      {/* Main Filter & Table Card */}
+      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+        {/* Search & Filter Strip */}
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+          {/* Status Quick Pills */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-1">
+              {[
+                { id: "ALL", label: "All Expenses" },
+                { id: "PAID", label: "Paid" },
+                { id: "APPROVED", label: "Approved" },
+                { id: "DRAFT", label: "Draft" },
+              ].map((tab) => {
+                const isActive = selectedStatus === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setSelectedStatus(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
 
-          <TableBody className="divide-y divide-slate-100">
-            {isLoading ? (
-              <TableLoading colSpan={8} rows={5} />
-            ) : expenses.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="py-12 text-center text-slate-400 italic"
-                >
-                  No operating expenses found. Click &quot;Record Expense&quot;
-                  above to create your first claim.
-                </TableCell>
-              </TableRow>
-            ) : (
-              expenses.map((exp) => (
-                <TableRow
-                  key={exp.id}
-                  className="hover:bg-slate-50/60 transition"
-                >
-                  <TableCell className="py-3.5 px-4 font-mono font-bold text-emerald-950">
-                    {exp.expenseNumber}
-                  </TableCell>
+            {/* Record count badge */}
+            <span className="text-[11px] font-bold text-slate-500 font-mono">
+              {expenses.length} Records Found
+            </span>
+          </div>
 
-                  <TableCell className="py-3.5 px-4 text-slate-600">
-                    {new Date(exp.expenseDate).toLocaleDateString("en-GB")}
-                  </TableCell>
+          {/* Search + Category + Payment Method Controls */}
+          <div className="flex flex-col sm:flex-row gap-2.5 items-center justify-between pt-1 border-t border-slate-200/60">
+            <div className="w-full sm:w-80 relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search expense #, payee, description..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
 
-                  <TableCell className="py-3.5 px-4">
-                    <span className="inline-block px-2 py-0.5 rounded-md text-[10.5px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
-                      {exp.category}
-                    </span>
-                    {exp.payee && (
-                      <p className="text-xs font-semibold text-slate-900 mt-0.5">
-                        {exp.payee}
-                      </p>
-                    )}
-                  </TableCell>
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+              <select
+                className="w-full sm:w-56 text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="ALL">All Categories</option>
+                {EXPENSE_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
 
-                  <TableCell className="py-3.5 px-4 text-slate-600 max-w-xs truncate">
-                    <p className="truncate font-medium text-slate-800">
-                      {exp.description || "—"}
-                    </p>
-                    {exp.reference && (
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        Ref: {exp.reference}
-                      </p>
-                    )}
-                  </TableCell>
+              <select
+                className="w-full sm:w-44 text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
+                value={selectedMethod}
+                onChange={(e) => setSelectedMethod(e.target.value)}
+              >
+                <option value="ALL">All Payment Methods</option>
+                <option value="BANK_TRANSFER">Bank Transfer</option>
+                <option value="CREDIT_CARD">Credit Card</option>
+                <option value="CASH">Cash</option>
+                <option value="CHEQUE">Cheque</option>
+              </select>
+            </div>
+          </div>
+        </div>
 
-                  <TableCell className="py-3.5 px-4">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700">
-                      <CreditCard size={12} className="text-slate-400" />
-                      {exp.paymentMethod.replace("_", " ")}
-                    </span>
-                    {exp.paymentAccount && (
-                      <p className="text-[10px] text-slate-400 truncate">
-                        {exp.paymentAccount.accountName}
-                      </p>
-                    )}
-                  </TableCell>
+        {/* Table */}
+        <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+          <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+            <h4 className="font-black text-xs uppercase tracking-wider text-white">
+              Operating Expenses &amp; Claims Register
+            </h4>
+            <span className="text-[11px] font-mono text-emerald-300 font-bold">
+              {expenses.length} Records
+            </span>
+          </div>
 
-                  <TableCell align="right" className="py-3.5 px-4 text-right">
-                    <span className="font-mono font-black text-slate-900">
-                      {formatCurrency(exp.totalAmount)}
-                    </span>
-                    {Number(exp.taxAmount) > 0 && (
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        (Incl. VAT {formatCurrency(exp.taxAmount)})
-                      </p>
-                    )}
-                  </TableCell>
+          <Table className="w-full text-xs text-left">
+            <TableHead className="bg-slate-50/95 border-b border-slate-200">
+              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
+                Expense No
+              </TableHeaderCell>
+              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
+                Date
+              </TableHeaderCell>
+              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
+                Category &amp; Payee
+              </TableHeaderCell>
+              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
+                Description &amp; Ref
+              </TableHeaderCell>
+              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
+                Payment Method
+              </TableHeaderCell>
+              <TableHeaderCell
+                align="right"
+                className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10px] tracking-wider"
+              >
+                Total (AED)
+              </TableHeaderCell>
+              <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
+                Status
+              </TableHeaderCell>
+              <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10px] tracking-wider">
+                Actions
+              </TableHeaderCell>
+            </TableHead>
 
-                  <TableCell className="py-3.5 px-3">
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        exp.status === "PAID"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : exp.status === "APPROVED"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {exp.status}
-                    </span>
-                  </TableCell>
-
-                  <TableCell className="py-3.5 px-3 text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handlePrint(exp)}
-                        className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
-                        title="Print Expense Voucher"
-                      >
-                        <Printer size={14} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(exp.id, exp.expenseNumber)}
-                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                        title="Delete Expense"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+            <TableBody className="divide-y divide-slate-100 font-medium">
+              {isLoading ? (
+                <TableLoading colSpan={8} rows={5} />
+              ) : expenses.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className="py-12 text-center text-slate-400 italic"
+                  >
+                    No operating expenses found. Click &quot;Record Expense&quot; above to create your first claim.
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                expenses.map((exp) => (
+                  <TableRow
+                    key={exp.id}
+                    className="hover:bg-slate-50/60 transition-colors"
+                  >
+                    <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
+                      <span className="flex items-center gap-1.5">
+                        <FileSpreadsheet size={13} className="text-emerald-700 shrink-0" />
+                        {exp.expenseNumber}
+                      </span>
+                    </TableCell>
+
+                    <TableCell className="py-3 px-4 text-slate-700 font-mono text-[11px]">
+                      {new Date(exp.expenseDate).toLocaleDateString("en-GB")}
+                    </TableCell>
+
+                    <TableCell className="py-3 px-4">
+                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                        {exp.category}
+                      </span>
+                      {exp.payee && (
+                        <p className="text-xs font-bold text-slate-900 mt-0.5">
+                          {exp.payee}
+                        </p>
+                      )}
+                    </TableCell>
+
+                    <TableCell className="py-3 px-4 text-slate-600 max-w-xs truncate">
+                      <p className="truncate font-medium text-slate-800">
+                        {exp.description || "—"}
+                      </p>
+                      {exp.reference && (
+                        <p className="text-[10px] text-slate-400 font-mono">
+                          Ref: {exp.reference}
+                        </p>
+                      )}
+                    </TableCell>
+
+                    <TableCell className="py-3 px-4">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700">
+                        <CreditCard size={12} className="text-slate-400" />
+                        {exp.paymentMethod.replace("_", " ")}
+                      </span>
+                      {exp.paymentAccount && (
+                        <p className="text-[10px] text-slate-400 truncate">
+                          {exp.paymentAccount.accountName}
+                        </p>
+                      )}
+                    </TableCell>
+
+                    <TableCell align="right" className="py-3 px-4 text-right">
+                      <span className="font-mono font-black text-slate-900">
+                        {formatCurrency(exp.totalAmount)}
+                      </span>
+                      {Number(exp.taxAmount) > 0 && (
+                        <p className="text-[10px] text-slate-400 font-mono">
+                          (Incl. VAT {formatCurrency(exp.taxAmount)})
+                        </p>
+                      )}
+                    </TableCell>
+
+                    <TableCell className="py-3 px-3">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                          exp.status === "PAID"
+                            ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                            : exp.status === "APPROVED"
+                              ? "bg-sky-50 text-sky-800 border border-sky-200"
+                              : "bg-slate-50 text-slate-700 border border-slate-200"
+                        }`}
+                      >
+                        {exp.status}
+                      </span>
+                    </TableCell>
+
+                    <TableCell className="py-3 px-3 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handlePrint(exp)}
+                          className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+                          title="Print Expense Voucher"
+                        >
+                          <Printer size={14} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(exp.id, exp.expenseNumber)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Delete Expense"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
+      {/* Create Expense Modal */}
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         title="Record Direct Operating Expense"
       >
-        <form onSubmit={handleSaveExpense} className="space-y-4">
+        <form onSubmit={handleSaveExpense} className="space-y-4 text-xs">
           {formError && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
               {formError}
             </div>
           )}
@@ -637,7 +717,7 @@ export default function ExpensesPage() {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Paid From (Asset / Bank Account)
+                Paid From (Asset Account)
               </label>
               <select
                 className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
@@ -697,8 +777,7 @@ export default function ExpensesPage() {
               htmlFor="auto-je"
               className="text-slate-700 font-semibold cursor-pointer"
             >
-              Automatically post balanced General Ledger journal entry for this
-              expense
+              Automatically post balanced General Ledger journal entry for this expense
             </label>
           </div>
 
@@ -714,7 +793,7 @@ export default function ExpensesPage() {
               type="submit"
               variant="primary"
               disabled={createMutation.isPending}
-              className="bg-[#28633a] hover:bg-[#1f4d2d] text-white font-bold"
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
             >
               {createMutation.isPending
                 ? "Recording..."
@@ -724,21 +803,24 @@ export default function ExpensesPage() {
         </form>
       </Modal>
 
-      <Modal
-        isOpen={isPrintModalOpen}
-        onClose={() => setIsPrintModalOpen(false)}
-        title="Expense Voucher"
-      >
-        {selectedExpense && (
+      {/* Print Voucher Modal */}
+      {isPrintModalOpen && selectedExpense && (
+        <Modal
+          isOpen={isPrintModalOpen}
+          onClose={() => setIsPrintModalOpen(false)}
+          title="Expense Voucher"
+          maxWidth="2xl"
+        >
           <div className="space-y-4">
             <div
               id="printable-voucher"
               className="p-6 bg-white border border-slate-200 rounded-2xl space-y-4"
             >
+              <QuotationHeader className="-mx-6 -mt-6 mb-4 print:m-0" />
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div>
                   <h3 className="text-base font-black text-slate-900">
-                    AGM AL GHAIL MARINE
+                    AGM FITOUT TECHNICAL SERVICES LLC
                   </h3>
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
                     Official Payment Voucher
@@ -803,8 +885,8 @@ export default function ExpensesPage() {
                 </div>
               )}
 
-              <div className="border-t border-slate-200 pt-3 flex justify-between items-center">
-                <span className="text-xs font-bold text-slate-600">
+              <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-xs">
+                <span className="font-bold text-slate-600">
                   Net Amount:
                 </span>
                 <span className="font-mono font-semibold text-slate-800">
@@ -843,22 +925,25 @@ export default function ExpensesPage() {
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setIsPrintModalOpen(false)}
+                className="cursor-pointer"
               >
                 Close
               </Button>
               <Button
                 variant="primary"
+                size="sm"
                 onClick={() => window.print()}
                 icon={<Printer size={14} />}
-                className="bg-[#28633a] hover:bg-[#1f4d2d] text-white"
+                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
               >
                 Print Voucher
               </Button>
             </div>
           </div>
-        )}
-      </Modal>
+        </Modal>
+      )}
     </div>
   );
 }

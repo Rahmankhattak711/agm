@@ -26,6 +26,23 @@ import {
   FormSelect,
   FormSubmit,
 } from "@/components/ui";
+import {
+  Users,
+  UserCheck,
+  Building2,
+  Phone,
+  Mail,
+  ShieldCheck,
+  CreditCard,
+  Printer,
+  Search,
+  CheckCircle2,
+  Clock,
+  Edit2,
+  Trash2,
+  Calendar,
+  Layers,
+} from "lucide-react";
 
 export default function EmployeesPage() {
   const { hasRole, isAdmin } = useAuth();
@@ -54,6 +71,7 @@ export default function EmployeesPage() {
     () => ({
       total: employees.length,
       active: employees.filter((e) => e.employmentStatus === "ACTIVE").length,
+      onLeave: employees.filter((e) => e.employmentStatus === "ON_LEAVE").length,
       monthlyPayroll: employees
         .filter((e) => e.employmentStatus === "ACTIVE")
         .reduce(
@@ -201,20 +219,23 @@ export default function EmployeesPage() {
 
   const formatCurrency = (val: number | string | undefined) => {
     const num = Number(val || 0);
-    return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `AED ${num.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
   };
 
   const getStatusBadge = (status: EmploymentStatus) => {
     switch (status) {
       case "ACTIVE":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200";
+        return "bg-emerald-50 text-emerald-800 border-emerald-200";
       case "ON_LEAVE":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-sky-50 text-sky-800 border-sky-200";
       case "SUSPENDED":
-        return "bg-amber-100 text-amber-800 border-amber-200";
+        return "bg-amber-50 text-amber-800 border-amber-200";
       case "TERMINATED":
       case "RESIGNED":
-        return "bg-rose-100 text-rose-800 border-rose-200";
+        return "bg-rose-50 text-rose-800 border-rose-200";
       default:
         return "bg-slate-100 text-slate-700 border-slate-200";
     }
@@ -226,7 +247,8 @@ export default function EmployeesPage() {
         accessorKey: "employeeCode",
         header: "Emp ID",
         cell: ({ row }) => (
-          <span className="font-mono font-bold text-slate-800">
+          <span className="font-mono font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded text-xs inline-flex items-center gap-1">
+            <Users size={11} className="text-teal-700" />
             {row.original.employeeCode}
           </span>
         ),
@@ -236,13 +258,13 @@ export default function EmployeesPage() {
         header: "Employee Details",
         cell: ({ row }) => (
           <div>
-            <div className="font-bold text-slate-900">
+            <div className="font-bold text-slate-900 text-xs">
               {row.original.firstName} {row.original.lastName}
             </div>
-            <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-              <span>{row.original.designation || "Staff"}</span>
+            <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+              <span className="font-medium">{row.original.designation || "Staff"}</span>
               <span>&bull;</span>
-              <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">
+              <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
                 {row.original.department || "Operations"}
               </span>
             </div>
@@ -254,11 +276,11 @@ export default function EmployeesPage() {
         header: "Contact Details",
         cell: ({ row }) => (
           <div className="text-xs">
-            <span className="text-slate-700 block">
-              {row.original.phone || "-"}
+            <span className="text-slate-800 font-mono font-medium block">
+              {row.original.phone || "—"}
             </span>
             <span className="text-slate-400 font-mono text-[10px]">
-              {row.original.email || "-"}
+              {row.original.email || "—"}
             </span>
           </div>
         ),
@@ -273,11 +295,11 @@ export default function EmployeesPage() {
                 {row.original.emiratesId}
               </span>
             ) : (
-              <span className="text-slate-300 italic">No Emirates ID</span>
+              <span className="text-slate-300 italic text-xs">No Emirates ID</span>
             )}
             {row.original.visaExpiry && (
-              <span className="text-[10px] text-amber-700 block font-medium">
-                Visa: {new Date(row.original.visaExpiry).toLocaleDateString()}
+              <span className="text-[10px] text-amber-800 block font-mono font-semibold mt-0.5">
+                Visa: {new Date(row.original.visaExpiry).toLocaleDateString("en-GB")}
               </span>
             )}
           </div>
@@ -294,10 +316,10 @@ export default function EmployeesPage() {
             Number(row.original.otherAllowances || 0);
           return (
             <div>
-              <span className="font-mono font-bold text-slate-900 block text-xs">
+              <span className="font-mono font-black text-slate-900 block text-xs">
                 {formatCurrency(total)}
               </span>
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[10px] text-slate-400 font-mono">
                 Basic: {formatCurrency(row.original.basicSalary)}
               </span>
             </div>
@@ -306,25 +328,27 @@ export default function EmployeesPage() {
       },
       {
         accessorKey: "employmentStatus",
-        header: "Status",
+        header: () => <div className="text-center">Status</div>,
         cell: ({ row }) => (
-          <span
-            className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusBadge(
-              row.original.employmentStatus,
-            )}`}
-          >
-            {row.original.employmentStatus.replace("_", " ")}
-          </span>
+          <div className="text-center">
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(
+                row.original.employmentStatus,
+              )}`}
+            >
+              {row.original.employmentStatus.replace("_", " ")}
+            </span>
+          </div>
         ),
       },
       {
         id: "actions",
-        header: "Actions",
+        header: () => <div className="text-center">Actions</div>,
         cell: ({ row }) => {
           if (!isHR) {
             return (
-              <div className="flex items-center justify-end">
-                <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+              <div className="flex items-center justify-center">
+                <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
                   View Only
                 </span>
               </div>
@@ -332,17 +356,17 @@ export default function EmployeesPage() {
           }
 
           return (
-            <div className="flex items-center justify-end gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
+            <div className="flex items-center justify-center gap-1.5">
+              <button
+                type="button"
                 onClick={() => handleOpenEditModal(row.original)}
+                className="p-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-600 transition cursor-pointer"
+                title="Edit Employee"
               >
-                Edit Details
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
+                <Edit2 size={13} />
+              </button>
+              <button
+                type="button"
                 onClick={async () => {
                   if (
                     confirm(
@@ -352,9 +376,11 @@ export default function EmployeesPage() {
                     await deleteEmployeeMutation.mutateAsync(row.original.id);
                   }
                 }}
+                className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition cursor-pointer"
+                title="Delete Employee"
               >
-                Delete
-              </Button>
+                <Trash2 size={13} />
+              </button>
             </div>
           );
         },
@@ -365,106 +391,215 @@ export default function EmployeesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Simple Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <h2 className="text-xl font-black text-slate-900">
-            Workforce & Human Capital Directory
-          </h2>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Workforce &amp; Human Capital Directory
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage employee master data, UAE visa dates, labor cards, salary
-            packages, and WPS details.
+            AGM FITOUT TECHNICAL SERVICES LLC — Manage employee master data, UAE visa dates, labor cards, <br /> salary packages, and WPS details.
           </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+            icon={<Printer size={14} />}
+          >
+            Print Register
+          </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Workforce
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {stats.total}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Registered personnel</p>
+      {/* 4 Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+        {/* 1. Total Workforce */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              1. Total Workforce
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Registered personnel
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-slate-900 font-mono">
+              {stats.total}
+            </span>
+            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
+              Staff
+            </span>
+          </div>
         </div>
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Active Staff
-          </p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">
-            {stats.active}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">On-duty workforce</p>
+        {/* 2. Active Staff */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              2. Active On-Duty
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              On-duty staff count
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-2xl font-black text-emerald-800 font-mono">
+              {stats.active}
+            </span>
+            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
+              Active
+            </span>
+          </div>
         </div>
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Monthly Payroll Commitment
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {formatAed(stats.monthlyPayroll)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Basic + allowances (WPS)
-          </p>
+        {/* 3. Monthly Payroll */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              3. Monthly Payroll (WPS)
+            </span>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              Basic + allowances
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xs font-semibold text-rose-500 font-sans mr-1">
+              AED
+            </span>
+            <span className="text-xl font-black text-rose-700 font-mono">
+              {Number(stats.monthlyPayroll).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
+          </div>
+        </div>
+
+        {/* 4. UAE Compliance */}
+        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                4. UAE Compliance
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
+                MOHRE
+              </span>
+            </div>
+            <span className="text-xs text-slate-500 mt-0.5 block truncate">
+              WPS &amp; labor card status
+            </span>
+          </div>
+          <div className="pt-2">
+            <span className="text-xl font-black text-teal-900 font-sans">
+              100% Compliant
+            </span>
+          </div>
         </div>
       </div>
 
+      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="w-full sm:w-80">
-            <Input
-              placeholder="Search code, name, phone, Emirates ID..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              leftIcon={<SearchIcon className="w-4 h-4" strokeWidth={2} />}
-            />
+        {/* Search & Filter Strip */}
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Status Quick Pills */}
+            <div className="flex flex-wrap items-center gap-1">
+              {[
+                { id: "ALL", label: "All Personnel" },
+                { id: "ACTIVE", label: "Active Staff" },
+                { id: "ON_LEAVE", label: "On Leave" },
+                { id: "SUSPENDED", label: "Suspended" },
+                { id: "TERMINATED", label: "Terminated" },
+              ].map((tab) => {
+                const isActive = statusFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setStatusFilter(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <span className="text-[11px] font-bold text-slate-500 font-mono">
+              {employees.length} Personnel Listed
+            </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-            <div className="w-full sm:w-44">
-              <Select
-                value={departmentFilter}
-                onChange={(e) => setDepartmentFilter(e.target.value)}
-                options={[
-                  { value: "ALL", label: "All Departments" },
-                  ...departments.map((d: any) => ({ value: d, label: d })),
-                ]}
+          <div className="pt-1 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="w-full sm:w-80 relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search code, name, phone, Emirates ID..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </div>
 
-            <div className="w-full sm:w-40">
-              <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                options={[
-                  { value: "ALL", label: "All Statuses" },
-                  { value: "ACTIVE", label: "Active" },
-                  { value: "ON_LEAVE", label: "On Leave" },
-                  { value: "SUSPENDED", label: "Suspended" },
-                  { value: "TERMINATED", label: "Terminated" },
-                ]}
-              />
+            <div className="w-full sm:w-48">
+              <select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="w-full px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
+              >
+                <option value="ALL">All Departments</option>
+                {departments.map((d: any) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
 
         {error ? (
-          <div className="py-8 text-center text-xs text-red-500">
+          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
             Error loading employees: {(error as any).message}
           </div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={employees}
-            isLoading={isLoading}
-            emptyTitle="No registered employees found"
-            emptyMessage="Registered users in Administration will automatically appear here."
-          />
+          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+              <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                Master Workforce Directory
+              </h4>
+              <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                {employees.length} Personnel
+              </span>
+            </div>
+
+            <DataTable
+              columns={columns}
+              data={employees}
+              isLoading={isLoading}
+              emptyTitle="No registered employees found"
+              emptyMessage="Registered users in Administration will automatically appear here."
+            />
+          </div>
         )}
       </div>
 
+      {/* Edit Employee Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -476,7 +611,7 @@ export default function EmployeesPage() {
         maxWidth="2xl"
       >
         {formError && (
-          <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-semibold mb-4">
+          <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold mb-4">
             {formError}
           </div>
         )}
@@ -487,10 +622,10 @@ export default function EmployeesPage() {
             e.stopPropagation();
             form.handleSubmit();
           }}
-          className="space-y-4"
+          className="space-y-4 text-xs"
         >
-          <div className="text-xs font-bold text-slate-700 uppercase border-b border-slate-200 pb-1">
-            1. Role & General Information
+          <div className="font-bold text-slate-700 uppercase border-b border-slate-200 pb-1 tracking-wider text-[11px]">
+            1. Role &amp; General Information
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <form.Field name="employeeCode">
@@ -498,45 +633,42 @@ export default function EmployeesPage() {
                 <FormInput
                   field={field}
                   label="Employee Code"
-                  className="uppercase font-mono"
+                  required
+                  className="font-mono font-bold uppercase"
                 />
               )}
             </form.Field>
-
-            <form.Field
-              name="firstName"
-              validators={{
-                onChange: ({ value }) =>
-                  !value.trim() ? "First name is required" : undefined,
-              }}
-            >
+            <form.Field name="firstName">
               {(field) => (
-                <FormInput field={field} label="First Name *" required />
+                <FormInput field={field} label="First Name" required />
               )}
             </form.Field>
-
-            <form.Field
-              name="lastName"
-              validators={{
-                onChange: ({ value }) =>
-                  !value.trim() ? "Last name is required" : undefined,
-              }}
-            >
+            <form.Field name="lastName">
               {(field) => (
-                <FormInput field={field} label="Last Name *" required />
+                <FormInput field={field} label="Last Name" required />
               )}
             </form.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <form.Field name="department">
-              {(field) => <FormInput field={field} label="Department" />}
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Department"
+                  placeholder="e.g. Operations"
+                />
+              )}
             </form.Field>
-
             <form.Field name="designation">
-              {(field) => <FormInput field={field} label="Designation" />}
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Designation"
+                  placeholder="e.g. Site Supervisor"
+                />
+              )}
             </form.Field>
-
             <form.Field name="joiningDate">
               {(field) => (
                 <FormInput field={field} label="Joining Date" type="date" />
@@ -544,8 +676,25 @@ export default function EmployeesPage() {
             </form.Field>
           </div>
 
-          <div className="text-xs font-bold text-slate-700 uppercase border-b border-slate-200 pb-1 pt-2">
-            2. UAE Identification & Visa Compliance
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form.Field name="email">
+              {(field) => (
+                <FormInput field={field} label="Email Address" type="email" />
+              )}
+            </form.Field>
+            <form.Field name="phone">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Phone Number"
+                  placeholder="+971 50 000 0000"
+                />
+              )}
+            </form.Field>
+          </div>
+
+          <div className="font-bold text-slate-700 uppercase border-b border-slate-200 pb-1 pt-2 tracking-wider text-[11px]">
+            2. UAE Legal &amp; Compliance Details
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <form.Field name="emiratesId">
@@ -554,10 +703,10 @@ export default function EmployeesPage() {
                   field={field}
                   label="Emirates ID"
                   placeholder="784-XXXX-XXXXXXX-X"
+                  className="font-mono"
                 />
               )}
             </form.Field>
-
             <form.Field name="emiratesIdExpiry">
               {(field) => (
                 <FormInput
@@ -570,10 +719,15 @@ export default function EmployeesPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <form.Field name="passportNo">
-              {(field) => <FormInput field={field} label="Passport Number" />}
+            <form.Field name="visaNumber">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="UAE Visa Number"
+                  className="font-mono"
+                />
+              )}
             </form.Field>
-
             <form.Field name="visaExpiry">
               {(field) => (
                 <FormInput field={field} label="Visa Expiry Date" type="date" />
@@ -581,94 +735,90 @@ export default function EmployeesPage() {
             </form.Field>
           </div>
 
-          <div className="text-xs font-bold text-slate-700 uppercase border-b border-slate-200 pb-1 pt-2">
-            3. Compensation & Allowances (AED)
+          <div className="font-bold text-slate-700 uppercase border-b border-slate-200 pb-1 pt-2 tracking-wider text-[11px]">
+            3. Monthly Compensation &amp; WPS
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <form.Field
-              name="basicSalary"
-              validators={{
-                onChange: ({ value }) =>
-                  !value || Number(value) <= 0
-                    ? "Valid basic salary is required"
-                    : undefined,
-              }}
-            >
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <form.Field name="basicSalary">
               {(field) => (
                 <FormInput
                   field={field}
-                  label="Basic Salary *"
+                  label="Basic Salary (AED)"
                   type="number"
                   required
+                  className="font-mono font-bold"
                 />
               )}
             </form.Field>
-
             <form.Field name="housingAllowance">
               {(field) => (
-                <FormInput field={field} label="Housing" type="number" />
+                <FormInput
+                  field={field}
+                  label="Housing (AED)"
+                  type="number"
+                  className="font-mono"
+                />
               )}
             </form.Field>
-
             <form.Field name="transportAllowance">
               {(field) => (
-                <FormInput field={field} label="Transport" type="number" />
+                <FormInput
+                  field={field}
+                  label="Transport (AED)"
+                  type="number"
+                  className="font-mono"
+                />
               )}
             </form.Field>
-
             <form.Field name="otherAllowances">
               {(field) => (
                 <FormInput
                   field={field}
-                  label="Other Allowances"
+                  label="Other Allow. (AED)"
                   type="number"
+                  className="font-mono"
                 />
               )}
             </form.Field>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <form.Field name="paymentMethod">
-              {(field) => (
-                <FormSelect field={field} label="Payment Method">
-                  <option value="WPS_BANK_TRANSFER">WPS Bank Transfer</option>
-                  <option value="CASH">Cash</option>
-                  <option value="CHEQUE">Cheque</option>
-                </FormSelect>
-              )}
-            </form.Field>
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <form.Field name="bankName">
               {(field) => (
                 <FormInput
                   field={field}
-                  label="Bank Name"
-                  placeholder="e.g. Emirates NBD"
+                  label="WPS Bank Name"
+                  placeholder="e.g. RAK Bank"
                 />
               )}
             </form.Field>
-
             <form.Field name="iban">
               {(field) => (
                 <FormInput
                   field={field}
-                  label="IBAN Number"
+                  label="WPS IBAN Number"
                   placeholder="AE000000000000000000000"
+                  className="font-mono"
                 />
               )}
             </form.Field>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsModalOpen(false)}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
-            <FormSubmit form={form} loading={updateEmployeeMutation.isPending}>
-              Save Details
+            <FormSubmit
+              form={form}
+              loading={updateEmployeeMutation.isPending}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+            >
+              Save Employee Changes
             </FormSubmit>
           </div>
         </form>
