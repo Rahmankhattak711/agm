@@ -38,6 +38,18 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 
+const EMPTY_FORM = {
+  customerCode: "",
+  name: "",
+  companyName: "",
+  trn: "",
+  contactPerson: "",
+  phone: "",
+  email: "",
+  address: "",
+  creditLimit: "",
+};
+
 export default function CustomersMasterPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
@@ -61,17 +73,6 @@ export default function CustomersMasterPage() {
     });
   };
 
-  const EMPTY_FORM = {
-    customerCode: "",
-    name: "",
-    companyName: "",
-    trn: "",
-    contactPerson: "",
-    phone: "",
-    email: "",
-    address: "",
-    creditLimit: "",
-  };
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const setField = useCallback(
     <K extends keyof typeof EMPTY_FORM>(k: K, v: string) =>
