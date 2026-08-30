@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import { useAuth } from "@/context/AuthContext";
@@ -340,12 +340,15 @@ export default function PurchaseOrdersPage() {
     setIsQuickProductOpen(true);
   };
 
-  const handleOpenReceive = (po: PurchaseOrder) => {
-    setReceiveModalPO(po);
-    receiveForm.reset({
-      receiveWarehouseId: warehouses[0]?.id || "",
-    });
-  };
+  const handleOpenReceive = useCallback(
+    (po: PurchaseOrder) => {
+      setReceiveModalPO(po);
+      receiveForm.reset({
+        receiveWarehouseId: warehouses[0]?.id || "",
+      });
+    },
+    [receiveForm, warehouses],
+  );
 
   const getStatusBadge = (status: PurchaseOrderStatus) => {
     switch (status) {
@@ -551,7 +554,7 @@ export default function PurchaseOrdersPage() {
         },
       },
     ],
-    [canModify, deletePO, updatePO],
+    [canModify, deletePO, updatePO, handleOpenReceive],
   );
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import { useAuth } from "@/context/AuthContext";
@@ -216,42 +216,48 @@ export default function ProductsPage() {
     setIsCreateOpen(true);
   };
 
-  const handleOpenEdit = (p: Product) => {
-    setEditingProduct(p);
-    setFormError("");
-    productForm.reset({
-      sku: p.sku,
-      name: p.name,
-      description: p.description || "",
-      brand: p.brand || "",
-      supplierSku: p.supplierSku || "",
-      originCompany: p.originCompany || "",
-      shopLocation: p.shopLocation || "",
-      productOrigin: p.productOrigin || "PURCHASED_EXTERNAL",
-      type: p.type,
-      unit: p.unit,
-      barcode: p.barcode || "",
-      categoryId: p.categoryId || "",
-      supplierId: p.supplierId || "",
-      costPrice: p.costPrice.toString(),
-      sellingPrice: p.sellingPrice.toString(),
-      reorderLevel: p.reorderLevel.toString(),
-      reorderQty: p.reorderQty.toString(),
-      initialWarehouseId: "",
-      initialQuantity: "0",
-    });
-    setIsCreateOpen(true);
-  };
+  const handleOpenEdit = useCallback(
+    (p: Product) => {
+      setEditingProduct(p);
+      setFormError("");
+      productForm.reset({
+        sku: p.sku,
+        name: p.name,
+        description: p.description || "",
+        brand: p.brand || "",
+        supplierSku: p.supplierSku || "",
+        originCompany: p.originCompany || "",
+        shopLocation: p.shopLocation || "",
+        productOrigin: p.productOrigin || "PURCHASED_EXTERNAL",
+        type: p.type,
+        unit: p.unit,
+        barcode: p.barcode || "",
+        categoryId: p.categoryId || "",
+        supplierId: p.supplierId || "",
+        costPrice: p.costPrice.toString(),
+        sellingPrice: p.sellingPrice.toString(),
+        reorderLevel: p.reorderLevel.toString(),
+        reorderQty: p.reorderQty.toString(),
+        initialWarehouseId: "",
+        initialQuantity: "0",
+      });
+      setIsCreateOpen(true);
+    },
+    [productForm],
+  );
 
-  const handleOpenAdjust = (p: Product) => {
-    setAdjustStockProduct(p);
-    adjustForm.reset({
-      warehouseId: warehouses[0]?.id || "",
-      movementType: "ADJUSTMENT_IN",
-      quantity: "1",
-      notes: "",
-    });
-  };
+  const handleOpenAdjust = useCallback(
+    (p: Product) => {
+      setAdjustStockProduct(p);
+      adjustForm.reset({
+        warehouseId: warehouses[0]?.id || "",
+        movementType: "ADJUSTMENT_IN",
+        quantity: "1",
+        notes: "",
+      });
+    },
+    [adjustForm, warehouses],
+  );
 
   const columns = useMemo<ColumnDef<Product>[]>(
     () => [
@@ -414,7 +420,7 @@ export default function ProductsPage() {
         },
       },
     ],
-    [canManageInventory, deleteProduct],
+    [canManageInventory, deleteProduct, handleOpenEdit, handleOpenAdjust],
   );
 
   return (

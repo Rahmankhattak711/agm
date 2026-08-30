@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -123,7 +123,7 @@ export default function SuppliersPage() {
     },
   });
 
-  const handleOpenCreate = () => {
+  const handleOpenCreate = useCallback(() => {
     setEditingSupplier(null);
     setFormError("");
     form.reset({
@@ -136,9 +136,9 @@ export default function SuppliersPage() {
       trn: "",
     });
     setIsModalOpen(true);
-  };
+  }, [form]);
 
-  const handleOpenEdit = (s: Supplier) => {
+  const handleOpenEdit = useCallback((s: Supplier) => {
     setEditingSupplier(s);
     setFormError("");
     form.reset({
@@ -151,7 +151,7 @@ export default function SuppliersPage() {
       trn: s.trn || "",
     });
     setIsModalOpen(true);
-  };
+  }, [form]);
 
   const columns = useMemo<ColumnDef<Supplier>[]>(
     () => [
@@ -263,7 +263,7 @@ export default function SuppliersPage() {
         ),
       },
     ],
-    [deleteSupplier],
+    [deleteSupplier, handleOpenEdit],
   );
 
   return (
