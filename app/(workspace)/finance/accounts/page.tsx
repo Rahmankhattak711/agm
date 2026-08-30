@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -247,7 +247,7 @@ export default function AccountsPage() {
     setIsCreateModalOpen(true);
   };
 
-  const handleOpenEdit = (acc: ChartOfAccount) => {
+  const handleOpenEdit = useCallback((acc: ChartOfAccount) => {
     setFormError("");
     setEditingAccount(acc);
     editForm.reset({
@@ -257,7 +257,7 @@ export default function AccountsPage() {
       parentId: acc.parentId || "",
       isActive: acc.isActive,
     });
-  };
+  }, [editForm]);
 
   const handleDeleteConfirm = async () => {
     if (!deletingAccount) return;
@@ -422,7 +422,7 @@ export default function AccountsPage() {
         },
       },
     ],
-    [],
+    [handleOpenEdit],
   );
 
   return (
