@@ -41,7 +41,7 @@ export default function ExpenseReportsPage() {
     search: search || undefined,
   });
 
-  const expenses = data?.expenses || [];
+  const expenses = useMemo(() => data?.expenses || [], [data?.expenses]);
   const { data: accounts = [] } = useAccounts();
 
   const formatCurrency = (val: number | string | undefined) => {
