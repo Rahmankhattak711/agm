@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -86,11 +86,11 @@ export default function UsersPage() {
   const [formError, setFormError] = useState("");
   const [editFormError, setEditFormError] = useState("");
 
-  const users = usersData?.users || [];
+  const users = useMemo(() => usersData?.users || [], [usersData?.users]);
   const stats = usersData?.stats;
 
   const filteredUsers = useMemo(() => {
-    return (users || []).filter((u) => {
+    return users.filter((u) => {
       const q = search.toLowerCase();
       const matchesSearch =
         !q ||
@@ -175,7 +175,7 @@ export default function UsersPage() {
     },
   });
 
-  const handleOpenCreateModal = () => {
+  const handleOpenCreateModal = useCallback(() => {
     setFormError("");
     createForm.reset({
       fullName: "",
@@ -184,9 +184,9 @@ export default function UsersPage() {
       role: "USER",
     });
     setIsModalOpen(true);
-  };
+  }, [createForm]);
 
-  const handleOpenEditModal = (user: UserItem) => {
+  const handleOpenEditModal = useCallback((user: UserItem) => {
     setEditingUser(user);
     setEditFormError("");
     editForm.reset({
@@ -197,9 +197,9 @@ export default function UsersPage() {
       password: "",
     });
     setIsEditModalOpen(true);
-  };
+  }, [editForm]);
 
-  const handleDeleteUser = async (user: UserItem) => {
+  const handleDeleteUser = useCallback(async (user: UserItem) => {
     if (user.id === currentUser?.id) {
       alert("You cannot delete your own account.");
       return;
@@ -219,9 +219,9 @@ export default function UsersPage() {
         alert(err.message || "Failed to delete user");
       }
     }
-  };
+  }, [currentUser?.id, deleteUserMutation]);
 
-  const canManageTargetUser = (target: UserItem) => {
+  const canManageTargetUser = useCallback((target: UserItem) => {
     if (isSuperAdmin) return true;
     if (isAdmin) {
       return (
@@ -231,7 +231,7 @@ export default function UsersPage() {
       );
     }
     return false;
-  };
+  }, [isSuperAdmin, isAdmin, currentUser?.id]);
 
   const columns = useMemo<ColumnDef<UserItem>[]>(
     () => [
@@ -351,7 +351,12 @@ export default function UsersPage() {
         },
       },
     ],
-    [currentUser?.id, isSuperAdmin, isAdmin],
+    [
+      currentUser?.id,
+      canManageTargetUser,
+      handleOpenEditModal,
+      handleDeleteUser,
+    ],
   );
 
   return (
