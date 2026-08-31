@@ -98,7 +98,7 @@ export default function ExpensesPage() {
   const updateMutation = useUpdateExpense();
   const deleteMutation = useDeleteExpense();
 
-  const expenses = data?.expenses || [];
+  const expenses = useMemo(() => data?.expenses || [], [data?.expenses]);
   const summary = data?.summary || { totalAmount: 0, totalTax: 0, count: 0 };
 
   const expenseAccounts = useMemo(

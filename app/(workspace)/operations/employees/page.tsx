@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import { useAuth } from "@/context/AuthContext";
@@ -171,51 +171,54 @@ export default function EmployeesPage() {
     },
   });
 
-  const handleOpenEditModal = (emp: Employee) => {
-    setEditingEmployee(emp);
-    setFormError("");
-    form.reset({
-      employeeCode: emp.employeeCode,
-      firstName: emp.firstName,
-      lastName: emp.lastName,
-      email: emp.email || "",
-      phone: emp.phone || "",
-      department: emp.department || "Operations",
-      designation: emp.designation || "",
-      joiningDate: new Date(emp.joiningDate).toISOString().split("T")[0],
-      gender: emp.gender || "MALE",
-      nationality: emp.nationality || "UAE",
-      emiratesId: emp.emiratesId || "",
-      emiratesIdExpiry: emp.emiratesIdExpiry
-        ? new Date(emp.emiratesIdExpiry).toISOString().split("T")[0]
-        : "",
-      passportNo: emp.passportNo || "",
-      passportExpiry: emp.passportExpiry
-        ? new Date(emp.passportExpiry).toISOString().split("T")[0]
-        : "",
-      laborCardNo: emp.laborCardNo || "",
-      laborCardExpiry: emp.laborCardExpiry
-        ? new Date(emp.laborCardExpiry).toISOString().split("T")[0]
-        : "",
-      visaNumber: emp.visaNumber || "",
-      visaExpiry: emp.visaExpiry
-        ? new Date(emp.visaExpiry).toISOString().split("T")[0]
-        : "",
-      emergencyContactName: emp.emergencyContactName || "",
-      emergencyContactPhone: emp.emergencyContactPhone || "",
-      contractType: emp.contractType || "FULL_TIME",
-      employmentStatus: emp.employmentStatus || "ACTIVE",
-      basicSalary: emp.basicSalary.toString(),
-      housingAllowance: emp.housingAllowance?.toString() || "0",
-      transportAllowance: emp.transportAllowance?.toString() || "0",
-      otherAllowances: emp.otherAllowances?.toString() || "0",
-      annualLeaveBalance: emp.annualLeaveBalance?.toString() || "30",
-      paymentMethod: emp.paymentMethod || "WPS_BANK_TRANSFER",
-      bankName: emp.bankName || "",
-      iban: emp.iban || "",
-    });
-    setIsModalOpen(true);
-  };
+  const handleOpenEditModal = useCallback(
+    (emp: Employee) => {
+      setEditingEmployee(emp);
+      setFormError("");
+      form.reset({
+        employeeCode: emp.employeeCode,
+        firstName: emp.firstName,
+        lastName: emp.lastName,
+        email: emp.email || "",
+        phone: emp.phone || "",
+        department: emp.department || "Operations",
+        designation: emp.designation || "",
+        joiningDate: new Date(emp.joiningDate).toISOString().split("T")[0],
+        gender: emp.gender || "MALE",
+        nationality: emp.nationality || "UAE",
+        emiratesId: emp.emiratesId || "",
+        emiratesIdExpiry: emp.emiratesIdExpiry
+          ? new Date(emp.emiratesIdExpiry).toISOString().split("T")[0]
+          : "",
+        passportNo: emp.passportNo || "",
+        passportExpiry: emp.passportExpiry
+          ? new Date(emp.passportExpiry).toISOString().split("T")[0]
+          : "",
+        laborCardNo: emp.laborCardNo || "",
+        laborCardExpiry: emp.laborCardExpiry
+          ? new Date(emp.laborCardExpiry).toISOString().split("T")[0]
+          : "",
+        visaNumber: emp.visaNumber || "",
+        visaExpiry: emp.visaExpiry
+          ? new Date(emp.visaExpiry).toISOString().split("T")[0]
+          : "",
+        emergencyContactName: emp.emergencyContactName || "",
+        emergencyContactPhone: emp.emergencyContactPhone || "",
+        contractType: emp.contractType || "FULL_TIME",
+        employmentStatus: emp.employmentStatus || "ACTIVE",
+        basicSalary: emp.basicSalary.toString(),
+        housingAllowance: emp.housingAllowance?.toString() || "0",
+        transportAllowance: emp.transportAllowance?.toString() || "0",
+        otherAllowances: emp.otherAllowances?.toString() || "0",
+        annualLeaveBalance: emp.annualLeaveBalance?.toString() || "30",
+        paymentMethod: emp.paymentMethod || "WPS_BANK_TRANSFER",
+        bankName: emp.bankName || "",
+        iban: emp.iban || "",
+      });
+      setIsModalOpen(true);
+    },
+    [form],
+  );
 
   const formatCurrency = (val: number | string | undefined) => {
     const num = Number(val || 0);
@@ -386,7 +389,7 @@ export default function EmployeesPage() {
         },
       },
     ],
-    [deleteEmployeeMutation, isHR],
+    [deleteEmployeeMutation, isHR, handleOpenEditModal],
   );
 
   return (

@@ -26,6 +26,28 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 
+type PaymentMethod = "BANK_TRANSFER" | "CHEQUE" | "CASH" | "CARD";
+interface FormState {
+  supplierId: string;
+  supplierName: string;
+  supplierBillId: string;
+  paymentDate: string;
+  amount: string;
+  paymentMethod: PaymentMethod;
+  referenceNumber: string;
+  notes: string;
+}
+const EMPTY_FORM: FormState = {
+  supplierId: "",
+  supplierName: "",
+  supplierBillId: "",
+  paymentDate: new Date().toISOString().slice(0, 10),
+  amount: "",
+  paymentMethod: "BANK_TRANSFER",
+  referenceNumber: "",
+  notes: "",
+};
+
 export default function SupplierPaymentsPage() {
   const { data: payments = [], isLoading } = useSupplierPayments();
   const { data: suppliers = [] } = useSuppliers();
@@ -38,27 +60,6 @@ export default function SupplierPaymentsPage() {
   const [selectedPayment, setSelectedPayment] =
     useState<SupplierPayment | null>(null);
 
-  type PaymentMethod = "BANK_TRANSFER" | "CHEQUE" | "CASH" | "CARD";
-  interface FormState {
-    supplierId: string;
-    supplierName: string;
-    supplierBillId: string;
-    paymentDate: string;
-    amount: string;
-    paymentMethod: PaymentMethod;
-    referenceNumber: string;
-    notes: string;
-  }
-  const EMPTY_FORM: FormState = {
-    supplierId: "",
-    supplierName: "",
-    supplierBillId: "",
-    paymentDate: new Date().toISOString().slice(0, 10),
-    amount: "",
-    paymentMethod: "BANK_TRANSFER",
-    referenceNumber: "",
-    notes: "",
-  };
   const [form, setForm] = useState<FormState>({ ...EMPTY_FORM });
   const setField = useCallback(
     <K extends keyof FormState>(k: K, v: FormState[K]) =>

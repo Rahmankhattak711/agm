@@ -41,7 +41,10 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
   const [tbSearch, setTbSearch] = useState<string>("");
   const [tbTypeFilter, setTbTypeFilter] = useState<string>("ALL");
 
-  const allRows: TrialBalanceRow[] = trialBalance?.rows || [];
+  const allRows: TrialBalanceRow[] = useMemo(
+    () => trialBalance?.rows || [],
+    [trialBalance?.rows],
+  );
 
   const filteredRows = useMemo(() => {
     return allRows.filter((r: TrialBalanceRow) => {
