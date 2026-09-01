@@ -114,7 +114,6 @@ export async function POST(request: Request) {
 
     const pmtDate = paymentDate ? new Date(paymentDate) : new Date();
 
-    // 1. Create General Ledger Entry
     const je = await postCustomerPaymentJournalEntry({
       paymentId: "",
       receiptNumber: recNo,
@@ -126,7 +125,6 @@ export async function POST(request: Request) {
       userId: authUser.id,
     });
 
-    // 2. Create Payment Record
     const payment = await prisma.customerPayment.create({
       data: {
         receiptNumber: recNo,
@@ -147,7 +145,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // 3. Update Invoice Balance if attached
     if (salesInvoiceId) {
       const invoice = await prisma.salesInvoice.findUnique({
         where: { id: salesInvoiceId },
@@ -173,7 +170,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // 4. Update Customer Balance
     if (custId) {
       await prisma.customer.update({
         where: { id: custId },

@@ -142,7 +142,9 @@ export default function CommercialQuotationsPage() {
 
       try {
         setConvertingId(qtn.id);
-        const newInvoice: any = await convertToInvoiceMutation.mutateAsync(qtn.id);
+        const newInvoice: any = await convertToInvoiceMutation.mutateAsync(
+          qtn.id,
+        );
         const goToInvoice = window.confirm(
           `Quotation converted successfully to Tax Invoice #${newInvoice?.invoiceNumber || ""}!\n\nClick OK to open Sales Invoices or Cancel to stay here.`,
         );
@@ -172,7 +174,8 @@ export default function CommercialQuotationsPage() {
   }, [quotationsList, search, statusFilter]);
 
   const totalQuotedVolume = useMemo(
-    () => filteredQuotations.reduce((s, q) => s + Number(q.totalAmount || 0), 0),
+    () =>
+      filteredQuotations.reduce((s, q) => s + Number(q.totalAmount || 0), 0),
     [filteredQuotations],
   );
 
@@ -195,7 +198,9 @@ export default function CommercialQuotationsPage() {
             Commercial Quotations &amp; Proposals
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Create official commercial <br /> proposals, generate multi-point  BOQ scope bundles, and convert <br /> accepted proposals into Sales Orders.
+            AGM FITOUT TECHNICAL SERVICES LLC — Create official commercial{" "}
+            <br /> proposals, generate multi-point BOQ scope bundles, and
+            convert <br /> accepted proposals into Sales Orders.
           </p>
         </div>
 
@@ -323,7 +328,6 @@ export default function CommercialQuotationsPage() {
           />
         </div>
       ) : (
-        /* Saved Quotations Register Card */
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
           {/* Search & Filter Strip */}
           <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
@@ -425,7 +429,8 @@ export default function CommercialQuotationsPage() {
                         colSpan={7}
                         className="py-12 text-center text-slate-400 italic"
                       >
-                        No saved quotations found. Switch to &quot;Quotation Editor&quot; tab to build a new proposal.
+                        No saved quotations found. Switch to &quot;Quotation
+                        Editor&quot; tab to build a new proposal.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -436,7 +441,10 @@ export default function CommercialQuotationsPage() {
                       >
                         <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
                           <div className="flex items-center gap-1.5">
-                            <FileSpreadsheet size={13} className="text-teal-700 shrink-0" />
+                            <FileSpreadsheet
+                              size={13}
+                              className="text-teal-700 shrink-0"
+                            />
                             <span>{q.quotationNo}</span>
                           </div>
                         </TableCell>
@@ -491,14 +499,13 @@ export default function CommercialQuotationsPage() {
                               onClick={() => handleConvertToInvoice(q)}
                               disabled={convertingId === q.id}
                               icon={
-                                <FileText
-                                  size={12}
-                                  className="text-teal-700"
-                                />
+                                <FileText size={12} className="text-teal-700" />
                               }
                               className="text-[10px] font-bold text-teal-900 hover:bg-teal-50 border-teal-300 cursor-pointer"
                             >
-                              {convertingId === q.id ? "Converting..." : "Convert to Invoice"}
+                              {convertingId === q.id
+                                ? "Converting..."
+                                : "Convert to Invoice"}
                             </Button>
                             <Button
                               variant="primary"
