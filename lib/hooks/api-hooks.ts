@@ -1854,6 +1854,22 @@ export function useConvertQuotationToSalesOrder() {
   });
 }
 
+export function useConvertQuotationToSalesInvoice() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<any>(`/api/finance/quotations/${id}/convert-invoice`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["quotations"] });
+      qc.invalidateQueries({ queryKey: ["sales-invoices"] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+}
+
 // ==========================================
 // COMMERCIAL VOUCHERS HOOKS
 // ==========================================

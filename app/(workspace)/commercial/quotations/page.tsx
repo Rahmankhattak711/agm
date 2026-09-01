@@ -9,6 +9,7 @@ import {
   useProducts,
   useQuotations,
   useConvertQuotationToSalesOrder,
+  useConvertQuotationToSalesInvoice,
 } from "@/lib/hooks/api-hooks";
 import {
   Button,
@@ -40,11 +41,13 @@ export default function CommercialQuotationsPage() {
   const { data: products = [] } = useProducts();
   const { data: quotationsList = [], isLoading, error } = useQuotations();
   const convertToOrderMutation = useConvertQuotationToSalesOrder();
+  const convertToInvoiceMutation = useConvertQuotationToSalesInvoice();
 
   const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("EDITOR");
   const [selectedQuotation, setSelectedQuotation] = useState<any | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [convertingId, setConvertingId] = useState<string | null>(null);
 
   const formatNumber = (val: number | string | undefined) => {
     const num = Number(val || 0);
@@ -118,13 +121,41 @@ export default function CommercialQuotationsPage() {
   const handleConvert = useCallback(
     async (qtnId: string) => {
       try {
+        setConvertingId(qtnId);
         await convertToOrderMutation.mutateAsync(qtnId);
         alert("Quotation successfully converted to Sales Order!");
       } catch (err: any) {
         alert(`Error converting quotation: ${err.message}`);
+      } finally {
+        setConvertingId(null);
       }
     },
     [convertToOrderMutation],
+  );
+
+  const handleConvertToInvoice = useCallback(
+    async (qtn: any) => {
+      const confirmed = window.confirm(
+        `Are you sure you want to convert Quotation "${qtn.quotationNo}" directly to a Tax Invoice? This will generate the Sales Invoice and remove the proposal from quotations.`,
+      );
+      if (!confirmed) return;
+
+      try {
+        setConvertingId(qtn.id);
+        const newInvoice: any = await convertToInvoiceMutation.mutateAsync(qtn.id);
+        const goToInvoice = window.confirm(
+          `Quotation converted successfully to Tax Invoice #${newInvoice?.invoiceNumber || ""}!\n\nClick OK to open Sales Invoices or Cancel to stay here.`,
+        );
+        if (goToInvoice) {
+          window.location.href = "/commercial/sales-invoices";
+        }
+      } catch (err: any) {
+        alert(`Error converting quotation to tax invoice: ${err.message}`);
+      } finally {
+        setConvertingId(null);
+      }
+    },
+    [convertToInvoiceMutation],
   );
 
   const filteredQuotations = useMemo(() => {
@@ -359,32 +390,30 @@ export default function CommercialQuotationsPage() {
 
               <Table className="w-full text-xs text-left">
                 <TableHead className="bg-slate-50 border-b border-slate-200">
-                  <TableRow>
-                    <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Quotation No
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Customer / Client
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Project Scope &amp; Ref
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Date
-                    </TableHeaderCell>
-                    <TableHeaderCell
-                      align="right"
-                      className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-                    >
-                      Total (AED)
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Status
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Actions
-                    </TableHeaderCell>
-                  </TableRow>
+                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Quotation No
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Customer / Client
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Project Scope &amp; Ref
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Date
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    align="right"
+                    className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
+                  >
+                    Total (AED)
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Status
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Actions
+                  </TableHeaderCell>
                 </TableHead>
 
                 <TableBody className="divide-y divide-slate-100 font-medium">
@@ -459,13 +488,8 @@ export default function CommercialQuotationsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                window.location.href = `/commercial/sales-invoices?quotationNo=${encodeURIComponent(
-                                  q.quotationNo,
-                                )}&customerName=${encodeURIComponent(
-                                  q.customer || "",
-                                )}&projectScope=${encodeURIComponent(q.project || "")}`;
-                              }}
+                              onClick={() => handleConvertToInvoice(q)}
+                              disabled={convertingId === q.id}
                               icon={
                                 <FileText
                                   size={12}
@@ -474,12 +498,13 @@ export default function CommercialQuotationsPage() {
                               }
                               className="text-[10px] font-bold text-teal-900 hover:bg-teal-50 border-teal-300 cursor-pointer"
                             >
-                              Convert to Invoice
+                              {convertingId === q.id ? "Converting..." : "Convert to Invoice"}
                             </Button>
                             <Button
                               variant="primary"
                               size="sm"
                               onClick={() => handleConvert(q.id)}
+                              disabled={convertingId === q.id}
                               icon={<ShoppingCart size={12} />}
                               className="text-[10px] font-bold bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer"
                             >
