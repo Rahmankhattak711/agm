@@ -61,7 +61,8 @@ export const TaxInvoicesReport: React.FC = () => {
         (statusFilter === "POSTED" && inv.status === "POSTED") ||
         (statusFilter === "DRAFT" && inv.status === "DRAFT") ||
         (statusFilter === "PAID" && inv.status === "PAID") ||
-        (statusFilter === "PARTIALLY_PAID" && inv.status === "PARTIALLY_PAID") ||
+        (statusFilter === "PARTIALLY_PAID" &&
+          inv.status === "PARTIALLY_PAID") ||
         (statusFilter === "OVERDUE" && inv.status === "OVERDUE");
 
       let matchesDate = true;
@@ -89,7 +90,6 @@ export const TaxInvoicesReport: React.FC = () => {
     });
   }, [invoices, searchTerm, statusFilter, dateFilter]);
 
-  // Aggregate Metrics
   const totalGrossInvoiced = useMemo(
     () => filteredInvoices.reduce((s, i) => s + Number(i.totalAmount || 0), 0),
     [filteredInvoices],
@@ -112,10 +112,7 @@ export const TaxInvoicesReport: React.FC = () => {
 
   const totalOutstanding = useMemo(
     () =>
-      filteredInvoices.reduce(
-        (s, i) => s + Number(i.remainingBalance || 0),
-        0,
-      ),
+      filteredInvoices.reduce((s, i) => s + Number(i.remainingBalance || 0), 0),
     [filteredInvoices],
   );
 
@@ -134,7 +131,7 @@ export const TaxInvoicesReport: React.FC = () => {
 
   return (
     <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
-      {/* Printable Document Table Header */}
+      {}
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -147,7 +144,8 @@ export const TaxInvoicesReport: React.FC = () => {
                       Tax Invoices &amp; Output VAT Statement
                     </h1>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Statutory Tax Invoices Register (UAE FTA Compliant)
+                      AGM FITOUT TECHNICAL SERVICES LLC — Statutory Tax Invoices
+                      Register (UAE FTA Compliant)
                     </p>
                   </div>
                   <p className="text-[10px] text-slate-400 font-mono">
@@ -161,7 +159,7 @@ export const TaxInvoicesReport: React.FC = () => {
         <tbody>
           <tr>
             <td className="p-0 border-none">
-              {/* Screen Top Header & Print Trigger */}
+              {}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 print:hidden">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-xl bg-teal-50 text-teal-700 border border-teal-100 shadow-2xs">
@@ -172,7 +170,8 @@ export const TaxInvoicesReport: React.FC = () => {
                       Tax Invoices &amp; Output VAT Register
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Statutory tax billing statement, line-item VAT recovery, and revenue recognition register.
+                      Statutory tax billing statement, line-item VAT recovery,
+                      and revenue recognition register.
                     </p>
                   </div>
                 </div>
@@ -190,9 +189,9 @@ export const TaxInvoicesReport: React.FC = () => {
                 </div>
               </div>
 
-              {/* 5 Executive KPI Summary Cards */}
+              {}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 my-5 print:grid-cols-5 print:gap-2 print:my-3">
-                {/* 1. Total Gross Invoiced */}
+                {}
                 <div className="p-4 rounded-xl bg-slate-900 text-white relative overflow-hidden flex flex-col justify-between space-y-2">
                   <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-400" />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
@@ -211,7 +210,7 @@ export const TaxInvoicesReport: React.FC = () => {
                   </span>
                 </div>
 
-                {/* 2. Total Net Sales (Taxable Supplies) */}
+                {}
                 <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex flex-col justify-between space-y-2">
                   <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
@@ -230,7 +229,7 @@ export const TaxInvoicesReport: React.FC = () => {
                   </span>
                 </div>
 
-                {/* 3. Output VAT Assessed */}
+                {}
                 <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex flex-col justify-between space-y-2">
                   <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
@@ -249,7 +248,7 @@ export const TaxInvoicesReport: React.FC = () => {
                   </span>
                 </div>
 
-                {/* 4. Total Collected */}
+                {}
                 <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex flex-col justify-between space-y-2">
                   <div className="absolute inset-x-0 top-0 h-[2.5px] bg-blue-500" />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
@@ -268,7 +267,7 @@ export const TaxInvoicesReport: React.FC = () => {
                   </span>
                 </div>
 
-                {/* 5. Remaining Receivables */}
+                {}
                 <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex flex-col justify-between space-y-2">
                   <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
@@ -288,10 +287,10 @@ export const TaxInvoicesReport: React.FC = () => {
                 </div>
               </div>
 
-              {/* Filters Strip */}
+              {}
               <div className="p-3.5 bg-slate-50/90 rounded-xl border border-slate-200/70 space-y-3 print:hidden">
                 <div className="flex flex-wrap items-center justify-between gap-2.5">
-                  {/* Status Pills */}
+                  {}
                   <div className="flex flex-wrap gap-1.5">
                     {statusPills.map((p) => {
                       const isActive = statusFilter === p.key;
@@ -312,7 +311,6 @@ export const TaxInvoicesReport: React.FC = () => {
                     })}
                   </div>
 
-                  {/* Period Filter */}
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-bold text-slate-500">
                       Period:
@@ -333,7 +331,6 @@ export const TaxInvoicesReport: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Search Bar */}
                 <div className="relative">
                   <Search
                     size={14}
@@ -358,7 +355,6 @@ export const TaxInvoicesReport: React.FC = () => {
                 </div>
               </div>
 
-              {/* Invoices Register Table */}
               <div className="mt-4 rounded-xl border border-slate-200/80 overflow-hidden shadow-xs">
                 <div className="bg-slate-900 text-white p-3 px-4 flex items-center justify-between">
                   <h4 className="font-bold text-xs uppercase tracking-wider text-white flex items-center gap-2">
@@ -434,7 +430,9 @@ export const TaxInvoicesReport: React.FC = () => {
                     ) : (
                       filteredInvoices.map((inv) => {
                         const invDate = inv.invoiceDate
-                          ? new Date(inv.invoiceDate).toLocaleDateString("en-GB")
+                          ? new Date(inv.invoiceDate).toLocaleDateString(
+                              "en-GB",
+                            )
                           : "—";
 
                         return (
@@ -552,7 +550,6 @@ export const TaxInvoicesReport: React.FC = () => {
                   </TableBody>
                 </Table>
 
-                {/* Table Footer Totals */}
                 <div className="bg-slate-50 border-t border-slate-200 p-3 px-4 flex flex-wrap items-center justify-between gap-4 font-bold text-xs text-slate-800">
                   <span>Grand Totals ({filteredInvoices.length} Invoices)</span>
                   <div className="flex items-center gap-6 font-mono text-xs">
@@ -603,7 +600,6 @@ export const TaxInvoicesReport: React.FC = () => {
         </tfoot>
       </table>
 
-      {/* Line Items & Invoice Breakdown Modal */}
       {selectedInvoice && (
         <Modal
           isOpen={!!selectedInvoice}
@@ -612,7 +608,6 @@ export const TaxInvoicesReport: React.FC = () => {
           maxWidth="2xl"
         >
           <div className="space-y-4">
-            {/* Header Meta */}
             <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
               <div>
                 <span className="text-slate-400 font-bold block">
@@ -642,7 +637,6 @@ export const TaxInvoicesReport: React.FC = () => {
               </div>
             </div>
 
-            {/* Line Items */}
             <div className="rounded-lg border border-slate-200 overflow-hidden">
               <Table className="w-full text-xs">
                 <TableHead className="bg-slate-100 border-b border-slate-200">
@@ -709,7 +703,6 @@ export const TaxInvoicesReport: React.FC = () => {
               </Table>
             </div>
 
-            {/* Totals Summary */}
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs font-mono">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal (Net):</span>
@@ -731,7 +724,9 @@ export const TaxInvoicesReport: React.FC = () => {
               </div>
               <div className="flex justify-between font-bold text-amber-800">
                 <span>Remaining Balance Due:</span>
-                <span>AED {formatNumber(selectedInvoice.remainingBalance)}</span>
+                <span>
+                  AED {formatNumber(selectedInvoice.remainingBalance)}
+                </span>
               </div>
             </div>
 

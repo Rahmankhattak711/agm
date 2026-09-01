@@ -57,7 +57,6 @@ export default function ManagementReportsPage() {
     });
   };
 
-  // Financial Metrics Calculations
   const totalRevenue = Number(
     profitLoss?.totalIncome ?? (profitLoss as any)?.revenue ?? 0,
   );
@@ -94,7 +93,6 @@ export default function ManagementReportsPage() {
   const totalAP = Number(payables?.totalPayables ?? 0);
   const netTradingCapital = totalAR - totalAP;
 
-  // Visual Chart Data
   const financialHealthChartData: ChartBarItem[] = [
     {
       label: "Revenue",
@@ -143,7 +141,9 @@ export default function ManagementReportsPage() {
             Management &amp; Executive Performance Reports
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — High-level executive KPI metrics, working capital health, liquidity <br /> ratios, and statutory performance indicators.
+            AGM FITOUT TECHNICAL SERVICES LLC — High-level executive KPI
+            metrics, working capital health, liquidity <br /> ratios, and
+            statutory performance indicators.
           </p>
         </div>
 

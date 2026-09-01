@@ -254,7 +254,6 @@ export async function GET(req: NextRequest) {
       periodLabel = `Custom Range (${startDate.toLocaleDateString("en-GB")} - ${endDate.toLocaleDateString("en-GB")})`;
     }
 
-    // Build Prisma where conditions
     const whereCondition: any = {};
     if (startDate && endDate) {
       whereCondition.journalEntry = {

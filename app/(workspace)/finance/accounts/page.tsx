@@ -125,7 +125,6 @@ export default function AccountsPage() {
     });
   };
 
-  // Filtered accounts list
   const filteredAccounts = useMemo(() => {
     return (accounts || []).filter((acc) => {
       const q = search.toLowerCase().trim();
@@ -147,7 +146,6 @@ export default function AccountsPage() {
     });
   }, [accounts, search, selectedType, statusFilter]);
 
-  // Aggregate totals per accounting class
   const classSummary = useMemo(() => {
     const map: Record<string, { count: number; totalBalance: number }> = {
       ASSET: { count: 0, totalBalance: 0 },
@@ -168,7 +166,6 @@ export default function AccountsPage() {
     return map;
   }, [accounts]);
 
-  // Bank & Liquid Cash balances
   const bankAndCashSummary = useMemo(() => {
     const pettyCash =
       accounts.find((a) => a.accountCode === "1010")?.balance || 0;
@@ -181,7 +178,6 @@ export default function AccountsPage() {
     return { pettyCash, rakBank, siteFloat, totalLiquid };
   }, [accounts]);
 
-  // Create Form
   const createForm = useForm({
     defaultValues: {
       accountCode: "",
@@ -205,7 +201,6 @@ export default function AccountsPage() {
     },
   });
 
-  // Edit Form
   const editForm = useForm({
     defaultValues: {
       accountCode: editingAccount?.accountCode || "",
@@ -247,17 +242,20 @@ export default function AccountsPage() {
     setIsCreateModalOpen(true);
   };
 
-  const handleOpenEdit = useCallback((acc: ChartOfAccount) => {
-    setFormError("");
-    setEditingAccount(acc);
-    editForm.reset({
-      accountCode: acc.accountCode,
-      accountName: acc.accountName,
-      type: acc.type,
-      parentId: acc.parentId || "",
-      isActive: acc.isActive,
-    });
-  }, [editForm]);
+  const handleOpenEdit = useCallback(
+    (acc: ChartOfAccount) => {
+      setFormError("");
+      setEditingAccount(acc);
+      editForm.reset({
+        accountCode: acc.accountCode,
+        accountName: acc.accountName,
+        type: acc.type,
+        parentId: acc.parentId || "",
+        isActive: acc.isActive,
+      });
+    },
+    [editForm],
+  );
 
   const handleDeleteConfirm = async () => {
     if (!deletingAccount) return;
@@ -269,7 +267,6 @@ export default function AccountsPage() {
     }
   };
 
-  // TanStack Columns
   const columns = useMemo<ColumnDef<ChartOfAccount>[]>(
     () => [
       {
@@ -434,7 +431,9 @@ export default function AccountsPage() {
             Chart of Accounts (COA) &amp; General Ledger
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Master chart of accounts, real-time balances, parent-child hierarchies, <br /> and one-click account registers.
+            AGM FITOUT TECHNICAL SERVICES LLC — Master chart of accounts,
+            real-time balances, parent-child hierarchies, <br /> and one-click
+            account registers.
           </p>
         </div>
 
@@ -479,7 +478,9 @@ export default function AccountsPage() {
                   : "bg-white border-slate-200/80 hover:border-slate-300"
               }`}
             >
-              <div className={`absolute inset-x-0 top-0 h-[2.5px] ${t.accentColor}`} />
+              <div
+                className={`absolute inset-x-0 top-0 h-[2.5px] ${t.accentColor}`}
+              />
               <div className="flex items-center justify-between w-full">
                 <span className="text-xs font-bold text-slate-700">
                   {t.label}
@@ -515,7 +516,8 @@ export default function AccountsPage() {
                 Treasury &amp; Liquid Cash Position
               </h3>
               <p className="text-xs text-slate-500">
-                Live balances across commercial bank accounts and physical petty cash floats
+                Live balances across commercial bank accounts and physical petty
+                cash floats
               </p>
             </div>
           </div>
@@ -934,9 +936,15 @@ export default function AccountsPage() {
                   <Table className="w-full text-xs text-left">
                     <TableHead className="bg-slate-50 border-b border-slate-200">
                       <TableRow>
-                        <TableHeaderCell className="py-2.5 px-3 font-bold text-slate-600">Date</TableHeaderCell>
-                        <TableHeaderCell className="py-2.5 px-3 font-bold text-slate-600">Voucher / Ref</TableHeaderCell>
-                        <TableHeaderCell className="py-2.5 px-3 font-bold text-slate-600">Description</TableHeaderCell>
+                        <TableHeaderCell className="py-2.5 px-3 font-bold text-slate-600">
+                          Date
+                        </TableHeaderCell>
+                        <TableHeaderCell className="py-2.5 px-3 font-bold text-slate-600">
+                          Voucher / Ref
+                        </TableHeaderCell>
+                        <TableHeaderCell className="py-2.5 px-3 font-bold text-slate-600">
+                          Description
+                        </TableHeaderCell>
                         <TableHeaderCell className="py-2.5 px-3 text-right font-bold text-slate-600">
                           Debit (AED)
                         </TableHeaderCell>
@@ -955,14 +963,20 @@ export default function AccountsPage() {
                             colSpan={6}
                             className="text-center py-8 text-xs text-slate-400 italic"
                           >
-                            No journal transactions have been posted to this account yet.
+                            No journal transactions have been posted to this
+                            account yet.
                           </TableCell>
                         </TableRow>
                       ) : (
                         accountLedgerData.ledger.map((row) => (
-                          <TableRow key={row.id} className="hover:bg-slate-50/50">
+                          <TableRow
+                            key={row.id}
+                            className="hover:bg-slate-50/50"
+                          >
                             <TableCell className="font-mono text-xs text-slate-600 whitespace-nowrap py-2 px-3">
-                              {new Date(row.entryDate).toLocaleDateString("en-GB")}
+                              {new Date(row.entryDate).toLocaleDateString(
+                                "en-GB",
+                              )}
                             </TableCell>
                             <TableCell className="font-mono font-bold text-xs text-slate-800 whitespace-nowrap py-2 px-3">
                               {row.entryNumber}
@@ -993,7 +1007,8 @@ export default function AccountsPage() {
 
                 <div className="flex items-center justify-between text-xs text-slate-500 pt-2">
                   <span>
-                    Showing {accountLedgerData.ledger.length} chronological journal line postings
+                    Showing {accountLedgerData.ledger.length} chronological
+                    journal line postings
                   </span>
                   <Button
                     variant="outline"
@@ -1027,7 +1042,10 @@ export default function AccountsPage() {
               ?
             </p>
             <p className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
-              If this account has historical journal transactions, it will be safely <strong>archived (marked inactive)</strong> so historical financial statements remain balanced. If it has no transactions, it will be permanently deleted.
+              If this account has historical journal transactions, it will be
+              safely <strong>archived (marked inactive)</strong> so historical
+              financial statements remain balanced. If it has no transactions,
+              it will be permanently deleted.
             </p>
 
             <div className="flex items-center justify-end gap-2.5 pt-2">

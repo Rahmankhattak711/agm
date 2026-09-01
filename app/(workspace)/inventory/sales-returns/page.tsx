@@ -30,11 +30,7 @@ import {
 } from "@/components/ui";
 
 type ReturnStatus =
-  | "DRAFT"
-  | "SUBMITTED"
-  | "APPROVED"
-  | "COMPLETED"
-  | "REJECTED";
+  "DRAFT" | "SUBMITTED" | "APPROVED" | "COMPLETED" | "REJECTED";
 
 interface SalesReturnItem {
   id: string;
@@ -101,8 +97,9 @@ export default function SalesReturnsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedReturn, setSelectedReturn] =
-    useState<SalesReturnItem | null>(null);
+  const [selectedReturn, setSelectedReturn] = useState<SalesReturnItem | null>(
+    null,
+  );
   const [form, setForm] = useState<ReturnFormState>(EMPTY_FORM);
 
   const currentReturnNumber = useMemo(
@@ -190,7 +187,8 @@ export default function SalesReturnsPage() {
             Sales Returns (Credit Notes)
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Manage client credit notes, scope reductions, <br /> and invoice credit adjustments.
+            AGM FITOUT TECHNICAL SERVICES LLC — Manage client credit notes,
+            scope reductions, <br /> and invoice credit adjustments.
           </p>
         </div>
 
@@ -403,7 +401,8 @@ export default function SalesReturnsPage() {
                     colSpan={8}
                     className="py-12 text-center text-slate-400 italic"
                   >
-                    No sales return credit notes found. Click &quot;Create Sales Return&quot; to log a client credit note.
+                    No sales return credit notes found. Click &quot;Create Sales
+                    Return&quot; to log a client credit note.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -414,7 +413,10 @@ export default function SalesReturnsPage() {
                   >
                     <TableCell className="py-3 px-4 font-mono font-bold text-teal-800">
                       <div className="flex items-center gap-1.5">
-                        <RotateCcw size={13} className="text-teal-700 shrink-0" />
+                        <RotateCcw
+                          size={13}
+                          className="text-teal-700 shrink-0"
+                        />
                         <span>{item.returnNumber}</span>
                       </div>
                     </TableCell>

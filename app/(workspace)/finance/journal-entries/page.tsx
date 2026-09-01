@@ -312,7 +312,8 @@ export default function JournalEntriesPage() {
             General Journal Entries
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Audit-grade double-entry bookkeeping vouchers <br /> and general ledger adjustments.
+            AGM FITOUT TECHNICAL SERVICES LLC — Audit-grade double-entry
+            bookkeeping vouchers <br /> and general ledger adjustments.
           </p>
         </div>
 
@@ -532,7 +533,10 @@ export default function JournalEntriesPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                            <FileSpreadsheet size={14} className="text-teal-700 shrink-0" />
+                            <FileSpreadsheet
+                              size={14}
+                              className="text-teal-700 shrink-0"
+                            />
                             {je.entryNumber}
                           </span>
                           <span
@@ -642,21 +646,32 @@ export default function JournalEntriesPage() {
                         <table className="w-full text-xs text-left">
                           <thead className="bg-slate-50 border-b border-slate-200">
                             <tr className="text-slate-600 font-bold uppercase text-[10px] tracking-wider">
-                              <th className="py-2.5 px-3">Account Code &amp; Name</th>
+                              <th className="py-2.5 px-3">
+                                Account Code &amp; Name
+                              </th>
                               <th className="py-2.5 px-3">Classification</th>
-                              <th className="py-2.5 px-3 text-right">Debit (AED)</th>
-                              <th className="py-2.5 px-3 text-right">Credit (AED)</th>
+                              <th className="py-2.5 px-3 text-right">
+                                Debit (AED)
+                              </th>
+                              <th className="py-2.5 px-3 text-right">
+                                Credit (AED)
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 font-medium">
                             {je.lines?.map((line: any) => (
-                              <tr key={line.id} className="hover:bg-slate-50/50">
+                              <tr
+                                key={line.id}
+                                className="hover:bg-slate-50/50"
+                              >
                                 <td className="py-2.5 px-3 font-medium text-slate-800">
                                   <div className="flex items-center gap-2">
                                     <span className="font-mono text-teal-800 font-bold bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded text-[11px]">
                                       {line.account?.accountCode}
                                     </span>
-                                    <span className="font-bold text-slate-900">{line.account?.accountName}</span>
+                                    <span className="font-bold text-slate-900">
+                                      {line.account?.accountName}
+                                    </span>
                                     {line.vatEntry && (
                                       <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
                                         5% {line.vatEntry.vatType} VAT

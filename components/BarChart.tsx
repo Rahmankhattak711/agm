@@ -148,8 +148,7 @@ export default function BarChart({
               const num = Number(val);
               if (Math.abs(num) >= 1_000_000)
                 return `${(num / 1_000_000).toFixed(1)}M`;
-              if (Math.abs(num) >= 1_000)
-                return `${(num / 1_000).toFixed(0)}k`;
+              if (Math.abs(num) >= 1_000) return `${(num / 1_000).toFixed(0)}k`;
               return num.toLocaleString();
             },
           },
@@ -166,7 +165,9 @@ export default function BarChart({
       {(title || subtitle) && (
         <div className="flex items-start justify-between gap-3">
           <div>
-            {title && <h3 className="font-bold text-sm text-slate-900">{title}</h3>}
+            {title && (
+              <h3 className="font-bold text-sm text-slate-900">{title}</h3>
+            )}
             {subtitle && (
               <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
             )}

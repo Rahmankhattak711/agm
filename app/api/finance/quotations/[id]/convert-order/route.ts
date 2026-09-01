@@ -77,7 +77,6 @@ export async function POST(
       },
     });
 
-    // Update Quotation status to ACCEPTED
     await prisma.quotation.update({
       where: { id },
       data: { status: "ACCEPTED" },

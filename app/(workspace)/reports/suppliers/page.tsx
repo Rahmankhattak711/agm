@@ -47,7 +47,6 @@ export default function SupplierReportsPage() {
     })}`;
   };
 
-  // Compute A/P Aging Buckets from open vendor bills
   const apAgingBuckets = useMemo<AgingBucket[]>(() => {
     const buckets = [
       {
@@ -112,7 +111,6 @@ export default function SupplierReportsPage() {
     return buckets;
   }, [bills]);
 
-  // Map total billed and outstanding per supplier
   const supplierMetricsMap = useMemo(() => {
     const map: Record<
       string,
@@ -144,7 +142,6 @@ export default function SupplierReportsPage() {
     return map;
   }, [bills]);
 
-  // Enriched & filtered suppliers
   const filteredSuppliers = useMemo(() => {
     return suppliers.filter((s) => {
       const metrics = supplierMetricsMap[s.id] ||
@@ -183,7 +180,6 @@ export default function SupplierReportsPage() {
     });
   }, [suppliers, supplierMetricsMap, search, balanceFilter]);
 
-  // KPI Metrics
   const totalSuppliersCount = suppliers.length;
 
   const totalProcurementBilled = useMemo(
@@ -225,7 +221,6 @@ export default function SupplierReportsPage() {
     [bills, selectedSupplierId, activeSupplier],
   );
 
-  // TanStack Columns
   const columns = useMemo<ColumnDef<Supplier>[]>(
     () => [
       {

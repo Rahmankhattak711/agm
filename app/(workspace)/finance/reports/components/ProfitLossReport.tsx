@@ -143,7 +143,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
           <tr>
             <td className="p-0 border-none align-top">
               <div className="space-y-6">
-                {/* Header Toolbar */}
+                {}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -191,7 +191,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                   </div>
                 </div>
 
-                {/* Period Selector Strip */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs print:hidden">
                   <div className="flex flex-wrap items-center gap-1.5">
                     {periodButtons.map((btn) => {
@@ -266,9 +265,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* 4 Summary KPI Metric Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 print-avoid-break">
-                      {/* 1. Total Income */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
                         <div>
@@ -312,7 +309,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                         </div>
                       </div>
 
-                      {/* 2. Direct Materials (COGS) */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
                         <div>
@@ -321,7 +317,13 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                               2. Direct Costs (COGS)
                             </span>
                             <span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200/60">
-                              {totalIncome > 0 ? ((totalDirectExpenses / totalIncome) * 100).toFixed(1) : "0.0"}%
+                              {totalIncome > 0
+                                ? (
+                                    (totalDirectExpenses / totalIncome) *
+                                    100
+                                  ).toFixed(1)
+                                : "0.0"}
+                              %
                             </span>
                           </div>
                           <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
@@ -343,7 +345,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                         </div>
                       </div>
 
-                      {/* 3. Gross Profit */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-600" />
                         <div>
@@ -374,7 +375,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                         </div>
                       </div>
 
-                      {/* 4. Net Profit / (Loss) */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
                         <div>
@@ -396,7 +396,9 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           </span>
                           <span
                             className={`text-xl print:text-base font-black font-mono ${
-                              netProfit >= 0 ? "text-slate-900" : "text-rose-700"
+                              netProfit >= 0
+                                ? "text-slate-900"
+                                : "text-rose-700"
                             }`}
                           >
                             {formatNumber(netProfit)}
@@ -410,7 +412,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                       </div>
                     </div>
 
-                    {/* Financial P&L Statement Table */}
                     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
                       <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white">
@@ -465,10 +466,17 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                         </TableHead>
 
                         <TableBody className="divide-y divide-slate-100">
-                          {/* 1. INCOME & REVENUE */}
                           <TableRow className="bg-emerald-50/70 font-bold text-emerald-950">
                             <TableCell
-                              colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
+                              colSpan={
+                                compare
+                                  ? onDrillDownAccount
+                                    ? 7
+                                    : 6
+                                  : onDrillDownAccount
+                                    ? 4
+                                    : 3
+                              }
                               className="py-2.5 px-5 text-[11px] uppercase tracking-wider flex items-center justify-between"
                             >
                               <span>1. INCOME &amp; OPERATING REVENUE</span>
@@ -481,7 +489,15 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           {incomeRows.length === 0 ? (
                             <TableRow>
                               <TableCell
-                                colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
+                                colSpan={
+                                  compare
+                                    ? onDrillDownAccount
+                                      ? 7
+                                      : 6
+                                    : onDrillDownAccount
+                                      ? 4
+                                      : 3
+                                }
                                 className="py-3 px-5 text-center text-slate-400 italic"
                               >
                                 No revenue transactions recorded for this period
@@ -607,13 +623,22 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             )}
                           </TableRow>
 
-                          {/* 2. DIRECT EXPENSES & COGS */}
                           <TableRow className="bg-blue-50/70 font-bold text-blue-950">
                             <TableCell
-                              colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
+                              colSpan={
+                                compare
+                                  ? onDrillDownAccount
+                                    ? 7
+                                    : 6
+                                  : onDrillDownAccount
+                                    ? 4
+                                    : 3
+                              }
                               className="py-2.5 px-5 text-[11px] uppercase tracking-wider flex items-center justify-between"
                             >
-                              <span>2. DIRECT MATERIAL EXPENSES &amp; COGS</span>
+                              <span>
+                                2. DIRECT MATERIAL EXPENSES &amp; COGS
+                              </span>
                               <span className="text-[10px] text-blue-800 font-normal">
                                 {directExpenseRows.length} accounts
                               </span>
@@ -623,10 +648,19 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           {directExpenseRows.length === 0 ? (
                             <TableRow>
                               <TableCell
-                                colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
+                                colSpan={
+                                  compare
+                                    ? onDrillDownAccount
+                                      ? 7
+                                      : 6
+                                    : onDrillDownAccount
+                                      ? 4
+                                      : 3
+                                }
                                 className="py-3 px-5 text-center text-slate-400 italic"
                               >
-                                No direct project material expenses recorded for this period
+                                No direct project material expenses recorded for
+                                this period
                               </TableCell>
                             </TableRow>
                           ) : (
@@ -741,13 +775,22 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             )}
                           </TableRow>
 
-                          {/* 3. OPERATING OVERHEAD */}
                           <TableRow className="bg-rose-50/70 font-bold text-rose-950">
                             <TableCell
-                              colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
+                              colSpan={
+                                compare
+                                  ? onDrillDownAccount
+                                    ? 7
+                                    : 6
+                                  : onDrillDownAccount
+                                    ? 4
+                                    : 3
+                              }
                               className="py-2.5 px-5 text-[11px] uppercase tracking-wider flex items-center justify-between"
                             >
-                              <span>3. OPERATING EXPENSES (OVERHEAD &amp; ADMIN)</span>
+                              <span>
+                                3. OPERATING EXPENSES (OVERHEAD &amp; ADMIN)
+                              </span>
                               <span className="text-[10px] text-rose-800 font-normal">
                                 {operatingExpenseRows.length} accounts
                               </span>
@@ -757,10 +800,19 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           {operatingExpenseRows.length === 0 ? (
                             <TableRow>
                               <TableCell
-                                colSpan={compare ? (onDrillDownAccount ? 7 : 6) : onDrillDownAccount ? 4 : 3}
+                                colSpan={
+                                  compare
+                                    ? onDrillDownAccount
+                                      ? 7
+                                      : 6
+                                    : onDrillDownAccount
+                                      ? 4
+                                      : 3
+                                }
                                 className="py-3 px-5 text-center text-slate-400 italic"
                               >
-                                No operational overhead expenses recorded for this period
+                                No operational overhead expenses recorded for
+                                this period
                               </TableCell>
                             </TableRow>
                           ) : (
@@ -873,7 +925,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             )}
                           </TableRow>
 
-                          {/* 4. NET PROFIT BOTTOM LINE */}
                           <TableRow className="bg-slate-900 text-white font-black">
                             <TableCell
                               colSpan={2}

@@ -76,10 +76,8 @@ export default function SalesReportsPage() {
     });
   };
 
-  // Filter logic
   const filteredInvoices = useMemo(() => {
     return invoices.filter((inv) => {
-      // Search
       if (search.trim()) {
         const q = search.toLowerCase();
         const matchesNumber = inv.invoiceNumber?.toLowerCase().includes(q);
@@ -96,12 +94,10 @@ export default function SalesReportsPage() {
         }
       }
 
-      // Status
       if (statusFilter !== "ALL" && inv.status !== statusFilter) {
         return false;
       }
 
-      // Customer
       if (
         customerFilter &&
         inv.customerId !== customerFilter &&
@@ -110,7 +106,6 @@ export default function SalesReportsPage() {
         return false;
       }
 
-      // Date Period
       if (inv.invoiceDate) {
         const invDate = new Date(inv.invoiceDate);
         const now = new Date();
@@ -168,7 +163,6 @@ export default function SalesReportsPage() {
     endDate,
   ]);
 
-  // KPI Calculations
   const nonCancelledInvoices = useMemo(
     () => filteredInvoices.filter((inv) => inv.status !== "CANCELLED"),
     [filteredInvoices],
@@ -213,7 +207,6 @@ export default function SalesReportsPage() {
   const collectionEfficiency =
     totalInvoicedSales > 0 ? (totalCollected / totalInvoicedSales) * 100 : 0;
 
-  // Chart Data: Top 5 Clients by Invoiced Sales
   const topClientsChartData = useMemo<ChartBarItem[]>(() => {
     const clientMap: Record<string, { invoiced: number; collected: number }> =
       {};
@@ -239,7 +232,6 @@ export default function SalesReportsPage() {
       .slice(0, 6);
   }, [nonCancelledInvoices]);
 
-  // Status Badge Helper
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PAID":
@@ -266,7 +258,6 @@ export default function SalesReportsPage() {
     { key: "CUSTOM", label: "Custom Date" },
   ];
 
-  // TanStack Table Column Definitions
   const columns = useMemo<ColumnDef<SalesInvoice>[]>(
     () => [
       {
@@ -408,7 +399,8 @@ export default function SalesReportsPage() {
             Sales &amp; Revenue Reports
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Commercial invoicing, payments received, and open balances.
+            AGM FITOUT TECHNICAL SERVICES LLC — Commercial invoicing, payments
+            received, and open balances.
           </p>
         </div>
 

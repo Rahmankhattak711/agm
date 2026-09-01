@@ -75,10 +75,8 @@ export default function PurchaseReportsPage() {
     });
   };
 
-  // Filter logic
   const filteredBills = useMemo(() => {
     return bills.filter((b) => {
-      // Search
       if (search.trim()) {
         const q = search.toLowerCase();
         const matchesNumber = b.billNumber?.toLowerCase().includes(q);
@@ -89,12 +87,10 @@ export default function PurchaseReportsPage() {
         }
       }
 
-      // Status
       if (statusFilter !== "ALL" && b.status !== statusFilter) {
         return false;
       }
 
-      // Supplier
       if (
         supplierFilter &&
         b.supplierId !== supplierFilter &&
@@ -103,7 +99,6 @@ export default function PurchaseReportsPage() {
         return false;
       }
 
-      // Date Period
       if (b.billDate) {
         const bDate = new Date(b.billDate);
         const now = new Date();
@@ -161,7 +156,6 @@ export default function PurchaseReportsPage() {
     endDate,
   ]);
 
-  // KPI Calculations
   const nonCancelledBills = useMemo(
     () => filteredBills.filter((b) => b.status !== "CANCELLED"),
     [filteredBills],
@@ -199,7 +193,6 @@ export default function PurchaseReportsPage() {
       ? (totalDisbursed / totalProcurementSpend) * 100
       : 0;
 
-  // Chart Data: Top 5 Suppliers by Spend
   const topSuppliersChartData = useMemo<ChartBarItem[]>(() => {
     const supplierMap: Record<string, { billed: number; paid: number }> = {};
     nonCancelledBills.forEach((b) => {
@@ -224,7 +217,6 @@ export default function PurchaseReportsPage() {
       .slice(0, 6);
   }, [nonCancelledBills]);
 
-  // Status Badge Helper
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PAID":
@@ -251,7 +243,6 @@ export default function PurchaseReportsPage() {
     { key: "CUSTOM", label: "Custom Date" },
   ];
 
-  // TanStack Table Column Definitions
   const columns = useMemo<ColumnDef<SupplierBill>[]>(
     () => [
       {
@@ -388,7 +379,8 @@ export default function PurchaseReportsPage() {
             Purchase &amp; Procurement Reports
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Supplier procurement orders, vendor bills, payment disbursements, and material expenditure.
+            AGM FITOUT TECHNICAL SERVICES LLC — Supplier procurement orders,
+            vendor bills, payment disbursements, and material expenditure.
           </p>
         </div>
 

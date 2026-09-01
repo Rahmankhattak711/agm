@@ -58,7 +58,6 @@ export default function CustomerReportsPage() {
     })}`;
   };
 
-  // Compute A/R Aging Buckets from open sales invoices
   const agingBuckets = useMemo<AgingBucket[]>(() => {
     const buckets = [
       {
@@ -125,10 +124,8 @@ export default function CustomerReportsPage() {
     return buckets;
   }, [invoices]);
 
-  // Filtered customer records
   const filteredCustomers = useMemo(() => {
     return customers.filter((c) => {
-      // Search
       if (search.trim()) {
         const q = search.toLowerCase();
         const matchesCode = c.customerCode?.toLowerCase().includes(q);
@@ -147,7 +144,6 @@ export default function CustomerReportsPage() {
         }
       }
 
-      // Balance Filter
       const balance = Number(c.currentBalance || 0);
       if (balanceFilter === "HAS_BALANCE" && balance <= 0) return false;
       if (balanceFilter === "SETTLED" && balance > 0) return false;
@@ -157,7 +153,6 @@ export default function CustomerReportsPage() {
     });
   }, [customers, search, balanceFilter]);
 
-  // KPI Metrics
   const totalClients = customers.length;
 
   const totalReceivables = useMemo(
@@ -179,13 +174,11 @@ export default function CustomerReportsPage() {
     [customers],
   );
 
-  // Selected customer for modal
   const activeCustomer = useMemo(
     () => customers.find((c) => c.id === selectedCustomerId) || null,
     [customers, selectedCustomerId],
   );
 
-  // TanStack Columns
   const columns = useMemo<ColumnDef<Customer>[]>(
     () => [
       {

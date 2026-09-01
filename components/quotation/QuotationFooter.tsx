@@ -31,15 +31,9 @@ export const QuotationFooter: React.FC<QuotationFooterProps> = ({
           printColorAdjust: "exact",
         }}
       >
-        <polygon
-          points="0,12 875,12 857,18 0,18"
-          fill="#064018"
-        />
+        <polygon points="0,12 875,12 857,18 0,18" fill="#064018" />
 
-        <polygon
-          points="893,10 1200,10 1200,20 875,20"
-          fill="#0b1e38"
-        />
+        <polygon points="893,10 1200,10 1200,20 875,20" fill="#0b1e38" />
 
         <g>
           <path
@@ -188,20 +182,11 @@ export const QuotationFooter: React.FC<QuotationFooterProps> = ({
           </text>
         </g>
 
-        <polygon
-          points="0,170 38,170 82,212 0,212"
-          fill="#064018"
-        />
+        <polygon points="0,170 38,170 82,212 0,212" fill="#064018" />
 
-        <polygon
-          points="54,170 1146,170 1102,212 98,212"
-          fill="#0b1e38"
-        />
+        <polygon points="54,170 1146,170 1102,212 98,212" fill="#0b1e38" />
 
-        <polygon
-          points="1162,170 1200,170 1200,212 1118,212"
-          fill="#064018"
-        />
+        <polygon points="1162,170 1200,170 1200,212 1118,212" fill="#064018" />
 
         <g
           fontFamily="Arial, Helvetica, sans-serif"
@@ -210,12 +195,7 @@ export const QuotationFooter: React.FC<QuotationFooterProps> = ({
           letterSpacing="1.2px"
           fill="#ffffff"
         >
-          <text
-            x="350"
-            y="196"
-            textAnchor="middle"
-            fill="#ffffff"
-          >
+          <text x="350" y="196" textAnchor="middle" fill="#ffffff">
             QUALITY WORK
           </text>
 
@@ -228,12 +208,7 @@ export const QuotationFooter: React.FC<QuotationFooterProps> = ({
             strokeWidth="1.5"
           />
 
-          <text
-            x="550"
-            y="196"
-            textAnchor="middle"
-            fill="#ffffff"
-          >
+          <text x="550" y="196" textAnchor="middle" fill="#ffffff">
             ON TIME DELIVERY
           </text>
 
@@ -246,12 +221,7 @@ export const QuotationFooter: React.FC<QuotationFooterProps> = ({
             strokeWidth="1.5"
           />
 
-          <text
-            x="785"
-            y="196"
-            textAnchor="middle"
-            fill="#ffffff"
-          >
+          <text x="785" y="196" textAnchor="middle" fill="#ffffff">
             CUSTOMER SATISFACTION
           </text>
         </g>

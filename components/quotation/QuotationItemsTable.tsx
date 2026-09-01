@@ -353,7 +353,6 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                     })}
                   </>
                 ) : (
-                  /* Standard single-point item (e.g. Pergola, MEP work, single items) */
                   <TableRow className="print-avoid-break hover:bg-slate-50/50 bg-white">
                     <TableCell
                       align="center"

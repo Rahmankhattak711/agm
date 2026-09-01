@@ -45,7 +45,8 @@ export async function POST(
     const formattedItems = quotation.items.map((item) => {
       const qty = parseFloat(item.quantity?.toString() || "1") || 1;
       const rate = parseFloat(item.unitRate?.toString() || "0") || 0;
-      const total = parseFloat(item.totalAmount?.toString() || "0") || qty * rate;
+      const total =
+        parseFloat(item.totalAmount?.toString() || "0") || qty * rate;
 
       return {
         productId: item.productId || null,
@@ -66,7 +67,6 @@ export async function POST(
       parseFloat(quotation.totalAmount?.toString() || "0") ||
       subtotal - discount + vatAmount;
 
-    // Execute in transaction: create invoice & remove quotation
     const salesInvoice = await prisma.$transaction(async (tx) => {
       const inv = await tx.salesInvoice.create({
         data: {
@@ -78,7 +78,10 @@ export async function POST(
           salesOrderId: null,
           invoiceDate: new Date(),
           dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-          projectScope: quotation.project || quotation.reference || "Commercial Fitout Contract",
+          projectScope:
+            quotation.project ||
+            quotation.reference ||
+            "Commercial Fitout Contract",
           status: "DRAFT",
           subtotal,
           discount,
@@ -99,7 +102,6 @@ export async function POST(
         },
       });
 
-      // Remove the quotation from the quotation table
       await tx.quotationItem.deleteMany({
         where: { quotationId: id },
       });
@@ -114,7 +116,9 @@ export async function POST(
   } catch (error: any) {
     console.error("POST convert quotation to sales invoice error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to convert quotation to sales invoice" },
+      {
+        error: error.message || "Failed to convert quotation to sales invoice",
+      },
       { status: 500 },
     );
   }

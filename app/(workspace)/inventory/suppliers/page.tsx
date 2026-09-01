@@ -138,20 +138,23 @@ export default function SuppliersPage() {
     setIsModalOpen(true);
   }, [form]);
 
-  const handleOpenEdit = useCallback((s: Supplier) => {
-    setEditingSupplier(s);
-    setFormError("");
-    form.reset({
-      supplierCode: s.supplierCode,
-      name: s.name,
-      contactPerson: s.contactPerson || "",
-      phone: s.phone || "",
-      email: s.email || "",
-      address: s.address || "",
-      trn: s.trn || "",
-    });
-    setIsModalOpen(true);
-  }, [form]);
+  const handleOpenEdit = useCallback(
+    (s: Supplier) => {
+      setEditingSupplier(s);
+      setFormError("");
+      form.reset({
+        supplierCode: s.supplierCode,
+        name: s.name,
+        contactPerson: s.contactPerson || "",
+        phone: s.phone || "",
+        email: s.email || "",
+        address: s.address || "",
+        trn: s.trn || "",
+      });
+      setIsModalOpen(true);
+    },
+    [form],
+  );
 
   const columns = useMemo<ColumnDef<Supplier>[]>(
     () => [
@@ -275,7 +278,8 @@ export default function SuppliersPage() {
             Suppliers &amp; Vendor Management
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Vendor master registry, Tax Registration Numbers (TRN), <br /> and procurement contacts.
+            AGM FITOUT TECHNICAL SERVICES LLC — Vendor master registry, Tax
+            Registration Numbers (TRN), <br /> and procurement contacts.
           </p>
         </div>
 

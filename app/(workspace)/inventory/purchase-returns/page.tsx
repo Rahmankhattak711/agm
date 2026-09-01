@@ -1,7 +1,18 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
-import { Plus, Printer, RotateCcw, Search, Eye, FileText, CheckCircle2, Clock, XCircle, ShieldCheck } from "lucide-react";
+import {
+  Plus,
+  Printer,
+  RotateCcw,
+  Search,
+  Eye,
+  FileText,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  ShieldCheck,
+} from "lucide-react";
 import {
   Button,
   Table,
@@ -20,11 +31,7 @@ import { useSuppliers } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 
 type ReturnStatus =
-  | "DRAFT"
-  | "SUBMITTED"
-  | "APPROVED"
-  | "COMPLETED"
-  | "REJECTED";
+  "DRAFT" | "SUBMITTED" | "APPROVED" | "COMPLETED" | "REJECTED";
 
 interface PurchaseReturnItem {
   id: string;
@@ -182,7 +189,9 @@ export default function PurchaseReturnsPage() {
             Purchase Returns (Debit Notes)
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Track rejected supplier deliveries, return to vendor <br /> (RTV), and debit note reconciliation.
+            AGM FITOUT TECHNICAL SERVICES LLC — Track rejected supplier
+            deliveries, return to vendor <br /> (RTV), and debit note
+            reconciliation.
           </p>
         </div>
 
@@ -396,7 +405,8 @@ export default function PurchaseReturnsPage() {
                     colSpan={7}
                     className="py-12 text-center text-slate-400 italic"
                   >
-                    No purchase returns found. Click &quot;Create Purchase Return&quot; to log a vendor material rejection.
+                    No purchase returns found. Click &quot;Create Purchase
+                    Return&quot; to log a vendor material rejection.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -407,7 +417,10 @@ export default function PurchaseReturnsPage() {
                   >
                     <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
                       <div className="flex items-center gap-1.5">
-                        <RotateCcw size={13} className="text-amber-600 shrink-0" />
+                        <RotateCcw
+                          size={13}
+                          className="text-amber-600 shrink-0"
+                        />
                         <span>{item.returnNumber}</span>
                       </div>
                       <p className="text-[10px] text-teal-800 font-mono font-semibold mt-0.5">

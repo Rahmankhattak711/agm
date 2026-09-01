@@ -1870,10 +1870,6 @@ export function useConvertQuotationToSalesInvoice() {
   });
 }
 
-// ==========================================
-// COMMERCIAL VOUCHERS HOOKS
-// ==========================================
-
 export interface Customer {
   id: string;
   customerCode: string;

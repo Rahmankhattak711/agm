@@ -115,7 +115,8 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                       Statement of Financial Position (Balance Sheet)
                     </h1>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Assets, Liabilities and Owners&apos; Equity
+                      AGM FITOUT TECHNICAL SERVICES LLC — Assets, Liabilities
+                      and Owners&apos; Equity
                     </p>
                   </div>
                   <p className="text-[10px] text-slate-400 font-mono">
@@ -139,7 +140,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
           <tr>
             <td className="p-0 border-none align-top">
               <div className="space-y-6">
-                {/* Header Toolbar */}
+                {}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -151,7 +152,8 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Statutory GAAP Equation: Assets = Liabilities + Equity
+                      AGM FITOUT TECHNICAL SERVICES LLC — Statutory GAAP
+                      Equation: Assets = Liabilities + Equity
                     </p>
                   </div>
 
@@ -168,7 +170,9 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                       ) : (
                         <AlertTriangle size={13} className="text-amber-700" />
                       )}
-                      {isBalanced ? "Equation Balanced" : "Audit Review Required"}
+                      {isBalanced
+                        ? "Equation Balanced"
+                        : "Audit Review Required"}
                     </span>
 
                     <Button
@@ -190,9 +194,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* 4 Summary Metric Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 print-avoid-break">
-                      {/* 1. Total Assets */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
                         <div>
@@ -213,7 +215,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                         </div>
                       </div>
 
-                      {/* 2. Total Liabilities */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
                         <div>
@@ -234,7 +235,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                         </div>
                       </div>
 
-                      {/* 3. Total Equity */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
                         <div>
@@ -251,7 +251,9 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                           </span>
                           <span
                             className={`text-xl print:text-base font-black font-mono ${
-                              totalEquity >= 0 ? "text-emerald-800" : "text-rose-700"
+                              totalEquity >= 0
+                                ? "text-emerald-800"
+                                : "text-rose-700"
                             }`}
                           >
                             {formatNumber(totalEquity)}
@@ -259,9 +261,10 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                         </div>
                       </div>
 
-                      {/* 4. Balance Check */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className={`absolute inset-x-0 top-0 h-[2.5px] ${isBalanced ? "bg-emerald-500" : "bg-amber-500"}`} />
+                        <div
+                          className={`absolute inset-x-0 top-0 h-[2.5px] ${isBalanced ? "bg-emerald-500" : "bg-amber-500"}`}
+                        />
                         <div>
                           <div className="flex items-center justify-between">
                             <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -296,7 +299,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                       </div>
                     </div>
 
-                    {/* Balance Sheet Statement Table */}
                     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
                       <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white">
@@ -324,7 +326,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                         </TableHead>
 
                         <TableBody className="divide-y divide-slate-100">
-                          {/* ASSETS SECTION */}
                           <TableRow className="bg-sky-50/70 font-bold text-sky-950">
                             <TableCell
                               colSpan={3}
@@ -334,13 +335,13 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                             </TableCell>
                           </TableRow>
 
-                          {/* Current Assets */}
                           <TableRow className="bg-slate-50/70 font-semibold text-slate-700">
                             <TableCell
                               colSpan={3}
                               className="py-2 px-5 text-[11px] italic"
                             >
-                              Current Assets (Liquidity &amp; Short-Term Receivables)
+                              Current Assets (Liquidity &amp; Short-Term
+                              Receivables)
                             </TableCell>
                           </TableRow>
                           {currentAssetsRows.length === 0 ? (
@@ -390,7 +391,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                             </TableCell>
                           </TableRow>
 
-                          {/* Fixed Assets */}
                           <TableRow className="bg-slate-50/70 font-semibold text-slate-700">
                             <TableCell
                               colSpan={3}
@@ -461,7 +461,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                             </TableCell>
                           </TableRow>
 
-                          {/* LIABILITIES SECTION */}
                           <TableRow className="bg-amber-50/70 font-bold text-amber-950">
                             <TableCell
                               colSpan={3}
@@ -541,7 +540,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                             </TableCell>
                           </TableRow>
 
-                          {/* EQUITY SECTION */}
                           <TableRow className="bg-emerald-50/70 font-bold text-emerald-950">
                             <TableCell
                               colSpan={3}
@@ -597,7 +595,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                             </TableCell>
                           </TableRow>
 
-                          {/* TOTAL LIABILITIES + EQUITY */}
                           <TableRow className="bg-slate-100 font-bold text-slate-900 border-t-2 border-b-2 border-slate-300">
                             <TableCell
                               colSpan={2}
@@ -613,7 +610,6 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                             </TableCell>
                           </TableRow>
 
-                          {/* BALANCE AUDIT CHECK */}
                           <TableRow
                             className={`font-black ${
                               isBalanced
@@ -625,12 +621,15 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                               colSpan={2}
                               className="py-3.5 px-5 text-xs uppercase tracking-wider font-bold"
                             >
-                              BALANCE AUDIT RECONCILIATION (Assets - Liabilities - Equity)
+                              BALANCE AUDIT RECONCILIATION (Assets - Liabilities
+                              - Equity)
                             </TableCell>
                             <TableCell
                               align="right"
                               className={`py-3.5 px-5 text-right font-mono font-black text-sm ${
-                                isBalanced ? "text-emerald-700" : "text-amber-700"
+                                isBalanced
+                                  ? "text-emerald-700"
+                                  : "text-amber-700"
                               }`}
                             >
                               {formatNumber(balanceCheck)}

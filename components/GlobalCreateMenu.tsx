@@ -38,7 +38,6 @@ interface ActionItem {
 }
 
 const ACTION_ITEMS: ActionItem[] = [
-  // --- SALES ---
   {
     id: "create-quotation",
     label: "Quotation",
@@ -86,7 +85,6 @@ const ACTION_ITEMS: ActionItem[] = [
     category: "SALES",
   },
 
-  // --- PURCHASES ---
   {
     id: "create-purchase-request",
     label: "Purchase Request",
@@ -138,7 +136,6 @@ const ACTION_ITEMS: ActionItem[] = [
     category: "PURCHASES",
   },
 
-  // --- ACCOUNTING ---
   {
     id: "create-expense",
     label: "Direct Expense",
@@ -165,7 +162,6 @@ const ACTION_ITEMS: ActionItem[] = [
     category: "ACCOUNTING",
   },
 
-  // --- MASTER DATA ---
   {
     id: "create-customer",
     label: "New Customer",
@@ -245,7 +241,7 @@ export default function GlobalCreateMenu() {
       if (event.key === "Escape") {
         setIsOpen(false);
       }
-      // Quick open shortcut: Ctrl+K or Alt+C
+
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setIsOpen((prev) => !prev);
@@ -285,7 +281,7 @@ export default function GlobalCreateMenu() {
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
-      {/* Trigger Button */}
+      {}
       <button
         type="button"
         id="global-create-button"
@@ -307,7 +303,6 @@ export default function GlobalCreateMenu() {
         />
       </button>
 
-      {/* Dropdown Menu Modal */}
       {isOpen && (
         <div
           role="menu"
@@ -319,7 +314,6 @@ export default function GlobalCreateMenu() {
               "0 20px 45px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.06)",
           }}
         >
-          {/* Header */}
           <div className="flex-shrink-0 pb-3 border-b border-slate-100 flex items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-1.5">
@@ -343,7 +337,6 @@ export default function GlobalCreateMenu() {
             </button>
           </div>
 
-          {/* Search Bar & Category Filter Pills */}
           <div className="flex-shrink-0 py-2.5 space-y-2">
             <div className="relative">
               <Search
@@ -369,7 +362,6 @@ export default function GlobalCreateMenu() {
               )}
             </div>
 
-            {/* Quick Filter Categories */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
               {[
                 { key: "ALL", label: "All Actions" },
@@ -394,7 +386,6 @@ export default function GlobalCreateMenu() {
             </div>
           </div>
 
-          {/* Action List Grid (Scrollable Body) */}
           <div className="flex-1 min-h-0 overflow-y-auto pr-1.5 space-y-4 pt-1 pb-2">
             {filteredItems.length === 0 ? (
               <div className="text-center py-8">
@@ -467,7 +458,6 @@ export default function GlobalCreateMenu() {
             )}
           </div>
 
-          {/* Footer Shortcuts Info (Pinned to bottom) */}
           <div className="flex-shrink-0 pt-2.5 mt-auto border-t border-slate-100 flex items-center justify-between text-[10.5px] text-slate-400 font-medium px-1">
             <span>
               Tip: Press{" "}
