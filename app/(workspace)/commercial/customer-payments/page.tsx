@@ -50,10 +50,6 @@ function formatDate(dateStr: string | undefined | null): string {
   return new Date(dateStr).toISOString().slice(0, 10);
 }
 
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
-
 interface KpiCardProps {
   label: string;
   value: React.ReactNode;
@@ -79,7 +75,6 @@ function KpiCard({
   );
 }
 
-/** Avatar + name + email stack used in the table and audit modal. */
 function UserCell({ fullName, email }: { fullName?: string; email?: string }) {
   const name = fullName || "Admin";
   const mail = email || "admin@agm.ae";
@@ -98,7 +93,6 @@ function UserCell({ fullName, email }: { fullName?: string; email?: string }) {
   );
 }
 
-/** One row in the Audit View detail list. */
 function DetailRow({
   label,
   children,
@@ -113,10 +107,6 @@ function DetailRow({
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Form state
-// ---------------------------------------------------------------------------
 
 interface PaymentFormState {
   customerId: string;
@@ -140,10 +130,6 @@ const EMPTY_FORM: PaymentFormState = {
   notes: "",
 };
 
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
 export default function CustomerPaymentsPage() {
   const { data: payments = [], isLoading } = useCustomerPayments();
   const { data: customers = [] } = useCustomers();
@@ -155,8 +141,6 @@ export default function CustomerPaymentsPage() {
   const [selectedPayment, setSelectedPayment] =
     useState<CustomerPayment | null>(null);
   const [form, setForm] = useState<PaymentFormState>(EMPTY_FORM);
-
-  // Derived state -----------------------------------------------------------
 
   const filteredPayments = useMemo(() => {
     if (!search.trim()) return payments;
@@ -178,8 +162,6 @@ export default function CustomerPaymentsPage() {
     () => invoices.filter((i) => Number(i.remainingBalance) > 0),
     [invoices],
   );
-
-  // Handlers ----------------------------------------------------------------
 
   const setField = useCallback(
     <K extends keyof PaymentFormState>(key: K, value: PaymentFormState[K]) =>
@@ -240,8 +222,6 @@ export default function CustomerPaymentsPage() {
     },
     [createPayment, form, handleCloseCreate],
   );
-
-  // Render ------------------------------------------------------------------
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 print:p-0 print:m-0">

@@ -89,7 +89,6 @@ export async function GET(
       });
     });
 
-    // Sort by date ascending
     rawEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
 
     let running = 0;

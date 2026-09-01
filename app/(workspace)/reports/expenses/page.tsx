@@ -52,10 +52,8 @@ export default function ExpenseReportsPage() {
     })}`;
   };
 
-  // Filtered expenses by date
   const filteredExpenses = useMemo(() => {
     return expenses.filter((e) => {
-      // Date filter
       if (startDate || endDate) {
         const d = new Date(e.expenseDate);
         if (startDate && d < new Date(startDate)) return false;
@@ -65,7 +63,6 @@ export default function ExpenseReportsPage() {
     });
   }, [expenses, startDate, endDate]);
 
-  // Aggregate Metrics
   const metrics = useMemo(() => {
     const totalExpenses = filteredExpenses.reduce(
       (sum, e) => sum + Number(e.totalAmount || 0),
@@ -103,7 +100,6 @@ export default function ExpenseReportsPage() {
     };
   }, [filteredExpenses]);
 
-  // Category Breakdown for Chart
   const categoryBreakdown = useMemo<ChartBarItem[]>(() => {
     const catMap: Record<string, number> = {};
     filteredExpenses.forEach((e) => {
@@ -132,7 +128,6 @@ export default function ExpenseReportsPage() {
       }));
   }, [filteredExpenses]);
 
-  // Available unique categories
   const categories = useMemo(() => {
     const set = new Set<string>();
     expenses.forEach((e) => {

@@ -119,7 +119,11 @@ export default function CustomersMasterPage() {
   }, [customers, statusFilter]);
 
   const totalReceivables = useMemo(
-    () => customers.reduce((s, c) => s + Math.max(0, Number(c.currentBalance || 0)), 0),
+    () =>
+      customers.reduce(
+        (s, c) => s + Math.max(0, Number(c.currentBalance || 0)),
+        0,
+      ),
     [customers],
   );
 
@@ -142,7 +146,9 @@ export default function CustomersMasterPage() {
             Customer Directory &amp; Statements
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Comprehensive client database, credit limit controls, <br /> and real-time Statement of Account ledgers.
+            AGM FITOUT TECHNICAL SERVICES LLC — Comprehensive client database,
+            credit limit controls, <br /> and real-time Statement of Account
+            ledgers.
           </p>
         </div>
 
@@ -371,7 +377,8 @@ export default function CustomersMasterPage() {
                       colSpan={7}
                       className="py-12 text-center text-slate-400 italic"
                     >
-                      No customers match your search criteria. Click &quot;Add New Customer&quot; to create a new profile.
+                      No customers match your search criteria. Click &quot;Add
+                      New Customer&quot; to create a new profile.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -382,7 +389,10 @@ export default function CustomersMasterPage() {
                     >
                       <TableCell className="py-3 px-4 font-mono font-bold text-teal-800">
                         <div className="flex items-center gap-1.5">
-                          <Building2 size={13} className="text-teal-700 shrink-0" />
+                          <Building2
+                            size={13}
+                            className="text-teal-700 shrink-0"
+                          />
                           <span>{c.customerCode}</span>
                         </div>
                       </TableCell>
@@ -594,7 +604,8 @@ export default function CustomersMasterPage() {
                   AED {formatNumber(statementData.summary.currentOutstanding)}
                 </p>
                 <p className="text-[11px] text-slate-500">
-                  Billed: AED {formatNumber(statementData.summary.totalBilled)} | Paid: AED {formatNumber(statementData.summary.totalPaid)}
+                  Billed: AED {formatNumber(statementData.summary.totalBilled)}{" "}
+                  | Paid: AED {formatNumber(statementData.summary.totalPaid)}
                 </p>
               </div>
             </div>
@@ -603,62 +614,79 @@ export default function CustomersMasterPage() {
               <Table className="w-full text-xs">
                 <TableHead className="bg-slate-100">
                   <TableRow>
-                    <TableHeaderCell className="py-2.5 px-3">Date</TableHeaderCell>
-                    <TableHeaderCell className="py-2.5 px-3">Doc #</TableHeaderCell>
-                    <TableHeaderCell className="py-2.5 px-3">Type</TableHeaderCell>
-                    <TableHeaderCell align="right" className="py-2.5 px-3 text-right">
+                    <TableHeaderCell className="py-2.5 px-3">
+                      Date
+                    </TableHeaderCell>
+                    <TableHeaderCell className="py-2.5 px-3">
+                      Doc #
+                    </TableHeaderCell>
+                    <TableHeaderCell className="py-2.5 px-3">
+                      Type
+                    </TableHeaderCell>
+                    <TableHeaderCell
+                      align="right"
+                      className="py-2.5 px-3 text-right"
+                    >
                       Debit (Billed)
                     </TableHeaderCell>
-                    <TableHeaderCell align="right" className="py-2.5 px-3 text-right">
+                    <TableHeaderCell
+                      align="right"
+                      className="py-2.5 px-3 text-right"
+                    >
                       Credit (Paid)
                     </TableHeaderCell>
-                    <TableHeaderCell align="right" className="py-2.5 px-3 text-right">
+                    <TableHeaderCell
+                      align="right"
+                      className="py-2.5 px-3 text-right"
+                    >
                       Balance
                     </TableHeaderCell>
                   </TableRow>
                 </TableHead>
                 <TableBody className="divide-y divide-slate-100 font-medium">
-                  {(statementData.statement || []).map((tx: any, idx: number) => (
-                    <TableRow key={idx}>
-                      <TableCell className="py-2.5 px-3 font-mono">
-                        {tx.date}
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 font-mono font-bold text-slate-900">
-                        {tx.ref}
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            tx.type === "INVOICE"
-                              ? "bg-amber-50 text-amber-800 border border-amber-200"
-                              : tx.type === "PAYMENT"
-                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                                : "bg-sky-50 text-sky-800 border border-sky-200"
-                          }`}
+                  {(statementData.statement || []).map(
+                    (tx: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell className="py-2.5 px-3 font-mono">
+                          {tx.date}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 font-mono font-bold text-slate-900">
+                          {tx.ref}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              tx.type === "INVOICE"
+                                ? "bg-amber-50 text-amber-800 border border-amber-200"
+                                : tx.type === "PAYMENT"
+                                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                  : "bg-sky-50 text-sky-800 border border-sky-200"
+                            }`}
+                          >
+                            {tx.type}
+                          </span>
+                        </TableCell>
+                        <TableCell
+                          align="right"
+                          className="py-2.5 px-3 text-right font-mono text-slate-700"
                         >
-                          {tx.type}
-                        </span>
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className="py-2.5 px-3 text-right font-mono text-slate-700"
-                      >
-                        {tx.debit > 0 ? formatNumber(tx.debit) : "—"}
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className="py-2.5 px-3 text-right font-mono text-emerald-800"
-                      >
-                        {tx.credit > 0 ? formatNumber(tx.credit) : "—"}
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className="py-2.5 px-3 text-right font-mono font-black text-slate-900"
-                      >
-                        AED {formatNumber(tx.runningBalance)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                          {tx.debit > 0 ? formatNumber(tx.debit) : "—"}
+                        </TableCell>
+                        <TableCell
+                          align="right"
+                          className="py-2.5 px-3 text-right font-mono text-emerald-800"
+                        >
+                          {tx.credit > 0 ? formatNumber(tx.credit) : "—"}
+                        </TableCell>
+                        <TableCell
+                          align="right"
+                          className="py-2.5 px-3 text-right font-mono font-black text-slate-900"
+                        >
+                          AED {formatNumber(tx.runningBalance)}
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )}
                 </TableBody>
               </Table>
             </div>

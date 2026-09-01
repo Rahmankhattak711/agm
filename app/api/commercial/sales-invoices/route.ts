@@ -129,7 +129,6 @@ export async function POST(request: Request) {
       invNo = `INV-2026-${(count + 1).toString().padStart(4, "0")}`;
     }
 
-    // Calculate totals
     let subtotal = 0;
     const formattedItems = items.map((item: any) => {
       const qty = parseFloat(item.quantity) || 1;
@@ -191,7 +190,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // If autoPost is requested, post directly to General Ledger
     if (autoPost) {
       const je = await postSalesInvoiceJournalEntry({
         invoiceId: invoice.id,

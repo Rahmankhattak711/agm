@@ -211,7 +211,6 @@ export default function ExpensesPage() {
     setIsPrintModalOpen(true);
   };
 
-  // Filtered totals
   const thisMonthExpenses = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -234,7 +233,9 @@ export default function ExpensesPage() {
             Direct Operating Expenses &amp; Claims
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Record company overheads, utilities, government fees, <br /> and operational claims with automated General Ledger posting.
+            AGM FITOUT TECHNICAL SERVICES LLC — Record company overheads,
+            utilities, government fees, <br /> and operational claims with
+            automated General Ledger posting.
           </p>
         </div>
 
@@ -480,7 +481,8 @@ export default function ExpensesPage() {
                     colSpan={8}
                     className="py-12 text-center text-slate-400 italic"
                   >
-                    No operating expenses found. Click &quot;Record Expense&quot; above to create your first claim.
+                    No operating expenses found. Click &quot;Record
+                    Expense&quot; above to create your first claim.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -491,7 +493,10 @@ export default function ExpensesPage() {
                   >
                     <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
                       <span className="flex items-center gap-1.5">
-                        <FileSpreadsheet size={13} className="text-emerald-700 shrink-0" />
+                        <FileSpreadsheet
+                          size={13}
+                          className="text-emerald-700 shrink-0"
+                        />
                         {exp.expenseNumber}
                       </span>
                     </TableCell>
@@ -572,7 +577,9 @@ export default function ExpensesPage() {
 
                         <button
                           type="button"
-                          onClick={() => handleDelete(exp.id, exp.expenseNumber)}
+                          onClick={() =>
+                            handleDelete(exp.id, exp.expenseNumber)
+                          }
                           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                           title="Delete Expense"
                         >
@@ -777,7 +784,8 @@ export default function ExpensesPage() {
               htmlFor="auto-je"
               className="text-slate-700 font-semibold cursor-pointer"
             >
-              Automatically post balanced General Ledger journal entry for this expense
+              Automatically post balanced General Ledger journal entry for this
+              expense
             </label>
           </div>
 
@@ -886,9 +894,7 @@ export default function ExpensesPage() {
               )}
 
               <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-xs">
-                <span className="font-bold text-slate-600">
-                  Net Amount:
-                </span>
+                <span className="font-bold text-slate-600">Net Amount:</span>
                 <span className="font-mono font-semibold text-slate-800">
                   {formatCurrency(selectedExpense.amount)}
                 </span>

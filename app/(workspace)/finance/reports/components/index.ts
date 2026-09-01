@@ -5,6 +5,7 @@ export * from "./ProfitLossReport";
 export * from "./BalanceSheetReport";
 export * from "./TrialBalanceReport";
 export * from "./AccountsReceivableReport";
+export * from "./TaxInvoicesReport";
 export * from "./AccountsPayableReport";
 export * from "./GeneralLedgerReport";
 export * from "./VatPositionReport";

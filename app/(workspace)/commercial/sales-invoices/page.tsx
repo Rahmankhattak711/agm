@@ -227,7 +227,9 @@ export default function SalesInvoicesPage() {
             Commercial Sales Invoices &amp; Tax Billing
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Issue tax-compliant sales invoices, calculate 5% Output VAT, <br /> update Accounts Receivable, and post transactions directly to General Ledger.
+            AGM FITOUT TECHNICAL SERVICES LLC — Issue tax-compliant sales
+            invoices, calculate 5% Output VAT, <br /> update Accounts
+            Receivable, and post transactions directly to General Ledger.
           </p>
         </div>
 
@@ -414,38 +416,36 @@ export default function SalesInvoicesPage() {
 
             <Table className="w-full text-xs text-left">
               <TableHead className="bg-slate-50 border-b border-slate-200">
-                <TableRow>
-                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Invoice No
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Customer / Client
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Project Scope
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Date
-                  </TableHeaderCell>
-                  <TableHeaderCell
-                    align="right"
-                    className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-                  >
-                    Total (AED)
-                  </TableHeaderCell>
-                  <TableHeaderCell
-                    align="right"
-                    className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-                  >
-                    Balance Due
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Status
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Actions
-                  </TableHeaderCell>
-                </TableRow>
+                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Invoice No
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Customer / Client
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Project Scope
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Date
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
+                >
+                  Total (AED)
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
+                >
+                  Balance Due
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Status
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Actions
+                </TableHeaderCell>
               </TableHead>
 
               <TableBody className="divide-y divide-slate-100 font-medium">
@@ -457,7 +457,8 @@ export default function SalesInvoicesPage() {
                       colSpan={8}
                       className="py-12 text-center text-slate-400 italic"
                     >
-                      No sales invoices found. Click &quot;Create Sales Invoice&quot; to issue a new commercial invoice.
+                      No sales invoices found. Click &quot;Create Sales
+                      Invoice&quot; to issue a new commercial invoice.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -468,7 +469,10 @@ export default function SalesInvoicesPage() {
                     >
                       <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
                         <div className="flex items-center gap-1.5">
-                          <Receipt size={13} className="text-teal-700 shrink-0" />
+                          <Receipt
+                            size={13}
+                            className="text-teal-700 shrink-0"
+                          />
                           <span>{inv.invoiceNumber}</span>
                         </div>
                       </TableCell>
@@ -485,7 +489,9 @@ export default function SalesInvoicesPage() {
                       </TableCell>
                       <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
                         {inv.invoiceDate
-                          ? new Date(inv.invoiceDate).toLocaleDateString("en-GB")
+                          ? new Date(inv.invoiceDate).toLocaleDateString(
+                              "en-GB",
+                            )
                           : "—"}
                       </TableCell>
                       <TableCell
@@ -837,9 +843,13 @@ export default function SalesInvoicesPage() {
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
               >
-                <option value="BANK_TRANSFER">Bank Transfer (RAK Bank A/C 1020)</option>
+                <option value="BANK_TRANSFER">
+                  Bank Transfer (RAK Bank A/C 1020)
+                </option>
                 <option value="CHEQUE">Corporate Cheque</option>
-                <option value="CASH">Petty Cash / Cash Receipt (A/C 1010)</option>
+                <option value="CASH">
+                  Petty Cash / Cash Receipt (A/C 1010)
+                </option>
                 <option value="CARD">Debit / Credit Card</option>
               </select>
             </div>
@@ -906,13 +916,17 @@ export default function SalesInvoicesPage() {
                 <p className="text-slate-500 font-mono">
                   Date:{" "}
                   {selectedInvoice.invoiceDate
-                    ? new Date(selectedInvoice.invoiceDate).toLocaleDateString("en-GB")
+                    ? new Date(selectedInvoice.invoiceDate).toLocaleDateString(
+                        "en-GB",
+                      )
                     : ""}
                 </p>
                 <p className="text-slate-500 font-mono">
                   Due:{" "}
                   {selectedInvoice.dueDate
-                    ? new Date(selectedInvoice.dueDate).toLocaleDateString("en-GB")
+                    ? new Date(selectedInvoice.dueDate).toLocaleDateString(
+                        "en-GB",
+                      )
                     : ""}
                 </p>
               </div>
@@ -921,20 +935,27 @@ export default function SalesInvoicesPage() {
             <div className="border border-slate-200 rounded-xl overflow-hidden">
               <Table className="w-full text-xs">
                 <TableHead className="bg-slate-50 border-b border-slate-200">
-                  <TableRow>
-                    <TableHeaderCell className="py-2 px-3 font-bold text-slate-600">
-                      Description
-                    </TableHeaderCell>
-                    <TableHeaderCell align="right" className="py-2 px-3 font-bold text-slate-600">
-                      Qty
-                    </TableHeaderCell>
-                    <TableHeaderCell align="right" className="py-2 px-3 font-bold text-slate-600">
-                      Rate (AED)
-                    </TableHeaderCell>
-                    <TableHeaderCell align="right" className="py-2 px-3 font-bold text-slate-600">
-                      Total (AED)
-                    </TableHeaderCell>
-                  </TableRow>
+                  <TableHeaderCell className="py-2 px-3 font-bold text-slate-600">
+                    Description
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    align="right"
+                    className="py-2 px-3 font-bold text-slate-600"
+                  >
+                    Qty
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    align="right"
+                    className="py-2 px-3 font-bold text-slate-600"
+                  >
+                    Rate (AED)
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    align="right"
+                    className="py-2 px-3 font-bold text-slate-600"
+                  >
+                    Total (AED)
+                  </TableHeaderCell>
                 </TableHead>
                 <TableBody className="divide-y divide-slate-100">
                   {selectedInvoice.items?.map((l: any) => (

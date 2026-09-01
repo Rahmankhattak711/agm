@@ -241,7 +241,6 @@ export default function PurchaseOrdersPage() {
           description: value.description.trim() || null,
         });
 
-        // Insert new product into target line item
         const currentItems = poForm.getFieldValue("items") || [];
         if (
           quickProductTargetIdx !== null &&
@@ -469,7 +468,9 @@ export default function PurchaseOrdersPage() {
         accessorKey: "status",
         header: () => <div className="text-center">Status</div>,
         cell: ({ row }) => (
-          <div className="text-center">{getStatusBadge(row.original.status)}</div>
+          <div className="text-center">
+            {getStatusBadge(row.original.status)}
+          </div>
         ),
       },
       {
@@ -566,7 +567,9 @@ export default function PurchaseOrdersPage() {
             Purchase Orders &amp; Procurement
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Procure products from external companies, hardware shops, <br /> and material suppliers with vendor references.
+            AGM FITOUT TECHNICAL SERVICES LLC — Procure products from external
+            companies, hardware shops, <br /> and material suppliers with vendor
+            references.
           </p>
         </div>
 
@@ -948,7 +951,8 @@ export default function PurchaseOrdersPage() {
                         Procurement Line Items
                       </span>
                       <p className="text-[11px] text-slate-500">
-                        Select catalog products or click quick add to register items bought from other shops.
+                        Select catalog products or click quick add to register
+                        items bought from other shops.
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1149,7 +1153,8 @@ export default function PurchaseOrdersPage() {
 
           <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-900 text-xs">
             <span className="font-bold block">💡 External Shop Product</span>
-            Register a material or item purchased from an external shop, vendor, or marketplace to inventory.
+            Register a material or item purchased from an external shop, vendor,
+            or marketplace to inventory.
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1409,7 +1414,9 @@ export default function PurchaseOrdersPage() {
                 <span className="font-medium text-slate-700 block">
                   Due:{" "}
                   {selectedPO.expectedDate
-                    ? new Date(selectedPO.expectedDate).toLocaleDateString("en-GB")
+                    ? new Date(selectedPO.expectedDate).toLocaleDateString(
+                        "en-GB",
+                      )
                     : "Not specified"}
                 </span>
               </div>

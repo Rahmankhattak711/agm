@@ -101,7 +101,8 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       Trial Balance Audit Statement
                     </h1>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Debit &amp; Credit Ledger Verification
+                      AGM FITOUT TECHNICAL SERVICES LLC — Debit &amp; Credit
+                      Ledger Verification
                     </p>
                   </div>
                   <p className="text-[10px] text-slate-400 font-mono">
@@ -125,7 +126,7 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
           <tr>
             <td className="p-0 border-none align-top">
               <div className="space-y-6">
-                {/* Header Toolbar */}
+                {}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -137,7 +138,9 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Comprehensive debit &amp; <br /> credit audit across all active chart of accounts
+                      AGM FITOUT TECHNICAL SERVICES LLC — Comprehensive debit
+                      &amp; <br /> credit audit across all active chart of
+                      accounts
                     </p>
                   </div>
 
@@ -176,9 +179,7 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* 4 Summary KPI Metric Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 print-avoid-break">
-                      {/* 1. Total Debits */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
                         <div>
@@ -199,7 +200,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                         </div>
                       </div>
 
-                      {/* 2. Total Credits */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
                         <div>
@@ -220,7 +220,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                         </div>
                       </div>
 
-                      {/* 3. Active Ledgers */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
                         <div>
@@ -241,9 +240,10 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                         </div>
                       </div>
 
-                      {/* 4. Ledger Equality */}
                       <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className={`absolute inset-x-0 top-0 h-[2.5px] ${isBalanced ? "bg-emerald-500" : "bg-amber-500"}`} />
+                        <div
+                          className={`absolute inset-x-0 top-0 h-[2.5px] ${isBalanced ? "bg-emerald-500" : "bg-amber-500"}`}
+                        />
                         <div>
                           <div className="flex items-center justify-between">
                             <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -278,7 +278,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       </div>
                     </div>
 
-                    {/* Filter & Search Toolbar */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs print:hidden">
                       <div className="max-w-xs flex-1">
                         <div className="relative">
@@ -314,7 +313,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       </div>
                     </div>
 
-                    {/* Trial Balance Table */}
                     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
                       <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white">
@@ -415,7 +413,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                             })
                           )}
 
-                          {/* TOTAL ROW */}
                           <TableRow className="bg-slate-900 text-white font-black">
                             <TableCell
                               colSpan={3}
@@ -437,7 +434,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                             </TableCell>
                           </TableRow>
 
-                          {/* AUDIT RECONCILIATION VARIANCE */}
                           <TableRow
                             className={`font-black ${
                               isBalanced

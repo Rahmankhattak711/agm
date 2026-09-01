@@ -116,7 +116,6 @@ export async function POST(request: Request) {
 
     const recDate = receiptDate ? new Date(receiptDate) : new Date();
 
-    // 1. Create Goods Receipt
     const grn = await prisma.goodsReceipt.create({
       data: {
         grnNumber: grnNo,
@@ -144,14 +143,12 @@ export async function POST(request: Request) {
       },
     });
 
-    // 2. Update Inventory Stock Levels & Log Stock Movements
     for (const item of items) {
       const prodId = item.productId;
       const acceptedQty =
         parseFloat(item.quantityAccepted || item.quantityReceived) || 1;
 
       if (prodId && whId && acceptedQty > 0) {
-        // Upsert stock level
         await prisma.stockLevel.upsert({
           where: {
             productId_warehouseId: {
@@ -169,7 +166,6 @@ export async function POST(request: Request) {
           },
         });
 
-        // Record stock movement
         await prisma.stockMovement.create({
           data: {
             productId: prodId,

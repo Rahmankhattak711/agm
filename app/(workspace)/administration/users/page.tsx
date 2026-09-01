@@ -102,7 +102,9 @@ export default function UsersPage() {
   }, [users, search, roleFilter]);
 
   const superAdminCount = useMemo(
-    () => users.filter((u) => u.role === "SUPER_ADMIN" || u.role === "ADMIN").length,
+    () =>
+      users.filter((u) => u.role === "SUPER_ADMIN" || u.role === "ADMIN")
+        .length,
     [users],
   );
 
@@ -186,52 +188,61 @@ export default function UsersPage() {
     setIsModalOpen(true);
   }, [createForm]);
 
-  const handleOpenEditModal = useCallback((user: UserItem) => {
-    setEditingUser(user);
-    setEditFormError("");
-    editForm.reset({
-      fullName: user.fullName,
-      email: user.email,
-      role: user.role,
-      isActive: user.isActive ? "true" : "false",
-      password: "",
-    });
-    setIsEditModalOpen(true);
-  }, [editForm]);
+  const handleOpenEditModal = useCallback(
+    (user: UserItem) => {
+      setEditingUser(user);
+      setEditFormError("");
+      editForm.reset({
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive ? "true" : "false",
+        password: "",
+      });
+      setIsEditModalOpen(true);
+    },
+    [editForm],
+  );
 
-  const handleDeleteUser = useCallback(async (user: UserItem) => {
-    if (user.id === currentUser?.id) {
-      alert("You cannot delete your own account.");
-      return;
-    }
-
-    if (
-      confirm(
-        `Are you sure you want to delete user account "${user.fullName}" (${user.email})?`,
-      )
-    ) {
-      try {
-        const res = await deleteUserMutation.mutateAsync(user.id);
-        if (res?.message) {
-          alert(res.message);
-        }
-      } catch (err: any) {
-        alert(err.message || "Failed to delete user");
+  const handleDeleteUser = useCallback(
+    async (user: UserItem) => {
+      if (user.id === currentUser?.id) {
+        alert("You cannot delete your own account.");
+        return;
       }
-    }
-  }, [currentUser?.id, deleteUserMutation]);
 
-  const canManageTargetUser = useCallback((target: UserItem) => {
-    if (isSuperAdmin) return true;
-    if (isAdmin) {
-      return (
-        target.role !== "SUPER_ADMIN" &&
-        target.role !== "ADMIN" &&
-        target.id !== currentUser?.id
-      );
-    }
-    return false;
-  }, [isSuperAdmin, isAdmin, currentUser?.id]);
+      if (
+        confirm(
+          `Are you sure you want to delete user account "${user.fullName}" (${user.email})?`,
+        )
+      ) {
+        try {
+          const res = await deleteUserMutation.mutateAsync(user.id);
+          if (res?.message) {
+            alert(res.message);
+          }
+        } catch (err: any) {
+          alert(err.message || "Failed to delete user");
+        }
+      }
+    },
+    [currentUser?.id, deleteUserMutation],
+  );
+
+  const canManageTargetUser = useCallback(
+    (target: UserItem) => {
+      if (isSuperAdmin) return true;
+      if (isAdmin) {
+        return (
+          target.role !== "SUPER_ADMIN" &&
+          target.role !== "ADMIN" &&
+          target.id !== currentUser?.id
+        );
+      }
+      return false;
+    },
+    [isSuperAdmin, isAdmin, currentUser?.id],
+  );
 
   const columns = useMemo<ColumnDef<UserItem>[]>(
     () => [
@@ -368,7 +379,9 @@ export default function UsersPage() {
             User &amp; Access Management
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Role-based permissions, credentials management, <br /> account status, and system access control.
+            AGM FITOUT TECHNICAL SERVICES LLC — Role-based permissions,
+            credentials management, <br /> account status, and system access
+            control.
           </p>
         </div>
 
@@ -496,10 +509,7 @@ export default function UsersPage() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1">
-              {[
-                { value: "ALL", label: "All Users" },
-                ...ROLES,
-              ].map((tab) => {
+              {[{ value: "ALL", label: "All Users" }, ...ROLES].map((tab) => {
                 const isActive = roleFilter === tab.value;
                 return (
                   <button

@@ -92,7 +92,8 @@ export const AccountsReceivableReport: React.FC = () => {
                       Accounts Receivable &amp; Client Aging Statement
                     </h1>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Customer Balances &amp; Overdue Aging Breakdown
+                      AGM FITOUT TECHNICAL SERVICES LLC — Customer Balances
+                      &amp; Overdue Aging Breakdown
                     </p>
                   </div>
                   <p className="text-[10px] text-slate-400 font-mono">
@@ -116,7 +117,7 @@ export const AccountsReceivableReport: React.FC = () => {
           <tr>
             <td className="p-0 border-none align-top">
               <div className="space-y-6">
-                {/* Header Toolbar */}
+                {}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-4 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -128,7 +129,8 @@ export const AccountsReceivableReport: React.FC = () => {
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      Real-time accounts receivable balances mapped to GL Account{" "}
+                      Real-time accounts receivable balances mapped to GL
+                      Account{" "}
                       <span className="font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
                         1200 - Accounts Receivable (Asset)
                       </span>
@@ -151,13 +153,15 @@ export const AccountsReceivableReport: React.FC = () => {
                 {isLoading ? (
                   <div className="py-16 text-center text-xs text-slate-400 animate-pulse space-y-2">
                     <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mx-auto" />
-                    <p>Calculating Accounts Receivable &amp; Aging Schedule...</p>
+                    <p>
+                      Calculating Accounts Receivable &amp; Aging Schedule...
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* 5 Summary KPI Cards */}
+                    {}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 print:grid-cols-5 gap-3.5 print:gap-2 print-avoid-break">
-                      {/* 1. Total Outstanding */}
+                      {}
                       <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
                         <div>
@@ -181,7 +185,7 @@ export const AccountsReceivableReport: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* 2. Current (0-30d) */}
+                      {}
                       <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
                         <div>
@@ -205,7 +209,7 @@ export const AccountsReceivableReport: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* 3. 31-60 Days */}
+                      {}
                       <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-blue-500" />
                         <div>
@@ -229,7 +233,7 @@ export const AccountsReceivableReport: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* 4. 61-90 Days */}
+                      {}
                       <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
                         <div>
@@ -253,7 +257,7 @@ export const AccountsReceivableReport: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* 5. 90+ Days */}
+                      {}
                       <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                         <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-600" />
                         <div>
@@ -278,7 +282,7 @@ export const AccountsReceivableReport: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Filter & Search Strip */}
+                    {}
                     <div className="flex flex-col sm:flex-row gap-3 items-center justify-between p-2 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs print:hidden">
                       <div className="relative flex-1 w-full max-w-sm">
                         <Search
@@ -312,7 +316,6 @@ export const AccountsReceivableReport: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Accounts Receivable Table */}
                     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
                       <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white">
@@ -367,7 +370,8 @@ export const AccountsReceivableReport: React.FC = () => {
                                 colSpan={9}
                                 className="text-center py-12 text-slate-400 text-xs italic"
                               >
-                                No accounts receivable records match your search criteria.
+                                No accounts receivable records match your search
+                                criteria.
                               </TableCell>
                             </TableRow>
                           ) : (
@@ -441,7 +445,8 @@ export const AccountsReceivableReport: React.FC = () => {
                                       }`}
                                     >
                                       <Clock size={10} />
-                                      {item.daysOutstanding}d ({item.agingBucket})
+                                      {item.daysOutstanding}d (
+                                      {item.agingBucket})
                                     </span>
                                   </TableCell>
 
@@ -491,7 +496,6 @@ export const AccountsReceivableReport: React.FC = () => {
                   </div>
                 )}
 
-                {/* Audit Modal Dialog */}
                 {selectedItem && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
                     <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in duration-150">
@@ -570,7 +574,9 @@ export const AccountsReceivableReport: React.FC = () => {
 
                         <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Project / Scope:</span>
+                            <span className="text-slate-500">
+                              Project / Scope:
+                            </span>
                             <span className="font-medium text-slate-800">
                               {selectedItem.project}
                             </span>
@@ -582,14 +588,18 @@ export const AccountsReceivableReport: React.FC = () => {
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Days Outstanding:</span>
+                            <span className="text-slate-500">
+                              Days Outstanding:
+                            </span>
                             <span className="font-bold text-rose-600">
                               {selectedItem.daysOutstanding} Days
                             </span>
                           </div>
                           <div className="h-px bg-slate-200 my-1" />
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Total Billed Amount:</span>
+                            <span className="text-slate-500">
+                              Total Billed Amount:
+                            </span>
                             <span className="font-mono font-bold text-slate-800">
                               {formatCurrency(selectedItem.totalAmount)}
                             </span>

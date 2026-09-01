@@ -224,7 +224,9 @@ export default function SupplierBillsPage() {
             Supplier Bills &amp; Accounts Payable
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Record vendor tax invoices, calculate 5% Input VAT, <br /> manage Accounts Payable liabilities, and post to General Ledger.
+            AGM FITOUT TECHNICAL SERVICES LLC — Record vendor tax invoices,
+            calculate 5% Input VAT, <br /> manage Accounts Payable liabilities,
+            and post to General Ledger.
           </p>
         </div>
 
@@ -465,7 +467,10 @@ export default function SupplierBillsPage() {
                     >
                       <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
                         <div className="flex items-center gap-1.5">
-                          <Receipt size={13} className="text-teal-700 shrink-0" />
+                          <Receipt
+                            size={13}
+                            className="text-teal-700 shrink-0"
+                          />
                           <span>{b.billNumber}</span>
                         </div>
                       </TableCell>
@@ -851,7 +856,9 @@ export default function SupplierBillsPage() {
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
               >
-                <option value="BANK_TRANSFER">RAK Bank Transfer (A/C 1020)</option>
+                <option value="BANK_TRANSFER">
+                  RAK Bank Transfer (A/C 1020)
+                </option>
                 <option value="CHEQUE">Corporate Cheque</option>
                 <option value="CASH">Petty Cash Float (A/C 1010)</option>
               </select>
@@ -907,7 +914,9 @@ export default function SupplierBillsPage() {
                 </span>
                 <span className="text-slate-500">
                   {selectedBill.billDate
-                    ? new Date(selectedBill.billDate).toLocaleDateString("en-GB")
+                    ? new Date(selectedBill.billDate).toLocaleDateString(
+                        "en-GB",
+                      )
                     : ""}
                 </span>
               </div>
@@ -926,13 +935,22 @@ export default function SupplierBillsPage() {
                     <TableHeaderCell className="py-2 px-3 font-bold text-slate-600">
                       Description
                     </TableHeaderCell>
-                    <TableHeaderCell align="right" className="py-2 px-3 font-bold text-slate-600">
+                    <TableHeaderCell
+                      align="right"
+                      className="py-2 px-3 font-bold text-slate-600"
+                    >
                       Qty
                     </TableHeaderCell>
-                    <TableHeaderCell align="right" className="py-2 px-3 font-bold text-slate-600">
+                    <TableHeaderCell
+                      align="right"
+                      className="py-2 px-3 font-bold text-slate-600"
+                    >
                       Unit Cost (AED)
                     </TableHeaderCell>
-                    <TableHeaderCell align="right" className="py-2 px-3 font-bold text-slate-600">
+                    <TableHeaderCell
+                      align="right"
+                      className="py-2 px-3 font-bold text-slate-600"
+                    >
                       Total (AED)
                     </TableHeaderCell>
                   </TableRow>

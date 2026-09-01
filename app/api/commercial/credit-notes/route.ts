@@ -152,7 +152,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // Update customer balance
     if (autoPost && custId) {
       await prisma.customer.update({
         where: { id: custId },

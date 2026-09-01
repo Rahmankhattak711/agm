@@ -127,11 +127,9 @@ export async function POST(req: NextRequest) {
       expenseCount + 1,
     ).padStart(5, "0")}`;
 
-    // Execute in transaction
     const result = await prisma.$transaction(async (tx) => {
       let journalEntryId: string | null = null;
 
-      // Create balanced Journal Entry if requested & accounts are provided
       if (createJournal && expenseAccountId && paymentAccountId) {
         const entryCount = await tx.journalEntry.count();
         const entryNumber = `JE-${new Date().getFullYear()}-${String(
@@ -151,7 +149,6 @@ export async function POST(req: NextRequest) {
           },
         ];
 
-        // If tax is involved, record tax line (VAT Input)
         if (numTax > 0) {
           const vatInputAccount = await tx.chartOfAccount.findFirst({
             where: { accountCode: "2200" },

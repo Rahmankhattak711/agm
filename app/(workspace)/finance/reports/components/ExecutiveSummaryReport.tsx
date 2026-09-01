@@ -172,7 +172,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
           <tr>
             <td className="p-0 border-none align-top">
               <div className="space-y-8 print:space-y-4">
-                {/* Header Strip */}
+                {}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-1 rounded-lg bg-emerald-700 text-white font-black text-xs shadow-xs">
@@ -183,7 +183,8 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                         Fitout Executive Financial Summary
                       </h3>
                       <p className="text-xs text-slate-500">
-                        Consolidated performance, quarterly velocity &amp; statutory compliance
+                        Consolidated performance, quarterly velocity &amp;
+                        statutory compliance
                       </p>
                     </div>
                   </div>
@@ -202,9 +203,9 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                   </div>
                 </div>
 
-                {/* 6 High-Level KPI Summary Cards (3 Cards Per Row) */}
+                {}
                 <div className="grid grid-cols-1 md:grid-cols-3 report-kpi-grid gap-4 print:gap-2.5 print-avoid-break">
-                  {/* 1. Total Turnover */}
+                  {}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
                     <div>
@@ -225,7 +226,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
-                  {/* 2. Gross Profit */}
+                  {}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-600" />
                     <div>
@@ -251,7 +252,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
-                  {/* 3. Net Income */}
+                  {}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
                     <div>
@@ -281,7 +282,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
-                  {/* 4. Total Assets */}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
                     <div>
@@ -302,7 +302,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
-                  {/* 5. Total Liabilities */}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
                     <div>
@@ -323,7 +322,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
-                  {/* 6. UAE VAT Position */}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
                     <div>
@@ -360,7 +358,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                   </div>
                 </div>
 
-                {/* Quarterly Analytics Section */}
                 <div className="rounded-2xl border border-slate-200/80 bg-white p-5 print:p-3 space-y-6 print:space-y-3 shadow-xs print-avoid-break">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:pb-2">
                     <div>
@@ -373,7 +370,8 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                         </h4>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        AGM Financial Year grouped into 4 distinct three-month quarters (Q1, Q2, Q3, Q4).
+                        AGM Financial Year grouped into 4 distinct three-month
+                        quarters (Q1, Q2, Q3, Q4).
                       </p>
                     </div>
 
@@ -403,7 +401,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
-                  {/* 4 Quarterly Cards (2 Cards Per Row) */}
                   <div className="grid grid-cols-1 md:grid-cols-2 report-quarter-grid gap-4 print:gap-3">
                     {filteredQuarters.map((q) => (
                       <div
@@ -434,19 +431,25 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
 
                         <div className="mt-3 space-y-2 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Revenue (Turnover):</span>
+                            <span className="text-slate-500">
+                              Revenue (Turnover):
+                            </span>
                             <span className="font-mono font-bold text-slate-900">
                               {formatCurrency(q.sales)}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Direct Materials:</span>
+                            <span className="text-slate-500">
+                              Direct Materials:
+                            </span>
                             <span className="font-mono font-semibold text-rose-700">
                               {formatCurrency(q.purchases)}
                             </span>
                           </div>
                           <div className="flex justify-between font-bold pt-1 border-t border-slate-100/80">
-                            <span className="text-slate-700">Gross Operating Profit:</span>
+                            <span className="text-slate-700">
+                              Gross Operating Profit:
+                            </span>
                             <span
                               className={`font-mono ${q.grossProfit >= 0 ? "text-emerald-800" : "text-rose-700"}`}
                             >
@@ -456,19 +459,25 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                             </span>
                           </div>
                           <div className="pt-2 border-t border-slate-100 flex justify-between">
-                            <span className="text-slate-500">Output VAT 5%:</span>
+                            <span className="text-slate-500">
+                              Output VAT 5%:
+                            </span>
                             <span className="font-mono text-rose-700">
                               {formatCurrency(q.outputVat)}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Input VAT 5%:</span>
+                            <span className="text-slate-500">
+                              Input VAT 5%:
+                            </span>
                             <span className="font-mono text-emerald-700">
                               {formatCurrency(q.inputVat)}
                             </span>
                           </div>
                           <div className="pt-1.5 border-t border-slate-100 flex justify-between font-black">
-                            <span className="text-slate-900">Net VAT Position:</span>
+                            <span className="text-slate-900">
+                              Net VAT Position:
+                            </span>
                             <span
                               className={`font-mono ${q.netVat >= 0 ? "text-amber-800" : "text-emerald-700"}`}
                             >
@@ -482,7 +491,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     ))}
                   </div>
 
-                  {/* 3-Month Group Accounting Comparison Matrix */}
                   <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-xs">
                     <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
                       <h4 className="font-black text-xs uppercase tracking-wider text-white">
@@ -726,7 +734,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                   </div>
                 </div>
 
-                {/* Bottom Row: Liquidity Ratios & Audit Integrity */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="p-5 rounded-2xl border border-slate-200/80 bg-white space-y-4 shadow-xs">
                     <h4 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">

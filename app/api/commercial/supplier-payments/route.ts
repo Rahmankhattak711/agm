@@ -114,7 +114,6 @@ export async function POST(request: Request) {
 
     const pmtDate = paymentDate ? new Date(paymentDate) : new Date();
 
-    // 1. Post to GL
     const je = await postSupplierPaymentJournalEntry({
       paymentId: "",
       paymentNumber: pmtNo,
@@ -126,7 +125,6 @@ export async function POST(request: Request) {
       userId: authUser.id,
     });
 
-    // 2. Create Payment Record
     const payment = await prisma.supplierPayment.create({
       data: {
         paymentNumber: pmtNo,
@@ -147,7 +145,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // 3. Update Bill Balance if attached
     if (supplierBillId) {
       const bill = await prisma.supplierBill.findUnique({
         where: { id: supplierBillId },

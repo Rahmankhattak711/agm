@@ -71,7 +71,8 @@ export default function EmployeesPage() {
     () => ({
       total: employees.length,
       active: employees.filter((e) => e.employmentStatus === "ACTIVE").length,
-      onLeave: employees.filter((e) => e.employmentStatus === "ON_LEAVE").length,
+      onLeave: employees.filter((e) => e.employmentStatus === "ON_LEAVE")
+        .length,
       monthlyPayroll: employees
         .filter((e) => e.employmentStatus === "ACTIVE")
         .reduce(
@@ -265,7 +266,9 @@ export default function EmployeesPage() {
               {row.original.firstName} {row.original.lastName}
             </div>
             <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
-              <span className="font-medium">{row.original.designation || "Staff"}</span>
+              <span className="font-medium">
+                {row.original.designation || "Staff"}
+              </span>
               <span>&bull;</span>
               <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
                 {row.original.department || "Operations"}
@@ -298,11 +301,14 @@ export default function EmployeesPage() {
                 {row.original.emiratesId}
               </span>
             ) : (
-              <span className="text-slate-300 italic text-xs">No Emirates ID</span>
+              <span className="text-slate-300 italic text-xs">
+                No Emirates ID
+              </span>
             )}
             {row.original.visaExpiry && (
               <span className="text-[10px] text-amber-800 block font-mono font-semibold mt-0.5">
-                Visa: {new Date(row.original.visaExpiry).toLocaleDateString("en-GB")}
+                Visa:{" "}
+                {new Date(row.original.visaExpiry).toLocaleDateString("en-GB")}
               </span>
             )}
           </div>
@@ -401,7 +407,8 @@ export default function EmployeesPage() {
             Workforce &amp; Human Capital Directory
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Manage employee master data, UAE visa dates, labor cards, <br /> salary packages, and WPS details.
+            AGM FITOUT TECHNICAL SERVICES LLC — Manage employee master data, UAE
+            visa dates, labor cards, <br /> salary packages, and WPS details.
           </p>
         </div>
 

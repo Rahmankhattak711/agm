@@ -12,6 +12,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   BookOpen,
+  FileCheck2,
   FileSpreadsheet,
   Receipt,
   Scale,
@@ -28,6 +29,7 @@ import {
   GeneralLedgerReport,
   ProfitLossReport,
   ReportTab,
+  TaxInvoicesReport,
   TrialBalanceReport,
   VatPositionReport,
 } from "./components";
@@ -62,6 +64,11 @@ function ReportsContent() {
       id: "summary",
       label: "Executive Summary",
       icon: <Sparkles size={14} className="text-amber-500" />,
+    },
+    {
+      id: "tax-invoices",
+      label: "Tax Invoices",
+      icon: <FileCheck2 size={14} className="text-teal-600" />,
     },
     {
       id: "profit-loss",
@@ -146,6 +153,8 @@ function ReportsContent() {
           setActiveTab={setActiveTab}
         />
       )}
+
+      {activeTab === "tax-invoices" && <TaxInvoicesReport />}
 
       {activeTab === "profit-loss" && (
         <ProfitLossReport

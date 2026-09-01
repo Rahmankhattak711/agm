@@ -83,14 +83,19 @@ export default function DoughnutChart({
     <div className="flex flex-col justify-between h-full space-y-2">
       {(title || subtitle) && (
         <div>
-          {title && <h3 className="font-bold text-sm text-slate-900">{title}</h3>}
+          {title && (
+            <h3 className="font-bold text-sm text-slate-900">{title}</h3>
+          )}
           {subtitle && (
             <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
           )}
         </div>
       )}
 
-      <div className="w-full relative flex items-center justify-center" style={{ height }}>
+      <div
+        className="w-full relative flex items-center justify-center"
+        style={{ height }}
+      >
         <Doughnut data={chartData} options={options} />
       </div>
 

@@ -217,7 +217,9 @@ export default function FixedAssetsPage() {
             Fixed Assets &amp; Capital Equipment
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Register and manage capital equipment, tools, <br /> company vehicles, and automated depreciation schedules.
+            AGM FITOUT TECHNICAL SERVICES LLC — Register and manage capital
+            equipment, tools, <br /> company vehicles, and automated
+            depreciation schedules.
           </p>
         </div>
 
@@ -343,26 +345,25 @@ export default function FixedAssetsPage() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             {/* Category Quick Pills */}
             <div className="flex flex-wrap items-center gap-1">
-              {[
-                { value: "ALL", label: "All Assets" },
-                ...ASSET_CATEGORIES,
-              ].map((tab) => {
-                const isActive = selectedCategory === tab.value;
-                return (
-                  <button
-                    key={tab.value}
-                    type="button"
-                    onClick={() => setSelectedCategory(tab.value)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
+              {[{ value: "ALL", label: "All Assets" }, ...ASSET_CATEGORIES].map(
+                (tab) => {
+                  const isActive = selectedCategory === tab.value;
+                  return (
+                    <button
+                      key={tab.value}
+                      type="button"
+                      onClick={() => setSelectedCategory(tab.value)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                },
+              )}
             </div>
 
             <span className="text-[11px] font-bold text-slate-500 font-mono">

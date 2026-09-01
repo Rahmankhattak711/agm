@@ -198,7 +198,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Account not found" }, { status: 404 });
     }
 
-    // Protected system accounts
     const isSystem = [
       "1010",
       "1020",
@@ -220,7 +219,6 @@ export async function DELETE(
       );
     }
 
-    // If transactions exist, soft-deactivate instead of hard deleting
     if (account._count.journalLines > 0) {
       const deactivated = await prisma.chartOfAccount.update({
         where: { id },
@@ -233,7 +231,6 @@ export async function DELETE(
       });
     }
 
-    // If no transactions exist, permanently delete
     await prisma.chartOfAccount.delete({
       where: { id },
     });

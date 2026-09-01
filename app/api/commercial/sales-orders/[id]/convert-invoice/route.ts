@@ -78,7 +78,6 @@ export async function POST(
       },
     });
 
-    // Update Sales Order status to PROCESSING / COMPLETED
     await prisma.salesOrder.update({
       where: { id },
       data: { status: "COMPLETED" },

@@ -4,10 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import BarChart from "@/components/BarChart";
 import DoughnutChart from "@/components/DoughnutChart";
-import {
-  JournalEntriesIcon,
-  ReportsIcon,
-} from "@/components/icons";
+import { JournalEntriesIcon, ReportsIcon } from "@/components/icons";
 import StatCard from "@/components/StatCard";
 import {
   useBalanceSheet,
@@ -89,7 +86,6 @@ export default function DashboardPage() {
     };
   }, [period, customStartDate, customEndDate]);
 
-  // API Hooks
   const { data: profitLoss, isLoading: plLoading } = useProfitLoss({
     startDate: dateRange.startStr,
     endDate: dateRange.endStr,
@@ -123,7 +119,6 @@ export default function DashboardPage() {
     })}`;
   };
 
-  // 1. Cash & Bank Balances (Treasury)
   const treasuryMetrics = useMemo(() => {
     const pettyCashAcc =
       accounts.find((a) => a.accountCode === "1010")?.balance || 0;
@@ -136,7 +131,6 @@ export default function DashboardPage() {
     return { pettyCashAcc, rakBankAcc, siteFloatAcc, totalLiquid };
   }, [accounts]);
 
-  // 2. Accounts Receivable (A/R) Breakdown
   const arMetrics = useMemo(() => {
     const now = new Date();
     const active = invoices.filter(
@@ -174,7 +168,6 @@ export default function DashboardPage() {
     };
   }, [invoices]);
 
-  // 3. Accounts Payable (A/P) Breakdown
   const apMetrics = useMemo(() => {
     const now = new Date();
     const active = bills.filter(
@@ -212,7 +205,6 @@ export default function DashboardPage() {
     };
   }, [bills]);
 
-  // 4. Financial Performance (Revenue, Expenses, Net Profit)
   const revenue = Math.max(
     0,
     typeof profitLoss?.revenue === "number"
@@ -230,9 +222,9 @@ export default function DashboardPage() {
   const netIncome =
     typeof profitLoss?.netIncome === "number"
       ? profitLoss.netIncome
-      : (typeof profitLoss?.netProfit === "number"
-          ? profitLoss.netProfit
-          : revenue - expenses);
+      : typeof profitLoss?.netProfit === "number"
+        ? profitLoss.netProfit
+        : revenue - expenses;
   const prevNetIncome = Number(profitLoss?.prevNetProfit || 0);
 
   const revenueChangePct =
@@ -250,7 +242,6 @@ export default function DashboardPage() {
 
   const marginPct = revenue > 0 ? (netIncome / revenue) * 100 : 0;
 
-  // 5. Balance Sheet Totals
   const totalAssets = Number(
     balanceSheet?.totalAssets ?? balanceSheet?.assets ?? 0,
   );
@@ -265,7 +256,6 @@ export default function DashboardPage() {
   );
   const isBalanced = Boolean(balanceSheet?.balanced);
 
-  // 6. Cash Flow Metrics
   const cashFlowMetrics = useMemo(() => {
     const periodReceipts = payments
       .filter((p) => {
@@ -296,7 +286,6 @@ export default function DashboardPage() {
     return { moneyIn, moneyOut, netCashFlow };
   }, [payments, expensesData, bills, dateRange, revenue, expenses]);
 
-  // 7. VAT Metrics (UAE 5% FTA)
   const vatMetrics = useMemo(() => {
     const outputVat = invoices
       .filter((i) => i.status !== "CANCELLED")
@@ -308,7 +297,6 @@ export default function DashboardPage() {
     return { outputVat, inputVat, netVatPayable };
   }, [invoices, bills]);
 
-  // 7. Action Required Items
   const actionItems = useMemo(() => {
     const items = [];
 
@@ -370,7 +358,6 @@ export default function DashboardPage() {
     return items.slice(0, 4);
   }, [arMetrics, apMetrics, journalEntries, expensesData]);
 
-  // Chart Datasets
   const plChartData = [
     {
       label: "Revenue",
@@ -415,7 +402,11 @@ export default function DashboardPage() {
       <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] p-5 md:p-6 text-white shadow-[6px_0_30px_rgba(15,23,42,0.18)]">
         {/* Subtle Ambient Brand Geometric Watermark */}
         <div className="pointer-events-none absolute right-[-40px] top-[-30px] w-[260px] opacity-15">
-          <svg aria-hidden="true" viewBox="0 0 240 240" className="h-full w-full">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 240 240"
+            className="h-full w-full"
+          >
             <path
               d="M14 180V60L125 10l108 50v120M52 150V70L164 20v100"
               fill="none"
@@ -444,7 +435,8 @@ export default function DashboardPage() {
                 Finance &amp; Operations Executive Dashboard
               </h1>
               <p className="text-xs text-slate-300/80 font-normal mt-0.5">
-                Real-time financial telemetry, cash liquidity &bull; AGM Interiors &amp; Fitout
+                Real-time financial telemetry, cash liquidity &bull; AGM
+                Interiors &amp; Fitout
               </p>
             </div>
 

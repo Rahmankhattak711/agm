@@ -59,14 +59,12 @@ export async function POST(
     const poCount = await prisma.purchaseOrder.count();
     const poNumber = `PO-2026-${(poCount + 1).toString().padStart(4, "0")}`;
 
-    // Calculate total
     let totalAmount = 0;
     const poItems = [];
 
     for (const item of pr.items) {
       let prodId = item.productId;
       if (!prodId) {
-        // Find or create product if missing
         const existingProd = await prisma.product.findFirst({
           where: { isActive: true },
         });
@@ -109,7 +107,6 @@ export async function POST(
       },
     });
 
-    // Mark PR as CONVERTED
     await prisma.purchaseRequest.update({
       where: { id },
       data: { status: "CONVERTED" },

@@ -110,7 +110,6 @@ export async function POST(request: Request) {
       orderNo = `SO-2026-${(count + 1).toString().padStart(4, "0")}`;
     }
 
-    // Calculate totals
     let subtotal = 0;
     const formattedItems = items.map((item: any) => {
       const qty = parseFloat(item.quantity) || 1;
@@ -164,7 +163,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // If linked to quotation, mark quotation as ACCEPTED
     if (quotationId) {
       await prisma.quotation.update({
         where: { id: quotationId },

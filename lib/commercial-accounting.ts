@@ -105,11 +105,6 @@ export async function postSalesInvoiceJournalEntry(params: {
   return journalEntry;
 }
 
-/**
- * Post Customer Payment to General Ledger:
- * Dr. Bank / Cash (Amount)
- *   Cr. Accounts Receivable (Amount)
- */
 export async function postCustomerPaymentJournalEntry(params: {
   paymentId: string;
   receiptNumber: string;
@@ -206,11 +201,6 @@ export async function postSupplierBillJournalEntry(params: {
   return journalEntry;
 }
 
-/**
- * Post Supplier Payment to General Ledger:
- * Dr. Accounts Payable (Amount)
- *   Cr. Bank / Cash (Amount)
- */
 export async function postSupplierPaymentJournalEntry(params: {
   paymentId: string;
   paymentNumber: string;
@@ -307,12 +297,6 @@ export async function postCreditNoteJournalEntry(params: {
   return journalEntry;
 }
 
-/**
- * Post Debit Note (Purchase Return) to General Ledger:
- * Dr. Accounts Payable (Total Amount)
- *   Cr. Purchase Materials / Expense (Subtotal)
- *   Cr. Input VAT (VAT Amount)
- */
 export async function postDebitNoteJournalEntry(params: {
   debitNoteId: string;
   debitNoteNumber: string;

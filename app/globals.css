@@ -177,24 +177,21 @@ body {
 
   .print-half-width,
   .print-w-50 {
-    width: 20% !important;
-    max-width: 50% !important;
+    width: 100% !important;
+    max-width: 100% !important;
     margin-left: auto !important;
     margin-right: auto !important;
   }
 
   .print-w-90 {
-    width: 20% !important;
-    max-width: 20% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    width: 90% !important;
+    max-width: 90% !important;
   }
 
   .quotation-footer {
-    position: relative !important;
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
+    width: 95% !important;
+    max-width: 95% !important;
+    margin: auto !important;
     overflow: hidden !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
@@ -238,4 +235,3 @@ body {
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
-

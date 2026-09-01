@@ -105,7 +105,8 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      Inspect complete chronological transaction history, debit/credit postings, and running balances by account.
+                      Inspect complete chronological transaction history,
+                      debit/credit postings, and running balances by account.
                     </p>
                   </div>
 
@@ -116,7 +117,9 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                         onChange={(e) => setSelectedAccountId(e.target.value)}
                         className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-indigo-500 font-bold text-slate-800 shadow-2xs cursor-pointer"
                       >
-                        <option value="">Select an Account to Drill Down...</option>
+                        <option value="">
+                          Select an Account to Drill Down...
+                        </option>
                         {accounts?.map((acc) => (
                           <option key={acc.id} value={acc.id}>
                             {acc.accountCode} - {acc.accountName} ({acc.type})
@@ -149,14 +152,19 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                         Select an Account to View Ledger History
                       </p>
                       <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                        Choose any Asset, Liability, Equity, Revenue, or Expense account from the dropdown above to view its running balance and journal lines.
+                        Choose any Asset, Liability, Equity, Revenue, or Expense
+                        account from the dropdown above to view its running
+                        balance and journal lines.
                       </p>
                     </div>
                   </div>
                 ) : isLoading ? (
                   <div className="py-16 text-center text-xs text-slate-400 animate-pulse space-y-2">
                     <div className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin mx-auto" />
-                    <p>Calculating General Ledger &amp; Running Balance for {selectedAccount?.accountName}...</p>
+                    <p>
+                      Calculating General Ledger &amp; Running Balance for{" "}
+                      {selectedAccount?.accountName}...
+                    </p>
                   </div>
                 ) : lines.length === 0 ? (
                   <div className="py-16 text-center border border-slate-200 rounded-2xl bg-slate-50/40 text-slate-500 space-y-2">
@@ -166,7 +174,8 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                     <p className="text-xs text-slate-400">
                       There are no transaction lines posted to account{" "}
                       <span className="font-mono font-bold text-slate-700">
-                        {selectedAccount?.accountCode} - {selectedAccount?.accountName}
+                        {selectedAccount?.accountCode} -{" "}
+                        {selectedAccount?.accountName}
                       </span>
                       .
                     </p>
@@ -278,7 +287,11 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                             {selectedAccount?.accountName}
                           </h4>
                           <p className="text-[10.5px] text-slate-500">
-                            Classification: <span className="font-semibold text-slate-700">{selectedAccount?.type}</span> • Currency: AED
+                            Classification:{" "}
+                            <span className="font-semibold text-slate-700">
+                              {selectedAccount?.type}
+                            </span>{" "}
+                            • Currency: AED
                           </p>
                         </div>
                       </div>
@@ -352,19 +365,24 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                                 {l.journalEntry?.reference || "—"}
                               </TableCell>
                               <TableCell className="py-2.5 px-4 text-slate-800 font-medium">
-                                {l.journalEntry?.description || "Journal Posting"}
+                                {l.journalEntry?.description ||
+                                  "Journal Posting"}
                               </TableCell>
                               <TableCell
                                 align="right"
                                 className="py-2.5 px-4 text-right font-mono font-bold text-slate-900"
                               >
-                                {Number(l.debit) > 0 ? formatNumber(l.debit) : "—"}
+                                {Number(l.debit) > 0
+                                  ? formatNumber(l.debit)
+                                  : "—"}
                               </TableCell>
                               <TableCell
                                 align="right"
                                 className="py-2.5 px-4 text-right font-mono font-bold text-slate-900"
                               >
-                                {Number(l.credit) > 0 ? formatNumber(l.credit) : "—"}
+                                {Number(l.credit) > 0
+                                  ? formatNumber(l.credit)
+                                  : "—"}
                               </TableCell>
                               <TableCell
                                 align="right"
