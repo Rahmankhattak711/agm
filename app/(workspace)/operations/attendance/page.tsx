@@ -317,7 +317,8 @@ export default function AttendancePage() {
             Daily Site Attendance &amp; Time Tracking
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Track daily worker attendance, biometric check-ins, <br /> overtime logs, and site assignments.
+            AGM FITOUT TECHNICAL SERVICES LLC — Track daily worker attendance,
+            biometric check-ins, <br /> overtime logs, and site assignments.
           </p>
         </div>
 

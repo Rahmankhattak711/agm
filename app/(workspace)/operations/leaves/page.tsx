@@ -163,7 +163,8 @@ export default function LeavesPage() {
         cell: ({ row }) => (
           <div>
             <span className="font-mono text-xs font-semibold text-slate-800 block">
-              {new Date(row.original.startDate).toLocaleDateString("en-GB")} &rarr;{" "}
+              {new Date(row.original.startDate).toLocaleDateString("en-GB")}{" "}
+              &rarr;{" "}
               {new Date(row.original.endDate).toLocaleDateString("en-GB")}
             </span>
             <span className="text-[11px] font-bold text-emerald-800 font-mono">
@@ -274,7 +275,9 @@ export default function LeavesPage() {
             Leave Management &amp; Approvals
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Submit and manage employee leave requests, <br /> approve annual/sick leaves, and track time-off balances.
+            AGM FITOUT TECHNICAL SERVICES LLC — Submit and manage employee leave
+            requests, <br /> approve annual/sick leaves, and track time-off
+            balances.
           </p>
         </div>
 

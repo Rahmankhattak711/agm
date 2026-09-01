@@ -281,7 +281,8 @@ export default function BonusesPage() {
             Bonuses &amp; Performance Incentives
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Commission allocations, project milestones, <br /> festival rewards, and management approvals.
+            AGM FITOUT TECHNICAL SERVICES LLC — Commission allocations, project
+            milestones, <br /> festival rewards, and management approvals.
           </p>
         </div>
 
