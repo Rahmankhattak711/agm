@@ -9,7 +9,7 @@ export const QuotationFooter: React.FC<QuotationFooterProps> = ({
 }) => {
   return (
     <div
-      className={`quotation-footer mt-4 print:mt-0 relative w-full bg-white overflow-hidden max-w-full ${className}`}
+      className={`quotation-footer mt-4 print:mt-0 relative w-full bg-white overflow-hidden max-w-full! ${className}`}
       style={{
         WebkitPrintColorAdjust: "exact",
         printColorAdjust: "exact",

@@ -629,27 +629,10 @@ export default function QuotationTemplate({
             </tr>
           </thead>
 
-          <tfoot className="print-page-footer-group">
-            <tr style={{ height: "220px" }}>
-              <td
-                className="p-0 border-none"
-                style={{
-                  height: "220px",
-                  padding: 0,
-                  border: "none",
-                }}
-              >
-                <div
-                  style={{
-                    height: "220px",
-                    width: "100%",
-                    display: "block",
-                  }}
-                  className="hidden print:block"
-                />
-                <div className="print:hidden">
-                  <QuotationFooter />
-                </div>
+          <tfoot className="">
+            <tr>
+              <td className="p-0 border-none print:hidden">
+                <QuotationFooter />
               </td>
             </tr>
           </tfoot>

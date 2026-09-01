@@ -197,7 +197,7 @@ export default function CommercialQuotationsPage() {
       </div>
 
       {/* 4 Elevated Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
         {/* 1. Total Quoted Pipeline */}
         <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
           <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
