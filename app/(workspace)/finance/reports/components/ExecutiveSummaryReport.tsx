@@ -139,22 +139,8 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
         <thead className="print-page-header-group">
           <tr>
             <th className="p-0 font-normal text-left border-none">
-              <div className="hidden print:block mb-4">
+              <div className="hidden print:block">
                 <QuotationHeader />
-                <div className="px-6 pt-3 pb-2 border-b border-slate-200 flex justify-between items-end">
-                  <div>
-                    <h1 className="text-lg font-black text-slate-900 uppercase">
-                      Executive KPI &amp; Financial Summary Statement
-                    </h1>
-                    <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — High-Level Revenue,
-                      Cost and Liquidity Analytics
-                    </p>
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-mono">
-                    Printed: {new Date().toLocaleDateString("en-GB")}
-                  </p>
-                </div>
               </div>
             </th>
           </tr>
@@ -163,7 +149,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
         <tfoot className="print-page-footer-group">
           <tr>
             <td className="p-0 border-none">
-              <div className="h-[150px] w-full hidden print:block" />
+              <div className="h-[140px] w-full hidden print:block" />
             </td>
           </tr>
         </tfoot>
@@ -171,8 +157,26 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
         <tbody className="print-page-body-group">
           <tr>
             <td className="p-0 border-none align-top">
-              <div className="space-y-8 print:space-y-4">
-                {}
+              <div className="space-y-8 print:space-y-4 print:px-8 print:py-3">
+                <div className="hidden print:flex justify-between items-center border-b-2 border-emerald-800 pb-2 print-avoid-break">
+                  <div>
+                    <span className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase block">
+                      Executive KPI &amp; Financial Statement
+                    </span>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                      EXECUTIVE PERFORMANCE SUMMARY
+                    </h3>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-slate-700 font-mono font-bold text-xs">
+                      Statutory Financial Audit
+                    </p>
+                    <p className="text-slate-400 text-[10px]">
+                      Printed: {new Date().toLocaleDateString("en-GB")}
+                    </p>
+                  </div>
+                </div>
+
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-1 rounded-lg bg-emerald-700 text-white font-black text-xs shadow-xs">
@@ -203,9 +207,9 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                   </div>
                 </div>
 
-                {}
+                {/* 6 High-Level Key Performance Indicators */}
                 <div className="grid grid-cols-1 md:grid-cols-3 report-kpi-grid gap-4 print:gap-2.5 print-avoid-break">
-                  {}
+                  {/* Card 1: Turnover */}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
                     <div>
@@ -226,7 +230,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
-                  {}
+                  {/* Card 2: Gross Profit */}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-600" />
                     <div>
@@ -252,7 +256,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
-                  {}
+                  {/* Card 3: Net Profit */}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
                     <div>
@@ -282,6 +286,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
+                  {/* Card 4: Total Assets */}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
                     <div>
@@ -302,6 +307,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
+                  {/* Card 5: Total Liabilities */}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
                     <div>
@@ -322,6 +328,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
+                  {/* Card 6: VAT Position */}
                   <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
                     <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
                     <div>
@@ -602,15 +609,19 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                             </TableCell>
                           </TableRow>
 
-                          <TableRow className="bg-emerald-50/40 font-bold border-t border-emerald-100">
-                            <TableCell className="py-2.5 px-4 text-emerald-950 font-bold">
-                              Gross Operating Profit
+                          <TableRow className="bg-emerald-50/40 font-bold text-slate-900">
+                            <TableCell className="py-3 px-4 font-black">
+                              GROSS OPERATING PROFIT
                             </TableCell>
                             {quartersList.map((q) => (
                               <TableCell
                                 key={q.key}
                                 align="right"
-                                className="py-2.5 px-4 font-mono font-bold text-emerald-900"
+                                className={`py-3 px-4 font-mono font-black ${
+                                  q.grossProfit >= 0
+                                    ? "text-emerald-800"
+                                    : "text-rose-700"
+                                }`}
                               >
                                 {q.grossProfit < 0
                                   ? `(${formatNumber(Math.abs(q.grossProfit))})`
@@ -619,7 +630,11 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                             ))}
                             <TableCell
                               align="right"
-                              className="py-2.5 px-4 font-mono font-black text-emerald-950 bg-emerald-100/50"
+                              className={`py-3 px-4 font-mono font-black bg-emerald-100/50 ${
+                                matrixTotals.grossProfit >= 0
+                                  ? "text-emerald-900"
+                                  : "text-rose-700"
+                              }`}
                             >
                               {matrixTotals.grossProfit < 0
                                 ? `(${formatNumber(Math.abs(matrixTotals.grossProfit))})`
@@ -629,20 +644,20 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
 
                           <TableRow className="hover:bg-slate-50/60 transition-colors">
                             <TableCell className="py-2.5 px-4 font-semibold text-slate-700">
-                              Output VAT (5% on Sales)
+                              Output VAT (5% Standard Rated)
                             </TableCell>
                             {quartersList.map((q) => (
                               <TableCell
                                 key={q.key}
                                 align="right"
-                                className="py-2.5 px-4 font-mono text-rose-700"
+                                className="py-2.5 px-4 font-mono text-amber-700"
                               >
                                 {formatNumber(q.outputVat)}
                               </TableCell>
                             ))}
                             <TableCell
                               align="right"
-                              className="py-2.5 px-4 font-mono font-black text-rose-800 bg-slate-50/60"
+                              className="py-2.5 px-4 font-mono font-black text-amber-800 bg-slate-50/60"
                             >
                               {formatNumber(matrixTotals.outputVat)}
                             </TableCell>

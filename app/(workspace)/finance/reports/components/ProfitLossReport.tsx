@@ -110,22 +110,8 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
         <thead className="print-page-header-group">
           <tr>
             <th className="p-0 font-normal text-left border-none">
-              <div className="hidden print:block mb-4">
+              <div className="hidden print:block">
                 <QuotationHeader />
-                <div className="px-6 pt-3 pb-2 border-b border-slate-200 flex justify-between items-end">
-                  <div>
-                    <h1 className="text-lg font-black text-slate-900 uppercase">
-                      Statement of Profit &amp; Loss (Income Statement)
-                    </h1>
-                    <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC —{" "}
-                      {profitLoss?.periodLabel || "Financial Reporting Period"}
-                    </p>
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-mono">
-                    Printed: {new Date().toLocaleDateString("en-GB")}
-                  </p>
-                </div>
               </div>
             </th>
           </tr>
@@ -134,7 +120,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
         <tfoot className="print-page-footer-group">
           <tr>
             <td className="p-0 border-none">
-              <div className="h-[150px] w-full hidden print:block" />
+              <div className="h-[140px] w-full hidden print:block" />
             </td>
           </tr>
         </tfoot>
@@ -142,8 +128,26 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
         <tbody className="print-page-body-group">
           <tr>
             <td className="p-0 border-none align-top">
-              <div className="space-y-6">
-                {}
+              <div className="space-y-6 print:space-y-4 print:px-8 print:py-3">
+                <div className="hidden print:flex justify-between items-center border-b-2 border-emerald-800 pb-2 print-avoid-break">
+                  <div>
+                    <span className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase block">
+                      Financial Performance Statement
+                    </span>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                      PROFIT &amp; LOSS STATEMENT
+                    </h3>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-slate-700 font-mono font-bold text-xs">
+                      {profitLoss?.periodLabel || "Financial Reporting Period"}
+                    </p>
+                    <p className="text-slate-400 text-[10px]">
+                      Printed: {new Date().toLocaleDateString("en-GB")}
+                    </p>
+                  </div>
+                </div>
+
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
