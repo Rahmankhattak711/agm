@@ -68,6 +68,8 @@ body {
     min-height: 100% !important;
     overflow: visible !important;
     background: white !important;
+    background-color: white !important;
+    background-image: none !important;
     color: black !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -79,6 +81,14 @@ body {
     overflow: visible !important;
     height: auto !important;
     max-height: none !important;
+    background-image: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+    background-color: white !important;
   }
 
   aside,

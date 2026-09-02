@@ -188,7 +188,7 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 print:p-0 print:bg-transparent print:static print:block print:inset-auto print:z-auto">
       <OutsideClickHandler
         onOutsideClick={() => {
           if (closeOnOutsideClick) {
@@ -197,9 +197,9 @@ export const Modal: React.FC<ModalProps> = ({
         }}
       >
         <div
-          className={`w-full ${widthClass[maxWidth]} bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto`}
+          className={`w-full ${widthClass[maxWidth]} bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:w-full print:max-w-full print:p-0`}
         >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50 print:hidden">
             <h3 className="font-bold text-sm text-slate-900">{title}</h3>
             <button
               type="button"
@@ -209,7 +209,7 @@ export const Modal: React.FC<ModalProps> = ({
               ✕
             </button>
           </div>
-          <div className="p-5">{children}</div>
+          <div className="p-5 print:p-0">{children}</div>
         </div>
       </OutsideClickHandler>
     </div>

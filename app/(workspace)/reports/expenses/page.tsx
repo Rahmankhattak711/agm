@@ -32,7 +32,6 @@ export default function ExpenseReportsPage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-  const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
   const { data, isLoading, error } = useExpenses({
     category: categoryFilter !== "ALL" ? categoryFilter : undefined,
@@ -243,7 +242,8 @@ export default function ExpenseReportsPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6 print:hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight">
@@ -257,7 +257,7 @@ export default function ExpenseReportsPage() {
 
         <Button
           variant="outline"
-          onClick={() => setIsPrintSummaryOpen(true)}
+          onClick={() => window.print()}
           icon={<PrintIcon className="w-4 h-4" />}
           className="font-bold"
         >
@@ -380,6 +380,7 @@ export default function ExpenseReportsPage() {
           isLoading={isLoading}
         />
       </div>
+    </div>
 
       <Modal
         isOpen={Boolean(selectedExpense)}
@@ -466,96 +467,148 @@ export default function ExpenseReportsPage() {
         )}
       </Modal>
 
-      <Modal
-        isOpen={isPrintSummaryOpen}
-        onClose={() => setIsPrintSummaryOpen(false)}
-        title="Print Expense Statement"
+      {/* Direct A4 Printable Document with exact Quotation styling & margins */}
+      <div
+        id="expenses-print-area"
+        className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full"
       >
-        <div className="space-y-4">
-          <div
-            id="print-expense-report"
-            className="p-6 bg-white border border-slate-200 rounded-2xl space-y-4"
-          >
-            <QuotationHeader />
+        <table className="print-page-table w-full border-collapse">
+          <thead className="print-page-header-group">
+            <tr>
+              <th className="p-0 font-normal text-left border-none">
+                <QuotationHeader />
+              </th>
+            </tr>
+          </thead>
 
-            <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 rounded-xl text-xs">
-              <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                  Total Expenses
-                </span>
-                <span className="font-black text-slate-900">
-                  {formatCurrency(metrics.totalExpenses)}
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                  Net Costs
-                </span>
-                <span className="font-bold text-slate-900">
-                  {formatCurrency(metrics.netAmount)}
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                  Input VAT
-                </span>
-                <span className="font-bold text-slate-900">
-                  {formatCurrency(metrics.totalTax)}
-                </span>
-              </div>
-            </div>
+          <tfoot className="print-page-footer-group">
+            <tr>
+              <td className="p-0 border-none">
+                <div className="h-[140px] w-full hidden print:block" />
+              </td>
+            </tr>
+          </tfoot>
 
-            <Table className="w-full text-xs">
-              <TableHead>
-                <TableHeaderCell>Voucher #</TableHeaderCell>
-                <TableHeaderCell>Date</TableHeaderCell>
-                <TableHeaderCell>Category &amp; Payee</TableHeaderCell>
-                <TableHeaderCell>Method</TableHeaderCell>
-                <TableHeaderCell align="right">Amount</TableHeaderCell>
-              </TableHead>
-              <TableBody>
-                {filteredExpenses.map((e) => (
-                  <TableRow key={e.id}>
-                    <TableCell className="font-mono font-bold">
-                      {e.expenseNumber}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(e.expenseDate).toLocaleDateString("en-GB")}
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-bold">{e.category}</span>
-                      {e.payee ? ` - ${e.payee}` : ""}
-                    </TableCell>
-                    <TableCell>{e.paymentMethod.replace("_", " ")}</TableCell>
-                    <TableCell align="right" className="font-mono font-bold">
-                      {formatCurrency(e.totalAmount)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <tbody className="print-page-body-group">
+            <tr>
+              <td className="p-0 border-none align-top">
+                <div className="px-8 py-3 space-y-4">
+                  <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-2 print-avoid-break">
+                    <div>
+                      <span className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase block">
+                        Operating Expenditure Report
+                      </span>
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                        EXPENSES &amp; OVERHEAD SUMMARY
+                      </h3>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-slate-700 font-mono font-bold text-xs">
+                        {filteredExpenses.length} Records
+                      </p>
+                      <p className="text-slate-400 text-[10px]">
+                        Generated:{" "}
+                        {new Date().toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </div>
 
-            <QuotationFooter />
-          </div>
+                  <div className="grid grid-cols-3 gap-3 p-4 bg-white rounded-xl border border-slate-200 print-avoid-break">
+                    <div>
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                        Total Expenses
+                      </span>
+                      <span className="font-black text-slate-900 font-mono">
+                        {formatCurrency(metrics.totalExpenses)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                        Net Costs
+                      </span>
+                      <span className="font-bold text-slate-900 font-mono">
+                        {formatCurrency(metrics.netAmount)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                        Input VAT
+                      </span>
+                      <span className="font-bold text-slate-900 font-mono">
+                        {formatCurrency(metrics.totalTax)}
+                      </span>
+                    </div>
+                  </div>
 
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsPrintSummaryOpen(false)}
-            >
-              Close
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => window.print()}
-              icon={<PrintIcon className="w-4 h-4" />}
-              className="bg-[#28633a] text-white"
-            >
-              Print Statement
-            </Button>
-          </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-slate-900 text-xs">
+                      Expense Records ({filteredExpenses.length} entries)
+                    </h4>
+                    <div className="rounded-xl border border-slate-200 overflow-hidden">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50 border-b border-slate-200">
+                          <tr>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                              Voucher #
+                            </th>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                              Date
+                            </th>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                              Category &amp; Payee
+                            </th>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                              Method
+                            </th>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                              Amount
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-mono">
+                          {filteredExpenses.map((e) => (
+                            <tr key={e.id}>
+                              <td className="py-2 px-3 font-bold text-slate-900">
+                                {e.expenseNumber}
+                              </td>
+                              <td className="py-2 px-3 text-slate-600">
+                                {new Date(e.expenseDate).toLocaleDateString(
+                                  "en-GB",
+                                )}
+                              </td>
+                              <td className="py-2 px-3 font-sans">
+                                <span className="font-bold">{e.category}</span>
+                                {e.payee ? ` - ${e.payee}` : ""}
+                              </td>
+                              <td className="py-2 px-3 font-sans">
+                                {e.paymentMethod.replace("_", " ")}
+                              </td>
+                              <td
+                                align="right"
+                                className="py-2 px-3 font-mono font-bold text-slate-900"
+                              >
+                                {formatCurrency(e.totalAmount)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className="fixed-print-footer hidden print:block">
+          <QuotationFooter />
         </div>
-      </Modal>
-    </div>
+      </div>
+    </>
   );
 }

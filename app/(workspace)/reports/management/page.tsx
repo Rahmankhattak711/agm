@@ -33,8 +33,6 @@ import {
 } from "lucide-react";
 
 export default function ManagementReportsPage() {
-  const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
-
   const { data: profitLoss, isLoading: plLoading } = useProfitLoss();
   const { data: balanceSheet, isLoading: bsLoading } = useBalanceSheet();
   const { data: vatSummary } = useVatSummary();
@@ -133,7 +131,8 @@ export default function ManagementReportsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6 print:hidden">
       {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
@@ -150,7 +149,7 @@ export default function ManagementReportsPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setIsPrintSummaryOpen(true)}
+          onClick={() => window.print()}
           className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
           icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
         >
@@ -483,225 +482,194 @@ export default function ManagementReportsPage() {
           </div>
         </div>
       </div>
-
-      {/* Print Statement Modal */}
-      {isPrintSummaryOpen && (
-        <Modal
-          isOpen={isPrintSummaryOpen}
-          onClose={() => setIsPrintSummaryOpen(false)}
-          title="Print Executive Management Statement"
-          maxWidth="4xl"
-        >
-          <div className="space-y-6 text-xs print:p-0">
-            <div
-              className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0"
-              id="management-print-area"
-            >
-              <table className="print-page-table w-full border-collapse">
-                <thead className="print-page-header-group">
-                  <tr>
-                    <th className="p-0 font-normal text-left border-none">
-                      <div className="mb-4">
-                        <QuotationHeader className="-mx-6 -mt-6 mb-4 print:m-0" />
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-
-                <tfoot className="print-page-footer-group">
-                  <tr>
-                    <td className="p-0 border-none">
-                      <div className="h-[150px] w-full hidden print:block" />
-                    </td>
-                  </tr>
-                </tfoot>
-
-                <tbody className="print-page-body-group">
-                  <tr>
-                    <td className="p-0 border-none align-top">
-                      <div className="space-y-6">
-                        <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-2 print-avoid-break">
-                          <div>
-                            <span className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase block">
-                              Executive Performance Statement
-                            </span>
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                              MANAGEMENT &amp; BOARD REPORT
-                            </h3>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-slate-700 font-mono font-bold text-xs">
-                              Statutory Executive Audit
-                            </p>
-                            <p className="text-slate-400 text-[10px]">
-                              Generated:{" "}
-                              {new Date().toLocaleDateString("en-GB", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              })}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-4 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 print-avoid-break">
-                          <div>
-                            <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                              Billed Revenue
-                            </span>
-                            <span className="font-mono font-black text-slate-900">
-                              {formatCurrency(totalRevenue)}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                              Net Profit
-                            </span>
-                            <span className="font-mono font-black text-emerald-800">
-                              {formatCurrency(netProfit)}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                              Working Capital
-                            </span>
-                            <span className="font-mono font-black text-blue-900">
-                              {formatCurrency(workingCapital)}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                              Liquidity Ratio
-                            </span>
-                            <span className="font-mono font-black text-slate-900">
-                              {currentRatio.toFixed(2)}x
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <h4 className="font-bold text-slate-900 text-xs">
-                              Income &amp; Margin
-                            </h4>
-                            <div className="rounded-xl border border-slate-200 p-3 space-y-1.5 font-mono">
-                              <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">
-                                  Gross Revenue:
-                                </span>
-                                <span className="font-bold">
-                                  {formatCurrency(totalRevenue)}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">
-                                  Direct Costs:
-                                </span>
-                                <span className="text-rose-700">
-                                  -{formatCurrency(directExpenses)}
-                                </span>
-                              </div>
-                              <div className="flex justify-between border-t border-slate-100 pt-1">
-                                <span className="text-emerald-800 font-bold font-sans">
-                                  Gross Profit:
-                                </span>
-                                <span className="font-bold text-emerald-800">
-                                  {formatCurrency(grossProfit)}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">
-                                  Operating Overheads:
-                                </span>
-                                <span>
-                                  -{formatCurrency(operatingExpenses)}
-                                </span>
-                              </div>
-                              <div className="flex justify-between border-t border-slate-200 pt-1 font-black">
-                                <span className="font-sans">Net Profit:</span>
-                                <span className="text-emerald-800">
-                                  {formatCurrency(netProfit)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <h4 className="font-bold text-slate-900 text-xs">
-                              Balance Sheet Summary
-                            </h4>
-                            <div className="rounded-xl border border-slate-200 p-3 space-y-1.5 font-mono">
-                              <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">
-                                  Current Assets:
-                                </span>
-                                <span className="font-bold">
-                                  {formatCurrency(currentAssets)}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">
-                                  Fixed Assets:
-                                </span>
-                                <span>{formatCurrency(fixedAssets)}</span>
-                              </div>
-                              <div className="flex justify-between border-t border-slate-100 pt-1">
-                                <span className="font-sans text-blue-900 font-bold">
-                                  Total Assets:
-                                </span>
-                                <span className="font-bold text-blue-900">
-                                  {formatCurrency(totalAssets)}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-slate-500 font-sans">
-                                  Current Liabilities:
-                                </span>
-                                <span className="text-amber-700">
-                                  {formatCurrency(currentLiabilities)}
-                                </span>
-                              </div>
-                              <div className="flex justify-between border-t border-slate-200 pt-1 font-black">
-                                <span className="font-sans">Total Equity:</span>
-                                <span className="text-emerald-800">
-                                  {formatCurrency(totalEquity)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div className="fixed-print-footer hidden print:block">
-                <QuotationFooter />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setIsPrintSummaryOpen(false)}
-                className="cursor-pointer"
-              >
-                Close
-              </Button>
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => window.print()}
-                className="cursor-pointer"
-                icon={<PrintIcon className="w-4 h-4" strokeWidth={2} />}
-              >
-                Print Document
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
     </div>
+
+      {/* Direct A4 Printable Document with exact Quotation styling & margins */}
+      <div
+        id="management-print-area"
+        className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full"
+      >
+        <table className="print-page-table w-full border-collapse">
+          <thead className="print-page-header-group">
+            <tr>
+              <th className="p-0 font-normal text-left border-none">
+                <QuotationHeader />
+              </th>
+            </tr>
+          </thead>
+
+          <tfoot className="print-page-footer-group">
+            <tr>
+              <td className="p-0 border-none">
+                <div className="h-[140px] w-full hidden print:block" />
+              </td>
+            </tr>
+          </tfoot>
+
+          <tbody className="print-page-body-group">
+            <tr>
+              <td className="p-0 border-none align-top">
+                <div className="px-8 py-3 space-y-4">
+                  <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-2 print-avoid-break">
+                    <div>
+                      <span className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase block">
+                        Executive Performance Statement
+                      </span>
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                        MANAGEMENT &amp; BOARD REPORT
+                      </h3>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-slate-700 font-mono font-bold text-xs">
+                        Statutory Executive Audit
+                      </p>
+                      <p className="text-slate-400 text-[10px]">
+                        Generated:{" "}
+                        {new Date().toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-3 p-4 bg-white rounded-xl border border-slate-200 print-avoid-break">
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                        Billed Revenue
+                      </span>
+                      <span className="font-mono font-black text-slate-900">
+                        {formatCurrency(totalRevenue)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                        Net Profit
+                      </span>
+                      <span className="font-mono font-black text-emerald-800">
+                        {formatCurrency(netProfit)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                        Working Capital
+                      </span>
+                      <span className="font-mono font-black text-blue-900">
+                        {formatCurrency(workingCapital)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                        Liquidity Ratio
+                      </span>
+                      <span className="font-mono font-black text-slate-900">
+                        {currentRatio.toFixed(2)}x
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-slate-900 text-xs">
+                        Income &amp; Margin
+                      </h4>
+                      <div className="rounded-xl border border-slate-200 p-4 space-y-2 font-mono">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500 font-sans">
+                            Gross Revenue:
+                          </span>
+                          <span className="font-bold">
+                            {formatCurrency(totalRevenue)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500 font-sans">
+                            Direct Costs:
+                          </span>
+                          <span className="text-rose-700">
+                            -{formatCurrency(directExpenses)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between border-t border-slate-100 pt-1.5">
+                          <span className="text-emerald-800 font-bold font-sans">
+                            Gross Profit:
+                          </span>
+                          <span className="font-bold text-emerald-800">
+                            {formatCurrency(grossProfit)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500 font-sans">
+                            Operating Overheads:
+                          </span>
+                          <span>
+                            -{formatCurrency(operatingExpenses)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between border-t border-slate-200 pt-1.5 font-black">
+                          <span className="font-sans">Net Profit:</span>
+                          <span className="text-emerald-800">
+                            {formatCurrency(netProfit)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-slate-900 text-xs">
+                        Balance Sheet Summary
+                      </h4>
+                      <div className="rounded-xl border border-slate-200 p-4 space-y-2 font-mono">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500 font-sans">
+                            Current Assets:
+                          </span>
+                          <span className="font-bold">
+                            {formatCurrency(currentAssets)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500 font-sans">
+                            Fixed Assets:
+                          </span>
+                          <span>{formatCurrency(fixedAssets)}</span>
+                        </div>
+                        <div className="flex justify-between border-t border-slate-100 pt-1.5">
+                          <span className="font-sans text-blue-900 font-bold">
+                            Total Assets:
+                          </span>
+                          <span className="font-bold text-blue-900">
+                            {formatCurrency(totalAssets)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500 font-sans">
+                            Current Liabilities:
+                          </span>
+                          <span className="text-amber-700">
+                            {formatCurrency(currentLiabilities)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between border-t border-slate-200 pt-1.5 font-black">
+                          <span className="font-sans">Total Equity:</span>
+                          <span className="text-emerald-800">
+                            {formatCurrency(totalEquity)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className="fixed-print-footer hidden print:block">
+          <QuotationFooter />
+        </div>
+      </div>
+    </>
   );
 }

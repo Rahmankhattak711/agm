@@ -55,7 +55,6 @@ export default function SalesReportsPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(
     null,
   );
-  const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
   const { data: invoices = [], isLoading, error } = useSalesInvoices();
   const { data: customers = [] } = useCustomers();
@@ -391,7 +390,8 @@ export default function SalesReportsPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6 print:hidden">
       {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
@@ -407,7 +407,7 @@ export default function SalesReportsPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setIsPrintSummaryOpen(true)}
+          onClick={() => window.print()}
           className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
           icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
         >
@@ -659,6 +659,7 @@ export default function SalesReportsPage() {
           </div>
         )}
       </div>
+    </div>
 
       {/* Invoice Detail Audit Modal */}
       {selectedInvoice && (
@@ -829,205 +830,172 @@ export default function SalesReportsPage() {
         </Modal>
       )}
 
-      {/* Print Statement Modal */}
-      {isPrintSummaryOpen && (
-        <Modal
-          isOpen={isPrintSummaryOpen}
-          onClose={() => setIsPrintSummaryOpen(false)}
-          title="Print Sales & Revenue Summary Report"
-          maxWidth="4xl"
-        >
-          <div className="space-y-6 text-xs print:p-0">
-            <div
-              className="p-6 bg-white border border-slate-200 rounded-2xl space-y-6 print:border-none print:shadow-none print:p-0"
-              id="sales-print-area"
-            >
-              <table className="print-page-table w-full border-collapse">
-                <thead className="print-page-header-group">
-                  <tr>
-                    <th className="p-0 font-normal text-left border-none">
-                      <div className="mb-4">
-                        <QuotationHeader className="-mx-6 -mt-6 mb-4 print:m-0" />
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
+      {/* Direct A4 Printable Document with exact Quotation styling & margins */}
+      <div
+        id="sales-print-area"
+        className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full"
+      >
+        <table className="print-page-table w-full border-collapse">
+          <thead className="print-page-header-group">
+            <tr>
+              <th className="p-0 font-normal text-left border-none">
+                <QuotationHeader />
+              </th>
+            </tr>
+          </thead>
 
-                <tfoot className="print-page-footer-group">
-                  <tr>
-                    <td className="p-0 border-none">
-                      <div className="h-[150px] w-full hidden print:block" />
-                    </td>
-                  </tr>
-                </tfoot>
+          <tfoot className="print-page-footer-group">
+            <tr>
+              <td className="p-0 border-none">
+                <div className="h-[140px] w-full hidden print:block" />
+              </td>
+            </tr>
+          </tfoot>
 
-                <tbody className="print-page-body-group">
-                  <tr>
-                    <td className="p-0 border-none align-top">
-                      <div className="space-y-6">
-                        <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-2 print-avoid-break">
-                          <div>
-                            <span className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase block">
-                              Commercial Statement
-                            </span>
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                              SALES &amp; REVENUE REPORT
-                            </h3>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-slate-700 font-mono font-bold text-xs">
-                              {filteredInvoices.length} Invoices
-                            </p>
-                            <p className="text-slate-400 text-[10px]">
-                              Generated:{" "}
-                              {new Date().toLocaleDateString("en-GB", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              })}
-                            </p>
-                          </div>
-                        </div>
+          <tbody className="print-page-body-group">
+            <tr>
+              <td className="p-0 border-none align-top">
+                <div className="px-8 py-3 space-y-4">
+                  <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-2 print-avoid-break">
+                    <div>
+                      <span className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase block">
+                        Commercial Statement
+                      </span>
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                        SALES &amp; REVENUE REPORT
+                      </h3>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-slate-700 font-mono font-bold text-xs">
+                        {filteredInvoices.length} Invoices
+                      </p>
+                      <p className="text-slate-400 text-[10px]">
+                        Generated:{" "}
+                        {new Date().toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </div>
 
-                        <div className="grid grid-cols-4 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 print-avoid-break">
-                          <div>
-                            <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                              Total Billed
-                            </span>
-                            <span className="font-mono font-black text-slate-900">
-                              {formatCurrency(totalInvoicedSales)}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                              Collected
-                            </span>
-                            <span className="font-mono font-black text-emerald-800">
-                              {formatCurrency(totalCollected)}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                              Outstanding
-                            </span>
-                            <span className="font-mono font-black text-rose-700">
-                              {formatCurrency(totalOutstanding)}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                              Output VAT
-                            </span>
-                            <span className="font-mono font-black text-blue-700">
-                              {formatCurrency(totalOutputVat)}
-                            </span>
-                          </div>
-                        </div>
+                  <div className="grid grid-cols-4 gap-3 p-4 bg-white rounded-xl border border-slate-200 print-avoid-break">
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                        Total Billed
+                      </span>
+                      <span className="font-mono font-black text-slate-900">
+                        {formatCurrency(totalInvoicedSales)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                        Collected
+                      </span>
+                      <span className="font-mono font-black text-emerald-800">
+                        {formatCurrency(totalCollected)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                        Outstanding
+                      </span>
+                      <span className="font-mono font-black text-rose-700">
+                        {formatCurrency(totalOutstanding)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                        Output VAT
+                      </span>
+                      <span className="font-mono font-black text-blue-700">
+                        {formatCurrency(totalOutputVat)}
+                      </span>
+                    </div>
+                  </div>
 
-                        <div className="space-y-2">
-                          <h4 className="font-bold text-slate-900 text-xs">
-                            Invoices Breakdown ({filteredInvoices.length}{" "}
-                            records)
-                          </h4>
-                          <div className="rounded-xl border border-slate-200 overflow-hidden">
-                            <table className="w-full text-left text-xs">
-                              <thead className="bg-slate-50 border-b border-slate-200">
-                                <tr>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
-                                    Inv No
-                                  </th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
-                                    Customer
-                                  </th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase">
-                                    Date
-                                  </th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
-                                    Net (AED)
-                                  </th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
-                                    VAT (AED)
-                                  </th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
-                                    Total (AED)
-                                  </th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
-                                    Due (AED)
-                                  </th>
-                                  <th className="py-2 px-3 text-[10px] font-bold text-slate-600 uppercase text-center">
-                                    Status
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-100 font-mono">
-                                {filteredInvoices.map((inv) => (
-                                  <tr key={inv.id}>
-                                    <td className="py-1.5 px-3 font-bold text-slate-900">
-                                      {inv.invoiceNumber}
-                                    </td>
-                                    <td className="py-1.5 px-3 font-sans font-medium text-slate-800">
-                                      {inv.customerName}
-                                    </td>
-                                    <td className="py-1.5 px-3 text-slate-600">
-                                      {inv.invoiceDate
-                                        ? new Date(inv.invoiceDate)
-                                            .toISOString()
-                                            .slice(0, 10)
-                                        : "—"}
-                                    </td>
-                                    <td className="py-1.5 px-3 text-right">
-                                      {Number(inv.subtotal).toFixed(2)}
-                                    </td>
-                                    <td className="py-1.5 px-3 text-right text-blue-700">
-                                      {Number(inv.vatAmount).toFixed(2)}
-                                    </td>
-                                    <td className="py-1.5 px-3 text-right font-bold text-emerald-800">
-                                      {Number(inv.totalAmount).toFixed(2)}
-                                    </td>
-                                    <td className="py-1.5 px-3 text-right font-bold text-rose-700">
-                                      {Number(inv.remainingBalance).toFixed(2)}
-                                    </td>
-                                    <td className="py-1.5 px-3 text-center font-sans text-[10px]">
-                                      {inv.status}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div className="fixed-print-footer hidden print:block">
-                <QuotationFooter />
-              </div>
-            </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-slate-900 text-xs">
+                      Invoices Breakdown ({filteredInvoices.length} records)
+                    </h4>
+                    <div className="rounded-xl border border-slate-200 overflow-hidden">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50 border-b border-slate-200">
+                          <tr>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                              Inv No
+                            </th>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                              Customer
+                            </th>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                              Date
+                            </th>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                              Net (AED)
+                            </th>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                              VAT (AED)
+                            </th>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                              Total (AED)
+                            </th>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                              Due (AED)
+                            </th>
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-center">
+                              Status
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-mono">
+                          {filteredInvoices.map((inv) => (
+                            <tr key={inv.id}>
+                              <td className="py-2 px-3 font-bold text-slate-900">
+                                {inv.invoiceNumber}
+                              </td>
+                              <td className="py-2 px-3 font-sans font-medium text-slate-800">
+                                {inv.customerName}
+                              </td>
+                              <td className="py-2 px-3 text-slate-600">
+                                {inv.invoiceDate
+                                  ? new Date(inv.invoiceDate)
+                                      .toISOString()
+                                      .slice(0, 10)
+                                  : "—"}
+                              </td>
+                              <td className="py-2 px-3 text-right">
+                                {Number(inv.subtotal).toFixed(2)}
+                              </td>
+                              <td className="py-2 px-3 text-right text-blue-700">
+                                {Number(inv.vatAmount).toFixed(2)}
+                              </td>
+                              <td className="py-2 px-3 text-right font-bold text-emerald-800">
+                                {Number(inv.totalAmount).toFixed(2)}
+                              </td>
+                              <td className="py-2 px-3 text-right font-bold text-rose-700">
+                                {Number(inv.remainingBalance).toFixed(2)}
+                              </td>
+                              <td className="py-2 px-3 text-center font-sans text-[10px]">
+                                {inv.status}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setIsPrintSummaryOpen(false)}
-                className="cursor-pointer"
-              >
-                Close
-              </Button>
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => window.print()}
-                className="cursor-pointer"
-                icon={<PrintIcon className="w-4 h-4" strokeWidth={2} />}
-              >
-                Print Document
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
-    </div>
+        <div className="fixed-print-footer hidden print:block">
+          <QuotationFooter />
+        </div>
+      </div>
+    </>
   );
 }

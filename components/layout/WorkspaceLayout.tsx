@@ -44,15 +44,15 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
 
   return (
     <div
-      className="flex h-screen w-screen overflow-hidden"
+      className="flex h-screen w-screen overflow-hidden print:h-auto print:w-full print:!bg-white print:!bg-none print:p-0 print:m-0 print:overflow-visible"
       style={{
         background:
           "radial-gradient(circle at 88% 8%,rgba(87,121,97,0.11),transparent 22%), linear-gradient(145deg,#f8f7f2 0%,#f2f4ef 48%,#f7f5ef 100%)",
       }}
     >
       <Sidebar />
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <header className="relative z-50 flex-shrink-0 flex items-center justify-between gap-4 h-[72px] px-8 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden print:overflow-visible print:w-full print:!bg-white print:!bg-none print:p-0 print:m-0">
+        <header className="relative z-50 flex-shrink-0 flex items-center justify-between gap-4 h-[72px] px-8 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs print:hidden">
           <div className="flex flex-col justify-center">
             {eyebrow && (
               <div className="flex items-center gap-1.5 mb-1">
@@ -88,7 +88,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-8 py-6">{children}</main>
+        <main className="flex-1 overflow-y-auto px-8 py-6 print:p-0 print:m-0 print:!bg-white print:!bg-none print:overflow-visible">{children}</main>
       </div>
     </div>
   );
