@@ -32,12 +32,13 @@ import {
   TableLoading,
   Modal,
 } from "@/components/ui";
-import { useSalesInvoices, SalesInvoice } from "@/lib/hooks/api-hooks";
+import { useSalesInvoices, SalesInvoice, useProfitLoss } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
 
 export const TaxInvoicesReport: React.FC = () => {
   const { data: invoices = [], isLoading } = useSalesInvoices();
+  const { data: profitLoss } = useProfitLoss({ period: "all" });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -114,6 +115,34 @@ export const TaxInvoicesReport: React.FC = () => {
     () =>
       filteredInvoices.reduce((s, i) => s + Number(i.remainingBalance || 0), 0),
     [filteredInvoices],
+  );
+
+  const totalDirectCost = useMemo(() => {
+    return Number(profitLoss?.totalDirectExpenses || 0);
+  }, [profitLoss]);
+
+  const totalOperatingCost = useMemo(() => {
+    return Number(profitLoss?.totalOperatingExpenses || 0);
+  }, [profitLoss]);
+
+  const grossProfit = useMemo(
+    () => totalNetTaxable - totalDirectCost,
+    [totalNetTaxable, totalDirectCost],
+  );
+
+  const grossMarginPct = useMemo(
+    () => (totalNetTaxable > 0 ? (grossProfit / totalNetTaxable) * 100 : 0),
+    [grossProfit, totalNetTaxable],
+  );
+
+  const netProfit = useMemo(
+    () => grossProfit - totalOperatingCost,
+    [grossProfit, totalOperatingCost],
+  );
+
+  const netMarginPct = useMemo(
+    () => (totalNetTaxable > 0 ? (netProfit / totalNetTaxable) * 100 : 0),
+    [netProfit, totalNetTaxable],
   );
 
   const handlePrint = () => {
@@ -203,101 +232,124 @@ export const TaxInvoicesReport: React.FC = () => {
                 </div>
               </div>
 
-              {}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 my-5 print:grid-cols-5 print:gap-2 print:my-3">
-                {}
-                <div className="p-4 rounded-xl bg-slate-900 text-white relative overflow-hidden flex flex-col justify-between space-y-2">
-                  <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                    1. Total Gross Invoiced
-                  </span>
+              {/* 4 Cards in a row with Profit & Loss UI */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 my-5 print:my-3 print-avoid-break">
+                {/* Card 1 */}
+                <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                  <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
                   <div>
-                    <span className="text-xs font-semibold text-teal-400 font-sans mr-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        1. Gross Invoiced
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-teal-800 bg-teal-50 px-1.5 py-0.5 rounded-md border border-teal-200/60">
+                        {filteredInvoices.length} Invoices
+                      </span>
+                    </div>
+                    <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
+                      Total billing inclusive of VAT
+                    </p>
+                  </div>
+                  <div className="pt-2 print:pt-0">
+                    <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
                       AED
                     </span>
-                    <span className="text-lg font-black text-white font-mono">
+                    <span className="text-xl print:text-base font-black text-slate-900 font-mono">
                       {formatNumber(totalGrossInvoiced)}
                     </span>
+                    <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
+                      Net: {formatCurrency(totalNetTaxable)}
+                    </p>
                   </div>
-                  <span className="text-[10.5px] text-slate-400 block">
-                    {filteredInvoices.length} Invoices Issued
-                  </span>
                 </div>
 
-                {}
-                <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex flex-col justify-between space-y-2">
+                {/* Card 2 */}
+                <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                   <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                    2. Net Taxable Sales
-                  </span>
                   <div>
-                    <span className="text-xs font-semibold text-sky-600 font-sans mr-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        2. Net Taxable Sales
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded-md border border-sky-200/60">
+                        Revenue Base
+                      </span>
+                    </div>
+                    <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
+                      Turnover before 5% Output VAT
+                    </p>
+                  </div>
+                  <div className="pt-2 print:pt-0">
+                    <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
                       AED
                     </span>
-                    <span className="text-lg font-black text-slate-900 font-mono">
+                    <span className="text-xl print:text-base font-black text-slate-900 font-mono">
                       {formatNumber(totalNetTaxable)}
                     </span>
+                    <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
+                      FTA Standard 5% Rated
+                    </p>
                   </div>
-                  <span className="text-[10.5px] text-slate-500 block">
-                    Before 5% VAT
-                  </span>
                 </div>
 
-                {}
-                <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex flex-col justify-between space-y-2">
+                {/* Card 3 */}
+                <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                   <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                    3. Output VAT (5%)
-                  </span>
                   <div>
-                    <span className="text-xs font-semibold text-emerald-600 font-sans mr-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        3. Output VAT (5%)
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                        UAE FTA
+                      </span>
+                    </div>
+                    <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
+                      Statutory tax liability assessed
+                    </p>
+                  </div>
+                  <div className="pt-2 print:pt-0">
+                    <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
                       AED
                     </span>
-                    <span className="text-lg font-black text-emerald-800 font-mono">
+                    <span className="text-xl print:text-base font-black text-emerald-800 font-mono">
                       {formatNumber(totalVatAssessed)}
                     </span>
+                    <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
+                      Collected: {formatCurrency(totalPaidCollected)}
+                    </p>
                   </div>
-                  <span className="text-[10.5px] text-slate-500 block">
-                    UAE FTA Tax Payable
-                  </span>
                 </div>
 
-                {}
-                <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex flex-col justify-between space-y-2">
-                  <div className="absolute inset-x-0 top-0 h-[2.5px] bg-blue-500" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                    4. Total Collected
-                  </span>
-                  <div>
-                    <span className="text-xs font-semibold text-blue-600 font-sans mr-1">
-                      AED
-                    </span>
-                    <span className="text-lg font-black text-blue-900 font-mono">
-                      {formatNumber(totalPaidCollected)}
-                    </span>
-                  </div>
-                  <span className="text-[10.5px] text-slate-500 block">
-                    Customer Receipts
-                  </span>
-                </div>
-
-                {}
-                <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex flex-col justify-between space-y-2">
+                {/* Card 4 */}
+                <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
                   <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                    5. Outstanding Balance
-                  </span>
                   <div>
-                    <span className="text-xs font-semibold text-amber-600 font-sans mr-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        4. Outstanding Balance
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200/60">
+                        {totalGrossInvoiced > 0
+                          ? ((totalOutstanding / totalGrossInvoiced) * 100).toFixed(1)
+                          : "0.0"}% Due
+                      </span>
+                    </div>
+                    <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
+                      Uncollected customer receivables
+                    </p>
+                  </div>
+                  <div className="pt-2 print:pt-0">
+                    <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
                       AED
                     </span>
-                    <span className="text-lg font-black text-amber-800 font-mono">
+                    <span className="text-xl print:text-base font-black text-amber-800 font-mono">
                       {formatNumber(totalOutstanding)}
                     </span>
+                    <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
+                      Settled: {formatCurrency(totalPaidCollected)}
+                    </p>
                   </div>
-                  <span className="text-[10.5px] text-slate-500 block">
-                    Unpaid Receivables
-                  </span>
                 </div>
               </div>
 
@@ -382,48 +434,48 @@ export const TaxInvoicesReport: React.FC = () => {
 
                 <Table className="w-full text-xs text-left">
                   <TableHead className="bg-slate-50 border-b border-slate-200">
-                    <TableHeaderCell className="py-3 px-4 font-bold text-slate-700 uppercase text-[10px] tracking-wider">
+                    <TableHeaderCell className="py-2.5 px-3 w-32 print:w-28 font-bold text-slate-700 uppercase text-[10px] tracking-wider whitespace-nowrap">
                       Invoice # &amp; Date
                     </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-4 font-bold text-slate-700 uppercase text-[10px] tracking-wider">
+                    <TableHeaderCell className="py-2.5 px-3 w-40 print:w-36 font-bold text-slate-700 uppercase text-[10px] tracking-wider">
                       Customer &amp; TRN
                     </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-4 font-bold text-slate-700 uppercase text-[10px] tracking-wider">
-                      Quotation / Project Ref
+                    <TableHeaderCell className="py-2.5 px-3 min-w-[130px] font-bold text-slate-700 uppercase text-[10px] tracking-wider">
+                      Quotation / Scope
                     </TableHeaderCell>
                     <TableHeaderCell
                       align="right"
-                      className="py-3 px-4 text-right font-bold text-slate-700 uppercase text-[10px] tracking-wider"
+                      className="py-2.5 px-3 w-28 print:w-24 text-right font-bold text-slate-700 uppercase text-[10px] tracking-wider whitespace-nowrap"
                     >
-                      Net Subtotal
+                      Net (AED)
                     </TableHeaderCell>
                     <TableHeaderCell
                       align="right"
-                      className="py-3 px-4 text-right font-bold text-slate-700 uppercase text-[10px] tracking-wider"
+                      className="py-2.5 px-3 w-24 print:w-20 text-right font-bold text-slate-700 uppercase text-[10px] tracking-wider whitespace-nowrap"
                     >
                       VAT (5%)
                     </TableHeaderCell>
                     <TableHeaderCell
                       align="right"
-                      className="py-3 px-4 text-right font-bold text-slate-700 uppercase text-[10px] tracking-wider"
+                      className="py-2.5 px-3 w-28 print:w-24 text-right font-bold text-slate-700 uppercase text-[10px] tracking-wider whitespace-nowrap"
                     >
-                      Total Gross
+                      Gross (AED)
                     </TableHeaderCell>
                     <TableHeaderCell
                       align="right"
-                      className="py-3 px-4 text-right font-bold text-slate-700 uppercase text-[10px] tracking-wider"
+                      className="py-2.5 px-3 w-28 print:w-24 text-right font-bold text-slate-700 uppercase text-[10px] tracking-wider whitespace-nowrap"
                     >
                       Balance Due
                     </TableHeaderCell>
                     <TableHeaderCell
                       align="center"
-                      className="py-3 px-3 text-center font-bold text-slate-700 uppercase text-[10px] tracking-wider"
+                      className="py-2.5 px-2 w-20 print:w-16 text-center font-bold text-slate-700 uppercase text-[10px] tracking-wider whitespace-nowrap"
                     >
                       Status
                     </TableHeaderCell>
                     <TableHeaderCell
                       align="center"
-                      className="py-3 px-3 text-center font-bold text-slate-700 uppercase text-[10px] tracking-wider print:hidden"
+                      className="py-2.5 px-2 w-12 text-center font-bold text-slate-700 uppercase text-[10px] tracking-wider print:hidden"
                     >
                       Action
                     </TableHeaderCell>
@@ -454,76 +506,78 @@ export const TaxInvoicesReport: React.FC = () => {
                             key={inv.id}
                             className="hover:bg-slate-50/70 text-slate-700 transition"
                           >
-                            <TableCell className="py-2.5 px-3">
-                              <div className="font-mono font-bold text-slate-900">
+                            <TableCell className="py-2 px-3 whitespace-nowrap">
+                              <div className="font-mono font-bold text-slate-900 text-xs print:text-[10px]">
                                 {inv.invoiceNumber}
                               </div>
-                              <div className="text-[10px] text-slate-400 font-mono">
+                              <div className="text-[10px] print:text-[8.5px] text-slate-400 font-mono">
                                 Date: {invDate}
                               </div>
                             </TableCell>
 
-                            <TableCell className="py-2.5 px-3">
-                              <div className="font-bold text-slate-900">
+                            <TableCell className="py-2 px-3">
+                              <div className="font-bold text-slate-900 text-xs print:text-[10px] truncate max-w-[140px] print:max-w-[120px]">
                                 {inv.customerName || "Valued Customer"}
                               </div>
                               {inv.customerTrn ? (
-                                <div className="text-[10px] text-slate-400 font-mono">
+                                <div className="text-[10px] print:text-[8px] text-slate-400 font-mono whitespace-nowrap">
                                   TRN: {inv.customerTrn}
                                 </div>
                               ) : (
-                                <div className="text-[10px] text-slate-400 italic">
+                                <div className="text-[10px] print:text-[8px] text-slate-400 italic">
                                   No TRN
                                 </div>
                               )}
                             </TableCell>
 
-                            <TableCell className="py-2.5 px-3 max-w-xs">
-                              {inv.quotationRef && (
-                                <span className="inline-block px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 font-mono text-[10px] font-bold border border-teal-200 mr-1.5">
-                                  {inv.quotationRef}
+                            <TableCell className="py-2 px-3">
+                              <div className="flex flex-col gap-0.5">
+                                {inv.quotationRef && (
+                                  <span className="inline-block px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 font-mono text-[9.5px] print:text-[8px] font-bold border border-teal-200 w-fit">
+                                    {inv.quotationRef}
+                                  </span>
+                                )}
+                                <span className="text-slate-600 text-xs print:text-[9.5px] truncate max-w-[180px] print:max-w-[150px]">
+                                  {inv.projectScope || "—"}
                                 </span>
-                              )}
-                              <span className="text-slate-600 text-xs truncate">
-                                {inv.projectScope || "—"}
-                              </span>
+                              </div>
                             </TableCell>
 
                             <TableCell
                               align="right"
-                              className="py-2.5 px-3 text-right font-mono font-medium text-slate-700"
+                              className="py-2 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap text-xs print:text-[10px]"
                             >
-                              AED {formatNumber(inv.subtotal)}
+                              {formatNumber(inv.subtotal)}
                             </TableCell>
 
                             <TableCell
                               align="right"
-                              className="py-2.5 px-3 text-right font-mono font-medium text-emerald-700"
+                              className="py-2 px-3 text-right font-mono font-bold text-emerald-800 whitespace-nowrap text-xs print:text-[10px]"
                             >
-                              AED {formatNumber(inv.vatAmount)}
+                              {formatNumber(inv.vatAmount)}
                             </TableCell>
 
                             <TableCell
                               align="right"
-                              className="py-2.5 px-3 text-right font-mono font-bold text-slate-900"
+                              className="py-2 px-3 text-right font-mono font-black text-slate-950 whitespace-nowrap text-xs print:text-[10px]"
                             >
-                              AED {formatNumber(inv.totalAmount)}
+                              {formatNumber(inv.totalAmount)}
                             </TableCell>
 
                             <TableCell
                               align="right"
-                              className={`py-2.5 px-3 text-right font-mono font-bold ${
+                              className={`py-2 px-3 text-right font-mono font-black whitespace-nowrap text-xs print:text-[10px] ${
                                 Number(inv.remainingBalance) > 0
                                   ? "text-amber-800"
                                   : "text-emerald-700"
                               }`}
                             >
-                              AED {formatNumber(inv.remainingBalance)}
+                              {formatNumber(inv.remainingBalance)}
                             </TableCell>
 
-                            <TableCell className="py-2.5 px-2 text-center">
+                            <TableCell className="py-2 px-2 text-center whitespace-nowrap">
                               <span
-                                className={`px-2 py-0.5 rounded-full text-[9.5px] font-bold border ${
+                                className={`px-2 py-0.5 rounded-full text-[9px] print:text-[8px] font-bold border ${
                                   inv.status === "POSTED"
                                     ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                                     : inv.status === "PAID"
@@ -547,7 +601,7 @@ export const TaxInvoicesReport: React.FC = () => {
                               </span>
                             </TableCell>
 
-                            <TableCell className="py-2.5 px-2 text-center print:hidden">
+                            <TableCell className="py-2 px-2 text-center print:hidden">
                               <button
                                 type="button"
                                 onClick={() => setSelectedInvoice(inv)}
@@ -564,9 +618,9 @@ export const TaxInvoicesReport: React.FC = () => {
                   </TableBody>
                 </Table>
 
-                <div className="bg-slate-50 border-t border-slate-200 p-3 px-4 flex flex-wrap items-center justify-between gap-4 font-bold text-xs text-slate-800">
+                <div className="bg-slate-50 border-t border-slate-200 p-3 px-4 flex flex-wrap items-center justify-between gap-4 font-bold text-xs print:text-[10px] text-slate-800 print-avoid-break">
                   <span>Grand Totals ({filteredInvoices.length} Invoices)</span>
-                  <div className="flex items-center gap-6 font-mono text-xs">
+                  <div className="flex items-center gap-6 font-mono text-xs print:text-[10px]">
                     <div>
                       <span className="text-slate-400 font-sans mr-1">
                         Net:
@@ -600,10 +654,255 @@ export const TaxInvoicesReport: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
+
+              {/* TAX INVOICE PROFIT & LOSS REALIZATION SECTION */}
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-5 print:p-3 space-y-4 print:space-y-2.5 shadow-xs print-avoid-break">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        P&amp;L Analysis
+                      </span>
+                      <h4 className="font-black text-sm text-slate-900 tracking-tight">
+                        Tax Invoices Profit &amp; Loss Statement
+                      </h4>
+                    </div>
+                    <div className="flex items-center gap-3 font-mono text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-500 font-sans text-[11px]">Gross Margin:</span>
+                        <span className="px-2 py-0.5 rounded font-bold bg-emerald-100 text-emerald-900 text-xs">
+                          {grossMarginPct.toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-500 font-sans text-[11px]">Net Margin:</span>
+                        <span className="px-2 py-0.5 rounded font-bold bg-indigo-100 text-indigo-900 text-xs">
+                          {netMarginPct.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4 P&L Realization Cards matching ProfitLoss UI */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5">
+                    {/* Card 1 */}
+                    <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                      <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            1. Total Income
+                          </span>
+                          <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                            100% Taxable
+                          </span>
+                        </div>
+                        <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
+                          Contract revenue &amp; billings
+                        </p>
+                      </div>
+                      <div className="pt-2 print:pt-0">
+                        <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                          AED
+                        </span>
+                        <span className="text-xl print:text-base font-black text-slate-900 font-mono">
+                          {formatNumber(totalNetTaxable)}
+                        </span>
+                        <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
+                          Gross: {formatCurrency(totalGrossInvoiced)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Card 2 */}
+                    <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                      <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            2. Direct Costs (COGS)
+                          </span>
+                          <span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200/60">
+                            {totalNetTaxable > 0
+                              ? ((totalDirectCost / totalNetTaxable) * 100).toFixed(1)
+                              : "0.0"}%
+                          </span>
+                        </div>
+                        <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
+                          Project materials &amp; labor
+                        </p>
+                      </div>
+                      <div className="pt-2 print:pt-0">
+                        <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                          AED
+                        </span>
+                        <span className="text-xl print:text-base font-black text-rose-800 font-mono">
+                          {formatNumber(totalDirectCost)}
+                        </span>
+                        <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
+                          Cost of Sales Allocation
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Card 3 */}
+                    <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                      <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-600" />
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            3. Gross Profit
+                          </span>
+                          <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                            {grossMarginPct.toFixed(1)}%
+                          </span>
+                        </div>
+                        <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
+                          Revenue after Direct COGS
+                        </p>
+                      </div>
+                      <div className="pt-2 print:pt-0">
+                        <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                          AED
+                        </span>
+                        <span className="text-xl print:text-base font-black text-emerald-800 font-mono">
+                          {formatNumber(grossProfit)}
+                        </span>
+                        <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
+                          Trading Profit Yield
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Card 4 */}
+                    <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
+                      <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            4. Net Profit
+                          </span>
+                          <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded-md border border-indigo-200/60">
+                            {netMarginPct.toFixed(1)}%
+                          </span>
+                        </div>
+                        <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
+                          Net income after overheads
+                        </p>
+                      </div>
+                      <div className="pt-2 print:pt-0">
+                        <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                          AED
+                        </span>
+                        <span className={`text-xl print:text-base font-black font-mono ${netProfit >= 0 ? "text-indigo-950" : "text-rose-700"}`}>
+                          {formatNumber(netProfit)}
+                        </span>
+                        <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
+                          Bottom Line Margin
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* P&L Statement Table Breakdown */}
+                  <div className="rounded-xl border border-slate-200/80 overflow-hidden">
+                    <Table className="w-full text-xs text-left">
+                      <TableHead className="bg-slate-50 border-b border-slate-200">
+                        <TableHeaderCell className="py-2.5 px-4 font-bold text-slate-700 uppercase text-[10px] tracking-wider">
+                          P&amp;L Accounting Statement Component
+                        </TableHeaderCell>
+                        <TableHeaderCell className="py-2.5 px-4 font-bold text-slate-700 uppercase text-[10px] tracking-wider">
+                          Statutory Recognition Basis
+                        </TableHeaderCell>
+                        <TableHeaderCell align="right" className="py-2.5 px-4 text-right font-bold text-slate-700 uppercase text-[10px] tracking-wider">
+                          Amount (AED)
+                        </TableHeaderCell>
+                        <TableHeaderCell align="right" className="py-2.5 px-4 text-right font-bold text-slate-700 uppercase text-[10px] tracking-wider">
+                          % of Revenue
+                        </TableHeaderCell>
+                      </TableHead>
+                      <TableBody className="divide-y divide-slate-100 font-medium">
+                        <TableRow className="hover:bg-slate-50/60">
+                          <TableCell className="py-2.5 px-4 font-bold text-slate-900">
+                            Recognized Tax Invoiced Revenue (Turnover)
+                          </TableCell>
+                          <TableCell className="py-2.5 px-4 text-slate-500">
+                            {filteredInvoices.length} Tax Invoices (Excl. VAT)
+                          </TableCell>
+                          <TableCell align="right" className="py-2.5 px-4 font-mono font-bold text-slate-900">
+                            {formatNumber(totalNetTaxable)}
+                          </TableCell>
+                          <TableCell align="right" className="py-2.5 px-4 font-mono font-bold text-slate-700">
+                            100.0%
+                          </TableCell>
+                        </TableRow>
+
+                        <TableRow className="hover:bg-slate-50/60">
+                          <TableCell className="py-2.5 px-4 font-semibold text-rose-700">
+                            Less: Cost of Goods Sold (Direct Project Materials)
+                          </TableCell>
+                          <TableCell className="py-2.5 px-4 text-slate-500">
+                            Direct Material &amp; Supplier Cost Allocation
+                          </TableCell>
+                          <TableCell align="right" className="py-2.5 px-4 font-mono font-semibold text-rose-700">
+                            ({formatNumber(totalDirectCost)})
+                          </TableCell>
+                          <TableCell align="right" className="py-2.5 px-4 font-mono text-rose-700">
+                            {totalNetTaxable > 0 ? ((totalDirectCost / totalNetTaxable) * 100).toFixed(1) : "0.0"}%
+                          </TableCell>
+                        </TableRow>
+
+                        <TableRow className="bg-emerald-50/50 font-bold">
+                          <TableCell className="py-2.5 px-4 font-black text-emerald-950">
+                            = GROSS OPERATING PROFIT
+                          </TableCell>
+                          <TableCell className="py-2.5 px-4 text-emerald-800">
+                            Trading Contribution Realized
+                          </TableCell>
+                          <TableCell align="right" className="py-2.5 px-4 font-mono font-black text-emerald-900">
+                            {formatNumber(grossProfit)}
+                          </TableCell>
+                          <TableCell align="right" className="py-2.5 px-4 font-mono font-black text-emerald-800">
+                            {grossMarginPct.toFixed(1)}%
+                          </TableCell>
+                        </TableRow>
+
+                        <TableRow className="hover:bg-slate-50/60">
+                          <TableCell className="py-2.5 px-4 font-semibold text-slate-600">
+                            Less: Administrative &amp; Operating Overheads
+                          </TableCell>
+                          <TableCell className="py-2.5 px-4 text-slate-500">
+                            Operational Expense Recognition
+                          </TableCell>
+                          <TableCell align="right" className="py-2.5 px-4 font-mono text-slate-700">
+                            ({formatNumber(totalOperatingCost)})
+                          </TableCell>
+                          <TableCell align="right" className="py-2.5 px-4 font-mono text-slate-600">
+                            {totalNetTaxable > 0 ? ((totalOperatingCost / totalNetTaxable) * 100).toFixed(1) : "0.0"}%
+                          </TableCell>
+                        </TableRow>
+
+                        <TableRow className="bg-slate-900 text-white font-black">
+                          <TableCell className="py-3 px-4 uppercase tracking-wider font-bold">
+                            = NET OPERATING PROFIT
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-slate-300 font-normal">
+                            Bottom Line Margin Realization
+                          </TableCell>
+                          <TableCell align="right" className="py-3 px-4 font-mono font-black text-emerald-400">
+                            {formatNumber(netProfit)}
+                          </TableCell>
+                          <TableCell align="right" className="py-3 px-4 font-mono font-black text-emerald-400">
+                            {netMarginPct.toFixed(1)}%
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
       </table>
 
       <div className="fixed-print-footer hidden print:block">
