@@ -144,7 +144,7 @@ const navGroups: NavGroup[] = [
           },
           {
             id: "expenses",
-            label: "Direct Expenses",
+            label: "Purchase Expenses",
             href: "/finance/expenses",
           },
         ],

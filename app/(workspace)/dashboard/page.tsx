@@ -345,7 +345,7 @@ export default function DashboardPage() {
     if (pendingExpenses.length > 0) {
       items.push({
         id: "exp-approval",
-        title: `${pendingExpenses.length} Direct Expenses`,
+        title: `${pendingExpenses.length} Purchase Expenses`,
         description: "Draft status awaiting approval",
         link: "/finance/expenses",
         actionText: "Review Expenses",
