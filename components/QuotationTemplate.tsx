@@ -629,14 +629,6 @@ export default function QuotationTemplate({
             </tr>
           </thead>
 
-          <tfoot className="">
-            <tr>
-              <td className="p-0 border-none print:hidden">
-                <QuotationFooter />
-              </td>
-            </tr>
-          </tfoot>
-
           <tbody className="print-page-body-group">
             <tr>
               <td className="p-0 border-none align-top">
@@ -684,7 +676,7 @@ export default function QuotationTemplate({
               </td>
             </tr>
             <tr>
-              <td className="p-0 border-none align-top">
+              <td className="p-0 border-none align-top pb-14 print:pb-0">
                 <QuotationPaymentTerms
                   paymentTerms={paymentTerms}
                   onUpdatePaymentTerm={updatePaymentTerm}

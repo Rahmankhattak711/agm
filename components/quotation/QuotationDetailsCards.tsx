@@ -14,7 +14,7 @@ export const QuotationDetailsCards: React.FC<QuotationDetailsCardsProps> = ({
     "flex-1 bg-transparent outline-none focus:bg-emerald-50/80 rounded px-1.5 py-0.5 text-slate-800 border-b border-dashed border-transparent hover:border-slate-300 focus:border-emerald-500 transition-colors print:bg-transparent print:p-0 print:border-none";
 
   const labelBase =
-    "w-20 print:w-16 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0";
+    "w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0";
 
   return (
     <div className="grid grid-cols-2 gap-4 print:gap-2 px-10 py-3.5 print:px-8 print:py-1 text-[12px] print:text-[9.5px] print-avoid-break">
@@ -25,22 +25,12 @@ export const QuotationDetailsCards: React.FC<QuotationDetailsCardsProps> = ({
         </div>
         <div className="space-y-1 print:space-y-0.5">
           <div className="flex items-center gap-1">
-            <span className={labelBase}>Client:</span>
+            <span className={labelBase}>Client Name:</span>
             <input
               placeholder="Client / Company Name"
               className={inputBase + " font-bold text-slate-900"}
               value={meta.customer}
               onChange={(e) => onUpdateMeta("customer", e.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center gap-1">
-            <span className={labelBase}>Attention:</span>
-            <input
-              placeholder="Contact Person"
-              className={inputBase}
-              value={meta.attention}
-              onChange={(e) => onUpdateMeta("attention", e.target.value)}
             />
           </div>
 

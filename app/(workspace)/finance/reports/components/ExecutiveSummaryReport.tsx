@@ -368,16 +368,16 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                 <div className="rounded-2xl border border-slate-200/80 bg-white p-5 print:p-3 space-y-6 print:space-y-3 shadow-xs print-avoid-break">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:pb-2">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                      <div className="flex flex-col items-start gap-2">
+                        <div className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
                           Quarterly Analytics
-                        </span>
+                        </div>
                         <h4 className="font-black text-sm text-slate-900 tracking-tight">
-                          3-Month Group Performance &amp; Quarterly Summary
+                          3-Month Group Performance &amp;  <br />Quarterly Summary
                         </h4>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        AGM Financial Year grouped into 4 distinct three-month
+                        AGM Financial Year grouped into 4 distinct <br /> three-month
                         quarters (Q1, Q2, Q3, Q4).
                       </p>
                     </div>
