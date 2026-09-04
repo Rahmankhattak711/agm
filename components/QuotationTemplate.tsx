@@ -629,6 +629,17 @@ export default function QuotationTemplate({
             </tr>
           </thead>
 
+          <tfoot className="print-page-footer-group">
+            <tr>
+              <td className="p-0 border-none align-bottom">
+                {/* Spacer row to prevent body rows from overlapping the fixed bottom footer */}
+                <div className="w-full opacity-0 pointer-events-none" aria-hidden="true">
+                  <QuotationFooter />
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+
           <tbody className="print-page-body-group">
             <tr>
               <td className="p-0 border-none align-top">
@@ -676,7 +687,7 @@ export default function QuotationTemplate({
               </td>
             </tr>
             <tr>
-              <td className="p-0 border-none align-top pb-14 print:pb-0">
+              <td className="p-0 border-none align-top pb-6 print:pb-0">
                 <QuotationPaymentTerms
                   paymentTerms={paymentTerms}
                   onUpdatePaymentTerm={updatePaymentTerm}
@@ -688,8 +699,14 @@ export default function QuotationTemplate({
           </tbody>
         </table>
 
-        <div className="fixed-print-footer hidden print:block">
+        {/* Fixed Footer pinned to the bottom of every page (including the last page) */}
+        <div className="print-footer-bottom fixed-print-footer hidden print:block">
           <QuotationFooter />
+        </div>
+
+        {/* On-Screen Footer */}
+        <div className="px-10 pb-6 print:hidden">
+          <QuotationFooter className="mt-6" />
         </div>
       </div>
     </div>

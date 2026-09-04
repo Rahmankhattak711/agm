@@ -37,6 +37,7 @@ import {
   useProducts,
   SalesInvoice,
 } from "@/lib/hooks/api-hooks";
+import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 
 export default function SalesInvoicesPage() {
   const { data: invoices = [], isLoading, error } = useSalesInvoices();
@@ -189,6 +190,13 @@ export default function SalesInvoicesPage() {
     }
   };
 
+  const handlePrintTaxInvoice = (inv: SalesInvoice) => {
+    setSelectedInvoice(inv);
+    setTimeout(() => {
+      window.print();
+    }, 50);
+  };
+
   const filteredInvoices = useMemo(() => {
     const q = search.toLowerCase();
     return invoices.filter((inv) => {
@@ -220,364 +228,377 @@ export default function SalesInvoicesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Commercial Sales Invoices &amp; Tax Billing
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Issue tax-compliant sales
-            invoices, calculate 5% Output VAT, <br /> update Accounts
-            Receivable, and post transactions directly to General Ledger.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
-          >
-            Print Register
-          </Button>
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setIsCreateOpen(true)}
-            icon={<Plus size={14} strokeWidth={2.5} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
-          >
-            Create Sales Invoice
-          </Button>
-        </div>
-      </div>
-
-      {/* 4 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Total Invoiced */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+      {/* Dashboard View (Hidden when printing single selected invoice) */}
+      <div className={`space-y-6 ${selectedInvoice ? "print:hidden" : ""}`}>
+        {/* Simple Top Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Total Invoiced (Incl. VAT)
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Gross sales billings
-            </span>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+              Commercial Sales Invoices &amp; Tax Billing
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              AGM FITOUT TECHNICAL SERVICES LLC — Issue tax-compliant sales
+              invoices, calculate 5% Output VAT, <br /> update Accounts
+              Receivable, and post transactions directly to General Ledger.
+            </p>
           </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-slate-900 font-mono">
-              {formatNumber(totalBilled)}
-            </span>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+              icon={<Printer size={14} />}
+            >
+              Print Register
+            </Button>
+
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsCreateOpen(true)}
+              icon={<Plus size={14} strokeWidth={2.5} />}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            >
+              Create Sales Invoice
+            </Button>
           </div>
         </div>
 
-        {/* 2. Outstanding Receivables */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Outstanding Accounts Receivable
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Open client balances
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-rose-500 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-rose-700 font-mono">
-              {formatNumber(totalOutstanding)}
-            </span>
-          </div>
-        </div>
-
-        {/* 3. Settled Collections */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Settled Receipts
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Collected payments
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-emerald-600 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-emerald-800 font-mono">
-              {formatNumber(totalSettled)}
-            </span>
-          </div>
-        </div>
-
-        {/* 4. Output VAT 5% */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                4. Output VAT (5%)
+        {/* 4 Summary KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
+          {/* 1. Total Invoiced */}
+          <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+            <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                1. Total Invoiced (Incl. VAT)
               </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-50 text-purple-800 border border-purple-200">
-                Box 1
+              <span className="text-xs text-slate-500 mt-0.5 block truncate">
+                Gross sales billings
               </span>
             </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              FTA Form 201 Tax Due
-            </span>
+            <div className="pt-2">
+              <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
+                AED
+              </span>
+              <span className="text-xl font-black text-slate-900 font-mono">
+                {formatNumber(totalBilled)}
+              </span>
+            </div>
           </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-purple-600 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-purple-800 font-mono">
-              {formatNumber(totalVatOutput)}
-            </span>
+
+          {/* 2. Outstanding Receivables */}
+          <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+            <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                2. Outstanding Accounts Receivable
+              </span>
+              <span className="text-xs text-slate-500 mt-0.5 block truncate">
+                Open client balances
+              </span>
+            </div>
+            <div className="pt-2">
+              <span className="text-xs font-semibold text-rose-500 font-sans mr-1">
+                AED
+              </span>
+              <span className="text-xl font-black text-rose-700 font-mono">
+                {formatNumber(totalOutstanding)}
+              </span>
+            </div>
+          </div>
+
+          {/* 3. Settled Collections */}
+          <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+            <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                3. Settled Receipts
+              </span>
+              <span className="text-xs text-slate-500 mt-0.5 block truncate">
+                Collected payments
+              </span>
+            </div>
+            <div className="pt-2">
+              <span className="text-xs font-semibold text-emerald-600 font-sans mr-1">
+                AED
+              </span>
+              <span className="text-xl font-black text-emerald-800 font-mono">
+                {formatNumber(totalSettled)}
+              </span>
+            </div>
+          </div>
+
+          {/* 4. Output VAT 5% */}
+          <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
+            <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  4. Output VAT (5%)
+                </span>
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-50 text-purple-800 border border-purple-200">
+                  Box 1
+                </span>
+              </div>
+              <span className="text-xs text-slate-500 mt-0.5 block truncate">
+                FTA Form 201 Tax Due
+              </span>
+            </div>
+            <div className="pt-2">
+              <span className="text-xs font-semibold text-purple-600 font-sans mr-1">
+                AED
+              </span>
+              <span className="text-xl font-black text-purple-800 font-mono">
+                {formatNumber(totalVatOutput)}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Filter & Table Card */}
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Search & Filter Strip */}
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Status Quick Pills */}
-            <div className="flex flex-wrap items-center gap-1">
-              {[
-                { id: "ALL", label: "All Invoices" },
-                { id: "POSTED", label: "Posted to GL" },
-                { id: "PARTIALLY_PAID", label: "Partially Paid" },
-                { id: "PAID", label: "Fully Paid" },
-                { id: "DRAFT", label: "Drafts" },
-              ].map((tab) => {
-                const isActive = statusFilter === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setStatusFilter(tab.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                    }`}
+        {/* Main Filter & Table Card */}
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 print:p-0 print:border-none print:shadow-none">
+          {/* Search & Filter Strip */}
+          <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              {/* Status Quick Pills */}
+              <div className="flex flex-wrap items-center gap-1">
+                {[
+                  { id: "ALL", label: "All Invoices" },
+                  { id: "POSTED", label: "Posted to GL" },
+                  { id: "PARTIALLY_PAID", label: "Partially Paid" },
+                  { id: "PAID", label: "Fully Paid" },
+                  { id: "DRAFT", label: "Drafts" },
+                ].map((tab) => {
+                  const isActive = statusFilter === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setStatusFilter(tab.id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <span className="text-[11px] font-bold text-slate-500 font-mono">
+                {filteredInvoices.length} Invoices Listed
+              </span>
+            </div>
+
+            <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
+              <div className="w-full sm:w-96 relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search invoice number, client, TRN, project..."
+                  className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {error ? (
+            <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
+              Error loading sales invoices: {(error as any).message}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+              <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
+                <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                  Commercial Sales Invoices Register
+                </h4>
+                <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                  {filteredInvoices.length} Invoices
+                </span>
+              </div>
+
+              <Table className="w-full text-xs text-left">
+                <TableHead className="bg-slate-50 border-b border-slate-200">
+                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Invoice No
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Customer / Client
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Project Scope
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Date
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    align="right"
+                    className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
                   >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
+                    Total (AED)
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    align="right"
+                    className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
+                  >
+                    Balance Due
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                    Status
+                  </TableHeaderCell>
+                  <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider print:hidden">
+                    Actions
+                  </TableHeaderCell>
+                </TableHead>
 
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
-              {filteredInvoices.length} Invoices Listed
-            </span>
-          </div>
-
-          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <div className="w-full sm:w-96 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search invoice number, client, TRN, project..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        {error ? (
-          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
-            Error loading sales invoices: {(error as any).message}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white">
-                Commercial Sales Invoices Register
-              </h4>
-              <span className="text-[11px] font-mono text-emerald-300 font-bold">
-                {filteredInvoices.length} Invoices
-              </span>
-            </div>
-
-            <Table className="w-full text-xs text-left">
-              <TableHead className="bg-slate-50 border-b border-slate-200">
-                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Invoice No
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Customer / Client
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Project Scope
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Date
-                </TableHeaderCell>
-                <TableHeaderCell
-                  align="right"
-                  className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-                >
-                  Total (AED)
-                </TableHeaderCell>
-                <TableHeaderCell
-                  align="right"
-                  className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-                >
-                  Balance Due
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Status
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Actions
-                </TableHeaderCell>
-              </TableHead>
-
-              <TableBody className="divide-y divide-slate-100 font-medium">
-                {isLoading ? (
-                  <TableLoading colSpan={8} rows={5} />
-                ) : filteredInvoices.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="py-12 text-center text-slate-400 italic"
-                    >
-                      No sales invoices found. Click &quot;Create Sales
-                      Invoice&quot; to issue a new commercial invoice.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredInvoices.map((inv) => (
-                    <TableRow
-                      key={inv.id}
-                      className="hover:bg-slate-50/60 text-slate-700 transition"
-                    >
-                      <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
-                        <div className="flex items-center gap-1.5">
-                          <Receipt
-                            size={13}
-                            className="text-teal-700 shrink-0"
-                          />
-                          <span>{inv.invoiceNumber}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-3 px-4 font-bold text-slate-900">
-                        <div>{inv.customerName}</div>
-                        {inv.customerTrn && (
-                          <div className="text-[10px] text-slate-400 font-mono font-normal">
-                            TRN: {inv.customerTrn}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-3 px-4 max-w-xs truncate text-slate-700">
-                        {inv.projectScope || "—"}
-                      </TableCell>
-                      <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
-                        {inv.invoiceDate
-                          ? new Date(inv.invoiceDate).toLocaleDateString(
-                              "en-GB",
-                            )
-                          : "—"}
-                      </TableCell>
+                <TableBody className="divide-y divide-slate-100 font-medium">
+                  {isLoading ? (
+                    <TableLoading colSpan={8} rows={5} />
+                  ) : filteredInvoices.length === 0 ? (
+                    <TableRow>
                       <TableCell
-                        align="right"
-                        className="py-3 px-3 text-right font-mono font-black text-slate-900"
+                        colSpan={8}
+                        className="py-12 text-center text-slate-400 italic"
                       >
-                        {formatNumber(inv.totalAmount)}
-                        <span className="text-[10px] text-slate-400 font-normal block">
-                          Incl. 5% VAT: {formatNumber(inv.vatAmount)}
-                        </span>
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className={`py-3 px-3 text-right font-mono font-bold ${
-                          Number(inv.remainingBalance) > 0
-                            ? "text-rose-700"
-                            : "text-emerald-700"
-                        }`}
-                      >
-                        {formatNumber(inv.remainingBalance)}
-                      </TableCell>
-                      <TableCell className="py-3 px-3 text-center">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                            inv.status === "PAID"
-                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                              : inv.status === "POSTED"
-                                ? "bg-sky-50 text-sky-800 border-sky-200"
-                                : inv.status === "PARTIALLY_PAID"
-                                  ? "bg-amber-50 text-amber-800 border-amber-200"
-                                  : "bg-slate-100 text-slate-700 border-slate-200"
-                          }`}
-                        >
-                          {inv.status === "PAID"
-                            ? "Paid"
-                            : inv.status === "POSTED"
-                              ? "Posted"
-                              : inv.status === "PARTIALLY_PAID"
-                                ? "Partial"
-                                : "Draft"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="py-3 px-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedInvoice(inv)}
-                            className="p-1.5 text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
-                            title="View / Print Tax Invoice"
-                          >
-                            <Eye size={13} />
-                          </button>
-                          {inv.status === "DRAFT" && (
-                            <Button
-                              variant="dark"
-                              size="sm"
-                              onClick={() => handlePostInvoice(inv.id)}
-                              icon={<FileCheck2 size={12} />}
-                              className="text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer"
-                            >
-                              Post to GL
-                            </Button>
-                          )}
-                          {inv.status !== "DRAFT" && inv.status !== "PAID" && (
-                            <Button
-                              variant="dark"
-                              size="sm"
-                              onClick={() => {
-                                setPaymentModalInv(inv);
-                                setPaymentAmount(String(inv.remainingBalance));
-                              }}
-                              icon={<CreditCard size={12} />}
-                              className="text-[10px] font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer"
-                            >
-                              Receive
-                            </Button>
-                          )}
-                        </div>
+                        No sales invoices found. Click &quot;Create Sales
+                        Invoice&quot; to issue a new commercial invoice.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+                  ) : (
+                    filteredInvoices.map((inv) => (
+                      <TableRow
+                        key={inv.id}
+                        className="hover:bg-slate-50/60 text-slate-700 transition"
+                      >
+                        <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
+                          <div className="flex items-center gap-1.5">
+                            <Receipt
+                              size={13}
+                              className="text-teal-700 shrink-0"
+                            />
+                            <span>{inv.invoiceNumber}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-3 px-4 font-bold text-slate-900">
+                          <div>{inv.customerName}</div>
+                          {inv.customerTrn && (
+                            <div className="text-[10px] text-slate-400 font-mono font-normal">
+                              TRN: {inv.customerTrn}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-3 px-4 max-w-xs truncate text-slate-700">
+                          {inv.projectScope || "—"}
+                        </TableCell>
+                        <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
+                          {inv.invoiceDate
+                            ? new Date(inv.invoiceDate).toLocaleDateString(
+                                "en-GB",
+                              )
+                            : "—"}
+                        </TableCell>
+                        <TableCell
+                          align="right"
+                          className="py-3 px-3 text-right font-mono font-black text-slate-900"
+                        >
+                          {formatNumber(inv.totalAmount)}
+                          <span className="text-[10px] text-slate-400 font-normal block">
+                            Incl. 5% VAT: {formatNumber(inv.vatAmount)}
+                          </span>
+                        </TableCell>
+                        <TableCell
+                          align="right"
+                          className={`py-3 px-3 text-right font-mono font-bold ${
+                            Number(inv.remainingBalance) > 0
+                              ? "text-rose-700"
+                              : "text-emerald-700"
+                          }`}
+                        >
+                          {formatNumber(inv.remainingBalance)}
+                        </TableCell>
+                        <TableCell className="py-3 px-3 text-center">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                              inv.status === "PAID"
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                : inv.status === "POSTED"
+                                  ? "bg-sky-50 text-sky-800 border-sky-200"
+                                  : inv.status === "PARTIALLY_PAID"
+                                    ? "bg-amber-50 text-amber-800 border-amber-200"
+                                    : "bg-slate-100 text-slate-700 border-slate-200"
+                            }`}
+                          >
+                            {inv.status === "PAID"
+                              ? "Paid"
+                              : inv.status === "POSTED"
+                                ? "Posted"
+                                : inv.status === "PARTIALLY_PAID"
+                                  ? "Partial"
+                                  : "Draft"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-3 px-3 text-center print:hidden">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handlePrintTaxInvoice(inv)}
+                              className="p-1.5 text-slate-600 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
+                              title="Print Tax Invoice"
+                            >
+                              <Printer size={13} />
+                            </button>
+                            {inv.status === "DRAFT" && (
+                              <Button
+                                variant="dark"
+                                size="sm"
+                                onClick={() => handlePostInvoice(inv.id)}
+                                icon={<FileCheck2 size={12} />}
+                                className="text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer"
+                              >
+                                Post to GL
+                              </Button>
+                            )}
+                            {inv.status !== "DRAFT" && inv.status !== "PAID" && (
+                              <Button
+                                variant="dark"
+                                size="sm"
+                                onClick={() => {
+                                  setPaymentModalInv(inv);
+                                  setPaymentAmount(String(inv.remainingBalance));
+                                }}
+                                icon={<CreditCard size={12} />}
+                                className="text-[10px] font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer"
+                              >
+                                Receive
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Page Footer */}
+        <div className="pt-2 print:hidden">
+          <QuotationFooter />
+        </div>
+
+        {/* Fixed Print Footer for Statement Printing */}
+        <div className="fixed-print-footer hidden print:block">
+          <QuotationFooter />
+        </div>
       </div>
 
       {/* Modal for Creating Sales Invoice */}
@@ -888,135 +909,341 @@ export default function SalesInvoicesPage() {
         </Modal>
       )}
 
-      {/* View Tax Invoice Modal */}
+      {/* Official Tax Invoice Print Document (Hidden on screen, rendered directly in print) */}
       {selectedInvoice && (
-        <Modal
-          isOpen={!!selectedInvoice}
-          onClose={() => setSelectedInvoice(null)}
-          title={`Sales Invoice: ${selectedInvoice.invoiceNumber}`}
-          maxWidth="lg"
+        <div
+          id="printable-voucher"
+          className="hidden print:block mx-auto bg-white max-w-4xl overflow-visible"
         >
-          <div className="space-y-4 text-xs">
-            <div className="grid grid-cols-2 gap-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
-              <div>
-                <p className="font-bold text-slate-900">
-                  {selectedInvoice.customerName}
-                </p>
-                <p className="text-slate-500 font-mono">
-                  TRN: {selectedInvoice.customerTrn || "N/A"}
-                </p>
-                <p className="text-slate-700 mt-1">
-                  Scope: {selectedInvoice.projectScope || "General Fitout"}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-mono font-bold text-slate-900">
-                  {selectedInvoice.invoiceNumber}
-                </p>
-                <p className="text-slate-500 font-mono">
-                  Date:{" "}
-                  {selectedInvoice.invoiceDate
-                    ? new Date(selectedInvoice.invoiceDate).toLocaleDateString(
-                        "en-GB",
-                      )
-                    : ""}
-                </p>
-                <p className="text-slate-500 font-mono">
-                  Due:{" "}
-                  {selectedInvoice.dueDate
-                    ? new Date(selectedInvoice.dueDate).toLocaleDateString(
-                        "en-GB",
-                      )
-                    : ""}
-                </p>
-              </div>
-            </div>
+          <table className="print-page-table w-full border-collapse">
+            <thead className="print-page-header-group">
+              <tr>
+                <th className="p-0 font-normal text-left border-none">
+                  <QuotationHeader />
+                </th>
+              </tr>
+            </thead>
 
-            <div className="border border-slate-200 rounded-xl overflow-hidden">
-              <Table className="w-full text-xs">
-                <TableHead className="bg-slate-50 border-b border-slate-200">
-                  <TableHeaderCell className="py-2 px-3 font-bold text-slate-600">
-                    Description
-                  </TableHeaderCell>
-                  <TableHeaderCell
-                    align="right"
-                    className="py-2 px-3 font-bold text-slate-600"
-                  >
-                    Qty
-                  </TableHeaderCell>
-                  <TableHeaderCell
-                    align="right"
-                    className="py-2 px-3 font-bold text-slate-600"
-                  >
-                    Rate (AED)
-                  </TableHeaderCell>
-                  <TableHeaderCell
-                    align="right"
-                    className="py-2 px-3 font-bold text-slate-600"
-                  >
-                    Total (AED)
-                  </TableHeaderCell>
-                </TableHead>
-                <TableBody className="divide-y divide-slate-100">
-                  {selectedInvoice.items?.map((l: any) => (
-                    <TableRow key={l.id}>
-                      <TableCell className="py-2 px-3 font-medium">
-                        {l.description}
-                      </TableCell>
-                      <TableCell align="right" className="py-2 px-3 font-mono">
-                        {l.quantity}
-                      </TableCell>
-                      <TableCell align="right" className="py-2 px-3 font-mono">
-                        {Number(l.unitPrice).toFixed(2)}
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className="py-2 px-3 font-mono font-bold text-slate-900"
-                      >
-                        {Number(l.totalAmount).toFixed(2)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <tfoot className="print-page-footer-group">
+              <tr>
+                <td className="p-0 border-none align-bottom">
+                  {/* Invisible spacer so body rows don't overlap the fixed bottom footer */}
+                  <div className="w-full opacity-0 pointer-events-none" aria-hidden="true">
+                    <QuotationFooter />
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
 
-            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono space-y-1 text-right">
-              <div className="flex justify-between text-slate-600">
-                <span>Subtotal (AED):</span>
-                <span>{Number(selectedInvoice.subtotal).toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-slate-600">
-                <span>5% Output VAT (AED):</span>
-                <span>{Number(selectedInvoice.vatAmount).toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between font-black text-slate-900 text-sm border-t border-slate-200 pt-1">
-                <span>Total Amount:</span>
-                <span className="text-emerald-900">
-                  AED {Number(selectedInvoice.totalAmount).toFixed(2)}
-                </span>
-              </div>
-            </div>
+            <tbody className="print-page-body-group">
+              {/* 1. Title Bar */}
+              <tr>
+                <td className="p-0 border-none align-top">
+                  <div className="px-10 py-3.5 print:px-8 print:py-1 w-full border-b border-slate-100 bg-slate-50/50">
+                    <div className="flex items-center justify-between gap-8">
+                      <div>
+                        <h1 className="text-2xl print:text-lg font-black text-slate-900 tracking-tight">
+                          TAX INVOICE
+                        </h1>
+                        <p className="text-[11px] print:text-[9.5px] font-semibold text-emerald-700 mt-0.5 print:mt-0">
+                          Official UAE FTA Tax Invoice (Standard Rated 5% VAT)
+                        </p>
+                      </div>
 
-            <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
-              <Button
-                variant="outline"
-                onClick={() => setSelectedInvoice(null)}
-                className="cursor-pointer"
-              >
-                Close
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => window.print()}
-                icon={<Printer size={13} />}
-                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
-              >
-                Print Tax Invoice
-              </Button>
-            </div>
+                      <div className="w-[340px] space-y-1 text-[12px] print:text-[10px]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500 font-semibold whitespace-nowrap">
+                            Invoice No:
+                          </span>
+                          <span className="font-mono font-bold text-slate-900">
+                            {selectedInvoice.invoiceNumber}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500 font-semibold whitespace-nowrap">
+                            Invoice Date:
+                          </span>
+                          <span className="font-bold text-slate-900">
+                            {selectedInvoice.invoiceDate
+                              ? new Date(
+                                  selectedInvoice.invoiceDate,
+                                ).toLocaleDateString("en-GB")
+                              : "—"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500 font-semibold whitespace-nowrap">
+                            Payment Due:
+                          </span>
+                          <span className="font-bold text-slate-900">
+                            {selectedInvoice.dueDate
+                              ? new Date(
+                                  selectedInvoice.dueDate,
+                                ).toLocaleDateString("en-GB")
+                              : "—"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+              {/* 2. Client & Project Details Cards */}
+              <tr>
+                <td className="p-0 border-none align-top">
+                  <div className="grid grid-cols-2 gap-4 print:gap-2 px-10 py-3.5 print:px-8 print:py-1 text-[12px] print:text-[9.5px] print-avoid-break">
+                    {/* Left Card: Client / Bill To */}
+                    <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl shadow-2xs">
+                      <div className="font-bold mb-2 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
+                        CLIENT / BILL TO
+                      </div>
+                      <div className="space-y-1 print:space-y-0.5">
+                        <div className="flex items-center gap-1">
+                          <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                            Client Name:
+                          </span>
+                          <span className="font-bold text-slate-900">
+                            {selectedInvoice.customerName}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                            Customer TRN:
+                          </span>
+                          <span className="font-mono font-bold text-slate-800">
+                            {selectedInvoice.customerTrn || "N/A"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                            Address:
+                          </span>
+                          <span className="text-slate-700">
+                            Dubai, United Arab Emirates
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Card: Project / Site Details */}
+                    <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl shadow-2xs">
+                      <div className="font-bold mb-2 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
+                        PROJECT / SITE DETAILS
+                      </div>
+                      <div className="space-y-1 print:space-y-0.5">
+                        <div className="flex items-center gap-1">
+                          <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                            Project:
+                          </span>
+                          <span className="font-bold text-slate-900">
+                            {selectedInvoice.projectScope || "Commercial Fitout Contract"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                            Location:
+                          </span>
+                          <span className="text-slate-700">
+                            Dubai, United Arab Emirates
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                            Reference:
+                          </span>
+                          <span className="font-mono text-slate-800">
+                            {selectedInvoice.quotationRef || selectedInvoice.invoiceNumber}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+              {/* 3. Items Table */}
+              <tr>
+                <td className="p-0 border-none align-top">
+                  <div className="px-10 mt-2 print:px-8 print:mt-1">
+                    <table className="w-full text-[12px] print:text-[11px] border-collapse border border-agm-box-border bg-white rounded-lg overflow-hidden shadow-xs">
+                      <thead>
+                        <tr className="text-center text-white bg-agm-green print-avoid-break">
+                          <th className="py-2.5 px-2 print:py-1.5 print:px-1 font-bold w-12 border border-agm-box-border text-white text-center align-middle">
+                            S.No
+                          </th>
+                          <th className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold border border-agm-box-border text-white text-left align-middle">
+                            DESCRIPTION OF WORK / SERVICES
+                          </th>
+                          <th className="py-2.5 px-2 print:py-1.5 print:px-1 font-bold w-20 border border-agm-box-border text-white text-center align-middle">
+                            QTY
+                          </th>
+                          <th className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold w-28 border border-agm-box-border text-white text-right align-middle">
+                            RATE (AED)
+                          </th>
+                          <th className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold w-32 border border-agm-box-border text-white text-right align-middle">
+                            TOTAL (AED)
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-agm-box-border">
+                        {selectedInvoice.items && selectedInvoice.items.length > 0 ? (
+                          selectedInvoice.items.map((it: any, idx: number) => (
+                            <tr
+                              key={it.id || idx}
+                              className="hover:bg-slate-50/50 bg-white print-avoid-break"
+                            >
+                              <td className="py-2.5 px-2 print:py-1 print:px-1 align-middle text-center font-bold text-slate-700 border border-agm-box-border">
+                                {idx + 1}
+                              </td>
+                              <td className="py-2.5 px-3 print:py-1 print:px-2 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
+                                {it.description}
+                              </td>
+                              <td className="py-2.5 px-2 print:py-1 print:px-1 align-middle text-center font-mono font-bold text-slate-800 border border-agm-box-border">
+                                {it.quantity} {it.unit ? `(${it.unit})` : ""}
+                              </td>
+                              <td className="py-2.5 px-3 print:py-1 print:px-2 align-middle text-right font-mono font-semibold text-slate-800 border border-agm-box-border">
+                                {formatNumber(it.unitPrice)}
+                              </td>
+                              <td className="py-2.5 px-3 print:py-1 print:px-2 align-middle text-right font-mono font-bold text-slate-900 border border-agm-box-border">
+                                {formatNumber(it.totalAmount)}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr className="bg-white">
+                            <td
+                              colSpan={5}
+                              className="py-6 text-center text-slate-400 italic border border-agm-box-border"
+                            >
+                              No item details found.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+              </tr>
+
+              {/* 4. Totals & Banking Table */}
+              <tr>
+                <td className="p-0 border-none align-top">
+                  <div className="px-10 print:px-8">
+                    <div className="flex items-stretch justify-between gap-4 mt-3.5 print:mt-1.5 print-avoid-break">
+                      {/* Left: Banking Details */}
+                      <div className="flex-1 border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl text-[11.5px] print:text-[9.5px] flex flex-col justify-center shadow-2xs">
+                        <div className="font-bold mb-1.5 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
+                          BANKING INFORMATION
+                        </div>
+                        <div className="space-y-1 print:space-y-0.5 text-slate-700 font-medium">
+                          <div>
+                            Company:{" "}
+                            <strong className="text-slate-900">
+                              A G M FITOUT TECHNICAL SERVICES LLC
+                            </strong>
+                          </div>
+                          <div>
+                            Bank:{" "}
+                            <strong className="text-slate-900">
+                              The National Bank of Ras Al Khaimah (RAKBANK)
+                            </strong>
+                          </div>
+                          <div>
+                            Account (AED):{" "}
+                            <strong className="text-slate-900 font-mono">
+                              0423141113001
+                            </strong>
+                          </div>
+                          <div>
+                            IBAN (AED):{" "}
+                            <strong className="text-slate-900 font-mono">
+                              AE88 0400 0004 2314 1113 001
+                            </strong>
+                          </div>
+                          <div>
+                            SWIFT Code:{" "}
+                            <strong className="text-slate-900 font-mono">
+                              NBARAEAD
+                            </strong>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right: Subtotal, VAT, Gross & Balances */}
+                      <div className="w-80 border border-slate-200 print:border-slate-300 bg-white rounded-xl overflow-hidden shadow-2xs text-[12px] print:text-[10px]">
+                        <div className="divide-y divide-slate-100 print:divide-slate-200">
+                          <div className="flex items-center justify-between px-4 py-2.5 print:py-1 bg-slate-50/40">
+                            <span className="font-semibold text-slate-600">
+                              Subtotal (Excl. VAT)
+                            </span>
+                            <span className="font-mono font-bold text-slate-900 text-[12.5px] print:text-[10.5px]">
+                              AED {formatNumber(selectedInvoice.subtotal)}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between px-4 py-2 print:py-1">
+                            <span className="font-semibold text-slate-600">
+                              Output VAT (5%)
+                            </span>
+                            <span className="font-mono font-semibold text-emerald-800">
+                              AED {formatNumber(selectedInvoice.vatAmount)}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between px-4 py-2.5 print:py-1.5 bg-agm-green text-white">
+                            <span className="font-black tracking-wide text-white text-[12px] print:text-[10.5px] uppercase">
+                              TOTAL AMOUNT
+                            </span>
+                            <span className="font-mono font-black text-white text-[14px] print:text-[11.5px]">
+                              AED {formatNumber(selectedInvoice.totalAmount)}
+                            </span>
+                          </div>
+
+                          {Number(selectedInvoice.paidAmount || 0) > 0 && (
+                            <div className="flex items-center justify-between px-4 py-1.5 bg-slate-50 text-slate-700 font-semibold">
+                              <span>Paid / Settled</span>
+                              <span className="font-mono text-emerald-700">
+                                AED {formatNumber(selectedInvoice.paidAmount)}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between px-4 py-1.5 bg-slate-50 text-slate-900 font-bold">
+                            <span>Balance Due</span>
+                            <span
+                              className={`font-mono ${
+                                Number(selectedInvoice.remainingBalance) > 0
+                                  ? "text-rose-700"
+                                  : "text-emerald-700"
+                              }`}
+                            >
+                              AED {formatNumber(selectedInvoice.remainingBalance)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Fixed Footer pinned to bottom on every page, including the last page */}
+          <div className="print-footer-bottom fixed-print-footer hidden print:block">
+            <QuotationFooter />
           </div>
-        </Modal>
+        </div>
       )}
     </div>
   );

@@ -174,8 +174,10 @@ export const TaxInvoicesReport: React.FC = () => {
 
         <tfoot className="print-page-footer-group">
           <tr>
-            <td className="p-0 border-none">
-              <div className="h-[140px] w-full hidden print:block" />
+            <td className="p-0 border-none align-bottom">
+              <div className="w-full opacity-0 pointer-events-none" aria-hidden="true">
+                <QuotationFooter />
+              </div>
             </td>
           </tr>
         </tfoot>
@@ -905,7 +907,8 @@ export const TaxInvoicesReport: React.FC = () => {
         </tbody>
       </table>
 
-      <div className="fixed-print-footer hidden print:block">
+      {/* Fixed Footer pinned to bottom on every page, including the last page */}
+      <div className="print-footer-bottom fixed-print-footer hidden print:block">
         <QuotationFooter />
       </div>
 
