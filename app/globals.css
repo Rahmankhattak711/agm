@@ -140,7 +140,7 @@ body {
   .print-page-table > tfoot,
   tfoot.print-page-footer-group {
     display: table-footer-group !important;
-    height: 140px !important;
+    height: auto !important;
     width: 100% !important;
   }
 
@@ -148,10 +148,11 @@ body {
   tfoot.print-page-footer-group > tr,
   .print-page-table > tfoot > tr > td,
   tfoot.print-page-footer-group > tr > td {
-    height: 140px !important;
+    height: auto !important;
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
+    vertical-align: bottom !important;
   }
 
   .print-page-table > tbody > tr,
@@ -199,10 +200,10 @@ body {
   }
 
   .quotation-footer {
-    width: 95% !important;
-    max-width: 95% !important;
+    width: 98% !important;
+    max-width: 98% !important;
     margin: auto !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     -webkit-print-color-adjust: exact !important;
@@ -213,14 +214,14 @@ body {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     width: 100% !important;
     height: auto !important;
-    max-height: 130px !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
+  .print-footer-bottom,
   .fixed-print-footer {
     position: fixed !important;
     bottom: 0 !important;
@@ -233,6 +234,7 @@ body {
     background: transparent !important;
     padding: 0 4mm !important;
     box-sizing: border-box !important;
+    pointer-events: none !important;
   }
 }
 
