@@ -37,7 +37,13 @@ import {
   useProducts,
   SalesInvoice,
 } from "@/lib/hooks/api-hooks";
-import { QuotationHeader, QuotationFooter } from "@/components/quotation";
+import {
+  QuotationHeader,
+  QuotationFooter,
+  QuotationTerms,
+  QuotationSignatures,
+  DEFAULT_TERMS_AND_CONDITIONS,
+} from "@/components/quotation";
 
 export default function SalesInvoicesPage() {
   const { data: invoices = [], isLoading, error } = useSalesInvoices();
@@ -78,6 +84,8 @@ export default function SalesInvoicesPage() {
       unit: "SQM",
     },
   ]);
+  const [notes, setNotes] = useState("");
+  const [terms, setTerms] = useState("");
   const [autoPost, setAutoPost] = useState(true);
 
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -138,6 +146,8 @@ export default function SalesInvoicesPage() {
         invoiceDate,
         dueDate,
         items,
+        notes: notes || undefined,
+        terms: terms || undefined,
         autoPost,
       });
       setIsCreateOpen(false);
@@ -145,6 +155,8 @@ export default function SalesInvoicesPage() {
       setCustomerId("");
       setCustomerTrn("");
       setProjectScope("");
+      setNotes("");
+      setTerms("");
       setItems([
         {
           productId: "",
@@ -590,13 +602,8 @@ export default function SalesInvoicesPage() {
           )}
         </div>
 
-        {/* Bottom Page Footer */}
-        <div className="pt-2 print:hidden">
-          <QuotationFooter />
-        </div>
-
         {/* Fixed Print Footer for Statement Printing */}
-        <div className="fixed-print-footer hidden print:block">
+        <div className="print-footer-bottom fixed-print-footer hidden print:block">
           <QuotationFooter />
         </div>
       </div>
@@ -761,6 +768,34 @@ export default function SalesInvoicesPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Terms &amp; Conditions (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Standard 20 AGM Fitout clauses apply if left blank, or enter custom terms..."
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs resize-none text-xs"
+                  value={terms}
+                  onChange={(e) => setTerms(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Notes &amp; Special Remarks (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Additional notes for the client..."
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs resize-none text-xs"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
               </div>
             </div>
 
@@ -1234,6 +1269,54 @@ export default function SalesInvoicesPage() {
                       </div>
                     </div>
                   </div>
+                </td>
+              </tr>
+
+              {/* 5. Notes & Special Remarks (if available) */}
+              {selectedInvoice.notes && (
+                <tr>
+                  <td className="p-0 border-none align-top">
+                    <div className="px-10 mt-3.5 print:px-8 print:mt-1.5 print-avoid-break">
+                      <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl text-[11.5px] print:text-[9.5px]">
+                        <div className="font-bold mb-1 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
+                          NOTES &amp; SPECIAL REMARKS
+                        </div>
+                        <p className="text-slate-700 whitespace-pre-line leading-relaxed">
+                          {selectedInvoice.notes}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
+              {/* 6. Terms & Conditions */}
+              <tr>
+                <td className="p-0 border-none align-top">
+                  {selectedInvoice.terms &&
+                  selectedInvoice.terms.trim().length > 0 &&
+                  !selectedInvoice.terms.includes("DEFAULT") ? (
+                    <div className="px-10 mt-4 print:px-8 print:mt-2">
+                      <div className="border border-agm-box-border bg-agm-box-bg p-4 print:p-0 rounded-xl print:rounded-none print:border-none print:bg-transparent">
+                        <div className="font-bold text-slate-900 uppercase text-[11.5px] print:text-[10px] tracking-wider text-agm-green mb-2 print:mb-1">
+                          TERMS AND CONDITIONS
+                        </div>
+                        <div className="text-[11px] print:text-[9.5px] text-slate-700 whitespace-pre-line leading-relaxed">
+                          {selectedInvoice.terms}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <QuotationTerms termsList={DEFAULT_TERMS_AND_CONDITIONS} />
+                  )}
+                </td>
+              </tr>
+
+              {/* 7. Client Acceptance & Signatures */}
+              <tr>
+                <td className="p-0 border-none align-top">
+                  <QuotationSignatures />
                 </td>
               </tr>
             </tbody>
