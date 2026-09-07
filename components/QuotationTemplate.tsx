@@ -616,10 +616,11 @@ export default function QuotationTemplate({
         onDeleteQuotation={handleDeleteQuotation}
       />
 
-      <div
-        className="mx-auto bg-white shadow-lg print:shadow-none max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible"
-        id="printable-voucher"
-      >
+      <div className="overflow-x-auto min-w-0 max-w-full custom-scrollbar print:overflow-visible">
+        <div
+          className="mx-auto bg-white shadow-lg print:shadow-none max-w-4xl min-w-[700px] md:min-w-0 rounded-xl print:rounded-none overflow-visible print:overflow-visible"
+          id="printable-voucher"
+        >
         <table className="print-page-table w-full border-collapse">
           <thead className="print-page-header-group">
             <tr>
@@ -708,6 +709,7 @@ export default function QuotationTemplate({
         <div className="px-10 pb-6 print:hidden">
           <QuotationFooter className="mt-6" />
         </div>
+      </div>
       </div>
     </div>
   );
