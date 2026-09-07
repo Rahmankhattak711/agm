@@ -13,7 +13,9 @@ export const Table: React.FC<TableProps> = ({
   ...props
 }) => {
   return (
-    <div className={`overflow-x-auto ${wrapperClassName}`}>
+    <div
+      className={`overflow-x-auto min-w-0 max-w-full w-full custom-scrollbar ${wrapperClassName}`}
+    >
       <table className={`w-full text-left text-xs ${className}`} {...props}>
         {children}
       </table>
@@ -188,7 +190,7 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 print:p-0 print:bg-transparent print:static print:block print:inset-auto print:z-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-4 print:p-0 print:bg-transparent print:static print:block print:inset-auto print:z-auto">
       <OutsideClickHandler
         onOutsideClick={() => {
           if (closeOnOutsideClick) {
@@ -197,19 +199,19 @@ export const Modal: React.FC<ModalProps> = ({
         }}
       >
         <div
-          className={`w-full ${widthClass[maxWidth]} bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:w-full print:max-w-full print:p-0`}
+          className={`w-full ${widthClass[maxWidth]} max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:w-full print:max-w-full print:p-0`}
         >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50 print:hidden">
-            <h3 className="font-bold text-sm text-slate-900">{title}</h3>
+          <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50/50 print:hidden">
+            <h3 className="font-bold text-sm text-slate-900 truncate pr-2">{title}</h3>
             <button
               type="button"
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer"
+              className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer p-1"
             >
               ✕
             </button>
           </div>
-          <div className="p-5 print:p-0">{children}</div>
+          <div className="p-4 sm:p-5 print:p-0">{children}</div>
         </div>
       </OutsideClickHandler>
     </div>

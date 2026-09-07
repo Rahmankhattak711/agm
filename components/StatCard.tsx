@@ -117,7 +117,10 @@ export default function StatCard({
                 {currencyPrefix}
               </span>
             )}
-            <span className="font-mono text-[1.5rem] font-bold leading-none tracking-tight text-slate-900 sm:text-[1.55rem]">
+            <span
+              title={numericDisplay}
+              className="font-mono text-xl sm:text-2xl lg:text-[1.55rem] font-bold leading-none tracking-tight text-slate-900 truncate"
+            >
               {numericDisplay}
             </span>
           </div>

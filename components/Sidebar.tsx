@@ -38,11 +38,14 @@ import {
   Landmark,
   DollarSign,
   Wallet,
+  X,
 } from "lucide-react";
 
 interface SidebarProps {
   activeSection?: string;
   onNavigate?: (section: string) => void;
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export interface SubNavItem {
@@ -239,8 +242,14 @@ const navGroups: NavGroup[] = [
   },
 ];
 
-export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
+export default function Sidebar({
+  activeSection,
+  onNavigate,
+  mobileOpen = false,
+  onCloseMobile,
+}: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     {
       "sales-group": true,
@@ -255,6 +264,24 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, loading } = useAuth();
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      const mobile = w < 768;
+      setIsMobile(mobile);
+      if (w >= 768 && w < 1024) {
+        setCollapsed(true);
+      } else if (w >= 1024) {
+        setCollapsed(false);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const effectiveCollapsed = isMobile ? false : collapsed;
 
   useEffect(() => {
     navGroups.forEach((g) => {
@@ -281,14 +308,17 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
 
   const handleNavigateHref = (href: string) => {
     router.push(href);
+    if (onCloseMobile) {
+      onCloseMobile();
+    }
   };
 
   if (loading) {
     return (
       <aside
-        className="w-[240px] transition-all duration-300 flex flex-col h-screen sticky top-0 z-40 bg-gradient-to-b from-[#2c455a] via-[#233a4d] to-[#1d3345] border-r border-white/12 shadow-[4px_0_28px_rgba(38,59,77,0.18)] overflow-hidden"
+        className="hidden md:flex w-[240px] transition-all duration-300 flex-col h-screen sticky top-0 z-40 bg-gradient-to-b from-[#2c455a] via-[#233a4d] to-[#1d3345] border-r border-white/12 shadow-[4px_0_28px_rgba(38,59,77,0.18)] overflow-hidden"
         style={{
-          width: collapsed ? 74 : 240,
+          width: effectiveCollapsed ? 74 : 240,
         }}
       >
         <div className="p-4 text-white/60">Loading...</div>
@@ -306,201 +336,232 @@ export default function Sidebar({ activeSection, onNavigate }: SidebarProps) {
     : "AD";
 
   return (
-    <aside
-      className="flex-shrink-0 flex flex-col h-screen sticky top-0 z-40 overflow-hidden border-r border-white/10 bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] shadow-[6px_0_30px_rgba(15,23,42,0.18)] transition-[width] duration-300"
-      style={{
-        width: collapsed ? 74 : 240,
-      }}
-    >
-      <div className="pointer-events-none absolute inset-y-0 right-[-90px] w-[260px] opacity-20">
-        <svg aria-hidden="true" viewBox="0 0 240 720" className="h-full w-full">
-          <path
-            d="M14 312V124L125 16l108 108v224M52 260V145L164 34v202"
-            fill="none"
-            stroke="#edf7ee"
-            strokeWidth="1.1"
-          />
-        </svg>
-      </div>
+    <>
+      {/* Mobile Drawer Backdrop Overlay */}
+      <div
+        className={`fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300 md:hidden ${
+          mobileOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onCloseMobile}
+        aria-hidden="true"
+      />
 
-      <div className="relative z-10 flex items-center gap-2 border-b border-white/8 px-3 min-h-[72px]">
-        {!collapsed ? (
-          <div className="w-full flex items-center">
-            <AgmLogo size="sm" collapsed={false} theme="dark" />
-          </div>
-        ) : (
-          <div className="w-full flex justify-center">
-            <AgmLogo size="sm" collapsed={true} />
-          </div>
-        )}
+      <aside
+        className={`
+          flex flex-col h-screen overflow-hidden border-r border-white/10
+          bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)]
+          shadow-[6px_0_30px_rgba(15,23,42,0.18)] transition-all duration-300
+          fixed inset-y-0 left-0 z-50 md:static md:sticky md:top-0 md:z-40 md:flex-shrink-0
+          ${mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
+        `}
+        style={{
+          width: isMobile ? 260 : (effectiveCollapsed ? 74 : 240),
+        }}
+      >
+        <div className="pointer-events-none absolute inset-y-0 right-[-90px] w-[260px] opacity-20">
+          <svg aria-hidden="true" viewBox="0 0 240 720" className="h-full w-full">
+            <path
+              d="M14 312V124L125 16l108 108v224M52 260V145L164 34v202"
+              fill="none"
+              stroke="#edf7ee"
+              strokeWidth="1.1"
+            />
+          </svg>
+        </div>
 
-        <button
-          id="sidebar-toggle"
-          onClick={() => setCollapsed((c) => !c)}
-          className="ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 transition-all hover:bg-white/10 hover:text-white cursor-pointer"
-        >
-          <ChevronsLeftIcon
-            className={`h-[13px] w-[13px] transition-transform duration-300 ${
-              collapsed ? "rotate-180" : "rotate-0"
-            }`}
-          />
-        </button>
-      </div>
+        <div className="relative z-10 flex items-center gap-2 border-b border-white/8 px-3 min-h-[72px]">
+          {!effectiveCollapsed ? (
+            <div className="w-full flex items-center">
+              <AgmLogo size="sm" collapsed={false} theme="dark" />
+            </div>
+          ) : (
+            <div className="w-full flex justify-center">
+              <AgmLogo size="sm" collapsed={true} />
+            </div>
+          )}
 
-      <nav className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden p-3 custom-scrollbar">
-        {navGroups.map((group) => (
-          <div key={group.label} className="mb-3">
-            {!collapsed && (
-              <p className="px-2.5 pb-1.5 pt-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/35">
-                {group.label}
-              </p>
-            )}
-            {collapsed && <div className="h-1.5" />}
+          <button
+            id="sidebar-toggle"
+            onClick={() => setCollapsed((c) => !c)}
+            className="ml-auto hidden md:flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 transition-all hover:bg-white/10 hover:text-white cursor-pointer"
+            title={effectiveCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <ChevronsLeftIcon
+              className={`h-[13px] w-[13px] transition-transform duration-300 ${
+                effectiveCollapsed ? "rotate-180" : "rotate-0"
+              }`}
+            />
+          </button>
 
-            {group.items.map((item) => {
-              const hasChildren = Boolean(
-                item.children && item.children.length > 0,
-              );
-              const isExpanded = Boolean(expandedGroups[item.id]);
+          {onCloseMobile && (
+            <button
+              type="button"
+              onClick={onCloseMobile}
+              className="md:hidden ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white cursor-pointer"
+              aria-label="Close menu"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
 
-              const isDirectActive = item.href ? pathname === item.href : false;
-              const isChildActive = hasChildren
-                ? item.children!.some(
-                    (c) =>
-                      pathname === c.href || pathname.startsWith(`${c.href}/`),
-                  )
-                : false;
+        <nav className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden p-3 custom-scrollbar">
+          {navGroups.map((group) => (
+            <div key={group.label} className="mb-3">
+              {!effectiveCollapsed && (
+                <p className="px-2.5 pb-1.5 pt-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/35">
+                  {group.label}
+                </p>
+              )}
+              {effectiveCollapsed && <div className="h-1.5" />}
 
-              const active = isDirectActive || isChildActive;
+              {group.items.map((item) => {
+                const hasChildren = Boolean(
+                  item.children && item.children.length > 0,
+                );
+                const isExpanded = Boolean(expandedGroups[item.id]);
 
-              return (
-                <div key={item.id} className="mb-1">
-                  <div
-                    onClick={() => {
-                      if (hasChildren && !collapsed) {
-                        setExpandedGroups((prev) => ({
-                          ...prev,
-                          [item.id]: !prev[item.id],
-                        }));
-                      } else if (item.href) {
-                        handleNavigateHref(item.href);
-                      }
-                    }}
-                    title={collapsed ? item.label : undefined}
-                    className={`group relative flex w-full items-center rounded-[12px] border-none text-left transition-all duration-200 cursor-pointer ${
-                      collapsed ? "justify-center" : "justify-start"
-                    } ${
-                      active && (!hasChildren || collapsed)
-                        ? "bg-gradient-to-r from-white/16 to-white/6 text-white shadow-[inset_0_0_0_1px_rgba(233,242,234,0.16)]"
-                        : active && hasChildren
-                          ? "text-white font-bold bg-white/6"
-                          : "text-white/65 hover:bg-white/6 hover:text-white"
-                    }`}
-                    style={{ padding: collapsed ? "10px 0" : "7px 10px" }}
-                  >
-                    {active && (!hasChildren || collapsed) && (
-                      <span className="absolute left-0 top-1/2 h-[18px] w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-[#dff7e6] to-[#9ec7a7]" />
-                    )}
+                const isDirectActive = item.href ? pathname === item.href : false;
+                const isChildActive = hasChildren
+                  ? item.children!.some(
+                      (c) =>
+                        pathname === c.href || pathname.startsWith(`${c.href}/`),
+                    )
+                  : false;
 
-                    <span className="flex shrink-0 items-center justify-center w-5 text-center">
-                      {item.icon}
-                    </span>
+                const active = isDirectActive || isChildActive;
 
-                    {!collapsed && (
-                      <div className="flex items-center justify-between flex-1 ml-2.5 min-w-0">
-                        <span
-                          className={`overflow-hidden text-ellipsis whitespace-nowrap text-[12.5px] ${
-                            active ? "font-bold text-white" : "font-medium"
-                          }`}
-                        >
-                          {item.label}
-                        </span>
+                return (
+                  <div key={item.id} className="mb-1">
+                    <div
+                      onClick={() => {
+                        if (hasChildren && !effectiveCollapsed) {
+                          setExpandedGroups((prev) => ({
+                            ...prev,
+                            [item.id]: !prev[item.id],
+                          }));
+                        } else if (item.href) {
+                          handleNavigateHref(item.href);
+                        }
+                      }}
+                      title={effectiveCollapsed ? item.label : undefined}
+                      className={`group relative flex w-full items-center rounded-[12px] border-none text-left transition-all duration-200 cursor-pointer ${
+                        effectiveCollapsed ? "justify-center" : "justify-start"
+                      } ${
+                        active && (!hasChildren || effectiveCollapsed)
+                          ? "bg-gradient-to-r from-white/16 to-white/6 text-white shadow-[inset_0_0_0_1px_rgba(233,242,234,0.16)]"
+                          : active && hasChildren
+                            ? "text-white font-bold bg-white/6"
+                            : "text-white/65 hover:bg-white/6 hover:text-white"
+                      }`}
+                      style={{ padding: effectiveCollapsed ? "10px 0" : "7px 10px" }}
+                    >
+                      {active && (!hasChildren || effectiveCollapsed) && (
+                        <span className="absolute left-0 top-1/2 h-[18px] w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-[#dff7e6] to-[#9ec7a7]" />
+                      )}
 
-                        {hasChildren && (
+                      <span className="flex shrink-0 items-center justify-center w-5 text-center">
+                        {item.icon}
+                      </span>
+
+                      {!effectiveCollapsed && (
+                        <div className="flex items-center justify-between flex-1 ml-2.5 min-w-0">
                           <span
-                            onClick={(e) => toggleGroup(item.id, e)}
-                            className="p-1 rounded-md hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                            className={`overflow-hidden text-ellipsis whitespace-nowrap text-[12.5px] ${
+                              active ? "font-bold text-white" : "font-medium"
+                            }`}
                           >
-                            <ChevronDown
-                              size={12}
-                              className={`transition-transform duration-200 ${
-                                isExpanded ? "rotate-0" : "-rotate-90"
-                              }`}
-                            />
+                            {item.label}
                           </span>
-                        )}
+
+                          {hasChildren && (
+                            <span
+                              onClick={(e) => toggleGroup(item.id, e)}
+                              className="p-1 rounded-md hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                            >
+                              <ChevronDown
+                                size={12}
+                                className={`transition-transform duration-200 ${
+                                  isExpanded ? "rotate-0" : "-rotate-90"
+                                }`}
+                              />
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {hasChildren && isExpanded && !effectiveCollapsed && (
+                      <div className="ml-6 pl-2 mt-0.5 border-l border-white/10 space-y-0.5">
+                        {item.children!.map((child) => {
+                          const childActive =
+                            pathname === child.href ||
+                            pathname.startsWith(`${child.href}/`);
+                          return (
+                            <button
+                              key={child.id}
+                              type="button"
+                              onClick={() => handleNavigateHref(child.href)}
+                              className={`flex items-center w-full px-2.5 py-1.5 rounded-lg text-[11.5px] text-left transition-colors cursor-pointer ${
+                                childActive
+                                  ? "font-bold text-emerald-300 bg-white/10"
+                                  : "font-medium text-white/60 hover:text-white hover:bg-white/5"
+                              }`}
+                            >
+                              <span className="truncate">{child.label}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
-
-                  {hasChildren && isExpanded && !collapsed && (
-                    <div className="ml-6 pl-2 mt-0.5 border-l border-white/10 space-y-0.5">
-                      {item.children!.map((child) => {
-                        const childActive =
-                          pathname === child.href ||
-                          pathname.startsWith(`${child.href}/`);
-                        return (
-                          <button
-                            key={child.id}
-                            type="button"
-                            onClick={() => handleNavigateHref(child.href)}
-                            className={`flex items-center w-full px-2.5 py-1.5 rounded-lg text-[11.5px] text-left transition-colors cursor-pointer ${
-                              childActive
-                                ? "font-bold text-emerald-300 bg-white/10"
-                                : "font-medium text-white/60 hover:text-white hover:bg-white/5"
-                            }`}
-                          >
-                            <span className="truncate">{child.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </nav>
-
-      <div className="relative z-10 mx-2.5 h-px bg-white/8" />
-
-      <div className="relative z-10 p-2.5">
-        {!collapsed ? (
-          <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/6 p-2.5 backdrop-blur-sm">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#59a06d] to-[#214d39] text-[11px] font-black text-white shadow-[0_4px_12px_rgba(28,82,58,0.3)]">
-              {initials}
+                );
+              })}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="overflow-hidden text-ellipsis whitespace-nowrap text-xs font-bold text-white leading-snug">
-                {user?.fullName || "Admin User"}
-              </p>
-              <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[10px] text-white/35 leading-relaxed">
-                {user?.role?.replace("_", " ") || "User"} ·{" "}
-                {user?.email || "admin@agm.ae"}
-              </p>
+          ))}
+        </nav>
+
+        <div className="relative z-10 mx-2.5 h-px bg-white/8" />
+
+        <div className="relative z-10 p-2.5">
+          {!effectiveCollapsed ? (
+            <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/6 p-2.5 backdrop-blur-sm">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#59a06d] to-[#214d39] text-[11px] font-black text-white shadow-[0_4px_12px_rgba(28,82,58,0.3)]">
+                {initials}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="overflow-hidden text-ellipsis whitespace-nowrap text-xs font-bold text-white leading-snug">
+                  {user?.fullName || "Admin User"}
+                </p>
+                <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[10px] text-white/35 leading-relaxed">
+                  {user?.role?.replace("_", " ") || "User"} ·{" "}
+                  {user?.email || "admin@agm.ae"}
+                </p>
+              </div>
+              <button
+                id="nav-signout"
+                onClick={logout}
+                title="Sign out"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/8 text-red-200 transition-all hover:bg-red-500/15 hover:text-red-100 cursor-pointer"
+              >
+                <LogoutIcon className="h-[13px] w-[13px]" strokeWidth={2} />
+              </button>
             </div>
-            <button
-              id="nav-signout"
-              onClick={logout}
-              title="Sign out"
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/8 text-red-200 transition-all hover:bg-red-500/15 hover:text-red-100 cursor-pointer"
-            >
-              <LogoutIcon className="h-[13px] w-[13px]" strokeWidth={2} />
-            </button>
-          </div>
-        ) : (
-          <div className="flex justify-center">
-            <button
-              onClick={logout}
-              title={`${user?.fullName || "Admin"} — Sign out`}
-              className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-white/10 bg-gradient-to-br from-[#59a06d] to-[#214d39] text-[11px] font-black text-white shadow-[0_4px_12px_rgba(28,82,58,0.3)] cursor-pointer"
-            >
-              {initials}
-            </button>
-          </div>
-        )}
-      </div>
-    </aside>
+          ) : (
+            <div className="flex justify-center">
+              <button
+                onClick={logout}
+                title={`${user?.fullName || "Admin"} — Sign out`}
+                className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-white/10 bg-gradient-to-br from-[#59a06d] to-[#214d39] text-[11px] font-black text-white shadow-[0_4px_12px_rgba(28,82,58,0.3)] cursor-pointer"
+              >
+                {initials}
+              </button>
+            </div>
+          )}
+        </div>
+      </aside>
+    </>
   );
 }
