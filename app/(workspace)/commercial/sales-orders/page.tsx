@@ -237,7 +237,7 @@ export default function SalesOrdersPage() {
           />
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs overflow-x-auto no-scrollbar py-0.5 max-w-full">
           {["ALL", "CONFIRMED", "PROCESSING", "COMPLETED"].map((st) => (
             <button
               key={st}
