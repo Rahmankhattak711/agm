@@ -170,7 +170,25 @@ export async function GET(req: NextRequest) {
     let prevEndDate: Date | null = null;
     let periodLabel = "All Time";
 
-    if (period === "daily") {
+    if (customStart && customEnd) {
+      const sParts = customStart.split("-").map(Number);
+      const eParts = customEnd.split("-").map(Number);
+      if (sParts.length === 3 && eParts.length === 3) {
+        startDate = new Date(Date.UTC(sParts[0], sParts[1] - 1, sParts[2], 0, 0, 0, 0));
+        endDate = new Date(Date.UTC(eParts[0], eParts[1] - 1, eParts[2], 23, 59, 59, 999));
+      } else {
+        startDate = new Date(customStart);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(customEnd);
+        endDate.setHours(23, 59, 59, 999);
+      }
+
+      const durationMs = endDate.getTime() - startDate.getTime();
+      prevEndDate = new Date(startDate.getTime() - 1);
+      prevStartDate = new Date(prevEndDate.getTime() - durationMs);
+
+      periodLabel = `Custom Range (${customStart} - ${customEnd})`;
+    } else if (period === "daily") {
       const targetDate = customStart ? new Date(customStart) : new Date(now);
       startDate = new Date(
         targetDate.getFullYear(),
@@ -230,6 +248,25 @@ export async function GET(req: NextRequest) {
       prevEndDate = new Date(year, month, 0, 23, 59, 59);
 
       periodLabel = `Monthly (${startDate.toLocaleString("default", { month: "long", year: "numeric" })})`;
+    } else if (period === "quarterly" || period === "quarter") {
+      const year = customStart
+        ? new Date(customStart).getFullYear()
+        : now.getFullYear();
+      const month = customStart
+        ? new Date(customStart).getMonth()
+        : now.getMonth();
+      const qMonth = Math.floor(month / 3) * 3;
+      startDate = new Date(year, qMonth, 1, 0, 0, 0);
+      endDate = new Date(year, qMonth + 3, 0, 23, 59, 59);
+
+      const qNum = Math.floor(qMonth / 3) + 1;
+      const prevQMonth = qMonth - 3;
+      const prevYear = prevQMonth < 0 ? year - 1 : year;
+      const normalizedPrevQMonth = (prevQMonth + 12) % 12;
+      prevStartDate = new Date(prevYear, normalizedPrevQMonth, 1, 0, 0, 0);
+      prevEndDate = new Date(prevYear, normalizedPrevQMonth + 3, 0, 23, 59, 59);
+
+      periodLabel = `Quarter Q${qNum} (${year})`;
     } else if (period === "yearly") {
       const year = customStart
         ? new Date(customStart).getFullYear()
@@ -241,17 +278,6 @@ export async function GET(req: NextRequest) {
       prevEndDate = new Date(year - 1, 11, 31, 23, 59, 59);
 
       periodLabel = `Yearly / Fiscal Year (${year})`;
-    } else if (period === "custom" && customStart && customEnd) {
-      startDate = new Date(customStart);
-      startDate.setHours(0, 0, 0);
-      endDate = new Date(customEnd);
-      endDate.setHours(23, 59, 59);
-
-      const durationMs = endDate.getTime() - startDate.getTime();
-      prevEndDate = new Date(startDate.getTime() - 1);
-      prevStartDate = new Date(prevEndDate.getTime() - durationMs);
-
-      periodLabel = `Custom Range (${startDate.toLocaleDateString("en-GB")} - ${endDate.toLocaleDateString("en-GB")})`;
     }
 
     const whereCondition: any = {};
