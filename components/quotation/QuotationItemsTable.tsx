@@ -35,7 +35,7 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
   calculateRowTotal,
 }) => {
   const cellInputClass =
-    "w-full bg-transparent outline-none focus:bg-emerald-50/70 rounded px-1.5 py-0.5 transition-colors print:bg-transparent print:p-0";
+    "w-full bg-transparent outline-none focus:bg-emerald-50/70 rounded px-1.5 py-0.5 transition-colors print:bg-transparent print:p-0 print:text-[12.5px] print:text-slate-900";
 
   const getItemPoints = (it: QuotationItem): string[] => {
     if (it.points && it.points.length > 0) return it.points;
@@ -80,40 +80,40 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
   };
 
   return (
-    <div className="px-10 mt-3 print:px-8 print:mt-1">
+    <div className="px-10 mt-3 print:px-8 print:mt-1.5">
       <Table
-        className="w-full text-[12px] print:text-[11px] border-collapse border border-agm-box-border bg-white rounded-lg overflow-hidden shadow-xs"
+        className="w-full text-[12px] print:text-[12.5px] border-collapse border border-agm-box-border bg-white rounded-lg overflow-hidden shadow-xs"
         wrapperClassName="overflow-visible"
       >
         <thead className="print:table-row-group">
           <tr className="text-center text-white bg-agm-green print-avoid-break">
             <TableHeaderCell
               align="center"
-              className="py-2.5 px-2 print:py-1.5 print:px-1 font-bold w-12 border border-agm-box-border text-white text-center align-middle"
+              className="py-2.5 px-2 print:py-2 print:px-1 font-bold w-12 border border-agm-box-border text-white print:text-[12.5px] text-center align-middle"
             >
               S.No
             </TableHeaderCell>
             <TableHeaderCell
               align="center"
-              className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold border border-agm-box-border text-white text-center align-middle"
+              className="py-2.5 px-3 print:py-2 print:px-2 font-bold border border-agm-box-border text-white print:text-[12.5px] text-center align-middle"
             >
               DISC
             </TableHeaderCell>
             <TableHeaderCell
               align="center"
-              className="py-2.5 px-2 print:py-1.5 print:px-1 font-bold w-20 border border-agm-box-border text-white text-center align-middle"
+              className="py-2.5 px-2 print:py-2 print:px-1 font-bold w-20 border border-agm-box-border text-white print:text-[12.5px] text-center align-middle"
             >
               QTY/SQM
             </TableHeaderCell>
             <TableHeaderCell
               align="center"
-              className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold w-28 border border-agm-box-border text-white text-center align-middle"
+              className="py-2.5 px-3 print:py-2 print:px-2 font-bold w-28 border border-agm-box-border text-white print:text-[12.5px] text-center align-middle"
             >
               Price
             </TableHeaderCell>
             <TableHeaderCell
               align="center"
-              className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold w-32 border border-agm-box-border text-white text-center align-middle"
+              className="py-2.5 px-3 print:py-2 print:px-2 font-bold w-32 border border-agm-box-border text-white print:text-[12.5px] text-center align-middle"
             >
               Total
             </TableHeaderCell>
@@ -147,7 +147,7 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                   <TableRow className="bg-agm-box-bg font-bold border-t border-b border-agm-box-border print-avoid-break break-after-avoid print:break-after-avoid hover:bg-agm-box-bg">
                     <TableCell
                       colSpan={5}
-                      className="py-2 px-3 print:py-0.5 print:px-2 text-[12.5px] print:text-[10px] font-bold text-slate-900 border border-agm-box-border"
+                      className="py-2 px-3 print:py-1.5 print:px-2.5 text-[12.5px] print:text-[13px] font-bold text-slate-900 border border-agm-box-border"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-slate-900 tracking-wide">
@@ -174,12 +174,12 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                         >
                           <TableCell
                             align="center"
-                            className="py-2 px-2 print:py-0.5 print:px-1 align-middle text-center font-bold text-slate-700 border border-agm-box-border w-12"
+                            className="py-2 px-2 print:py-1.5 print:px-1 align-middle text-center font-bold text-slate-800 border border-agm-box-border w-12 print:text-[12.5px]"
                           >
                             {pIdx + 1}
                           </TableCell>
 
-                          <TableCell className="py-2 px-3 print:py-0.5 print:px-2 align-top border border-agm-box-border">
+                          <TableCell className="py-2 px-3 print:py-1.5 print:px-2.5 align-top border border-agm-box-border">
                             {isFirst && availableProducts.length > 0 && (
                               <div className="mb-1 print:hidden">
                                 <select
@@ -224,7 +224,7 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                               </div>
                             )}
 
-                            <div className="hidden print:block whitespace-pre-wrap text-slate-800 text-[10px] leading-tight py-0.5">
+                            <div className="hidden print:block whitespace-pre-wrap text-slate-900 text-[10px] print:text-[12px] print:leading-relaxed py-0.5 print:py-0.5">
                               {pointText}
                             </div>
 
@@ -279,13 +279,13 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                               <TableCell
                                 rowSpan={points.length}
                                 align="center"
-                                className="py-2 px-2 print:py-1 print:px-1 align-middle text-center font-bold border border-agm-box-border bg-white"
+                                className="py-2 px-2 print:py-1.5 print:px-1 align-middle text-center font-bold border border-agm-box-border bg-white print:text-[12.5px]"
                               >
                                 <input
                                   type="text"
                                   className={
                                     cellInputClass +
-                                    " text-center font-bold text-slate-800"
+                                    " text-center font-bold text-slate-900 print:text-[12.5px]"
                                   }
                                   value={it.qty}
                                   onChange={(
@@ -300,14 +300,14 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                               <TableCell
                                 rowSpan={points.length}
                                 align="center"
-                                className="py-2 px-2 print:py-1 print:px-1 align-middle text-center font-mono font-semibold border border-agm-box-border bg-white"
+                                className="py-2 px-2 print:py-1.5 print:px-1 align-middle text-center font-mono font-semibold border border-agm-box-border bg-white print:text-[12.5px]"
                               >
                                 <input
                                   type="text"
                                   placeholder="0.00"
                                   className={
                                     cellInputClass +
-                                    " text-center font-mono font-semibold text-slate-800"
+                                    " text-center font-mono font-semibold text-slate-900 print:text-[12.5px]"
                                   }
                                   value={
                                     isFree
@@ -327,7 +327,7 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                               <TableCell
                                 rowSpan={points.length}
                                 align="center"
-                                className="py-2 px-3 print:py-1 print:px-2 align-middle text-center font-mono font-bold text-slate-900 border border-agm-box-border bg-white"
+                                className="py-2 px-3 print:py-1.5 print:px-2 align-middle text-center font-mono font-bold text-slate-900 border border-agm-box-border bg-white print:text-[12.5px]"
                               >
                                 {isFree ? "Free" : formatCurrency(rowTotal)}
                               </TableCell>
@@ -356,12 +356,12 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                   <TableRow className="print-avoid-break hover:bg-slate-50/50 bg-white">
                     <TableCell
                       align="center"
-                      className="py-2 px-2 print:py-0.5 print:px-1 align-middle text-center text-slate-700 font-bold border border-agm-box-border w-12"
+                      className="py-2 px-2 print:py-1.5 print:px-1 align-middle text-center text-slate-800 font-bold border border-agm-box-border w-12 print:text-[12.5px]"
                     >
                       {idx + 1}
                     </TableCell>
 
-                    <TableCell className="py-2 px-3 print:py-0.5 print:px-2 align-top border border-agm-box-border">
+                    <TableCell className="py-2 px-3 print:py-1.5 print:px-2.5 align-top border border-agm-box-border">
                       {availableProducts.length > 0 && (
                         <div className="mb-1 print:hidden">
                           <select
@@ -411,7 +411,7 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                         </button>
                       </div>
 
-                      <div className="hidden print:block whitespace-pre-wrap text-slate-800 text-[10px] print:text-[9.5px] leading-tight py-0.5 print:py-0">
+                      <div className="hidden print:block whitespace-pre-wrap text-slate-900 text-[10px] print:text-[12px] print:leading-relaxed py-0.5 print:py-0.5">
                         {it.desc}
                       </div>
 
@@ -434,11 +434,11 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
 
                     <TableCell
                       align="center"
-                      className="py-2 px-2 print:py-0.5 print:px-1 align-middle border border-agm-box-border text-center"
+                      className="py-2 px-2 print:py-1.5 print:px-1 align-middle border border-agm-box-border text-center print:text-[12.5px]"
                     >
                       <input
                         type="text"
-                        className={cellInputClass + " text-center font-bold"}
+                        className={cellInputClass + " text-center font-bold print:text-[12.5px] text-slate-900"}
                         value={it.qty}
                         onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           onUpdateItem(it.id, "qty", e.target.value)
@@ -449,14 +449,14 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
 
                     <TableCell
                       align="center"
-                      className="py-2 px-2 print:py-0.5 print:px-1 align-middle border border-agm-box-border text-center"
+                      className="py-2 px-2 print:py-1.5 print:px-1 align-middle border border-agm-box-border text-center print:text-[12.5px]"
                     >
                       <input
                         type="text"
                         placeholder="0.00"
                         className={
                           cellInputClass +
-                          " text-center font-mono font-semibold"
+                          " text-center font-mono font-semibold print:text-[12.5px] text-slate-900"
                         }
                         value={
                           isFree
@@ -473,7 +473,7 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
 
                     <TableCell
                       align="center"
-                      className="py-2 px-3 print:py-0.5 print:px-2 align-middle font-mono font-bold text-slate-900 border border-agm-box-border text-center"
+                      className="py-2 px-3 print:py-1.5 print:px-2 align-middle font-mono font-bold text-slate-900 border border-agm-box-border text-center print:text-[12.5px]"
                     >
                       {isFree ? "Free" : formatCurrency(rowTotal)}
                     </TableCell>

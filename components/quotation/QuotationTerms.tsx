@@ -13,10 +13,10 @@ export const QuotationTerms: React.FC<QuotationTermsProps> = ({
   const [showAllTerms, setShowAllTerms] = useState<boolean>(true);
 
   return (
-    <div className="px-10 mt-4 print:px-8 print:mt-2">
+    <div className="px-10 mt-4 print:px-8 print:mt-3.5">
       <div className="border border-agm-box-border bg-agm-box-bg p-4 print:p-0 rounded-xl print:rounded-none print:border-none print:bg-transparent">
-        <div className="flex items-center justify-between mb-2 print:mb-1">
-          <div className="font-bold text-slate-900 uppercase text-[11.5px] print:text-[10px] tracking-wider text-agm-green">
+        <div className="flex items-center justify-between mb-2 print:mb-1.5">
+          <div className="font-bold text-slate-900 uppercase text-[11.5px] print:text-[12px] tracking-wider text-agm-green">
             TERMS AND CONDITIONS (20 CLAUSES)
           </div>
           <Button
@@ -46,10 +46,10 @@ export const QuotationTerms: React.FC<QuotationTermsProps> = ({
                   pageBreakInside: "avoid",
                 }}
               >
-                <td className="w-5 print:w-4.5 py-0.5 print:py-0.5 align-top font-bold text-agm-green text-[11px] print:text-[9.5px] select-none">
+                <td className="w-5 print:w-5 py-0.5 print:py-0.5 align-top font-bold text-agm-green text-[11px] print:text-[11.5px] select-none">
                   {t.id}.
                 </td>
-                <td className="py-0.5 print:py-0.5 align-top text-[11px] print:text-[9.5px] print:leading-snug text-slate-700 leading-relaxed">
+                <td className="py-0.5 print:py-0.5 align-top text-[11px] print:text-[11.5px] print:leading-normal text-slate-700 leading-relaxed">
                   <strong className="text-slate-900 mr-1">{t.title}</strong>
                   <span>{t.text}</span>
                 </td>

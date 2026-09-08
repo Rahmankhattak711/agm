@@ -10,7 +10,7 @@ export const QuotationHeader: React.FC<QuotationHeaderProps> = ({
 }) => {
   return (
     <div
-      className={`flex items-start justify-between px-10 pt-8 pb-6 print:px-8 print:pt-2 print:pb-1.5 border-b border-slate-100 bg-white ${className}`}
+      className={`flex items-start justify-between px-10 pt-8 pb-6 print:px-8 print:pt-3 print:pb-2 border-b border-slate-100 bg-white ${className}`}
     >
       <div className="flex flex-col items-start">
         <Image
@@ -20,19 +20,19 @@ export const QuotationHeader: React.FC<QuotationHeaderProps> = ({
           height={120}
           sizes="100vh"
           quality={100}
-          className="object-cover print:w-[95px] print:h-auto"
+          className="object-cover print:w-[105px] print:h-auto"
           priority
         />
       </div>
-      <div className="text-right text-[12px] print:text-[9.5px] leading-5 print:leading-3.5 text-slate-800 max-w-[440px]">
-        <div className="font-bold text-[15px] print:text-[11.5px] mb-1 print:mb-0.5 text-agm-green">
+      <div className="text-right text-[12px] print:text-[11.5px] leading-5 print:leading-snug text-slate-800 max-w-[440px] print:max-w-[500px]">
+        <div className="font-bold text-[15px] print:text-[14px] mb-1 print:mb-1 text-agm-green">
           A G M FITOUT TECHNICAL SERVICES L.L.C
         </div>
-        <div>
+        <div className="text-slate-700">
           Sheikh Zayed Road, near Oasis Centre, Office No. 13-11 Building: Adel
           Mohammed Ali Jassim Al Marzouqi, Al Quoz First 1, Dubai, UAE
         </div>
-        <div>
+        <div className="font-medium text-slate-900 mt-0.5">
           Tel: +971 48 749839 | Mob: +971 50 340 7300 | TRN: 104094432200003
         </div>
       </div>
