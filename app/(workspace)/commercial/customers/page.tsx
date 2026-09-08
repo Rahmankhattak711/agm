@@ -152,12 +152,12 @@ export default function CustomersMasterPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <Button
             variant="outline"
             size="sm"
             onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer flex-1 sm:flex-initial"
             icon={<Printer size={14} />}
           >
             Print Register
@@ -168,7 +168,7 @@ export default function CustomersMasterPage() {
             size="sm"
             onClick={() => setIsCreateOpen(true)}
             icon={<Plus size={14} strokeWidth={2.5} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial"
           >
             Add New Customer
           </Button>
@@ -268,12 +268,12 @@ export default function CustomersMasterPage() {
       </div>
 
       {/* Main Filter & Table Card */}
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 min-w-0 max-w-full">
         {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             {/* Status Quick Pills */}
-            <div className="flex flex-wrap items-center gap-1">
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
               {[
                 { id: "ALL", label: "All Clients" },
                 { id: "OUTSTANDING", label: "Outstanding Due" },
@@ -286,7 +286,7 @@ export default function CustomersMasterPage() {
                     key={tab.id}
                     type="button"
                     onClick={() => setStatusFilter(tab.id as any)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                       isActive
                         ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
@@ -298,13 +298,13 @@ export default function CustomersMasterPage() {
               })}
             </div>
 
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
+            <span className="text-[11px] font-bold text-slate-500 font-mono shrink-0">
               {filteredCustomers.length} Clients Displayed
             </span>
           </div>
 
           <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <div className="w-full sm:w-96 relative">
+            <div className="w-full sm:w-80 md:w-96 relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"

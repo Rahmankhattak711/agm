@@ -120,6 +120,14 @@ body {
     display: block !important;
   }
 
+  #printable-voucher input,
+  #printable-voucher textarea {
+    color: #0f172a !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .print-page-table {
     width: 100% !important;
     border-collapse: collapse !important;

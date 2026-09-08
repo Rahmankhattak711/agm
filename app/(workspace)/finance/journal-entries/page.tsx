@@ -433,7 +433,7 @@ export default function JournalEntriesPage() {
       <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           {/* Status Quick Pills */}
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
             {[
               { id: "ALL", label: "All Entries" },
               { id: "POSTED", label: "Posted to GL" },

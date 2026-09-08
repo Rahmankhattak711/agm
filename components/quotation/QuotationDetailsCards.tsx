@@ -11,24 +11,24 @@ export const QuotationDetailsCards: React.FC<QuotationDetailsCardsProps> = ({
   onUpdateMeta,
 }) => {
   const inputBase =
-    "flex-1 bg-transparent outline-none focus:bg-emerald-50/80 rounded px-1.5 py-0.5 text-slate-800 border-b border-dashed border-transparent hover:border-slate-300 focus:border-emerald-500 transition-colors print:bg-transparent print:p-0 print:border-none";
+    "flex-1 bg-transparent outline-none focus:bg-emerald-50/80 rounded px-1.5 py-0.5 text-slate-800 border-b border-dashed border-transparent hover:border-slate-300 focus:border-emerald-500 transition-colors print:bg-transparent print:p-0 print:border-none print:text-[12.5px] print:text-slate-900";
 
   const labelBase =
-    "w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0";
+    "w-24 print:w-26 text-[11px] print:text-[12px] font-semibold text-slate-500 print:text-slate-600 shrink-0";
 
   return (
-    <div className="grid grid-cols-2 gap-4 print:gap-2 px-10 py-3.5 print:px-8 print:py-1 text-[12px] print:text-[9.5px] print-avoid-break">
-      <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl shadow-2xs">
-        <div className="font-bold mb-2 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-0.5">
+    <div className="grid grid-cols-2 gap-4 print:gap-3 px-10 py-3.5 print:px-8 print:py-2 text-[12px] print:text-[12.5px] print-avoid-break">
+      <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs">
+        <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[12px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
           <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
           CLIENT / BILL TO
         </div>
-        <div className="space-y-1 print:space-y-0.5">
+        <div className="space-y-1 print:space-y-1">
           <div className="flex items-center gap-1">
             <span className={labelBase}>Client Name:</span>
             <input
               placeholder="Client / Company Name"
-              className={inputBase + " font-bold text-slate-900"}
+              className={inputBase + " font-bold text-slate-900 print:text-[12.5px]"}
               value={meta.customer}
               onChange={(e) => onUpdateMeta("customer", e.target.value)}
             />
@@ -67,17 +67,17 @@ export const QuotationDetailsCards: React.FC<QuotationDetailsCardsProps> = ({
         </div>
       </div>
 
-      <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2 rounded-xl shadow-2xs">
-        <div className="font-bold mb-2 text-slate-900 uppercase text-[11px] print:text-[9.5px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1">
+      <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs">
+        <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[12px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
           <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
           PROJECT / SITE DETAILS
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1 print:space-y-1">
           <div className="flex items-center gap-1">
             <span className={labelBase}>Project:</span>
             <input
               placeholder="Project / Scope Name"
-              className={inputBase + " font-bold text-slate-900"}
+              className={inputBase + " font-bold text-slate-900 print:text-[12.5px]"}
               value={meta.project}
               onChange={(e) => onUpdateMeta("project", e.target.value)}
             />

@@ -468,8 +468,8 @@ export default function DashboardPage() {
           </div>
 
           {/* Right Period Selector Filter */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="flex items-center bg-black/25 rounded-xl p-1 border border-white/15 backdrop-blur-md shadow-inner">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+            <div className="flex items-center bg-black/25 rounded-xl p-1 border border-white/15 backdrop-blur-md shadow-inner overflow-x-auto max-w-full no-scrollbar">
               {(
                 [
                   "THIS_MONTH",
@@ -489,7 +489,7 @@ export default function DashboardPage() {
                     key={p}
                     type="button"
                     onClick={() => setPeriod(p)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                       period === p
                         ? "bg-white text-slate-900 shadow-sm scale-100"
                         : "text-slate-300 hover:text-white hover:bg-white/10"
@@ -997,7 +997,7 @@ export default function DashboardPage() {
             No journal entries recorded yet.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto min-w-0 max-w-full custom-scrollbar">
             <table className="w-full text-left text-xs min-w-[650px]">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-wider font-semibold">

@@ -41,8 +41,8 @@ import {
   QuotationHeader,
   QuotationFooter,
   QuotationTerms,
-  QuotationSignatures,
   DEFAULT_TERMS_AND_CONDITIONS,
+  QuotationPaymentTerms,
 } from "@/components/quotation";
 
 export default function SalesInvoicesPage() {
@@ -250,17 +250,17 @@ export default function SalesInvoicesPage() {
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
               AGM FITOUT TECHNICAL SERVICES LLC — Issue tax-compliant sales
-              invoices, calculate 5% Output VAT, <br /> update Accounts
+              invoices, calculate 5% Output VAT, <br className="hidden sm:inline" /> update Accounts
               Receivable, and post transactions directly to General Ledger.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
             <Button
               variant="outline"
               size="sm"
               onClick={() => window.print()}
-              className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+              className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer flex-1 sm:flex-initial"
               icon={<Printer size={14} />}
             >
               Print Register
@@ -271,7 +271,7 @@ export default function SalesInvoicesPage() {
               size="sm"
               onClick={() => setIsCreateOpen(true)}
               icon={<Plus size={14} strokeWidth={2.5} />}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial"
             >
               Create Sales Invoice
             </Button>
@@ -371,12 +371,12 @@ export default function SalesInvoicesPage() {
         </div>
 
         {/* Main Filter & Table Card */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 print:p-0 print:border-none print:shadow-none">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 print:p-0 print:border-none print:shadow-none min-w-0 max-w-full">
           {/* Search & Filter Strip */}
           <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               {/* Status Quick Pills */}
-              <div className="flex flex-wrap items-center gap-1">
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
                 {[
                   { id: "ALL", label: "All Invoices" },
                   { id: "POSTED", label: "Posted to GL" },
@@ -390,7 +390,7 @@ export default function SalesInvoicesPage() {
                       key={tab.id}
                       type="button"
                       onClick={() => setStatusFilter(tab.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                         isActive
                           ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
                           : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
@@ -402,13 +402,13 @@ export default function SalesInvoicesPage() {
                 })}
               </div>
 
-              <span className="text-[11px] font-bold text-slate-500 font-mono">
+              <span className="text-[11px] font-bold text-slate-500 font-mono shrink-0">
                 {filteredInvoices.length} Invoices Listed
               </span>
             </div>
 
             <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-              <div className="w-full sm:w-96 relative">
+              <div className="w-full sm:w-80 md:w-96 relative">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
@@ -426,7 +426,7 @@ export default function SalesInvoicesPage() {
               Error loading sales invoices: {(error as any).message}
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+            <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs min-w-0 max-w-full">
               <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
                 <h4 className="font-black text-xs uppercase tracking-wider text-white">
                   Commercial Sales Invoices Register
@@ -1313,10 +1313,10 @@ export default function SalesInvoicesPage() {
                 </td>
               </tr>
 
-              {/* 7. Client Acceptance & Signatures */}
+              {/* 7. Payment Terms */}
               <tr>
                 <td className="p-0 border-none align-top">
-                  <QuotationSignatures />
+                  <QuotationPaymentTerms />
                 </td>
               </tr>
             </tbody>

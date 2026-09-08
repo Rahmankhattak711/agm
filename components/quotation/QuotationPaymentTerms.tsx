@@ -19,7 +19,7 @@ export const QuotationPaymentTerms: React.FC<QuotationPaymentTermsProps> = ({
     <div className="px-10 mt-3 print:px-8 print:mt-2 print-avoid-break break-inside-avoid print:break-inside-avoid">
       <div className="border border-agm-box-border bg-agm-box-bg p-3 print:p-2 rounded-xl print:rounded-lg">
         <div className="flex items-center justify-between mb-1.5 print:mb-1">
-          <div className="font-bold text-slate-900 uppercase text-[11px] print:text-[10px] tracking-wider text-agm-green flex items-center gap-1.5">
+          <div className="font-bold text-slate-900 uppercase text-[11px] print:text-[12px] tracking-wider text-agm-green flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
             PAYMENT TERMS
           </div>
@@ -35,27 +35,27 @@ export const QuotationPaymentTerms: React.FC<QuotationPaymentTermsProps> = ({
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 print:gap-1 text-[11.5px] print:text-[10px] text-slate-800 font-semibold">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 print:gap-1.5 text-[11.5px] print:text-[12px] text-slate-800 font-semibold">
           {paymentTerms.map((pt, idx) => (
             <div
               key={idx}
-              className="bg-white border border-agm-box-border px-3 py-1.5 print:px-2 print:py-1 rounded-lg flex items-center justify-between gap-2 shadow-2xs break-inside-avoid print:break-inside-avoid"
+              className="bg-white border border-agm-box-border px-3 py-1.5 print:px-2.5 print:py-1.5 rounded-lg flex items-center justify-between gap-2 shadow-2xs break-inside-avoid print:break-inside-avoid"
             >
               <div className="flex items-center gap-1.5 flex-1">
-                <span className="text-agm-green font-bold text-[11px] select-none">
+                <span className="text-agm-green font-bold text-[11px] print:text-[12px] select-none">
                   •
                 </span>
                 {onUpdatePaymentTerm ? (
                   <input
                     type="text"
-                    className="w-full bg-transparent outline-none font-semibold text-slate-800 text-[11px] print:text-[10px] print:p-0"
+                    className="w-full bg-transparent outline-none font-semibold text-slate-800 text-[11px] print:text-[12px] print:text-slate-900 print:p-0"
                     value={pt}
                     onChange={(e: ChangeEvent<HTMLInputElement>) =>
                       onUpdatePaymentTerm(idx, e.target.value)
                     }
                   />
                 ) : (
-                  <span className="text-[11px] print:text-[10px]">{pt}</span>
+                  <span className="text-[11px] print:text-[12px] print:text-slate-900">{pt}</span>
                 )}
               </div>
 

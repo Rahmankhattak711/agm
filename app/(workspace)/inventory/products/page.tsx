@@ -491,7 +491,7 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+      <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
           <div className="w-full lg:w-80">
             <Input
