@@ -40,36 +40,63 @@ import {
 type PeriodOption = "THIS_MONTH" | "THIS_QUARTER" | "THIS_YEAR" | "CUSTOM";
 type ChartViewMode = "P_AND_L" | "CASH_FLOW";
 
+const formatYMD = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 export default function DashboardPage() {
+  const [initialDates] = useState(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return {
+      startStr: formatYMD(start),
+      endStr: formatYMD(now),
+    };
+  });
+
   const [period, setPeriod] = useState<PeriodOption>("THIS_MONTH");
   const [chartView, setChartView] = useState<ChartViewMode>("P_AND_L");
-  const [customStartDate, setCustomStartDate] = useState<string>("");
-  const [customEndDate, setCustomEndDate] = useState<string>("");
+  const [customStartDate, setCustomStartDate] = useState<string>(initialDates.startStr);
+  const [customEndDate, setCustomEndDate] = useState<string>(initialDates.endStr);
 
   const dateRange = useMemo(() => {
     const now = new Date();
     let start: Date;
-    let end: Date = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      23,
-      59,
-      59,
-    );
+    let end: Date;
+    let periodLabel = "This Month";
+    let shortLabel = "Month";
 
     if (period === "THIS_MONTH") {
-      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      const monthName = now.toLocaleString("default", { month: "short", year: "numeric" });
+      periodLabel = monthName;
+      shortLabel = "Month";
     } else if (period === "THIS_QUARTER") {
       const qMonth = Math.floor(now.getMonth() / 3) * 3;
-      start = new Date(now.getFullYear(), qMonth, 1);
+      start = new Date(now.getFullYear(), qMonth, 1, 0, 0, 0);
+      end = new Date(now.getFullYear(), qMonth + 3, 0, 23, 59, 59, 999);
+      const qNum = Math.floor(qMonth / 3) + 1;
+      periodLabel = `Q${qNum} ${now.getFullYear()}`;
+      shortLabel = `Q${qNum}`;
     } else if (period === "THIS_YEAR") {
-      start = new Date(now.getFullYear(), 0, 1);
+      start = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
+      end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+      periodLabel = `FY ${now.getFullYear()}`;
+      shortLabel = "Year";
     } else if (period === "CUSTOM" && customStartDate && customEndDate) {
-      start = new Date(customStartDate);
-      end = new Date(`${customEndDate}T23:59:59`);
+      start = new Date(`${customStartDate}T00:00:00`);
+      end = new Date(`${customEndDate}T23:59:59.999`);
+      periodLabel = `${customStartDate} to ${customEndDate}`;
+      shortLabel = "Custom";
     } else {
-      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      periodLabel = "This Month";
+      shortLabel = "Month";
     }
 
     const durationMs = end.getTime() - start.getTime();
@@ -81,17 +108,22 @@ export default function DashboardPage() {
       end,
       prevStart,
       prevEnd,
-      startStr: start.toISOString().split("T")[0],
-      endStr: end.toISOString().split("T")[0],
+      startStr: formatYMD(start),
+      endStr: formatYMD(end),
+      periodLabel,
+      shortLabel,
     };
   }, [period, customStartDate, customEndDate]);
 
   const { data: profitLoss, isLoading: plLoading } = useProfitLoss({
+    period: "custom",
     startDate: dateRange.startStr,
     endDate: dateRange.endStr,
     compare: true,
   });
-  const { data: balanceSheet, isLoading: bsLoading } = useBalanceSheet();
+  const { data: balanceSheet, isLoading: bsLoading } = useBalanceSheet({
+    endDate: dateRange.endStr,
+  });
   const { data: journalEntries = [], isLoading: jeLoading } =
     useJournalEntries();
   const { data: expensesData } = useExpenses();
@@ -120,23 +152,57 @@ export default function DashboardPage() {
   };
 
   const treasuryMetrics = useMemo(() => {
+    // Dynamically aggregate all liquid cash & bank accounts directly from DB chart of accounts
+    const liquidAccounts = accounts.filter((a) => {
+      if (a.type !== "ASSET") return false;
+      const code = parseInt(a.accountCode, 10);
+      if (!isNaN(code) && code >= 1000 && code < 1100) return true;
+      const name = a.accountName.toLowerCase();
+      return (
+        name.includes("bank") ||
+        name.includes("petty cash") ||
+        name.includes("float") ||
+        name.includes("cash on hand")
+      );
+    });
+
+    const totalLiquid = liquidAccounts.reduce(
+      (sum, a) => sum + Number(a.balance || 0),
+      0,
+    );
     const pettyCashAcc =
       accounts.find((a) => a.accountCode === "1010")?.balance || 0;
     const rakBankAcc =
       accounts.find((a) => a.accountCode === "1020")?.balance || 0;
     const siteFloatAcc =
       accounts.find((a) => a.accountCode === "1030")?.balance || 0;
-    const totalLiquid = pettyCashAcc + rakBankAcc + siteFloatAcc;
 
-    return { pettyCashAcc, rakBankAcc, siteFloatAcc, totalLiquid };
+    return { pettyCashAcc, rakBankAcc, siteFloatAcc, totalLiquid, count: liquidAccounts.length };
   }, [accounts]);
 
   const arMetrics = useMemo(() => {
     const now = new Date();
-    const active = invoices.filter(
-      (i) => i.status !== "CANCELLED" && Number(i.remainingBalance || 0) > 0,
+    // Filter invoices belonging to the selected date range
+    const periodInvoices = invoices.filter((i) => {
+      if (i.status === "CANCELLED") return false;
+      const invDateStr = (i.invoiceDate || "").slice(0, 10);
+      return invDateStr >= dateRange.startStr && invDateStr <= dateRange.endStr;
+    });
+
+    const totalBilled = periodInvoices.reduce(
+      (sum, i) => sum + Number(i.totalAmount || 0),
+      0,
     );
-    const totalOutstanding = active.reduce(
+    const totalCollected = periodInvoices.reduce(
+      (sum, i) =>
+        sum +
+        Number(
+          i.paidAmount ||
+            (Number(i.totalAmount || 0) - Number(i.remainingBalance || 0)),
+        ),
+      0,
+    );
+    const totalOutstanding = periodInvoices.reduce(
       (sum, i) => sum + Number(i.remainingBalance || 0),
       0,
     );
@@ -145,35 +211,56 @@ export default function DashboardPage() {
     let overdue = 0;
     let overdueCount = 0;
 
-    active.forEach((i) => {
+    periodInvoices.forEach((i) => {
       const invDate = new Date(i.dueDate || i.invoiceDate);
       const diffDays = Math.floor(
         (now.getTime() - invDate.getTime()) / (1000 * 60 * 60 * 24),
       );
       const bal = Number(i.remainingBalance || 0);
-      if (diffDays > 0) {
-        overdue += bal;
-        overdueCount++;
-      } else {
-        dueSoon += bal;
+      if (bal > 0) {
+        if (diffDays > 0) {
+          overdue += bal;
+          overdueCount++;
+        } else {
+          dueSoon += bal;
+        }
       }
     });
 
+    const displayAmount =
+      totalBilled > 0 ? totalBilled : totalOutstanding;
+
     return {
+      totalBilled,
+      totalCollected,
       totalOutstanding,
+      displayAmount,
       dueSoon,
       overdue,
       overdueCount,
-      openCount: active.length,
+      count: periodInvoices.length,
+      openCount: periodInvoices.filter((i) => Number(i.remainingBalance || 0) > 0).length,
     };
-  }, [invoices]);
+  }, [invoices, dateRange]);
 
   const apMetrics = useMemo(() => {
     const now = new Date();
-    const active = bills.filter(
-      (b) => b.status !== "CANCELLED" && Number(b.remainingBalance || 0) > 0,
+    // Filter supplier bills belonging to the selected date range
+    const periodBills = bills.filter((b) => {
+      if (b.status === "CANCELLED") return false;
+      const billDateStr = (b.billDate || "").slice(0, 10);
+      return billDateStr >= dateRange.startStr && billDateStr <= dateRange.endStr;
+    });
+
+    const totalBilled = periodBills.reduce(
+      (sum, b) => sum + Number(b.totalAmount || 0),
+      0,
     );
-    const totalOutstanding = active.reduce(
+    const totalPaid = periodBills.reduce(
+      (sum, b) => sum + Number(b.paidAmount || 0),
+      0,
+    );
+    const totalOutstanding = periodBills.reduce(
       (sum, b) => sum + Number(b.remainingBalance || 0),
       0,
     );
@@ -182,28 +269,37 @@ export default function DashboardPage() {
     let overdue = 0;
     let overdueCount = 0;
 
-    active.forEach((b) => {
+    periodBills.forEach((b) => {
       const billDate = new Date(b.dueDate || b.billDate);
       const diffDays = Math.floor(
         (now.getTime() - billDate.getTime()) / (1000 * 60 * 60 * 24),
       );
       const bal = Number(b.remainingBalance || 0);
-      if (diffDays > 0) {
-        overdue += bal;
-        overdueCount++;
-      } else {
-        dueSoon += bal;
+      if (bal > 0) {
+        if (diffDays > 0) {
+          overdue += bal;
+          overdueCount++;
+        } else {
+          dueSoon += bal;
+        }
       }
     });
 
+    const displayAmount =
+      totalBilled > 0 ? totalBilled : totalOutstanding;
+
     return {
+      totalBilled,
+      totalPaid,
       totalOutstanding,
+      displayAmount,
       dueSoon,
       overdue,
       overdueCount,
-      openCount: active.length,
+      count: periodBills.length,
+      openCount: periodBills.filter((b) => Number(b.remainingBalance || 0) > 0).length,
     };
-  }, [bills]);
+  }, [bills, dateRange]);
 
   const revenue = Math.max(
     0,
@@ -259,43 +355,56 @@ export default function DashboardPage() {
   const cashFlowMetrics = useMemo(() => {
     const periodReceipts = payments
       .filter((p) => {
-        const d = new Date(p.paymentDate);
-        return d >= dateRange.start && d <= dateRange.end;
+        const d = (p.paymentDate || "").slice(0, 10);
+        return d >= dateRange.startStr && d <= dateRange.endStr;
       })
       .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
     const periodDirectExpenses = (expensesData?.expenses || [])
       .filter((e) => {
-        const d = new Date(e.expenseDate);
-        return d >= dateRange.start && d <= dateRange.end;
+        const d = (e.expenseDate || "").slice(0, 10);
+        return d >= dateRange.startStr && d <= dateRange.endStr;
       })
       .reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
 
     const periodBillPayments = bills
       .filter((b) => {
-        const d = new Date(b.billDate);
-        return d >= dateRange.start && d <= dateRange.end;
+        const d = (b.billDate || "").slice(0, 10);
+        return d >= dateRange.startStr && d <= dateRange.endStr;
       })
       .reduce((sum, b) => sum + Number(b.paidAmount || 0), 0);
 
-    const moneyIn = periodReceipts || revenue * 0.85;
-    const moneyOut =
-      periodBillPayments + periodDirectExpenses || expenses * 0.75;
+    // Strictly real database figures with no synthetic multiplier fallbacks
+    const moneyIn = periodReceipts;
+    const moneyOut = periodBillPayments + periodDirectExpenses;
     const netCashFlow = moneyIn - moneyOut;
 
     return { moneyIn, moneyOut, netCashFlow };
-  }, [payments, expensesData, bills, dateRange, revenue, expenses]);
+  }, [payments, expensesData, bills, dateRange]);
 
   const vatMetrics = useMemo(() => {
-    const outputVat = invoices
-      .filter((i) => i.status !== "CANCELLED")
-      .reduce((sum, i) => sum + Number(i.vatAmount || 0), 0);
-    const inputVat = bills
-      .filter((b) => b.status !== "CANCELLED")
-      .reduce((sum, b) => sum + Number(b.vatAmount || 0), 0);
+    const periodInvoices = invoices.filter((i) => {
+      if (i.status === "CANCELLED") return false;
+      const d = (i.invoiceDate || "").slice(0, 10);
+      return d >= dateRange.startStr && d <= dateRange.endStr;
+    });
+    const periodBills = bills.filter((b) => {
+      if (b.status === "CANCELLED") return false;
+      const d = (b.billDate || "").slice(0, 10);
+      return d >= dateRange.startStr && d <= dateRange.endStr;
+    });
+
+    const outputVat = periodInvoices.reduce(
+      (sum, i) => sum + Number(i.vatAmount || 0),
+      0,
+    );
+    const inputVat = periodBills.reduce(
+      (sum, b) => sum + Number(b.vatAmount || 0),
+      0,
+    );
     const netVatPayable = outputVat - inputVat;
     return { outputVat, inputVat, netVatPayable };
-  }, [invoices, bills]);
+  }, [invoices, bills, dateRange]);
 
   const actionItems = useMemo(() => {
     const items = [];
@@ -394,7 +503,15 @@ export default function DashboardPage() {
     },
   ];
 
-  const recentEntries = journalEntries.slice(0, 6);
+  const filteredJournalEntries = useMemo(() => {
+    return journalEntries.filter((j) => {
+      if (!j.entryDate) return false;
+      const d = new Date(j.entryDate);
+      return d >= dateRange.start && d <= dateRange.end;
+    });
+  }, [journalEntries, dateRange]);
+
+  const recentEntries = (filteredJournalEntries.length > 0 ? filteredJournalEntries : journalEntries).slice(0, 6);
 
   return (
     <div className="space-y-6 max-w-full">
@@ -464,6 +581,13 @@ export default function DashboardPage() {
                   {isBalanced ? "Balanced" : "Review"}
                 </span>
               </div>
+              <div className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 border border-emerald-400/30 px-2.5 py-1 text-[11px] text-emerald-200">
+                <Calendar size={12} className="text-emerald-300" />
+                <span className="text-emerald-300/80">Period:</span>
+                <span className="font-semibold text-white">
+                  {dateRange.periodLabel}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -488,7 +612,14 @@ export default function DashboardPage() {
                   <button
                     key={p}
                     type="button"
-                    onClick={() => setPeriod(p)}
+                    onClick={() => {
+                      if (p === "CUSTOM" && (!customStartDate || !customEndDate)) {
+                        const now = new Date();
+                        setCustomStartDate(formatYMD(new Date(now.getFullYear(), now.getMonth(), 1)));
+                        setCustomEndDate(formatYMD(now));
+                      }
+                      setPeriod(p);
+                    }}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                       period === p
                         ? "bg-white text-slate-900 shadow-sm scale-100"
@@ -528,17 +659,17 @@ export default function DashboardPage() {
 
       {/* 4 Cards Per Row (8 Stat Cards Total) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* 1. Cash & Bank */}
+        {/* 1. Cash & Bank (Inflows & Liquidity) */}
         <StatCard
           id="stat-cash-bank"
-          title="Cash & Bank"
-          value={formatCurrency(treasuryMetrics.totalLiquid)}
-          subtitle="RAK Bank & Petty Cash"
+          title="Cash Inflows"
+          value={formatCurrency(cashFlowMetrics.moneyIn)}
+          subtitle={`Inflow • Total Liquid: ${formatCompact(treasuryMetrics.totalLiquid)}`}
           accentColor="emerald"
           loading={accLoading}
           icon={<Landmark size={18} strokeWidth={2.2} />}
           trend={{
-            label: `${cashFlowMetrics.netCashFlow >= 0 ? "+" : ""}${formatCompact(cashFlowMetrics.netCashFlow)} Net`,
+            label: `${cashFlowMetrics.netCashFlow >= 0 ? "+" : ""}${formatCompact(cashFlowMetrics.netCashFlow)} Net Flow`,
             up: cashFlowMetrics.netCashFlow >= 0,
           }}
         />
@@ -547,17 +678,23 @@ export default function DashboardPage() {
         <StatCard
           id="stat-receivables"
           title="Receivables"
-          value={formatCurrency(arMetrics.totalOutstanding)}
-          subtitle={`${arMetrics.openCount} Open Invoices`}
+          value={formatCurrency(arMetrics.displayAmount)}
+          subtitle={
+            arMetrics.count > 0
+              ? `${arMetrics.count} Inv • ${formatCompact(arMetrics.totalCollected)} Paid • ${dateRange.shortLabel}`
+              : `0 Invoices in ${dateRange.shortLabel}`
+          }
           accentColor="blue"
           loading={invLoading}
           icon={<DollarSign size={18} strokeWidth={2.2} />}
           trend={{
             label:
-              arMetrics.overdueCount > 0
-                ? `${arMetrics.overdueCount} Overdue`
-                : "Current",
-            up: arMetrics.overdueCount === 0,
+              arMetrics.totalOutstanding === 0
+                ? arMetrics.count > 0
+                  ? "100% Settled"
+                  : "Settled"
+                : `${formatCompact(arMetrics.totalOutstanding)} Due`,
+            up: arMetrics.totalOutstanding === 0,
           }}
         />
 
@@ -565,17 +702,21 @@ export default function DashboardPage() {
         <StatCard
           id="stat-payables"
           title="Payables"
-          value={formatCurrency(apMetrics.totalOutstanding)}
-          subtitle={`${apMetrics.openCount} Supplier Bills`}
+          value={formatCurrency(apMetrics.displayAmount)}
+          subtitle={
+            apMetrics.count > 0
+              ? `${apMetrics.count} Bills • ${formatCompact(apMetrics.totalPaid)} Paid • ${dateRange.shortLabel}`
+              : `0 Bills in ${dateRange.shortLabel}`
+          }
           accentColor="amber"
           loading={billsLoading}
           icon={<Receipt size={18} strokeWidth={2.2} />}
           trend={{
             label:
-              apMetrics.overdueCount > 0
-                ? `${apMetrics.overdueCount} Due`
-                : "Settled",
-            up: apMetrics.overdueCount === 0,
+              apMetrics.totalOutstanding === 0
+                ? "Settled"
+                : `${formatCompact(apMetrics.totalOutstanding)} Due`,
+            up: apMetrics.totalOutstanding === 0,
           }}
         />
 
@@ -584,7 +725,7 @@ export default function DashboardPage() {
           id="stat-working-capital"
           title="Working Capital"
           value={formatCurrency(totalAssets - totalLiabilities)}
-          subtitle={`${totalLiabilities > 0 ? (totalAssets / totalLiabilities).toFixed(2) : "1.00"}x Liquidity Ratio`}
+          subtitle={`${totalLiabilities > 0 ? (totalAssets / totalLiabilities).toFixed(2) : "1.00"}x Ratio as of ${dateRange.shortLabel}`}
           accentColor="slate"
           loading={bsLoading}
           icon={<Scale size={18} strokeWidth={2.2} />}
@@ -599,7 +740,7 @@ export default function DashboardPage() {
           id="stat-revenue"
           title="Total Revenue"
           value={formatCurrency(revenue)}
-          subtitle="Operating Income"
+          subtitle={`Operating Income • ${dateRange.shortLabel}`}
           accentColor="emerald"
           loading={plLoading}
           icon={<ReportsIcon size={18} strokeWidth={2.2} />}
@@ -614,7 +755,7 @@ export default function DashboardPage() {
           id="stat-expenses"
           title="Total Costs"
           value={formatCurrency(expenses)}
-          subtitle={`${revenue > 0 ? ((expenses / revenue) * 100).toFixed(1) : "0.0"}% of Revenue`}
+          subtitle={`${revenue > 0 ? ((expenses / revenue) * 100).toFixed(1) : "0.0"}% of Rev • ${dateRange.shortLabel}`}
           accentColor="rose"
           loading={plLoading}
           icon={<CreditCard size={18} strokeWidth={2.2} />}
@@ -630,7 +771,7 @@ export default function DashboardPage() {
           id="stat-net-income"
           title="Net Profit"
           value={formatCurrency(netIncome)}
-          subtitle={`${marginPct.toFixed(1)}% Margin`}
+          subtitle={`${marginPct.toFixed(1)}% Margin • ${dateRange.shortLabel}`}
           accentColor="indigo"
           loading={plLoading}
           icon={<JournalEntriesIcon size={18} strokeWidth={2.2} />}
@@ -645,7 +786,7 @@ export default function DashboardPage() {
           id="stat-vat"
           title="VAT Liability (5%)"
           value={formatCurrency(vatMetrics.netVatPayable)}
-          subtitle={`Out: ${formatCompact(vatMetrics.outputVat)} • In: ${formatCompact(vatMetrics.inputVat)}`}
+          subtitle={`${dateRange.shortLabel}: Out ${formatCompact(vatMetrics.outputVat)} • In ${formatCompact(vatMetrics.inputVat)}`}
           accentColor="blue"
           loading={invLoading || billsLoading}
           icon={<Percent size={18} strokeWidth={2.2} />}
