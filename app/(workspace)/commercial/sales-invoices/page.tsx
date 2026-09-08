@@ -41,8 +41,8 @@ import {
   QuotationHeader,
   QuotationFooter,
   QuotationTerms,
-  QuotationSignatures,
   DEFAULT_TERMS_AND_CONDITIONS,
+  QuotationPaymentTerms,
 } from "@/components/quotation";
 
 export default function SalesInvoicesPage() {
@@ -1313,10 +1313,10 @@ export default function SalesInvoicesPage() {
                 </td>
               </tr>
 
-              {/* 7. Client Acceptance & Signatures */}
+              {/* 7. Payment Terms */}
               <tr>
                 <td className="p-0 border-none align-top">
-                  <QuotationSignatures />
+                  <QuotationPaymentTerms />
                 </td>
               </tr>
             </tbody>
