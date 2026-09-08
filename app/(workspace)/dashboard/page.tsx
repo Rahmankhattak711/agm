@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import BarChart from "@/components/BarChart";
 import DoughnutChart from "@/components/DoughnutChart";
@@ -35,6 +35,9 @@ import {
   ShieldCheck,
   Calendar,
   Sparkles,
+  ChevronDown,
+  Check,
+  X,
 } from "lucide-react";
 
 type PeriodOption = "THIS_MONTH" | "THIS_QUARTER" | "THIS_YEAR" | "CUSTOM";
@@ -61,6 +64,32 @@ export default function DashboardPage() {
   const [chartView, setChartView] = useState<ChartViewMode>("P_AND_L");
   const [customStartDate, setCustomStartDate] = useState<string>(initialDates.startStr);
   const [customEndDate, setCustomEndDate] = useState<string>(initialDates.endStr);
+  const [isCustomOpen, setIsCustomOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setIsCustomOpen(false);
+      }
+    }
+    if (isCustomOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isCustomOpen]);
+
+  const applyPreset = (daysAgoStart: number, daysAgoEnd: number = 0) => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysAgoStart);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysAgoEnd);
+    setCustomStartDate(formatYMD(start));
+    setCustomEndDate(formatYMD(end));
+    setPeriod("CUSTOM");
+    setIsCustomOpen(false);
+  };
 
   const dateRange = useMemo(() => {
     const now = new Date();
@@ -516,32 +545,34 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 max-w-full">
       {/* Executive Command Ribbon */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] p-5 md:p-6 text-white shadow-[6px_0_30px_rgba(15,23,42,0.18)]">
-        {/* Subtle Ambient Brand Geometric Watermark */}
-        <div className="pointer-events-none absolute right-[-40px] top-[-30px] w-[260px] opacity-15">
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 240 240"
-            className="h-full w-full"
-          >
-            <path
-              d="M14 180V60L125 10l108 50v120M52 150V70L164 20v100"
-              fill="none"
-              stroke="#edf7ee"
-              strokeWidth="1.5"
-            />
-          </svg>
+      <div className="relative rounded-2xl border border-white/15 bg-gradient-to-br from-[#274052] via-[#1c3242] to-[#12222d] p-5 md:p-6 text-white shadow-[0_12px_36px_rgba(15,23,42,0.22)]">
+        {/* Subtle Ambient Brand Geometric Watermark (Clipped to boundary without clipping child dropdowns) */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+          <div className="absolute right-[-40px] top-[-30px] w-[280px] opacity-10">
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 240 240"
+              className="h-full w-full"
+            >
+              <path
+                d="M14 180V60L125 10l108 50v120M52 150V70L164 20v100"
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth="1.5"
+              />
+            </svg>
+          </div>
         </div>
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          {/* Left Title & Live Heartbeat */}
-          <div className="space-y-2">
+        <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-5">
+          {/* Left Title & Telemetry */}
+          <div className="space-y-3 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300 backdrop-blur-xs">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-3 py-0.5 text-[11px] font-semibold text-emerald-300 backdrop-blur-md">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Live Ledger &bull; Real-time Accounting
               </span>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-slate-400">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-300/80 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full">
                 <Sparkles size={12} className="text-amber-400" />
                 UAE FTA Tax Compliant
               </span>
@@ -551,28 +582,35 @@ export default function DashboardPage() {
               <h1 className="text-xl md:text-2xl font-black text-white tracking-tight">
                 Finance &amp; Operations Executive Dashboard
               </h1>
-              <p className="text-xs text-slate-300/80 font-normal mt-0.5">
-                Real-time financial telemetry, cash liquidity &bull; AGM
-                Interiors &amp; Fitout
+              <p className="text-xs text-slate-300/85 font-normal mt-0.5">
+                Real-time financial telemetry, cash liquidity &bull; AGM Interiors &amp; Fitout
               </p>
             </div>
 
-            {/* Quick Live Snapshot Chips */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <div className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-2.5 py-1 text-[11px] text-slate-300">
-                <span className="text-slate-400">Treasury:</span>
-                <span className="font-mono font-bold text-white">
+            {/* Quick Live Snapshot Telemetry Chips */}
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+              <div className="flex items-center gap-1.5 rounded-xl bg-white/10 border border-white/15 px-3 py-1.5 text-xs text-slate-200 backdrop-blur-md shadow-xs">
+                <Landmark size={13} className="text-emerald-400 shrink-0" />
+                <span className="text-slate-400 font-medium">Treasury:</span>
+                <span className="font-mono font-bold text-white tracking-tight">
                   {formatCompact(treasuryMetrics.totalLiquid)}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-2.5 py-1 text-[11px] text-slate-300">
-                <span className="text-slate-400">Net Margin:</span>
+
+              <div className="flex items-center gap-1.5 rounded-xl bg-white/10 border border-white/15 px-3 py-1.5 text-xs text-slate-200 backdrop-blur-md shadow-xs">
+                <TrendingUp size={13} className="text-emerald-400 shrink-0" />
+                <span className="text-slate-400 font-medium">Net Margin:</span>
                 <span className="font-mono font-bold text-emerald-300">
                   {marginPct.toFixed(1)}%
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-2.5 py-1 text-[11px] text-slate-300">
-                <span className="text-slate-400">Audit Status:</span>
+
+              <div className="flex items-center gap-1.5 rounded-xl bg-white/10 border border-white/15 px-3 py-1.5 text-xs text-slate-200 backdrop-blur-md shadow-xs">
+                <ShieldCheck
+                  size={13}
+                  className={isBalanced ? "text-emerald-400 shrink-0" : "text-amber-400 shrink-0"}
+                />
+                <span className="text-slate-400 font-medium">Audit Status:</span>
                 <span
                   className={`font-semibold ${
                     isBalanced ? "text-emerald-300" : "text-amber-300"
@@ -581,81 +619,167 @@ export default function DashboardPage() {
                   {isBalanced ? "Balanced" : "Review"}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 border border-emerald-400/30 px-2.5 py-1 text-[11px] text-emerald-200">
-                <Calendar size={12} className="text-emerald-300" />
-                <span className="text-emerald-300/80">Period:</span>
-                <span className="font-semibold text-white">
-                  {dateRange.periodLabel}
-                </span>
-              </div>
+
+              {period === "CUSTOM" && (
+                <div className="flex items-center gap-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/35 px-3 py-1.5 text-xs text-emerald-200 backdrop-blur-md shadow-xs">
+                  <Calendar size={13} className="text-emerald-300 shrink-0" />
+                  <span className="text-slate-300 font-medium">Range:</span>
+                  <span className="font-mono font-bold text-white">
+                    {dateRange.periodLabel}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Right Period Selector Filter */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
-            <div className="flex items-center bg-black/25 rounded-xl p-1 border border-white/15 backdrop-blur-md shadow-inner overflow-x-auto max-w-full no-scrollbar">
+          {/* Right Controls: Filter Tabs with Popover for Custom */}
+          <div className="relative z-30" ref={popoverRef}>
+            <div className="flex items-center bg-black/40 rounded-xl p-1 border border-white/15 backdrop-blur-md shadow-inner">
               {(
                 [
-                  "THIS_MONTH",
-                  "THIS_QUARTER",
-                  "THIS_YEAR",
-                  "CUSTOM",
-                ] as PeriodOption[]
-              ).map((p) => {
-                const labels: Record<PeriodOption, string> = {
-                  THIS_MONTH: "Month",
-                  THIS_QUARTER: "Quarter",
-                  THIS_YEAR: "Year",
-                  CUSTOM: "Custom",
-                };
+                  { key: "THIS_MONTH", label: "Month" },
+                  { key: "THIS_QUARTER", label: "Quarter" },
+                  { key: "THIS_YEAR", label: "Year" },
+                ] as const
+              ).map(({ key, label }) => {
+                const active = period === key;
                 return (
                   <button
-                    key={p}
+                    key={key}
                     type="button"
                     onClick={() => {
-                      if (p === "CUSTOM" && (!customStartDate || !customEndDate)) {
-                        const now = new Date();
-                        setCustomStartDate(formatYMD(new Date(now.getFullYear(), now.getMonth(), 1)));
-                        setCustomEndDate(formatYMD(now));
-                      }
-                      setPeriod(p);
+                      setPeriod(key);
+                      setIsCustomOpen(false);
                     }}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
-                      period === p
-                        ? "bg-white text-slate-900 shadow-sm scale-100"
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      active
+                        ? "bg-white text-slate-900 shadow-sm scale-[1.02]"
                         : "text-slate-300 hover:text-white hover:bg-white/10"
                     }`}
                   >
-                    {labels[p]}
+                    {label}
                   </button>
                 );
               })}
+
+              {/* Custom Date Range Popover Toggle */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (period !== "CUSTOM") {
+                    setPeriod("CUSTOM");
+                  }
+                  setIsCustomOpen((prev) => !prev);
+                }}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  period === "CUSTOM"
+                    ? "bg-white text-slate-900 shadow-sm scale-[1.02]"
+                    : "text-slate-300 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <span>Custom</span>
+                <ChevronDown
+                  size={13}
+                  className={`transition-transform duration-200 ${isCustomOpen ? "rotate-180" : ""}`}
+                />
+              </button>
             </div>
+
+            {/* Sleek Floating Calendar Popover - Dark Executive Theme */}
+            {isCustomOpen && (
+              <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-slate-950 text-white p-4 shadow-[0_24px_50px_rgba(0,0,0,0.7)] border border-slate-700/80 backdrop-blur-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3.5 ring-1 ring-white/10">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-300">
+                      <Calendar size={14} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white">Custom Date Range</h4>
+                      <p className="text-[10px] text-slate-400">Select start and end dates</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomOpen(false)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+
+                {/* Quick Presets */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    Quick Presets
+                  </span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { label: "Today", start: 0, end: 0 },
+                      { label: "Yesterday", start: 1, end: 1 },
+                      { label: "2 Days Ago", start: 2, end: 2 },
+                      { label: "Last 7 Days", start: 6, end: 0 },
+                      { label: "Last 30 Days", start: 29, end: 0 },
+                      { label: "This Month", start: new Date().getDate() - 1, end: 0 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => applyPreset(preset.start, preset.end)}
+                        className="px-2 py-1.5 rounded-lg bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 border border-white/10 text-[11px] font-medium text-slate-300 transition text-center cursor-pointer active:scale-95"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Date Inputs */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-semibold text-slate-400">From Date</label>
+                    <input
+                      type="date"
+                      value={customStartDate}
+                      onChange={(e) => {
+                        setCustomStartDate(e.target.value);
+                        setPeriod("CUSTOM");
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white/10 border border-white/15 text-white text-xs font-mono font-medium focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-semibold text-slate-400">To Date</label>
+                    <input
+                      type="date"
+                      value={customEndDate}
+                      onChange={(e) => {
+                        setCustomEndDate(e.target.value);
+                        setPeriod("CUSTOM");
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white/10 border border-white/15 text-white text-xs font-mono font-medium focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Footer Action */}
+                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
+                  <span className="text-[11px] font-mono text-emerald-300">
+                    {customStartDate} &rarr; {customEndDate}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomOpen(false)}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition flex items-center gap-1 shadow-sm cursor-pointer active:scale-95"
+                  >
+                    <Check size={13} />
+                    <span>Apply Range</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Custom Date Range Picker */}
-      {period === "CUSTOM" && (
-        <div className="flex flex-wrap items-center gap-3 p-3 bg-white rounded-xl border border-slate-200/80 text-xs shadow-2xs animate-in fade-in">
-          <span className="font-bold text-slate-700">Custom Date Range:</span>
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs font-mono font-semibold"
-              value={customStartDate}
-              onChange={(e) => setCustomStartDate(e.target.value)}
-            />
-            <span className="text-slate-400 font-bold">&rarr;</span>
-            <input
-              type="date"
-              className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs font-mono font-semibold"
-              value={customEndDate}
-              onChange={(e) => setCustomEndDate(e.target.value)}
-            />
-          </div>
-        </div>
-      )}
 
       {/* 4 Cards Per Row (8 Stat Cards Total) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -664,7 +788,7 @@ export default function DashboardPage() {
           id="stat-cash-bank"
           title="Cash Inflows"
           value={formatCurrency(cashFlowMetrics.moneyIn)}
-          subtitle={`Inflow • Total Liquid: ${formatCompact(treasuryMetrics.totalLiquid)}`}
+          subtitle={`Total Liquid: ${formatCompact(treasuryMetrics.totalLiquid)}`}
           accentColor="emerald"
           loading={accLoading}
           icon={<Landmark size={18} strokeWidth={2.2} />}
@@ -679,11 +803,7 @@ export default function DashboardPage() {
           id="stat-receivables"
           title="Receivables"
           value={formatCurrency(arMetrics.displayAmount)}
-          subtitle={
-            arMetrics.count > 0
-              ? `${arMetrics.count} Inv • ${formatCompact(arMetrics.totalCollected)} Paid • ${dateRange.shortLabel}`
-              : `0 Invoices in ${dateRange.shortLabel}`
-          }
+          subtitle={`${formatCompact(arMetrics.totalCollected)} collected • ${arMetrics.count} inv`}
           accentColor="blue"
           loading={invLoading}
           icon={<DollarSign size={18} strokeWidth={2.2} />}
@@ -703,11 +823,7 @@ export default function DashboardPage() {
           id="stat-payables"
           title="Payables"
           value={formatCurrency(apMetrics.displayAmount)}
-          subtitle={
-            apMetrics.count > 0
-              ? `${apMetrics.count} Bills • ${formatCompact(apMetrics.totalPaid)} Paid • ${dateRange.shortLabel}`
-              : `0 Bills in ${dateRange.shortLabel}`
-          }
+          subtitle={`${formatCompact(apMetrics.totalPaid)} settled • ${apMetrics.count} bills`}
           accentColor="amber"
           loading={billsLoading}
           icon={<Receipt size={18} strokeWidth={2.2} />}
@@ -725,7 +841,7 @@ export default function DashboardPage() {
           id="stat-working-capital"
           title="Working Capital"
           value={formatCurrency(totalAssets - totalLiabilities)}
-          subtitle={`${totalLiabilities > 0 ? (totalAssets / totalLiabilities).toFixed(2) : "1.00"}x Ratio as of ${dateRange.shortLabel}`}
+          subtitle={`${totalLiabilities > 0 ? (totalAssets / totalLiabilities).toFixed(2) : "1.00"}x Current Ratio`}
           accentColor="slate"
           loading={bsLoading}
           icon={<Scale size={18} strokeWidth={2.2} />}
@@ -740,7 +856,7 @@ export default function DashboardPage() {
           id="stat-revenue"
           title="Total Revenue"
           value={formatCurrency(revenue)}
-          subtitle={`Operating Income • ${dateRange.shortLabel}`}
+          subtitle="Recognized Operating Income"
           accentColor="emerald"
           loading={plLoading}
           icon={<ReportsIcon size={18} strokeWidth={2.2} />}
@@ -755,7 +871,7 @@ export default function DashboardPage() {
           id="stat-expenses"
           title="Total Costs"
           value={formatCurrency(expenses)}
-          subtitle={`${revenue > 0 ? ((expenses / revenue) * 100).toFixed(1) : "0.0"}% of Rev • ${dateRange.shortLabel}`}
+          subtitle={`${revenue > 0 ? ((expenses / revenue) * 100).toFixed(1) : "0.0"}% of Revenue`}
           accentColor="rose"
           loading={plLoading}
           icon={<CreditCard size={18} strokeWidth={2.2} />}
@@ -771,7 +887,7 @@ export default function DashboardPage() {
           id="stat-net-income"
           title="Net Profit"
           value={formatCurrency(netIncome)}
-          subtitle={`${marginPct.toFixed(1)}% Margin • ${dateRange.shortLabel}`}
+          subtitle={`${marginPct.toFixed(1)}% Operating Margin`}
           accentColor="indigo"
           loading={plLoading}
           icon={<JournalEntriesIcon size={18} strokeWidth={2.2} />}
@@ -786,7 +902,7 @@ export default function DashboardPage() {
           id="stat-vat"
           title="VAT Liability (5%)"
           value={formatCurrency(vatMetrics.netVatPayable)}
-          subtitle={`${dateRange.shortLabel}: Out ${formatCompact(vatMetrics.outputVat)} • In ${formatCompact(vatMetrics.inputVat)}`}
+          subtitle={`Out ${formatCompact(vatMetrics.outputVat)} • In ${formatCompact(vatMetrics.inputVat)}`}
           accentColor="blue"
           loading={invLoading || billsLoading}
           icon={<Percent size={18} strokeWidth={2.2} />}
