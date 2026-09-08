@@ -12,14 +12,27 @@ type BalanceItem = {
   amount: number;
 };
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const endDateStr = searchParams.get("endDate") || searchParams.get("asOfDate");
+
+    const whereCondition: any = {};
+    if (endDateStr) {
+      const eParts = endDateStr.split("-").map(Number);
+      if (eParts.length === 3) {
+        const endDate = new Date(Date.UTC(eParts[0], eParts[1] - 1, eParts[2], 23, 59, 59, 999));
+        whereCondition.journalEntry = { entryDate: { lte: endDate } };
+      }
+    }
+
     const [accounts, lines] = await Promise.all([
       prisma.chartOfAccount.findMany({
         orderBy: { accountCode: "asc" },
       }),
       prisma.journalEntryLine.findMany({
-        include: { account: true },
+        where: whereCondition,
+        include: { account: true, journalEntry: true },
       }),
     ]);
 

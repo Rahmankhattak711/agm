@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import BarChart from "@/components/BarChart";
 import DoughnutChart from "@/components/DoughnutChart";
@@ -35,41 +35,97 @@ import {
   ShieldCheck,
   Calendar,
   Sparkles,
+  ChevronDown,
+  Check,
+  X,
 } from "lucide-react";
 
 type PeriodOption = "THIS_MONTH" | "THIS_QUARTER" | "THIS_YEAR" | "CUSTOM";
 type ChartViewMode = "P_AND_L" | "CASH_FLOW";
 
+const formatYMD = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 export default function DashboardPage() {
+  const [initialDates] = useState(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return {
+      startStr: formatYMD(start),
+      endStr: formatYMD(now),
+    };
+  });
+
   const [period, setPeriod] = useState<PeriodOption>("THIS_MONTH");
   const [chartView, setChartView] = useState<ChartViewMode>("P_AND_L");
-  const [customStartDate, setCustomStartDate] = useState<string>("");
-  const [customEndDate, setCustomEndDate] = useState<string>("");
+  const [customStartDate, setCustomStartDate] = useState<string>(initialDates.startStr);
+  const [customEndDate, setCustomEndDate] = useState<string>(initialDates.endStr);
+  const [isCustomOpen, setIsCustomOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setIsCustomOpen(false);
+      }
+    }
+    if (isCustomOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isCustomOpen]);
+
+  const applyPreset = (daysAgoStart: number, daysAgoEnd: number = 0) => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysAgoStart);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysAgoEnd);
+    setCustomStartDate(formatYMD(start));
+    setCustomEndDate(formatYMD(end));
+    setPeriod("CUSTOM");
+    setIsCustomOpen(false);
+  };
 
   const dateRange = useMemo(() => {
     const now = new Date();
     let start: Date;
-    let end: Date = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      23,
-      59,
-      59,
-    );
+    let end: Date;
+    let periodLabel = "This Month";
+    let shortLabel = "Month";
 
     if (period === "THIS_MONTH") {
-      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      const monthName = now.toLocaleString("default", { month: "short", year: "numeric" });
+      periodLabel = monthName;
+      shortLabel = "Month";
     } else if (period === "THIS_QUARTER") {
       const qMonth = Math.floor(now.getMonth() / 3) * 3;
-      start = new Date(now.getFullYear(), qMonth, 1);
+      start = new Date(now.getFullYear(), qMonth, 1, 0, 0, 0);
+      end = new Date(now.getFullYear(), qMonth + 3, 0, 23, 59, 59, 999);
+      const qNum = Math.floor(qMonth / 3) + 1;
+      periodLabel = `Q${qNum} ${now.getFullYear()}`;
+      shortLabel = `Q${qNum}`;
     } else if (period === "THIS_YEAR") {
-      start = new Date(now.getFullYear(), 0, 1);
+      start = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
+      end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+      periodLabel = `FY ${now.getFullYear()}`;
+      shortLabel = "Year";
     } else if (period === "CUSTOM" && customStartDate && customEndDate) {
-      start = new Date(customStartDate);
-      end = new Date(`${customEndDate}T23:59:59`);
+      start = new Date(`${customStartDate}T00:00:00`);
+      end = new Date(`${customEndDate}T23:59:59.999`);
+      periodLabel = `${customStartDate} to ${customEndDate}`;
+      shortLabel = "Custom";
     } else {
-      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      periodLabel = "This Month";
+      shortLabel = "Month";
     }
 
     const durationMs = end.getTime() - start.getTime();
@@ -81,17 +137,22 @@ export default function DashboardPage() {
       end,
       prevStart,
       prevEnd,
-      startStr: start.toISOString().split("T")[0],
-      endStr: end.toISOString().split("T")[0],
+      startStr: formatYMD(start),
+      endStr: formatYMD(end),
+      periodLabel,
+      shortLabel,
     };
   }, [period, customStartDate, customEndDate]);
 
   const { data: profitLoss, isLoading: plLoading } = useProfitLoss({
+    period: "custom",
     startDate: dateRange.startStr,
     endDate: dateRange.endStr,
     compare: true,
   });
-  const { data: balanceSheet, isLoading: bsLoading } = useBalanceSheet();
+  const { data: balanceSheet, isLoading: bsLoading } = useBalanceSheet({
+    endDate: dateRange.endStr,
+  });
   const { data: journalEntries = [], isLoading: jeLoading } =
     useJournalEntries();
   const { data: expensesData } = useExpenses();
@@ -120,23 +181,57 @@ export default function DashboardPage() {
   };
 
   const treasuryMetrics = useMemo(() => {
+    // Dynamically aggregate all liquid cash & bank accounts directly from DB chart of accounts
+    const liquidAccounts = accounts.filter((a) => {
+      if (a.type !== "ASSET") return false;
+      const code = parseInt(a.accountCode, 10);
+      if (!isNaN(code) && code >= 1000 && code < 1100) return true;
+      const name = a.accountName.toLowerCase();
+      return (
+        name.includes("bank") ||
+        name.includes("petty cash") ||
+        name.includes("float") ||
+        name.includes("cash on hand")
+      );
+    });
+
+    const totalLiquid = liquidAccounts.reduce(
+      (sum, a) => sum + Number(a.balance || 0),
+      0,
+    );
     const pettyCashAcc =
       accounts.find((a) => a.accountCode === "1010")?.balance || 0;
     const rakBankAcc =
       accounts.find((a) => a.accountCode === "1020")?.balance || 0;
     const siteFloatAcc =
       accounts.find((a) => a.accountCode === "1030")?.balance || 0;
-    const totalLiquid = pettyCashAcc + rakBankAcc + siteFloatAcc;
 
-    return { pettyCashAcc, rakBankAcc, siteFloatAcc, totalLiquid };
+    return { pettyCashAcc, rakBankAcc, siteFloatAcc, totalLiquid, count: liquidAccounts.length };
   }, [accounts]);
 
   const arMetrics = useMemo(() => {
     const now = new Date();
-    const active = invoices.filter(
-      (i) => i.status !== "CANCELLED" && Number(i.remainingBalance || 0) > 0,
+    // Filter invoices belonging to the selected date range
+    const periodInvoices = invoices.filter((i) => {
+      if (i.status === "CANCELLED") return false;
+      const invDateStr = (i.invoiceDate || "").slice(0, 10);
+      return invDateStr >= dateRange.startStr && invDateStr <= dateRange.endStr;
+    });
+
+    const totalBilled = periodInvoices.reduce(
+      (sum, i) => sum + Number(i.totalAmount || 0),
+      0,
     );
-    const totalOutstanding = active.reduce(
+    const totalCollected = periodInvoices.reduce(
+      (sum, i) =>
+        sum +
+        Number(
+          i.paidAmount ||
+            (Number(i.totalAmount || 0) - Number(i.remainingBalance || 0)),
+        ),
+      0,
+    );
+    const totalOutstanding = periodInvoices.reduce(
       (sum, i) => sum + Number(i.remainingBalance || 0),
       0,
     );
@@ -145,35 +240,56 @@ export default function DashboardPage() {
     let overdue = 0;
     let overdueCount = 0;
 
-    active.forEach((i) => {
+    periodInvoices.forEach((i) => {
       const invDate = new Date(i.dueDate || i.invoiceDate);
       const diffDays = Math.floor(
         (now.getTime() - invDate.getTime()) / (1000 * 60 * 60 * 24),
       );
       const bal = Number(i.remainingBalance || 0);
-      if (diffDays > 0) {
-        overdue += bal;
-        overdueCount++;
-      } else {
-        dueSoon += bal;
+      if (bal > 0) {
+        if (diffDays > 0) {
+          overdue += bal;
+          overdueCount++;
+        } else {
+          dueSoon += bal;
+        }
       }
     });
 
+    const displayAmount =
+      totalBilled > 0 ? totalBilled : totalOutstanding;
+
     return {
+      totalBilled,
+      totalCollected,
       totalOutstanding,
+      displayAmount,
       dueSoon,
       overdue,
       overdueCount,
-      openCount: active.length,
+      count: periodInvoices.length,
+      openCount: periodInvoices.filter((i) => Number(i.remainingBalance || 0) > 0).length,
     };
-  }, [invoices]);
+  }, [invoices, dateRange]);
 
   const apMetrics = useMemo(() => {
     const now = new Date();
-    const active = bills.filter(
-      (b) => b.status !== "CANCELLED" && Number(b.remainingBalance || 0) > 0,
+    // Filter supplier bills belonging to the selected date range
+    const periodBills = bills.filter((b) => {
+      if (b.status === "CANCELLED") return false;
+      const billDateStr = (b.billDate || "").slice(0, 10);
+      return billDateStr >= dateRange.startStr && billDateStr <= dateRange.endStr;
+    });
+
+    const totalBilled = periodBills.reduce(
+      (sum, b) => sum + Number(b.totalAmount || 0),
+      0,
     );
-    const totalOutstanding = active.reduce(
+    const totalPaid = periodBills.reduce(
+      (sum, b) => sum + Number(b.paidAmount || 0),
+      0,
+    );
+    const totalOutstanding = periodBills.reduce(
       (sum, b) => sum + Number(b.remainingBalance || 0),
       0,
     );
@@ -182,28 +298,37 @@ export default function DashboardPage() {
     let overdue = 0;
     let overdueCount = 0;
 
-    active.forEach((b) => {
+    periodBills.forEach((b) => {
       const billDate = new Date(b.dueDate || b.billDate);
       const diffDays = Math.floor(
         (now.getTime() - billDate.getTime()) / (1000 * 60 * 60 * 24),
       );
       const bal = Number(b.remainingBalance || 0);
-      if (diffDays > 0) {
-        overdue += bal;
-        overdueCount++;
-      } else {
-        dueSoon += bal;
+      if (bal > 0) {
+        if (diffDays > 0) {
+          overdue += bal;
+          overdueCount++;
+        } else {
+          dueSoon += bal;
+        }
       }
     });
 
+    const displayAmount =
+      totalBilled > 0 ? totalBilled : totalOutstanding;
+
     return {
+      totalBilled,
+      totalPaid,
       totalOutstanding,
+      displayAmount,
       dueSoon,
       overdue,
       overdueCount,
-      openCount: active.length,
+      count: periodBills.length,
+      openCount: periodBills.filter((b) => Number(b.remainingBalance || 0) > 0).length,
     };
-  }, [bills]);
+  }, [bills, dateRange]);
 
   const revenue = Math.max(
     0,
@@ -259,43 +384,56 @@ export default function DashboardPage() {
   const cashFlowMetrics = useMemo(() => {
     const periodReceipts = payments
       .filter((p) => {
-        const d = new Date(p.paymentDate);
-        return d >= dateRange.start && d <= dateRange.end;
+        const d = (p.paymentDate || "").slice(0, 10);
+        return d >= dateRange.startStr && d <= dateRange.endStr;
       })
       .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
     const periodDirectExpenses = (expensesData?.expenses || [])
       .filter((e) => {
-        const d = new Date(e.expenseDate);
-        return d >= dateRange.start && d <= dateRange.end;
+        const d = (e.expenseDate || "").slice(0, 10);
+        return d >= dateRange.startStr && d <= dateRange.endStr;
       })
       .reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
 
     const periodBillPayments = bills
       .filter((b) => {
-        const d = new Date(b.billDate);
-        return d >= dateRange.start && d <= dateRange.end;
+        const d = (b.billDate || "").slice(0, 10);
+        return d >= dateRange.startStr && d <= dateRange.endStr;
       })
       .reduce((sum, b) => sum + Number(b.paidAmount || 0), 0);
 
-    const moneyIn = periodReceipts || revenue * 0.85;
-    const moneyOut =
-      periodBillPayments + periodDirectExpenses || expenses * 0.75;
+    // Strictly real database figures with no synthetic multiplier fallbacks
+    const moneyIn = periodReceipts;
+    const moneyOut = periodBillPayments + periodDirectExpenses;
     const netCashFlow = moneyIn - moneyOut;
 
     return { moneyIn, moneyOut, netCashFlow };
-  }, [payments, expensesData, bills, dateRange, revenue, expenses]);
+  }, [payments, expensesData, bills, dateRange]);
 
   const vatMetrics = useMemo(() => {
-    const outputVat = invoices
-      .filter((i) => i.status !== "CANCELLED")
-      .reduce((sum, i) => sum + Number(i.vatAmount || 0), 0);
-    const inputVat = bills
-      .filter((b) => b.status !== "CANCELLED")
-      .reduce((sum, b) => sum + Number(b.vatAmount || 0), 0);
+    const periodInvoices = invoices.filter((i) => {
+      if (i.status === "CANCELLED") return false;
+      const d = (i.invoiceDate || "").slice(0, 10);
+      return d >= dateRange.startStr && d <= dateRange.endStr;
+    });
+    const periodBills = bills.filter((b) => {
+      if (b.status === "CANCELLED") return false;
+      const d = (b.billDate || "").slice(0, 10);
+      return d >= dateRange.startStr && d <= dateRange.endStr;
+    });
+
+    const outputVat = periodInvoices.reduce(
+      (sum, i) => sum + Number(i.vatAmount || 0),
+      0,
+    );
+    const inputVat = periodBills.reduce(
+      (sum, b) => sum + Number(b.vatAmount || 0),
+      0,
+    );
     const netVatPayable = outputVat - inputVat;
     return { outputVat, inputVat, netVatPayable };
-  }, [invoices, bills]);
+  }, [invoices, bills, dateRange]);
 
   const actionItems = useMemo(() => {
     const items = [];
@@ -394,37 +532,47 @@ export default function DashboardPage() {
     },
   ];
 
-  const recentEntries = journalEntries.slice(0, 6);
+  const filteredJournalEntries = useMemo(() => {
+    return journalEntries.filter((j) => {
+      if (!j.entryDate) return false;
+      const d = new Date(j.entryDate);
+      return d >= dateRange.start && d <= dateRange.end;
+    });
+  }, [journalEntries, dateRange]);
+
+  const recentEntries = (filteredJournalEntries.length > 0 ? filteredJournalEntries : journalEntries).slice(0, 6);
 
   return (
     <div className="space-y-6 max-w-full">
       {/* Executive Command Ribbon */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] p-5 md:p-6 text-white shadow-[6px_0_30px_rgba(15,23,42,0.18)]">
-        {/* Subtle Ambient Brand Geometric Watermark */}
-        <div className="pointer-events-none absolute right-[-40px] top-[-30px] w-[260px] opacity-15">
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 240 240"
-            className="h-full w-full"
-          >
-            <path
-              d="M14 180V60L125 10l108 50v120M52 150V70L164 20v100"
-              fill="none"
-              stroke="#edf7ee"
-              strokeWidth="1.5"
-            />
-          </svg>
+      <div className="relative rounded-2xl border border-white/15 bg-gradient-to-br from-[#274052] via-[#1c3242] to-[#12222d] p-5 md:p-6 text-white shadow-[0_12px_36px_rgba(15,23,42,0.22)]">
+        {/* Subtle Ambient Brand Geometric Watermark (Clipped to boundary without clipping child dropdowns) */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+          <div className="absolute right-[-40px] top-[-30px] w-[280px] opacity-10">
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 240 240"
+              className="h-full w-full"
+            >
+              <path
+                d="M14 180V60L125 10l108 50v120M52 150V70L164 20v100"
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth="1.5"
+              />
+            </svg>
+          </div>
         </div>
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          {/* Left Title & Live Heartbeat */}
-          <div className="space-y-2">
+        <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-5">
+          {/* Left Title & Telemetry */}
+          <div className="space-y-3 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300 backdrop-blur-xs">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-3 py-0.5 text-[11px] font-semibold text-emerald-300 backdrop-blur-md">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Live Ledger &bull; Real-time Accounting
               </span>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-slate-400">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-300/80 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full">
                 <Sparkles size={12} className="text-amber-400" />
                 UAE FTA Tax Compliant
               </span>
@@ -434,28 +582,35 @@ export default function DashboardPage() {
               <h1 className="text-xl md:text-2xl font-black text-white tracking-tight">
                 Finance &amp; Operations Executive Dashboard
               </h1>
-              <p className="text-xs text-slate-300/80 font-normal mt-0.5">
-                Real-time financial telemetry, cash liquidity &bull; AGM
-                Interiors &amp; Fitout
+              <p className="text-xs text-slate-300/85 font-normal mt-0.5">
+                Real-time financial telemetry, cash liquidity &bull; AGM Interiors &amp; Fitout
               </p>
             </div>
 
-            {/* Quick Live Snapshot Chips */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <div className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-2.5 py-1 text-[11px] text-slate-300">
-                <span className="text-slate-400">Treasury:</span>
-                <span className="font-mono font-bold text-white">
+            {/* Quick Live Snapshot Telemetry Chips */}
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+              <div className="flex items-center gap-1.5 rounded-xl bg-white/10 border border-white/15 px-3 py-1.5 text-xs text-slate-200 backdrop-blur-md shadow-xs">
+                <Landmark size={13} className="text-emerald-400 shrink-0" />
+                <span className="text-slate-400 font-medium">Treasury:</span>
+                <span className="font-mono font-bold text-white tracking-tight">
                   {formatCompact(treasuryMetrics.totalLiquid)}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-2.5 py-1 text-[11px] text-slate-300">
-                <span className="text-slate-400">Net Margin:</span>
+
+              <div className="flex items-center gap-1.5 rounded-xl bg-white/10 border border-white/15 px-3 py-1.5 text-xs text-slate-200 backdrop-blur-md shadow-xs">
+                <TrendingUp size={13} className="text-emerald-400 shrink-0" />
+                <span className="text-slate-400 font-medium">Net Margin:</span>
                 <span className="font-mono font-bold text-emerald-300">
                   {marginPct.toFixed(1)}%
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/10 px-2.5 py-1 text-[11px] text-slate-300">
-                <span className="text-slate-400">Audit Status:</span>
+
+              <div className="flex items-center gap-1.5 rounded-xl bg-white/10 border border-white/15 px-3 py-1.5 text-xs text-slate-200 backdrop-blur-md shadow-xs">
+                <ShieldCheck
+                  size={13}
+                  className={isBalanced ? "text-emerald-400 shrink-0" : "text-amber-400 shrink-0"}
+                />
+                <span className="text-slate-400 font-medium">Audit Status:</span>
                 <span
                   className={`font-semibold ${
                     isBalanced ? "text-emerald-300" : "text-amber-300"
@@ -464,81 +619,181 @@ export default function DashboardPage() {
                   {isBalanced ? "Balanced" : "Review"}
                 </span>
               </div>
+
+              {period === "CUSTOM" && (
+                <div className="flex items-center gap-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/35 px-3 py-1.5 text-xs text-emerald-200 backdrop-blur-md shadow-xs">
+                  <Calendar size={13} className="text-emerald-300 shrink-0" />
+                  <span className="text-slate-300 font-medium">Range:</span>
+                  <span className="font-mono font-bold text-white">
+                    {dateRange.periodLabel}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Right Period Selector Filter */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
-            <div className="flex items-center bg-black/25 rounded-xl p-1 border border-white/15 backdrop-blur-md shadow-inner overflow-x-auto max-w-full no-scrollbar">
+          {/* Right Controls: Filter Tabs with Popover for Custom */}
+          <div className="relative z-30" ref={popoverRef}>
+            <div className="flex items-center bg-black/40 rounded-xl p-1 border border-white/15 backdrop-blur-md shadow-inner">
               {(
                 [
-                  "THIS_MONTH",
-                  "THIS_QUARTER",
-                  "THIS_YEAR",
-                  "CUSTOM",
-                ] as PeriodOption[]
-              ).map((p) => {
-                const labels: Record<PeriodOption, string> = {
-                  THIS_MONTH: "Month",
-                  THIS_QUARTER: "Quarter",
-                  THIS_YEAR: "Year",
-                  CUSTOM: "Custom",
-                };
+                  { key: "THIS_MONTH", label: "Month" },
+                  { key: "THIS_QUARTER", label: "Quarter" },
+                  { key: "THIS_YEAR", label: "Year" },
+                ] as const
+              ).map(({ key, label }) => {
+                const active = period === key;
                 return (
                   <button
-                    key={p}
+                    key={key}
                     type="button"
-                    onClick={() => setPeriod(p)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
-                      period === p
-                        ? "bg-white text-slate-900 shadow-sm scale-100"
+                    onClick={() => {
+                      setPeriod(key);
+                      setIsCustomOpen(false);
+                    }}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      active
+                        ? "bg-white text-slate-900 shadow-sm scale-[1.02]"
                         : "text-slate-300 hover:text-white hover:bg-white/10"
                     }`}
                   >
-                    {labels[p]}
+                    {label}
                   </button>
                 );
               })}
+
+              {/* Custom Date Range Popover Toggle */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (period !== "CUSTOM") {
+                    setPeriod("CUSTOM");
+                  }
+                  setIsCustomOpen((prev) => !prev);
+                }}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  period === "CUSTOM"
+                    ? "bg-white text-slate-900 shadow-sm scale-[1.02]"
+                    : "text-slate-300 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <span>Custom</span>
+                <ChevronDown
+                  size={13}
+                  className={`transition-transform duration-200 ${isCustomOpen ? "rotate-180" : ""}`}
+                />
+              </button>
             </div>
+
+            {/* Sleek Floating Calendar Popover - Dark Executive Theme */}
+            {isCustomOpen && (
+              <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-slate-950 text-white p-4 shadow-[0_24px_50px_rgba(0,0,0,0.7)] border border-slate-700/80 backdrop-blur-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3.5 ring-1 ring-white/10">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-300">
+                      <Calendar size={14} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white">Custom Date Range</h4>
+                      <p className="text-[10px] text-slate-400">Select start and end dates</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomOpen(false)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+
+                {/* Quick Presets */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    Quick Presets
+                  </span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { label: "Today", start: 0, end: 0 },
+                      { label: "Yesterday", start: 1, end: 1 },
+                      { label: "2 Days Ago", start: 2, end: 2 },
+                      { label: "Last 7 Days", start: 6, end: 0 },
+                      { label: "Last 30 Days", start: 29, end: 0 },
+                      { label: "This Month", start: new Date().getDate() - 1, end: 0 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => applyPreset(preset.start, preset.end)}
+                        className="px-2 py-1.5 rounded-lg bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 border border-white/10 text-[11px] font-medium text-slate-300 transition text-center cursor-pointer active:scale-95"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Date Inputs */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-semibold text-slate-400">From Date</label>
+                    <input
+                      type="date"
+                      value={customStartDate}
+                      onChange={(e) => {
+                        setCustomStartDate(e.target.value);
+                        setPeriod("CUSTOM");
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white/10 border border-white/15 text-white text-xs font-mono font-medium focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-semibold text-slate-400">To Date</label>
+                    <input
+                      type="date"
+                      value={customEndDate}
+                      onChange={(e) => {
+                        setCustomEndDate(e.target.value);
+                        setPeriod("CUSTOM");
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white/10 border border-white/15 text-white text-xs font-mono font-medium focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Footer Action */}
+                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
+                  <span className="text-[11px] font-mono text-emerald-300">
+                    {customStartDate} &rarr; {customEndDate}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomOpen(false)}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition flex items-center gap-1 shadow-sm cursor-pointer active:scale-95"
+                  >
+                    <Check size={13} />
+                    <span>Apply Range</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Custom Date Range Picker */}
-      {period === "CUSTOM" && (
-        <div className="flex flex-wrap items-center gap-3 p-3 bg-white rounded-xl border border-slate-200/80 text-xs shadow-2xs animate-in fade-in">
-          <span className="font-bold text-slate-700">Custom Date Range:</span>
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs font-mono font-semibold"
-              value={customStartDate}
-              onChange={(e) => setCustomStartDate(e.target.value)}
-            />
-            <span className="text-slate-400 font-bold">&rarr;</span>
-            <input
-              type="date"
-              className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs font-mono font-semibold"
-              value={customEndDate}
-              onChange={(e) => setCustomEndDate(e.target.value)}
-            />
-          </div>
-        </div>
-      )}
-
       {/* 4 Cards Per Row (8 Stat Cards Total) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* 1. Cash & Bank */}
+        {/* 1. Cash & Bank (Inflows & Liquidity) */}
         <StatCard
           id="stat-cash-bank"
-          title="Cash & Bank"
-          value={formatCurrency(treasuryMetrics.totalLiquid)}
-          subtitle="RAK Bank & Petty Cash"
+          title="Cash Inflows"
+          value={formatCurrency(cashFlowMetrics.moneyIn)}
+          subtitle={`Total Liquid: ${formatCompact(treasuryMetrics.totalLiquid)}`}
           accentColor="emerald"
           loading={accLoading}
           icon={<Landmark size={18} strokeWidth={2.2} />}
           trend={{
-            label: `${cashFlowMetrics.netCashFlow >= 0 ? "+" : ""}${formatCompact(cashFlowMetrics.netCashFlow)} Net`,
+            label: `${cashFlowMetrics.netCashFlow >= 0 ? "+" : ""}${formatCompact(cashFlowMetrics.netCashFlow)} Net Flow`,
             up: cashFlowMetrics.netCashFlow >= 0,
           }}
         />
@@ -547,17 +802,19 @@ export default function DashboardPage() {
         <StatCard
           id="stat-receivables"
           title="Receivables"
-          value={formatCurrency(arMetrics.totalOutstanding)}
-          subtitle={`${arMetrics.openCount} Open Invoices`}
+          value={formatCurrency(arMetrics.displayAmount)}
+          subtitle={`${formatCompact(arMetrics.totalCollected)} collected • ${arMetrics.count} inv`}
           accentColor="blue"
           loading={invLoading}
           icon={<DollarSign size={18} strokeWidth={2.2} />}
           trend={{
             label:
-              arMetrics.overdueCount > 0
-                ? `${arMetrics.overdueCount} Overdue`
-                : "Current",
-            up: arMetrics.overdueCount === 0,
+              arMetrics.totalOutstanding === 0
+                ? arMetrics.count > 0
+                  ? "100% Settled"
+                  : "Settled"
+                : `${formatCompact(arMetrics.totalOutstanding)} Due`,
+            up: arMetrics.totalOutstanding === 0,
           }}
         />
 
@@ -565,17 +822,17 @@ export default function DashboardPage() {
         <StatCard
           id="stat-payables"
           title="Payables"
-          value={formatCurrency(apMetrics.totalOutstanding)}
-          subtitle={`${apMetrics.openCount} Supplier Bills`}
+          value={formatCurrency(apMetrics.displayAmount)}
+          subtitle={`${formatCompact(apMetrics.totalPaid)} settled • ${apMetrics.count} bills`}
           accentColor="amber"
           loading={billsLoading}
           icon={<Receipt size={18} strokeWidth={2.2} />}
           trend={{
             label:
-              apMetrics.overdueCount > 0
-                ? `${apMetrics.overdueCount} Due`
-                : "Settled",
-            up: apMetrics.overdueCount === 0,
+              apMetrics.totalOutstanding === 0
+                ? "Settled"
+                : `${formatCompact(apMetrics.totalOutstanding)} Due`,
+            up: apMetrics.totalOutstanding === 0,
           }}
         />
 
@@ -584,7 +841,7 @@ export default function DashboardPage() {
           id="stat-working-capital"
           title="Working Capital"
           value={formatCurrency(totalAssets - totalLiabilities)}
-          subtitle={`${totalLiabilities > 0 ? (totalAssets / totalLiabilities).toFixed(2) : "1.00"}x Liquidity Ratio`}
+          subtitle={`${totalLiabilities > 0 ? (totalAssets / totalLiabilities).toFixed(2) : "1.00"}x Current Ratio`}
           accentColor="slate"
           loading={bsLoading}
           icon={<Scale size={18} strokeWidth={2.2} />}
@@ -599,7 +856,7 @@ export default function DashboardPage() {
           id="stat-revenue"
           title="Total Revenue"
           value={formatCurrency(revenue)}
-          subtitle="Operating Income"
+          subtitle="Recognized Operating Income"
           accentColor="emerald"
           loading={plLoading}
           icon={<ReportsIcon size={18} strokeWidth={2.2} />}
@@ -630,7 +887,7 @@ export default function DashboardPage() {
           id="stat-net-income"
           title="Net Profit"
           value={formatCurrency(netIncome)}
-          subtitle={`${marginPct.toFixed(1)}% Margin`}
+          subtitle={`${marginPct.toFixed(1)}% Operating Margin`}
           accentColor="indigo"
           loading={plLoading}
           icon={<JournalEntriesIcon size={18} strokeWidth={2.2} />}
@@ -645,7 +902,7 @@ export default function DashboardPage() {
           id="stat-vat"
           title="VAT Liability (5%)"
           value={formatCurrency(vatMetrics.netVatPayable)}
-          subtitle={`Out: ${formatCompact(vatMetrics.outputVat)} • In: ${formatCompact(vatMetrics.inputVat)}`}
+          subtitle={`Out ${formatCompact(vatMetrics.outputVat)} • In ${formatCompact(vatMetrics.inputVat)}`}
           accentColor="blue"
           loading={invLoading || billsLoading}
           icon={<Percent size={18} strokeWidth={2.2} />}
