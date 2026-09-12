@@ -65,3 +65,5 @@ export * from "./CalendarIcon";
 export * from "./PercentIcon";
 export * from "./DollarSignIcon";
 export * from "./BriefcaseIcon";
+export * from "./LandmarkIcon";
+export * from "./WalletIcon";

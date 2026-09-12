@@ -1,11 +1,11 @@
 "use client";
 
 import GlobalCreateMenu from "@/components/GlobalCreateMenu";
-import { SpinnerIcon } from "@/components/icons";
+import { MenuIcon, SpinnerIcon } from "@/components/icons";
 import Sidebar from "@/components/Sidebar";
+import { Button } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { getPageMeta } from "@/lib/navigation";
-import { Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -60,14 +60,15 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden print:overflow-visible print:w-full print:!bg-white print:!bg-none print:p-0 print:m-0">
         <header className="relative z-30 flex-shrink-0 flex items-center justify-between gap-3 h-16 md:h-[72px] px-3.5 sm:px-6 lg:px-8 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs print:hidden">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => setMobileOpen(true)}
-              className="md:hidden flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-700 hover:bg-slate-50 active:scale-95 transition cursor-pointer shadow-2xs"
+              className="md:hidden flex h-9 w-9 p-0 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-700 hover:bg-slate-50 active:scale-95 transition cursor-pointer shadow-2xs"
               aria-label="Open navigation menu"
             >
-              <Menu size={18} />
-            </button>
+              <MenuIcon size={18} />
+            </Button>
 
             <div className="flex flex-col justify-center min-w-0">
               {eyebrow && (
