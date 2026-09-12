@@ -24,7 +24,6 @@ import {
   TableLoading,
   Modal,
 } from "@/components/ui";
-import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import {
   PlusIcon,
   SearchIcon,
@@ -34,7 +33,6 @@ import {
   BuildingIcon,
   CheckCircle2Icon,
   ClockIcon,
-  PrintIcon,
   TrashIcon,
   EyeIcon,
   DollarSignIcon,
@@ -67,8 +65,6 @@ export default function ExpensesPage() {
   const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [selectedMethod, setSelectedMethod] = useState("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   const [formCategory, setFormCategory] = useState(EXPENSE_CATEGORIES[0]);
   const [formPayee, setFormPayee] = useState("");
@@ -207,11 +203,6 @@ export default function ExpensesPage() {
     }
   };
 
-  const handlePrint = (exp: Expense) => {
-    setSelectedExpense(exp);
-    setIsPrintModalOpen(true);
-  };
-
   const thisMonthExpenses = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -241,16 +232,6 @@ export default function ExpensesPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<PrintIcon size={14} />}
-          >
-            Print Register
-          </Button>
-
           <Button
             variant="primary"
             size="sm"
@@ -573,17 +554,6 @@ export default function ExpensesPage() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => handlePrint(exp)}
-                          className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
-                          title="Print Expense Voucher"
-                        >
-                          <PrintIcon size={14} />
-                        </Button>
-
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
                           onClick={() =>
                             handleDelete(exp.id, exp.expenseNumber)
                           }
@@ -817,146 +787,6 @@ export default function ExpensesPage() {
           </div>
         </form>
       </Modal>
-
-      {/* Print Voucher Modal */}
-      {isPrintModalOpen && selectedExpense && (
-        <Modal
-          isOpen={isPrintModalOpen}
-          onClose={() => setIsPrintModalOpen(false)}
-          title="Expense Voucher"
-          maxWidth="2xl"
-        >
-          <div className="space-y-4">
-            <div
-              id="printable-voucher"
-              className="p-6 bg-white border border-slate-200 rounded-2xl space-y-4"
-            >
-              <QuotationHeader className="-mx-6 -mt-6 mb-4 print:m-0" />
-              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                <div>
-                  <h3 className="text-base font-black text-slate-900">
-                    AGM FITOUT TECHNICAL SERVICES LLC
-                  </h3>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                    Official Payment Voucher
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-mono font-black text-emerald-950 text-sm">
-                    {selectedExpense.expenseNumber}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    Date:{" "}
-                    {new Date(selectedExpense.expenseDate).toLocaleDateString(
-                      "en-GB",
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 text-xs">
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                    Paid To / Beneficiary
-                  </span>
-                  <span className="font-bold text-slate-900">
-                    {selectedExpense.payee || "—"}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                    Category
-                  </span>
-                  <span className="font-bold text-slate-900">
-                    {selectedExpense.category}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                    Payment Method
-                  </span>
-                  <span className="font-medium text-slate-700">
-                    {selectedExpense.paymentMethod.replace("_", " ")}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">
-                    Reference
-                  </span>
-                  <span className="font-mono text-slate-700">
-                    {selectedExpense.reference || "—"}
-                  </span>
-                </div>
-              </div>
-
-              {selectedExpense.description && (
-                <div className="text-xs p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold mb-0.5">
-                    Purpose / Description
-                  </span>
-                  <p className="text-slate-800">
-                    {selectedExpense.description}
-                  </p>
-                </div>
-              )}
-
-              <div className="border-t border-slate-200 pt-3 flex justify-between items-center text-xs">
-                <span className="font-bold text-slate-600">Net Amount:</span>
-                <span className="font-mono font-semibold text-slate-800">
-                  {formatCurrency(selectedExpense.amount)}
-                </span>
-              </div>
-
-              {Number(selectedExpense.taxAmount) > 0 && (
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-slate-600">
-                    VAT Amount (5%):
-                  </span>
-                  <span className="font-mono font-semibold text-slate-800">
-                    {formatCurrency(selectedExpense.taxAmount)}
-                  </span>
-                </div>
-              )}
-
-              <div className="border-t-2 border-slate-900 pt-2 flex justify-between items-center text-sm font-black text-slate-900">
-                <span>Total Paid:</span>
-                <span className="font-mono text-base">
-                  {formatCurrency(selectedExpense.totalAmount)}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-8 pt-8 text-center text-xs text-slate-500">
-                <div className="border-t border-slate-300 pt-1">
-                  Prepared By / Signature
-                </div>
-                <div className="border-t border-slate-300 pt-1">
-                  Approved By / Management
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsPrintModalOpen(false)}
-                className="cursor-pointer"
-              >
-                Close
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => window.print()}
-                icon={<PrintIcon size={14} />}
-                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
-              >
-                Print Voucher
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
     </div>
   );
 }

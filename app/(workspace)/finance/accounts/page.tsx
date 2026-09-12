@@ -14,7 +14,6 @@ import {
 import {
   SearchIcon,
   PlusIcon,
-  PrintIcon,
   EyeIcon,
   FileSpreadsheetIcon,
   LockIcon,
@@ -432,16 +431,6 @@ export default function AccountsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<PrintIcon size={14} />}
-          >
-            Print Chart
-          </Button>
-
           <Button
             variant="primary"
             size="sm"
