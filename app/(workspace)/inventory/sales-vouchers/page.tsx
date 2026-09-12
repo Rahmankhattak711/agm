@@ -239,16 +239,15 @@ export default function SalesVouchersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Commercial Sales Vouchers
-            </h2>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+              Sales Vouchers
+            </h1>
             <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-              Tax Invoices & Billing
+              Direct Sales
             </span>
           </div>
-          <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Commercial sales vouchers,
-            client billing schedules, and FTA 5% Output VAT tracking.
+          <p className="text-xs text-slate-500 mt-0.5">
+            Record direct point-of-sale vouchers, counter sales, and immediate inventory deductions.
           </p>
         </div>
 

@@ -270,11 +270,10 @@ export default function SuppliersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Suppliers &amp; Vendor Management
+            Suppliers
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Vendor master registry, Tax
-            Registration Numbers (TRN), <br /> and procurement contacts.
+            Manage vendor profiles, tax registration numbers (TRN), payment terms, and procurement records.
           </p>
         </div>
 

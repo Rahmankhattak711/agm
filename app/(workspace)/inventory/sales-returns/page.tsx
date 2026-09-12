@@ -177,11 +177,10 @@ export default function SalesReturnsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Sales Returns (Credit Notes)
+            Sales Returns
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Manage client credit notes,
-            scope reductions, <br /> and invoice credit adjustments.
+            Process client returned goods, track credit adjustments, and update warehouse inventory.
           </p>
         </div>
 

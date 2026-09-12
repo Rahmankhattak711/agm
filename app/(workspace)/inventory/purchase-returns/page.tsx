@@ -180,12 +180,10 @@ export default function PurchaseReturnsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Purchase Returns (Debit Notes)
+            Purchase Returns
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Track rejected supplier
-            deliveries, return to vendor <br /> (RTV), and debit note
-            reconciliation.
+            Manage return-to-vendor records, track rejected materials, and issue debit notes.
           </p>
         </div>
 
