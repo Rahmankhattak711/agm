@@ -2,23 +2,15 @@
 
 import { useState } from "react";
 import {
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Download,
-  Eye,
-  FileSpreadsheet,
-  FileText,
-  Filter,
-  Plus,
-  Printer,
-  Search,
-  Trash2,
-  User,
-  XCircle,
-} from "lucide-react";
+  EyeIcon,
+  PlusIcon,
+  PrintIcon,
+  SearchIcon,
+  TrashIcon,
+} from "@/components/icons";
 import {
   Button,
+  Input,
   Table,
   TableHead,
   TableHeaderCell,
@@ -265,7 +257,7 @@ export default function SalesVouchersPage() {
             variant="primary"
             size="md"
             onClick={() => setIsCreateOpen(true)}
-            icon={<Plus size={14} />}
+            icon={<PlusIcon size={14} />}
           >
             Create Sales Voucher
           </Button>
@@ -308,34 +300,31 @@ export default function SalesVouchersPage() {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
-        <div className="relative flex-1 max-w-md">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-          <input
-            type="text"
+        <div className="flex-1 max-w-md">
+          <Input
             placeholder="Search voucher number, client, project..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            leftIcon={<SearchIcon size={14} className="text-slate-400" />}
           />
         </div>
 
         <div className="flex items-center gap-1.5 text-xs">
           {["ALL", "POSTED", "PAID", "DRAFT"].map((st) => (
-            <button
+            <Button
               key={st}
               type="button"
+              variant={statusFilter === st ? "primary" : "secondary"}
+              size="sm"
               onClick={() => setStatusFilter(st)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+              className={
                 statusFilter === st
-                  ? "bg-slate-900 text-white shadow-2xs"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
-              }`}
+                  ? "bg-slate-900 text-white shadow-2xs font-bold"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 font-bold"
+              }
             >
               {st}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -452,14 +441,15 @@ export default function SalesVouchersPage() {
                     </span>
                   </TableCell>
                   <TableCell className="py-3 px-3 text-center">
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setSelectedVoucher(item)}
+                      icon={<EyeIcon size={14} />}
                       className="p-1 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
                       title="View Voucher"
-                    >
-                      <Eye size={14} />
-                    </button>
+                    />
                   </TableCell>
                 </TableRow>
               ))
@@ -476,55 +466,35 @@ export default function SalesVouchersPage() {
         >
           <form onSubmit={handleCreateVoucher} className="space-y-4 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Client / Customer Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Al Futtaim Group"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  required
-                />
-              </div>
+              <Input
+                label="Client / Customer Name"
+                placeholder="e.g. Al Futtaim Group"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                required
+              />
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Client TRN (Tax No)
-                </label>
-                <input
-                  type="text"
-                  placeholder="100XXXXXXXXX003"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono"
-                  value={customerTrn}
-                  onChange={(e) => setCustomerTrn(e.target.value)}
-                />
-              </div>
+              <Input
+                label="Client TRN (Tax No)"
+                placeholder="100XXXXXXXXX003"
+                value={customerTrn}
+                onChange={(e) => setCustomerTrn(e.target.value)}
+                className="font-mono"
+              />
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Voucher Date
-                </label>
-                <input
-                  type="date"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500"
-                  value={voucherDate}
-                  onChange={(e) => setVoucherDate(e.target.value)}
-                  required
-                />
-              </div>
+              <Input
+                label="Voucher Date"
+                type="date"
+                value={voucherDate}
+                onChange={(e) => setVoucherDate(e.target.value)}
+                required
+              />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Project / Site Scope
-              </label>
-              <input
-                type="text"
+              <Input
+                label="Project / Site Scope"
                 placeholder="e.g. Commercial Office Fitout - Level 12"
-                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500"
                 value={projectScope}
                 onChange={(e) => setProjectScope(e.target.value)}
               />
@@ -535,13 +505,16 @@ export default function SalesVouchersPage() {
                 <span className="font-bold text-slate-800">
                   Billing Items & Scope Lines
                 </span>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={addLine}
+                  icon={<PlusIcon size={13} />}
                   className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
                 >
-                  <Plus size={13} /> Add Item
-                </button>
+                  Add Item
+                </Button>
               </div>
 
               <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -551,10 +524,8 @@ export default function SalesVouchersPage() {
                     className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200/60"
                   >
                     <div className="col-span-6">
-                      <input
-                        type="text"
+                      <Input
                         placeholder="Item / scope description..."
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500"
                         value={line.description}
                         onChange={(e) =>
                           updateLine(idx, "description", e.target.value)
@@ -563,11 +534,11 @@ export default function SalesVouchersPage() {
                       />
                     </div>
                     <div className="col-span-2">
-                      <input
+                      <Input
                         type="number"
                         min="1"
                         placeholder="Qty"
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono"
+                        className="font-mono"
                         value={line.quantity}
                         onChange={(e) =>
                           updateLine(idx, "quantity", e.target.value)
@@ -576,11 +547,11 @@ export default function SalesVouchersPage() {
                       />
                     </div>
                     <div className="col-span-3">
-                      <input
+                      <Input
                         type="number"
                         step="0.01"
                         placeholder="Unit Rate"
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono"
+                        className="font-mono"
                         value={line.unitRate || ""}
                         onChange={(e) =>
                           updateLine(idx, "unitRate", e.target.value)
@@ -589,13 +560,14 @@ export default function SalesVouchersPage() {
                       />
                     </div>
                     <div className="col-span-1 text-center">
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => removeLine(idx)}
+                        icon={<TrashIcon size={13} />}
                         className="text-slate-400 hover:text-rose-600 p-1"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                      />
                     </div>
                   </div>
                 ))}
@@ -751,7 +723,7 @@ export default function SalesVouchersPage() {
                 variant="dark"
                 size="sm"
                 onClick={() => window.print()}
-                icon={<Printer size={13} />}
+                icon={<PrintIcon size={13} />}
                 className="bg-slate-900 text-white"
               >
                 Print Voucher

@@ -21,21 +21,15 @@ import {
   TableRow,
   TableCell,
   TableLoading,
+  Input,
 } from "@/components/ui";
 import {
-  FileText,
-  Plus,
-  ShoppingCart,
-  CheckCircle,
-  Search,
-  Eye,
-  Printer,
-  FileSpreadsheet,
-  Building2,
-  Layers,
-  ArrowUpRight,
-  TrendingUp,
-} from "lucide-react";
+  EyeIcon,
+  FileSpreadsheetIcon,
+  FileTextIcon,
+  SearchIcon,
+  ShoppingCartIcon,
+} from "@/components/icons";
 
 export default function CommercialQuotationsPage() {
   const { data: products = [] } = useProducts();
@@ -206,8 +200,10 @@ export default function CommercialQuotationsPage() {
 
         <div className="flex items-center gap-2">
           <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-2xs">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setActiveView("EDITOR")}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeView === "EDITOR"
@@ -216,9 +212,11 @@ export default function CommercialQuotationsPage() {
               }`}
             >
               Quotation Editor
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setActiveView("LIST")}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeView === "LIST"
@@ -227,7 +225,7 @@ export default function CommercialQuotationsPage() {
               }`}
             >
               Saved Quotations ({quotationsList.length})
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -342,18 +340,20 @@ export default function CommercialQuotationsPage() {
                 ].map((tab) => {
                   const isActive = statusFilter === tab.id;
                   return (
-                    <button
+                    <Button
                       key={tab.id}
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setStatusFilter(tab.id)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         isActive
-                          ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                          ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                           : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                       }`}
                     >
                       {tab.label}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -364,16 +364,14 @@ export default function CommercialQuotationsPage() {
             </div>
 
             <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-              <div className="w-full sm:w-96 relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search quotation number, customer, project..."
-                  className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
+              <Input
+                leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+                placeholder="Search quotation number, customer, project..."
+                containerClassName="w-full sm:w-96"
+                className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
           </div>
 
@@ -441,7 +439,7 @@ export default function CommercialQuotationsPage() {
                       >
                         <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
                           <div className="flex items-center gap-1.5">
-                            <FileSpreadsheet
+                            <FileSpreadsheetIcon
                               size={13}
                               className="text-teal-700 shrink-0"
                             />
@@ -482,8 +480,10 @@ export default function CommercialQuotationsPage() {
                         </TableCell>
                         <TableCell className="py-3 px-3 text-center">
                           <div className="flex items-center justify-center gap-1.5">
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="sm"
                               onClick={() => {
                                 setSelectedQuotation(q);
                                 setActiveView("EDITOR");
@@ -491,15 +491,18 @@ export default function CommercialQuotationsPage() {
                               className="p-1.5 text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
                               title="Edit / View in Editor"
                             >
-                              <Eye size={13} />
-                            </button>
+                              <EyeIcon size={13} />
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleConvertToInvoice(q)}
                               disabled={convertingId === q.id}
                               icon={
-                                <FileText size={12} className="text-teal-700" />
+                                <FileTextIcon
+                                  size={12}
+                                  className="text-teal-700"
+                                />
                               }
                               className="text-[10px] font-bold text-teal-900 hover:bg-teal-50 border-teal-300 cursor-pointer"
                             >
@@ -512,7 +515,7 @@ export default function CommercialQuotationsPage() {
                               size="sm"
                               onClick={() => handleConvert(q.id)}
                               disabled={convertingId === q.id}
-                              icon={<ShoppingCart size={12} />}
+                              icon={<ShoppingCartIcon size={12} />}
                               className="text-[10px] font-bold bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer"
                             >
                               Convert to SO

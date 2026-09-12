@@ -2,26 +2,6 @@
 
 import { useCallback, useMemo, useState, Fragment } from "react";
 import {
-  CreditCard,
-  Eye,
-  FileCheck2,
-  Plus,
-  Printer,
-  Receipt,
-  Search,
-  Trash2,
-  Building2,
-  CheckCircle2,
-  Clock,
-  ShieldCheck,
-  Layers,
-  ArrowUpRight,
-  ChevronDown,
-  ChevronUp,
-  X,
-  FileText,
-} from "lucide-react";
-import {
   Button,
   Table,
   TableHead,
@@ -31,7 +11,22 @@ import {
   TableCell,
   TableLoading,
   Modal,
+  Input,
+  Select,
+  Textarea,
 } from "@/components/ui";
+import {
+  ChevronDownIcon,
+  CloseIcon,
+  CreditCardIcon,
+  FileCheck2Icon,
+  FileTextIcon,
+  PlusIcon,
+  PrintIcon,
+  ReceiptIcon,
+  SearchIcon,
+  TrashIcon,
+} from "@/components/icons";
 import {
   useSalesInvoices,
   useCreateSalesInvoice,
@@ -278,7 +273,7 @@ export default function SalesInvoicesPage() {
               size="sm"
               onClick={() => window.print()}
               className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer flex-1 sm:flex-initial"
-              icon={<Printer size={14} />}
+              icon={<PrintIcon size={14} />}
             >
               Print Register
             </Button>
@@ -287,7 +282,7 @@ export default function SalesInvoicesPage() {
               variant="primary"
               size="sm"
               onClick={() => setIsCreateOpen(true)}
-              icon={<Plus size={14} strokeWidth={2.5} />}
+              icon={<PlusIcon size={14} strokeWidth={2.5} />}
               className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial"
             >
               Create Sales Invoice
@@ -403,18 +398,20 @@ export default function SalesInvoicesPage() {
                 ].map((tab) => {
                   const isActive = statusFilter === tab.id;
                   return (
-                    <button
+                    <Button
                       key={tab.id}
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setStatusFilter(tab.id)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                         isActive
-                          ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                          ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                           : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                       }`}
                     >
                       {tab.label}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -425,16 +422,14 @@ export default function SalesInvoicesPage() {
             </div>
 
             <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-              <div className="w-full sm:w-80 md:w-96 relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search invoice number, client, TRN, project..."
-                  className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
+              <Input
+                leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+                placeholder="Search invoice number, client, TRN, project..."
+                containerClassName="w-full sm:w-80 md:w-96"
+                className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
           </div>
 
@@ -517,7 +512,7 @@ export default function SalesInvoicesPage() {
                           >
                             <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
                               <div className="flex items-center gap-2">
-                                <ChevronDown
+                                <ChevronDownIcon
                                   size={15}
                                   className={`shrink-0 transition-transform duration-200 ${
                                     isExpanded
@@ -525,7 +520,7 @@ export default function SalesInvoicesPage() {
                                       : "text-slate-400"
                                   }`}
                                 />
-                                <Receipt
+                                <ReceiptIcon
                                   size={13}
                                   className="text-teal-700 shrink-0"
                                 />
@@ -594,8 +589,10 @@ export default function SalesInvoicesPage() {
                             </TableCell>
                             <TableCell className="py-3 px-3 text-center print:hidden">
                               <div className="flex items-center justify-center gap-1.5">
-                                <button
+                                <Button
                                   type="button"
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handlePrintTaxInvoice(inv);
@@ -603,8 +600,8 @@ export default function SalesInvoicesPage() {
                                   className="p-1.5 text-slate-600 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
                                   title="Print Tax Invoice"
                                 >
-                                  <Printer size={13} />
-                                </button>
+                                  <PrintIcon size={13} />
+                                </Button>
                                 {inv.status === "DRAFT" && (
                                   <Button
                                     variant="dark"
@@ -613,7 +610,7 @@ export default function SalesInvoicesPage() {
                                       e.stopPropagation();
                                       handlePostInvoice(inv.id);
                                     }}
-                                    icon={<FileCheck2 size={12} />}
+                                    icon={<FileCheck2Icon size={12} />}
                                     className="text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer"
                                   >
                                     Post to GL
@@ -630,14 +627,16 @@ export default function SalesInvoicesPage() {
                                         String(inv.remainingBalance),
                                       );
                                     }}
-                                    icon={<CreditCard size={12} />}
+                                    icon={<CreditCardIcon size={12} />}
                                     className="text-[10px] font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer"
                                   >
                                     Receive
                                   </Button>
                                 )}
-                                <button
+                                <Button
                                   type="button"
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setExpandedInvoiceId(
@@ -655,7 +654,7 @@ export default function SalesInvoicesPage() {
                                       : "View Invoice Details"
                                   }
                                 >
-                                  <ChevronDown
+                                  <ChevronDownIcon
                                     size={14}
                                     className={`transition-transform duration-200 ${
                                       isExpanded
@@ -663,7 +662,7 @@ export default function SalesInvoicesPage() {
                                         : ""
                                     }`}
                                   />
-                                </button>
+                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -708,7 +707,7 @@ export default function SalesInvoicesPage() {
                                           e.stopPropagation();
                                           handlePrintTaxInvoice(inv);
                                         }}
-                                        icon={<Printer size={13} />}
+                                        icon={<PrintIcon size={13} />}
                                         className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs"
                                       >
                                         Print Full Tax Invoice
@@ -721,7 +720,7 @@ export default function SalesInvoicesPage() {
                                             e.stopPropagation();
                                             handlePostInvoice(inv.id);
                                           }}
-                                          icon={<FileCheck2 size={12} />}
+                                          icon={<FileCheck2Icon size={12} />}
                                           className="text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer shadow-2xs"
                                         >
                                           Post to GL
@@ -739,22 +738,24 @@ export default function SalesInvoicesPage() {
                                                 String(inv.remainingBalance),
                                               );
                                             }}
-                                            icon={<CreditCard size={12} />}
+                                            icon={<CreditCardIcon size={12} />}
                                             className="text-xs font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer shadow-2xs"
                                           >
                                             Receive Payment
                                           </Button>
                                         )}
-                                      <button
+                                      <Button
                                         type="button"
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={() =>
                                           setExpandedInvoiceId(null)
                                         }
                                         className="text-xs text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 transition cursor-pointer"
                                         title="Close Details"
                                       >
-                                        <X size={15} />
-                                      </button>
+                                        <CloseIcon size={15} />
+                                      </Button>
                                     </div>
                                   </div>
 
@@ -762,7 +763,7 @@ export default function SalesInvoicesPage() {
                                   <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
                                     <div className="bg-emerald-800 text-white px-3.5 py-2 text-xs font-bold uppercase tracking-wider flex items-center justify-between">
                                       <div className="flex items-center gap-1.5">
-                                        <FileText size={13} />
+                                        <FileTextIcon size={13} />
                                         <span>
                                           Description of Work / Services (Scope
                                           Breakdown)
@@ -1011,8 +1012,9 @@ export default function SalesInvoicesPage() {
                 <label className="block font-bold text-slate-700 mb-1">
                   Select Customer *
                 </label>
-                <select
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold cursor-pointer shadow-2xs"
+                <Select
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold cursor-pointer shadow-2xs"
                   value={customerId}
                   onChange={(e) => {
                     setCustomerId(e.target.value);
@@ -1031,17 +1033,18 @@ export default function SalesInvoicesPage() {
                       {c.name} ({c.customerCode})
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
                   Customer / Entity Name (Override)
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="Customer Name"
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs"
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   required
@@ -1052,10 +1055,11 @@ export default function SalesInvoicesPage() {
                 <label className="block font-bold text-slate-700 mb-1">
                   Customer TRN (UAE VAT)
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="100XXXXXXXXX003"
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
                   value={customerTrn}
                   onChange={(e) => setCustomerTrn(e.target.value)}
                 />
@@ -1065,10 +1069,11 @@ export default function SalesInvoicesPage() {
                 <label className="block font-bold text-slate-700 mb-1">
                   Invoice Number (Optional)
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="Auto-generated if blank (e.g. INV-1001)"
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
                   value={invoiceNumber}
                   onChange={(e) => setInvoiceNumber(e.target.value)}
                 />
@@ -1079,10 +1084,11 @@ export default function SalesInvoicesPage() {
               <label className="block font-bold text-slate-700 mb-1">
                 Project Scope / Milestones
               </label>
-              <input
+              <Input
                 type="text"
                 placeholder="e.g. Commercial Fitout - Phase 1 Completion"
-                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs"
+                containerClassName="w-full"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs"
                 value={projectScope}
                 onChange={(e) => setProjectScope(e.target.value)}
               />
@@ -1093,13 +1099,16 @@ export default function SalesInvoicesPage() {
                 <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
                   Invoice Line Items
                 </span>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={addItem}
-                  className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+                  icon={<PlusIcon size={13} />}
+                  className="text-xs font-bold text-emerald-700 hover:text-emerald-800 cursor-pointer"
                 >
-                  <Plus size={13} /> Add Line
-                </button>
+                  Add Line
+                </Button>
               </div>
 
               <div className="space-y-2 max-h-56 overflow-y-auto">
@@ -1109,10 +1118,11 @@ export default function SalesInvoicesPage() {
                     className="grid grid-cols-12 gap-2 items-start bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
                   >
                     <div className="col-span-6">
-                      <textarea
+                      <Textarea
                         rows={2}
                         placeholder="Description / scope points (press Enter for new points)..."
-                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 resize-y min-h-[36px]"
+                        containerClassName="w-full"
+                        className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 resize-y min-h-[36px]"
                         value={item.description}
                         onChange={(e) =>
                           updateItem(idx, "description", e.target.value)
@@ -1121,11 +1131,12 @@ export default function SalesInvoicesPage() {
                       />
                     </div>
                     <div className="col-span-2">
-                      <input
+                      <Input
                         type="number"
                         min="1"
                         placeholder="Qty"
-                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono"
+                        containerClassName="w-full"
+                        className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono"
                         value={item.quantity}
                         onChange={(e) =>
                           updateItem(idx, "quantity", e.target.value)
@@ -1134,11 +1145,12 @@ export default function SalesInvoicesPage() {
                       />
                     </div>
                     <div className="col-span-3">
-                      <input
+                      <Input
                         type="number"
                         step="0.01"
                         placeholder="Unit Price"
-                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold"
+                        containerClassName="w-full"
+                        className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold"
                         value={item.unitPrice || ""}
                         onChange={(e) =>
                           updateItem(idx, "unitPrice", e.target.value)
@@ -1147,13 +1159,15 @@ export default function SalesInvoicesPage() {
                       />
                     </div>
                     <div className="col-span-1 text-center">
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => removeItem(idx)}
                         className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
                       >
-                        <Trash2 size={13} />
-                      </button>
+                        <TrashIcon size={13} />
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -1165,10 +1179,11 @@ export default function SalesInvoicesPage() {
                 <label className="block font-bold text-slate-700 mb-1">
                   Terms &amp; Conditions (Optional)
                 </label>
-                <textarea
+                <Textarea
                   rows={2}
                   placeholder="Standard 20 AGM Fitout clauses apply if left blank, or enter custom terms..."
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs resize-none text-xs"
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs resize-none text-xs"
                   value={terms}
                   onChange={(e) => setTerms(e.target.value)}
                 />
@@ -1178,10 +1193,11 @@ export default function SalesInvoicesPage() {
                 <label className="block font-bold text-slate-700 mb-1">
                   Notes &amp; Special Remarks (Optional)
                 </label>
-                <textarea
+                <Textarea
                   rows={2}
                   placeholder="Additional notes for the client..."
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs resize-none text-xs"
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs resize-none text-xs"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                 />
@@ -1206,12 +1222,13 @@ export default function SalesInvoicesPage() {
             </div>
 
             <div className="flex items-center gap-2 pt-2">
-              <input
+              <Input
                 type="checkbox"
                 id="autoPost"
                 checked={autoPost}
                 onChange={(e) => setAutoPost(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                containerClassName="w-auto shrink-0"
+                className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
               />
               <label
                 htmlFor="autoPost"
@@ -1268,11 +1285,12 @@ export default function SalesInvoicesPage() {
               <label className="block font-bold text-slate-700 mb-1">
                 Payment Amount (AED) *
               </label>
-              <input
+              <Input
                 type="number"
                 step="0.01"
                 placeholder="Amount"
-                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold shadow-2xs"
+                containerClassName="w-full"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold shadow-2xs"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
                 required
@@ -1283,8 +1301,9 @@ export default function SalesInvoicesPage() {
               <label className="block font-bold text-slate-700 mb-1">
                 Receipt Account / Method *
               </label>
-              <select
-                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs cursor-pointer"
+              <Select
+                containerClassName="w-full"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs cursor-pointer"
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
               >
@@ -1296,17 +1315,18 @@ export default function SalesInvoicesPage() {
                   Petty Cash / Cash Receipt (A/C 1010)
                 </option>
                 <option value="CARD">Debit / Credit Card</option>
-              </select>
+              </Select>
             </div>
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
                 Reference / Cheque Number
               </label>
-              <input
+              <Input
                 type="text"
                 placeholder="e.g. TR-9283749 or CHQ-00128"
-                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
+                containerClassName="w-full"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
                 value={paymentRef}
                 onChange={(e) => setPaymentRef(e.target.value)}
               />
