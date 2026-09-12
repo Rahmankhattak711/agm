@@ -36,3 +36,4 @@ export * from "./LogoutIcon";
 export * from "./RefreshIcon";
 export * from "./SpinnerIcon";
 export * from "./FinanceIcons";
+export * from "./ProtectLock";

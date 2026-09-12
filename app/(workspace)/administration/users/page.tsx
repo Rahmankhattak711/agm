@@ -14,7 +14,6 @@ import { useAuth } from "@/context/AuthContext";
 import {
   Button,
   Input,
-  Select,
   DataTable,
   Modal,
   FormInput,
@@ -22,21 +21,12 @@ import {
   FormSubmit,
 } from "@/components/ui";
 import {
-  Users,
-  UserCheck,
-  Shield,
-  ShieldCheck,
-  Building2,
-  Printer,
-  Plus,
-  Search,
-  Trash2,
-  Edit3,
-  CheckCircle2,
-  Lock,
-  Mail,
-  Layers,
-} from "lucide-react";
+  EditIcon,
+  PlusIcon,
+  ProductsIcon,
+  SearchIcon,
+  TrashIcon,
+} from "@/components/icons";
 
 const ROLES = [
   {
@@ -330,32 +320,40 @@ export default function UsersPage() {
           if (!allowed && row.original.id !== currentUser?.id) {
             return (
               <div className="flex items-center justify-center">
-                <span className="text-[10px] font-semibold text-slate-400 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
-                  Protected 🔒
-                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleOpenEditModal(row.original)}
+                  icon={<ProductsIcon size={13} />}
+                  title="Protected"
+                >
+                  Protected
+                </Button>
               </div>
             );
           }
 
           return (
             <div className="flex items-center justify-center gap-1.5">
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => handleOpenEditModal(row.original)}
-                className="p-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-600 transition cursor-pointer"
+                icon={<EditIcon size={13} />}
                 title="Edit User"
               >
-                <Edit3 size={13} />
-              </button>
+                Edit User
+              </Button>
               {row.original.id !== currentUser?.id && allowed && (
-                <button
-                  type="button"
+                <Button
+                  variant="danger"
+                  size="sm"
                   onClick={() => handleDeleteUser(row.original)}
-                  className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition cursor-pointer"
+                  icon={<TrashIcon size={13} />}
                   title="Delete User"
                 >
-                  <Trash2 size={13} />
-                </button>
+                  Delete
+                </Button>
               )}
             </div>
           );
@@ -385,29 +383,19 @@ export default function UsersPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
-          >
-            Print Register
-          </Button>
-
-          {isAdmin && (
+        {isAdmin && (
+          <div className="flex items-center gap-2">
             <Button
               variant="primary"
               size="sm"
               onClick={handleOpenCreateModal}
-              icon={<Plus size={14} strokeWidth={2.5} />}
+              icon={<PlusIcon size={14} strokeWidth={2.5} />}
               className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
             >
               Add New User
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* 4 Summary KPI Cards */}
@@ -534,16 +522,14 @@ export default function UsersPage() {
           </div>
 
           <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <div className="w-full sm:w-80 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search user name or email..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            <Input
+              containerClassName="w-full sm:w-80"
+              placeholder="Search user name or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              leftIcon={<SearchIcon size={16} />}
+              className="py-1.5 shadow-2xs"
+            />
           </div>
         </div>
 
