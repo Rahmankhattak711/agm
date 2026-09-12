@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { PrintIcon } from "@/components/icons";
+import {
+  PrintIcon,
+  CheckCircle2Icon,
+  AlertTriangleIcon,
+} from "@/components/icons";
 import {
   Button,
   Table,
@@ -17,16 +21,6 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
-import {
-  Scale,
-  ShieldCheck,
-  Building2,
-  CreditCard,
-  PieChart,
-  Printer,
-  CheckCircle2,
-  AlertTriangle,
-} from "lucide-react";
 
 interface BalanceSheetReportProps {
   balanceSheet?: BalanceSheetData;
@@ -170,9 +164,9 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                       }`}
                     >
                       {isBalanced ? (
-                        <CheckCircle2 size={13} className="text-emerald-700" />
+                        <CheckCircle2Icon size={13} className="text-emerald-700" />
                       ) : (
-                        <AlertTriangle size={13} className="text-amber-700" />
+                        <AlertTriangleIcon size={13} className="text-amber-700" />
                       )}
                       {isBalanced
                         ? "Equation Balanced"
@@ -182,7 +176,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      icon={<Printer size={14} />}
+                      icon={<PrintIcon size={14} />}
                       onClick={() => window.print()}
                       className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
                     >

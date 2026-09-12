@@ -2,25 +2,16 @@
 
 import React, { useState } from "react";
 import {
-  AlertCircle,
-  Building2,
-  Clock,
-  Filter,
-  Phone,
-  Printer,
-  Search,
-  ShoppingCart,
-  User,
-  Mail,
-  Receipt,
-  X,
-  CreditCard,
-  ShieldCheck,
-  CheckCircle2,
-  AlertTriangle,
-} from "lucide-react";
+  BuildingIcon,
+  ClockIcon,
+  CloseIcon,
+  PrintIcon,
+  SearchIcon,
+  ShoppingCartIcon,
+} from "@/components/icons";
 import {
   Button,
+  Input,
   Table,
   TableHead,
   TableHeaderCell,
@@ -143,9 +134,9 @@ export const AccountsPayableReport: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handlePrint}
+                      icon={<PrintIcon size={14} />}
+                      onClick={() => window.print()}
                       className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-                      icon={<Printer size={14} />}
                     >
                       Print Statement
                     </Button>
@@ -172,9 +163,9 @@ export const AccountsPayableReport: React.FC = () => {
                             <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
                               Total Payables (AP)
                             </span>
-                            <ShoppingCart
+                            <ShoppingCartIcon
                               size={14}
-                              className="text-amber-600"
+                              className="text-amber-700"
                             />
                           </div>
                           <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
@@ -290,34 +281,32 @@ export const AccountsPayableReport: React.FC = () => {
 
                     {}
                     <div className="flex flex-col sm:flex-row gap-3 items-center justify-between p-2 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs print:hidden">
-                      <div className="relative flex-1 w-full max-w-sm">
-                        <Search
-                          size={14}
-                          className="absolute left-3 top-2.5 text-slate-400"
-                        />
-                        <input
+                      <div className="flex-1 w-full max-w-sm">
+                        <Input
                           type="text"
                           placeholder="Search supplier, bill number, contact, or user..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full pl-8 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-amber-500 shadow-2xs"
+                          leftIcon={<SearchIcon size={14} />}
+                          className="text-xs font-semibold"
                         />
                       </div>
 
                       <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto">
                         {agingPills.map((tab) => (
-                          <button
+                          <Button
                             key={tab.key}
                             type="button"
+                            variant="ghost"
                             onClick={() => setSelectedBucket(tab.key)}
-                            className={`px-3 py-1.5 text-xs font-bold rounded-xl whitespace-nowrap transition-all cursor-pointer ${
+                            className={`px-3 py-1.5 text-xs font-bold rounded-xl whitespace-nowrap transition-all cursor-pointer h-auto ${
                               selectedBucket === tab.key
-                                ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-amber-800"
+                                ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-amber-800 hover:bg-white"
                                 : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                             }`}
                           >
                             {tab.label}
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     </div>
@@ -392,9 +381,9 @@ export const AccountsPayableReport: React.FC = () => {
                                 >
                                   <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900">
                                     <div className="flex items-center gap-1.5">
-                                      <ShoppingCart
-                                        size={13}
-                                        className="text-amber-600 shrink-0"
+                                      <ShoppingCartIcon
+                                        size={14}
+                                        className="text-amber-700"
                                       />
                                       <span>{item.poNumber}</span>
                                     </div>
@@ -451,7 +440,7 @@ export const AccountsPayableReport: React.FC = () => {
                                               : "bg-rose-50 text-rose-800 border-rose-200"
                                       }`}
                                     >
-                                      <Clock size={10} />
+                                      <ClockIcon size={10} />
                                       {item.daysOutstanding}d (
                                       {item.agingBucket})
                                     </span>
@@ -472,13 +461,15 @@ export const AccountsPayableReport: React.FC = () => {
                                   </TableCell>
 
                                   <TableCell className="py-2.5 px-4 text-center print:hidden">
-                                    <button
+                                    <Button
                                       type="button"
+                                      variant="ghost"
+                                      size="sm"
                                       onClick={() => setSelectedItem(item)}
-                                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer h-auto"
                                     >
                                       View Details
-                                    </button>
+                                    </Button>
                                   </TableCell>
                                 </TableRow>
                               );
@@ -509,7 +500,7 @@ export const AccountsPayableReport: React.FC = () => {
                     <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in duration-150">
                       <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] p-5 text-white flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
-                          <Building2 className="text-amber-300" size={20} />
+                          <BuildingIcon className="text-amber-300" size={20} />
                           <div>
                             <h3 className="font-bold text-base">
                               Payable Audit Breakdown
@@ -519,13 +510,15 @@ export const AccountsPayableReport: React.FC = () => {
                             </p>
                           </div>
                         </div>
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setSelectedItem(null)}
-                          className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition cursor-pointer"
+                          className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition cursor-pointer h-auto"
                         >
-                          <X size={16} />
-                        </button>
+                          <CloseIcon size={16} />
+                        </Button>
                       </div>
 
                       <div className="p-6 space-y-4 text-xs text-slate-700">

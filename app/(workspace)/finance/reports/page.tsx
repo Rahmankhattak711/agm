@@ -9,16 +9,17 @@ import {
   useVatSummary,
 } from "@/lib/hooks/api-hooks";
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  BookOpen,
-  FileCheck2,
-  FileSpreadsheet,
-  Receipt,
-  Scale,
-  Sparkles,
-  TrendingUp,
-} from "lucide-react";
+  ArrowDownLeftIcon,
+  ArrowUpRightIcon,
+  BookOpenIcon,
+  FileCheck2Icon,
+  FileSpreadsheetIcon,
+  ReceiptIcon,
+  ScaleIcon,
+  SparklesIcon,
+  TrendingUpIcon,
+} from "@/components/icons";
+import { Button } from "@/components/ui";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import {
@@ -63,47 +64,47 @@ function ReportsContent() {
     {
       id: "summary",
       label: "Executive Summary",
-      icon: <Sparkles size={14} className="text-amber-500" />,
+      icon: <SparklesIcon size={14} className="text-amber-500" />,
     },
     {
       id: "tax-invoices",
       label: "Tax Invoices",
-      icon: <FileCheck2 size={14} className="text-teal-600" />,
+      icon: <FileCheck2Icon size={14} className="text-teal-600" />,
     },
     {
       id: "profit-loss",
       label: "Profit & Loss",
-      icon: <TrendingUp size={14} className="text-emerald-600" />,
+      icon: <TrendingUpIcon size={14} className="text-emerald-600" />,
     },
     {
       id: "balance-sheet",
       label: "Balance Sheet",
-      icon: <Scale size={14} className="text-blue-600" />,
+      icon: <ScaleIcon size={14} className="text-blue-600" />,
     },
     {
       id: "trial-balance",
       label: "Trial Balance",
-      icon: <FileSpreadsheet size={14} className="text-purple-600" />,
+      icon: <FileSpreadsheetIcon size={14} className="text-purple-600" />,
     },
     {
       id: "receivables",
       label: "Accounts Receivable (A/R)",
-      icon: <ArrowUpRight size={14} className="text-emerald-700" />,
+      icon: <ArrowUpRightIcon size={14} className="text-emerald-700" />,
     },
     {
       id: "payables",
       label: "Accounts Payable (A/P)",
-      icon: <ArrowDownLeft size={14} className="text-amber-600" />,
+      icon: <ArrowDownLeftIcon size={14} className="text-amber-600" />,
     },
     {
       id: "ledger",
       label: "General Ledger",
-      icon: <BookOpen size={14} className="text-indigo-600" />,
+      icon: <BookOpenIcon size={14} className="text-indigo-600" />,
     },
     {
       id: "vat-summary",
       label: "VAT Position",
-      icon: <Receipt size={14} className="text-teal-600" />,
+      icon: <ReceiptIcon size={14} className="text-teal-600" />,
     },
   ];
 
@@ -128,19 +129,20 @@ function ReportsContent() {
         {tabs.map((t) => {
           const isActive = activeTab === t.id;
           return (
-            <button
+            <Button
               key={t.id}
               type="button"
+              variant="ghost"
               onClick={() => setActiveTab(t.id)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-150 ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-150 h-auto ${
                 isActive
-                  ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
+                  ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 hover:bg-white"
                   : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
               }`}
             >
               {t.icon}
               <span>{t.label}</span>
-            </button>
+            </Button>
           );
         })}
       </div>

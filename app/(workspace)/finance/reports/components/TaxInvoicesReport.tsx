@@ -2,27 +2,17 @@
 
 import React, { useMemo, useState } from "react";
 import {
-  FileText,
-  Search,
-  Printer,
-  FileSpreadsheet,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Building2,
-  Layers,
-  ArrowUpRight,
-  TrendingUp,
-  Receipt,
-  Eye,
-  X,
-  CreditCard,
-  ShieldCheck,
-  Calendar,
-  Filter,
-} from "lucide-react";
+  CloseIcon,
+  EyeIcon,
+  FileSpreadsheetIcon,
+  PrintIcon,
+  ReceiptIcon,
+  SearchIcon,
+} from "@/components/icons";
 import {
   Button,
+  Input,
+  Select,
   Table,
   TableHead,
   TableHeaderCell,
@@ -207,27 +197,27 @@ export const TaxInvoicesReport: React.FC = () => {
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 print:hidden">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-teal-50 text-teal-700 border border-teal-100 shadow-2xs">
-                    <Receipt size={20} />
+                  <div className="w-10 h-10 rounded-2xl bg-teal-800/80 border border-teal-600/50 flex items-center justify-center text-teal-300">
+                    <ReceiptIcon size={20} />
                   </div>
                   <div>
-                    <h3 className="text-base font-black text-slate-900 tracking-tight">
-                      Tax Invoices &amp; Output VAT Register
+                    <h3 className="font-black text-lg text-white tracking-tight">
+                      Tax Invoices Summary &amp; Register
                     </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Statutory tax billing statement, line-item VAT recovery,
-                      and revenue recognition register.
+                    <p className="text-xs text-teal-200">
+                      Standard UAE FTA Tax Invoices (Form 201 Taxable Supplies
+                      Auditing)
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 print:hidden">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handlePrint}
-                    icon={<Printer size={13} />}
-                    className="text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                    onClick={() => window.print()}
+                    className="border-teal-600/60 bg-teal-800/60 hover:bg-teal-800 text-teal-100 text-xs font-bold"
+                    icon={<PrintIcon size={13} />}
                   >
                     Print Statement (A4)
                   </Button>
@@ -363,18 +353,19 @@ export const TaxInvoicesReport: React.FC = () => {
                     {statusPills.map((p) => {
                       const isActive = statusFilter === p.key;
                       return (
-                        <button
+                        <Button
                           key={p.key}
                           type="button"
+                          variant="ghost"
                           onClick={() => setStatusFilter(p.key)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer h-auto ${
                             isActive
-                              ? "bg-teal-700 text-white shadow-xs"
+                              ? "bg-teal-700 text-white shadow-xs hover:bg-teal-700"
                               : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
                           }`}
                         >
                           {p.label}
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>
@@ -383,7 +374,7 @@ export const TaxInvoicesReport: React.FC = () => {
                     <span className="text-xs font-bold text-slate-500">
                       Period:
                     </span>
-                    <select
+                    <Select
                       value={dateFilter}
                       onChange={(e) => setDateFilter(e.target.value)}
                       className="px-2.5 py-1 text-xs font-semibold bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-teal-600"
@@ -395,30 +386,29 @@ export const TaxInvoicesReport: React.FC = () => {
                       <option value="Q2">Q2 (Apr - Jun)</option>
                       <option value="Q3">Q3 (Jul - Sep)</option>
                       <option value="Q4">Q4 (Oct - Dec)</option>
-                    </select>
+                    </Select>
                   </div>
                 </div>
 
                 <div className="relative">
-                  <Search
-                    size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-                  <input
+                  <Input
                     type="text"
                     placeholder="Search by Invoice #, Customer name, TRN, Project scope, or Quotation Ref..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-teal-600 font-medium"
+                    leftIcon={<SearchIcon size={14} />}
+                    className="w-full text-xs font-medium"
                   />
                   {searchTerm && (
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setSearchTerm("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 h-auto"
                     >
-                      <X size={12} />
-                    </button>
+                      <CloseIcon size={12} />
+                    </Button>
                   )}
                 </div>
               </div>
@@ -426,7 +416,7 @@ export const TaxInvoicesReport: React.FC = () => {
               <div className="mt-4 rounded-xl border border-slate-200/80 overflow-hidden shadow-xs">
                 <div className="bg-slate-900 text-white p-3 px-4 flex items-center justify-between">
                   <h4 className="font-bold text-xs uppercase tracking-wider text-white flex items-center gap-2">
-                    <FileSpreadsheet size={14} className="text-teal-400" />
+                    <FileSpreadsheetIcon size={14} className="text-teal-400" />
                     <span>Statutory Tax Invoices Register</span>
                   </h4>
                   <span className="text-[11px] font-mono text-teal-300 font-bold">
@@ -604,14 +594,16 @@ export const TaxInvoicesReport: React.FC = () => {
                             </TableCell>
 
                             <TableCell className="py-2 px-2 text-center print:hidden">
-                              <button
+                              <Button
                                 type="button"
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => setSelectedInvoice(inv)}
-                                className="p-1.5 text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
+                                className="p-1.5 text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer h-auto"
                                 title="View Line Items &amp; Tax Breakdown"
                               >
-                                <Eye size={13} />
-                              </button>
+                                <EyeIcon size={13} />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         );
