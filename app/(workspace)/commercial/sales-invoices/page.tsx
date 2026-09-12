@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, Fragment } from "react";
 import {
   CreditCard,
   Eye,
@@ -16,6 +16,10 @@ import {
   ShieldCheck,
   Layers,
   ArrowUpRight,
+  ChevronDown,
+  ChevronUp,
+  X,
+  FileText,
 } from "lucide-react";
 import {
   Button,
@@ -45,6 +49,16 @@ import {
   QuotationPaymentTerms,
 } from "@/components/quotation";
 
+function parseDescriptionPoints(desc: string): string[] {
+  if (!desc) return [];
+  const normalized = String(desc).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const parts = normalized
+    .split(/(?:\n+|(?<=\S)\s+(?=\d+[\.\)]\s+)|(?<=\S)\s+(?=[•\-*]\s+))/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return parts.length > 0 ? parts : [desc];
+}
+
 export default function SalesInvoicesPage() {
   const { data: invoices = [], isLoading, error } = useSalesInvoices();
   const { data: customers = [] } = useCustomers();
@@ -61,6 +75,9 @@ export default function SalesInvoicesPage() {
     null,
   );
   const [paymentModalInv, setPaymentModalInv] = useState<SalesInvoice | null>(
+    null,
+  );
+  const [expandedInvoiceId, setExpandedInvoiceId] = useState<string | null>(
     null,
   );
 
@@ -484,117 +501,489 @@ export default function SalesInvoicesPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredInvoices.map((inv) => (
-                      <TableRow
-                        key={inv.id}
-                        className="hover:bg-slate-50/60 text-slate-700 transition"
-                      >
-                        <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
-                          <div className="flex items-center gap-1.5">
-                            <Receipt
-                              size={13}
-                              className="text-teal-700 shrink-0"
-                            />
-                            <span>{inv.invoiceNumber}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-3 px-4 font-bold text-slate-900">
-                          <div>{inv.customerName}</div>
-                          {inv.customerTrn && (
-                            <div className="text-[10px] text-slate-400 font-mono font-normal">
-                              TRN: {inv.customerTrn}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-3 px-4 max-w-xs truncate text-slate-700">
-                          {inv.projectScope || "—"}
-                        </TableCell>
-                        <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
-                          {inv.invoiceDate
-                            ? new Date(inv.invoiceDate).toLocaleDateString(
-                                "en-GB",
-                              )
-                            : "—"}
-                        </TableCell>
-                        <TableCell
-                          align="right"
-                          className="py-3 px-3 text-right font-mono font-black text-slate-900"
-                        >
-                          {formatNumber(inv.totalAmount)}
-                          <span className="text-[10px] text-slate-400 font-normal block">
-                            Incl. 5% VAT: {formatNumber(inv.vatAmount)}
-                          </span>
-                        </TableCell>
-                        <TableCell
-                          align="right"
-                          className={`py-3 px-3 text-right font-mono font-bold ${
-                            Number(inv.remainingBalance) > 0
-                              ? "text-rose-700"
-                              : "text-emerald-700"
-                          }`}
-                        >
-                          {formatNumber(inv.remainingBalance)}
-                        </TableCell>
-                        <TableCell className="py-3 px-3 text-center">
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                              inv.status === "PAID"
-                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                : inv.status === "POSTED"
-                                  ? "bg-sky-50 text-sky-800 border-sky-200"
-                                  : inv.status === "PARTIALLY_PAID"
-                                    ? "bg-amber-50 text-amber-800 border-amber-200"
-                                    : "bg-slate-100 text-slate-700 border-slate-200"
+                    filteredInvoices.map((inv) => {
+                      const isExpanded = expandedInvoiceId === inv.id;
+                      return (
+                        <Fragment key={inv.id}>
+                          <TableRow
+                            onClick={() =>
+                              setExpandedInvoiceId(isExpanded ? null : inv.id)
+                            }
+                            className={`hover:bg-emerald-50/30 cursor-pointer transition-colors ${
+                              isExpanded
+                                ? "bg-emerald-50/40 font-semibold"
+                                : "text-slate-700"
                             }`}
                           >
-                            {inv.status === "PAID"
-                              ? "Paid"
-                              : inv.status === "POSTED"
-                                ? "Posted"
-                                : inv.status === "PARTIALLY_PAID"
-                                  ? "Partial"
-                                  : "Draft"}
-                          </span>
-                        </TableCell>
-                        <TableCell className="py-3 px-3 text-center print:hidden">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handlePrintTaxInvoice(inv)}
-                              className="p-1.5 text-slate-600 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
-                              title="Print Tax Invoice"
+                            <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
+                              <div className="flex items-center gap-2">
+                                <ChevronDown
+                                  size={15}
+                                  className={`shrink-0 transition-transform duration-200 ${
+                                    isExpanded
+                                      ? "rotate-180 text-emerald-800"
+                                      : "text-slate-400"
+                                  }`}
+                                />
+                                <Receipt
+                                  size={13}
+                                  className="text-teal-700 shrink-0"
+                                />
+                                <span className="hover:text-emerald-800 transition-colors">
+                                  {inv.invoiceNumber}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-3 px-4 font-bold text-slate-900">
+                              <div>{inv.customerName}</div>
+                              {inv.customerTrn && (
+                                <div className="text-[10px] text-slate-400 font-mono font-normal">
+                                  TRN: {inv.customerTrn}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="py-3 px-4 max-w-xs truncate text-slate-700">
+                              {inv.projectScope || "—"}
+                            </TableCell>
+                            <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
+                              {inv.invoiceDate
+                                ? new Date(inv.invoiceDate).toLocaleDateString(
+                                    "en-GB",
+                                  )
+                                : "—"}
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              className="py-3 px-3 text-right font-mono font-black text-slate-900"
                             >
-                              <Printer size={13} />
-                            </button>
-                            {inv.status === "DRAFT" && (
-                              <Button
-                                variant="dark"
-                                size="sm"
-                                onClick={() => handlePostInvoice(inv.id)}
-                                icon={<FileCheck2 size={12} />}
-                                className="text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer"
+                              {formatNumber(inv.totalAmount)}
+                              <span className="text-[10px] text-slate-400 font-normal block">
+                                Incl. 5% VAT: {formatNumber(inv.vatAmount)}
+                              </span>
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              className={`py-3 px-3 text-right font-mono font-bold ${
+                                Number(inv.remainingBalance) > 0
+                                  ? "text-rose-700"
+                                  : "text-emerald-700"
+                              }`}
+                            >
+                              {formatNumber(inv.remainingBalance)}
+                            </TableCell>
+                            <TableCell className="py-3 px-3 text-center">
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  inv.status === "PAID"
+                                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                    : inv.status === "POSTED"
+                                      ? "bg-sky-50 text-sky-800 border-sky-200"
+                                      : inv.status === "PARTIALLY_PAID"
+                                        ? "bg-amber-50 text-amber-800 border-amber-200"
+                                        : "bg-slate-100 text-slate-700 border-slate-200"
+                                }`}
                               >
-                                Post to GL
-                              </Button>
-                            )}
-                            {inv.status !== "DRAFT" && inv.status !== "PAID" && (
-                              <Button
-                                variant="dark"
-                                size="sm"
-                                onClick={() => {
-                                  setPaymentModalInv(inv);
-                                  setPaymentAmount(String(inv.remainingBalance));
-                                }}
-                                icon={<CreditCard size={12} />}
-                                className="text-[10px] font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer"
+                                {inv.status === "PAID"
+                                  ? "Paid"
+                                  : inv.status === "POSTED"
+                                    ? "Posted"
+                                    : inv.status === "PARTIALLY_PAID"
+                                      ? "Partial"
+                                      : "Draft"}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-3 px-3 text-center print:hidden">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePrintTaxInvoice(inv);
+                                  }}
+                                  className="p-1.5 text-slate-600 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
+                                  title="Print Tax Invoice"
+                                >
+                                  <Printer size={13} />
+                                </button>
+                                {inv.status === "DRAFT" && (
+                                  <Button
+                                    variant="dark"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePostInvoice(inv.id);
+                                    }}
+                                    icon={<FileCheck2 size={12} />}
+                                    className="text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer"
+                                  >
+                                    Post to GL
+                                  </Button>
+                                )}
+                                {inv.status !== "DRAFT" && inv.status !== "PAID" && (
+                                  <Button
+                                    variant="dark"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setPaymentModalInv(inv);
+                                      setPaymentAmount(
+                                        String(inv.remainingBalance),
+                                      );
+                                    }}
+                                    icon={<CreditCard size={12} />}
+                                    className="text-[10px] font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer"
+                                  >
+                                    Receive
+                                  </Button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedInvoiceId(
+                                      isExpanded ? null : inv.id,
+                                    );
+                                  }}
+                                  className={`p-1.5 rounded-lg transition cursor-pointer ${
+                                    isExpanded
+                                      ? "text-emerald-800 bg-emerald-100"
+                                      : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                  }`}
+                                  title={
+                                    isExpanded
+                                      ? "Collapse Details"
+                                      : "View Invoice Details"
+                                  }
+                                >
+                                  <ChevronDown
+                                    size={14}
+                                    className={`transition-transform duration-200 ${
+                                      isExpanded
+                                        ? "rotate-180 text-emerald-800"
+                                        : ""
+                                    }`}
+                                  />
+                                </button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+
+                          {/* Accordion QA-Style Expandable Details */}
+                          {isExpanded && (
+                            <TableRow className="hover:bg-transparent bg-slate-50/70">
+                              <TableCell
+                                colSpan={8}
+                                className="p-0 border-b-2 border-emerald-600/40"
                               >
-                                Receive
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                                <div className="px-5 py-4 space-y-4 border-l-4 border-l-emerald-600 bg-gradient-to-b from-white to-slate-50/40 shadow-inner">
+                                  {/* Detail Header Ribbon */}
+                                  <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                                    <div className="flex items-center gap-2.5">
+                                      <span className="px-2.5 py-1 rounded-lg bg-emerald-800 text-white font-bold text-xs shadow-2xs">
+                                        {inv.invoiceNumber}
+                                      </span>
+                                      <span className="text-xs font-bold text-slate-800">
+                                        {inv.customerName}
+                                      </span>
+                                      {inv.customerTrn && (
+                                        <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                                          TRN: {inv.customerTrn}
+                                        </span>
+                                      )}
+                                      {inv.projectScope && (
+                                        <span className="text-xs text-slate-600 hidden sm:inline">
+                                          Project:{" "}
+                                          <strong className="text-slate-800">
+                                            {inv.projectScope}
+                                          </strong>
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handlePrintTaxInvoice(inv);
+                                        }}
+                                        icon={<Printer size={13} />}
+                                        className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs"
+                                      >
+                                        Print Full Tax Invoice
+                                      </Button>
+                                      {inv.status === "DRAFT" && (
+                                        <Button
+                                          variant="dark"
+                                          size="sm"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handlePostInvoice(inv.id);
+                                          }}
+                                          icon={<FileCheck2 size={12} />}
+                                          className="text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer shadow-2xs"
+                                        >
+                                          Post to GL
+                                        </Button>
+                                      )}
+                                      {inv.status !== "DRAFT" &&
+                                        inv.status !== "PAID" && (
+                                          <Button
+                                            variant="dark"
+                                            size="sm"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setPaymentModalInv(inv);
+                                              setPaymentAmount(
+                                                String(inv.remainingBalance),
+                                              );
+                                            }}
+                                            icon={<CreditCard size={12} />}
+                                            className="text-xs font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer shadow-2xs"
+                                          >
+                                            Receive Payment
+                                          </Button>
+                                        )}
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setExpandedInvoiceId(null)
+                                        }
+                                        className="text-xs text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 transition cursor-pointer"
+                                        title="Close Details"
+                                      >
+                                        <X size={15} />
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Scope of Work Breakdown Table */}
+                                  <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                                    <div className="bg-emerald-800 text-white px-3.5 py-2 text-xs font-bold uppercase tracking-wider flex items-center justify-between">
+                                      <div className="flex items-center gap-1.5">
+                                        <FileText size={13} />
+                                        <span>
+                                          Description of Work / Services (Scope
+                                          Breakdown)
+                                        </span>
+                                      </div>
+                                      <span className="text-[11px] font-normal opacity-90 font-mono">
+                                        {inv.items?.length || 0} Scope Item(s)
+                                      </span>
+                                    </div>
+
+                                    <table className="w-full text-xs border-collapse">
+                                      <thead>
+                                        <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold text-[11px]">
+                                          <th className="py-2 px-3 text-center w-12 border-r border-slate-200">
+                                            S.No
+                                          </th>
+                                          <th className="py-2 px-3 text-left border-r border-slate-200">
+                                            Description of Work / Services
+                                          </th>
+                                          <th className="py-2 px-3 text-center w-24 border-r border-slate-200">
+                                            Qty / SQM
+                                          </th>
+                                          <th className="py-2 px-3 text-right w-32 border-r border-slate-200">
+                                            Rate (AED)
+                                          </th>
+                                          <th className="py-2 px-3 text-right w-36">
+                                            Total (AED)
+                                          </th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-slate-100">
+                                        {inv.items && inv.items.length > 0 ? (
+                                          inv.items.map(
+                                            (item: any, idx: number) => {
+                                              const points =
+                                                parseDescriptionPoints(
+                                                  item.description,
+                                                );
+                                              return (
+                                                <tr
+                                                  key={item.id || idx}
+                                                  className="hover:bg-slate-50/50"
+                                                >
+                                                  <td className="py-2.5 px-3 text-center font-bold text-slate-500 border-r border-slate-200/80 align-top">
+                                                    {idx + 1}
+                                                  </td>
+                                                  <td className="py-2.5 px-3 border-r border-slate-200/80 text-left align-top font-medium">
+                                                    {points.length <= 1 ? (
+                                                      <div className="leading-relaxed text-slate-800 whitespace-pre-line">
+                                                        {item.description}
+                                                      </div>
+                                                    ) : (
+                                                      <div className="space-y-1.5 text-slate-800">
+                                                        {points.map(
+                                                          (pt, pIdx) => {
+                                                            const match =
+                                                              pt.match(
+                                                                /^(\d+[\.\)]|[•\-*])\s*(.*)$/,
+                                                              );
+                                                            if (match) {
+                                                              const [
+                                                                ,
+                                                                bullet,
+                                                                text,
+                                                              ] = match;
+                                                              return (
+                                                                <div
+                                                                  key={pIdx}
+                                                                  className="leading-relaxed flex items-start gap-1.5"
+                                                                >
+                                                                  <span className="font-bold text-slate-900 shrink-0 select-none">
+                                                                    {bullet}
+                                                                  </span>
+                                                                  <span className="text-slate-800">
+                                                                    {text}
+                                                                  </span>
+                                                                </div>
+                                                              );
+                                                            }
+                                                            return (
+                                                                <div
+                                                                  key={pIdx}
+                                                                  className="leading-relaxed"
+                                                                >
+                                                                  {pt}
+                                                                </div>
+                                                            );
+                                                          },
+                                                        )}
+                                                      </div>
+                                                    )}
+                                                  </td>
+                                                  <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-800 border-r border-slate-200/80 align-top">
+                                                    {item.quantity}
+                                                  </td>
+                                                  <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-800 border-r border-slate-200/80 align-top">
+                                                    {formatNumber(
+                                                      item.unitPrice,
+                                                    )}
+                                                  </td>
+                                                  <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 align-top">
+                                                    {formatNumber(
+                                                      item.totalAmount,
+                                                    )}
+                                                  </td>
+                                                </tr>
+                                              );
+                                            },
+                                          )
+                                        ) : (
+                                          <tr>
+                                            <td
+                                              colSpan={5}
+                                              className="py-6 text-center text-slate-400 italic"
+                                            >
+                                              No line items found for this
+                                              invoice.
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </tbody>
+                                    </table>
+                                  </div>
+
+                                  {/* Financial & Audit Summary Footer */}
+                                  <div className="flex flex-wrap items-start justify-between gap-4 pt-1">
+                                    <div className="text-xs text-slate-600 max-w-md space-y-1.5">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-slate-500 font-semibold">
+                                          Invoice Date:
+                                        </span>
+                                        <span className="font-medium text-slate-800">
+                                          {inv.invoiceDate
+                                            ? new Date(
+                                                inv.invoiceDate,
+                                              ).toLocaleDateString("en-GB")
+                                            : "—"}
+                                        </span>
+                                        <span className="text-slate-300">
+                                          |
+                                        </span>
+                                        <span className="text-slate-500 font-semibold">
+                                          Due Date:
+                                        </span>
+                                        <span className="font-medium text-slate-800">
+                                          {inv.dueDate
+                                            ? new Date(
+                                                inv.dueDate,
+                                              ).toLocaleDateString("en-GB")
+                                            : "—"}
+                                        </span>
+                                      </div>
+                                      {inv.quotationRef && (
+                                        <div>
+                                          <span className="text-slate-500 font-semibold">
+                                            Quotation Ref:
+                                          </span>{" "}
+                                          <span className="font-mono text-slate-800 font-bold">
+                                            {inv.quotationRef}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {inv.notes && (
+                                        <div className="text-slate-700">
+                                          <strong className="text-slate-800">
+                                            Notes:
+                                          </strong>{" "}
+                                          {inv.notes}
+                                        </div>
+                                      )}
+                                      {inv.terms && (
+                                        <div className="text-slate-700">
+                                          <strong className="text-slate-800">
+                                            Terms:
+                                          </strong>{" "}
+                                          {inv.terms}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    <div className="w-72 bg-white rounded-xl border border-slate-200 p-3 space-y-1.5 font-mono text-xs shadow-2xs">
+                                      <div className="flex justify-between text-slate-600">
+                                        <span>Subtotal (Excl. VAT):</span>
+                                        <span className="font-semibold">
+                                          {formatNumber(inv.subtotal)} AED
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between text-slate-600">
+                                        <span>5% UAE Output VAT:</span>
+                                        <span className="font-semibold">
+                                          {formatNumber(inv.vatAmount)} AED
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between text-slate-900 font-black border-t border-slate-100 pt-1 text-[13px]">
+                                        <span>Total Due:</span>
+                                        <span className="text-emerald-900">
+                                          {formatNumber(inv.totalAmount)} AED
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between text-emerald-700 font-semibold">
+                                        <span>Paid / Settled:</span>
+                                        <span>
+                                          {formatNumber(inv.paidAmount)} AED
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between text-rose-700 font-bold border-t border-slate-100 pt-1">
+                                        <span>Balance Due:</span>
+                                        <span>
+                                          {formatNumber(inv.remainingBalance)}{" "}
+                                          AED
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </Fragment>
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>
@@ -717,13 +1106,13 @@ export default function SalesInvoicesPage() {
                 {items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
+                    className="grid grid-cols-12 gap-2 items-start bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
                   >
                     <div className="col-span-6">
-                      <input
-                        type="text"
-                        placeholder="Description..."
-                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500"
+                      <textarea
+                        rows={2}
+                        placeholder="Description / scope points (press Enter for new points)..."
+                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 resize-y min-h-[36px]"
                         value={item.description}
                         onChange={(e) =>
                           updateItem(idx, "description", e.target.value)
@@ -1119,7 +1508,7 @@ export default function SalesInvoicesPage() {
                             DESCRIPTION OF WORK / SERVICES
                           </th>
                           <th className="py-2.5 px-2 print:py-1.5 print:px-1 font-bold w-20 border border-agm-box-border text-white text-center align-middle">
-                            QTY
+                            QTY / SQM
                           </th>
                           <th className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold w-28 border border-agm-box-border text-white text-right align-middle">
                             RATE (AED)
@@ -1139,11 +1528,49 @@ export default function SalesInvoicesPage() {
                               <td className="py-2.5 px-2 print:py-1 print:px-1 align-middle text-center font-bold text-slate-700 border border-agm-box-border">
                                 {idx + 1}
                               </td>
-                              <td className="py-2.5 px-3 print:py-1 print:px-2 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
-                                {it.description}
+                              <td className="py-2.5 px-3 print:py-1.5 print:px-2 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
+                                {(() => {
+                                  const points = parseDescriptionPoints(it.description);
+                                  if (points.length <= 1) {
+                                    return (
+                                      <div className="leading-snug print:leading-snug text-slate-800 whitespace-pre-line text-left">
+                                        {it.description}
+                                      </div>
+                                    );
+                                  }
+                                  return (
+                                    <div className="space-y-1.5 print:space-y-1 text-slate-800 text-left">
+                                      {points.map((pt, pIdx) => {
+                                        const match = pt.match(/^(\d+[\.\)]|[•\-*])\s*(.*)$/);
+                                        if (match) {
+                                          const [, bullet, text] = match;
+                                          return (
+                                            <div
+                                              key={pIdx}
+                                              className="leading-snug print:leading-snug flex items-start gap-1.5"
+                                            >
+                                              <span className="font-bold text-slate-900 shrink-0 select-none">
+                                                {bullet}
+                                              </span>
+                                              <span className="text-slate-800">{text}</span>
+                                            </div>
+                                          );
+                                        }
+                                        return (
+                                          <div
+                                            key={pIdx}
+                                            className="leading-snug print:leading-snug"
+                                          >
+                                            {pt}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  );
+                                })()}
                               </td>
                               <td className="py-2.5 px-2 print:py-1 print:px-1 align-middle text-center font-mono font-bold text-slate-800 border border-agm-box-border">
-                                {it.quantity} {it.unit ? `(${it.unit})` : ""}
+                                {it.quantity}
                               </td>
                               <td className="py-2.5 px-3 print:py-1 print:px-2 align-middle text-right font-mono font-semibold text-slate-800 border border-agm-box-border">
                                 {formatNumber(it.unitPrice)}
