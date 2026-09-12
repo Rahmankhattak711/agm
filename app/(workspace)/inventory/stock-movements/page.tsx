@@ -252,12 +252,11 @@ export default function StockMovementsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">
-            Stock Movements & Audit Ledger
-          </h2>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Stock Movements
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Immutable physical inventory log for warehouse adjustments, site
-            deliveries, and material receipts.
+            Track inventory adjustments, warehouse transfers, site dispatches, and physical audit logs.
           </p>
         </div>
 

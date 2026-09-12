@@ -10,7 +10,14 @@ import {
   useDeleteSupplier,
   Supplier,
 } from "@/lib/hooks/api-hooks";
-import { PlusIcon, SearchIcon } from "@/components/icons";
+import {
+  BuildingIcon,
+  EditIcon,
+  PlusIcon,
+  PrintIcon,
+  SearchIcon,
+  TrashIcon,
+} from "@/components/icons";
 import {
   Button,
   Input,
@@ -19,22 +26,6 @@ import {
   FormInput,
   FormSubmit,
 } from "@/components/ui";
-import {
-  Building2,
-  Phone,
-  Mail,
-  MapPin,
-  FileSpreadsheet,
-  Printer,
-  Plus,
-  Search,
-  CheckCircle2,
-  ShieldCheck,
-  Package,
-  Edit2,
-  Trash2,
-  Layers,
-} from "lucide-react";
 
 export default function SuppliersPage() {
   const [search, setSearch] = useState("");
@@ -163,7 +154,7 @@ export default function SuppliersPage() {
         header: "Supplier Code",
         cell: ({ row }) => (
           <span className="font-mono font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded text-xs inline-flex items-center gap-1">
-            <Building2 size={11} className="text-teal-700" />
+            <BuildingIcon size={11} className="text-teal-700" />
             {row.original.supplierCode}
           </span>
         ),
@@ -242,16 +233,20 @@ export default function SuppliersPage() {
         header: () => <div className="text-center">Actions</div>,
         cell: ({ row }) => (
           <div className="flex items-center justify-center gap-1.5">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => handleOpenEdit(row.original)}
               className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
               title="Edit Supplier"
             >
-              <Edit2 size={13} />
-            </button>
-            <button
+              <EditIcon size={13} />
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={async () => {
                 if (confirm(`Delete supplier "${row.original.name}"?`)) {
                   await deleteSupplier.mutateAsync(row.original.id);
@@ -260,8 +255,8 @@ export default function SuppliersPage() {
               className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer"
               title="Delete Supplier"
             >
-              <Trash2 size={13} />
-            </button>
+              <TrashIcon size={13} />
+            </Button>
           </div>
         ),
       },
@@ -275,11 +270,10 @@ export default function SuppliersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Suppliers &amp; Vendor Management
+            Suppliers
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Vendor master registry, Tax
-            Registration Numbers (TRN), <br /> and procurement contacts.
+            Manage vendor profiles, tax registration numbers (TRN), payment terms, and procurement records.
           </p>
         </div>
 
@@ -289,7 +283,7 @@ export default function SuppliersPage() {
             size="sm"
             onClick={() => window.print()}
             className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
+            icon={<PrintIcon size={14} />}
           >
             Print Register
           </Button>
@@ -298,7 +292,7 @@ export default function SuppliersPage() {
             variant="primary"
             size="sm"
             onClick={handleOpenCreate}
-            icon={<Plus size={14} strokeWidth={2.5} />}
+            icon={<PlusIcon size={14} strokeWidth={2.5} />}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Add New Supplier
@@ -409,18 +403,20 @@ export default function SuppliersPage() {
               ].map((tab) => {
                 const isActive = statusFilter === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setStatusFilter(tab.id as any)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -431,16 +427,14 @@ export default function SuppliersPage() {
           </div>
 
           <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <div className="w-full sm:w-80 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search code, company name, TRN, contact..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            <Input
+              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+              placeholder="Search code, company name, TRN, contact..."
+              containerClassName="w-full sm:w-80"
+              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
 

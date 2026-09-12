@@ -1,21 +1,13 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
-  Building2,
-  FileText,
-  Mail,
-  Phone,
-  Plus,
-  Printer,
-  Search,
-  UserCheck,
-  ShieldCheck,
-  CreditCard,
-  Layers,
-  ArrowUpRight,
-  Eye,
-} from "lucide-react";
+  BuildingIcon,
+  FileTextIcon,
+  PlusIcon,
+  PrintIcon,
+  SearchIcon,
+} from "@/components/icons";
 import {
   Button,
   Input,
@@ -143,12 +135,10 @@ export default function CustomersMasterPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Customer Directory &amp; Statements
+            Customers
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Comprehensive client database,
-            credit limit controls, <br /> and real-time Statement of Account
-            ledgers.
+            Manage client profiles, credit limits, contact information, and real-time statements of account.
           </p>
         </div>
 
@@ -158,7 +148,7 @@ export default function CustomersMasterPage() {
             size="sm"
             onClick={() => window.print()}
             className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer flex-1 sm:flex-initial"
-            icon={<Printer size={14} />}
+            icon={<PrintIcon size={14} />}
           >
             Print Register
           </Button>
@@ -167,7 +157,7 @@ export default function CustomersMasterPage() {
             variant="primary"
             size="sm"
             onClick={() => setIsCreateOpen(true)}
-            icon={<Plus size={14} strokeWidth={2.5} />}
+            icon={<PlusIcon size={14} strokeWidth={2.5} />}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial"
           >
             Add New Customer
@@ -282,18 +272,20 @@ export default function CustomersMasterPage() {
               ].map((tab) => {
                 const isActive = statusFilter === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setStatusFilter(tab.id as any)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -304,16 +296,14 @@ export default function CustomersMasterPage() {
           </div>
 
           <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <div className="w-full sm:w-80 md:w-96 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search customer name, company, code, TRN, phone..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            <Input
+              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+              placeholder="Search customer name, company, code, TRN, phone..."
+              containerClassName="w-full sm:w-80 md:w-96"
+              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
 
@@ -389,7 +379,7 @@ export default function CustomersMasterPage() {
                     >
                       <TableCell className="py-3 px-4 font-mono font-bold text-teal-800">
                         <div className="flex items-center gap-1.5">
-                          <Building2
+                          <BuildingIcon
                             size={13}
                             className="text-teal-700 shrink-0"
                           />
@@ -440,14 +430,15 @@ export default function CustomersMasterPage() {
                         {formatNumber(c.currentBalance)}
                       </TableCell>
                       <TableCell className="py-3 px-4 text-center print:hidden">
-                        <button
-                          type="button"
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           onClick={() => setSelectedCustomerId(c.id)}
-                          className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition cursor-pointer inline-flex items-center gap-1"
+                          icon={<FileTextIcon size={12} />}
+                          className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition cursor-pointer"
                         >
-                          <FileText size={12} />
                           Statement
-                        </button>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -696,7 +687,7 @@ export default function CustomersMasterPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => window.print()}
-                icon={<Printer size={13} />}
+                icon={<PrintIcon size={13} />}
                 className="cursor-pointer"
               >
                 Print Statement of Account

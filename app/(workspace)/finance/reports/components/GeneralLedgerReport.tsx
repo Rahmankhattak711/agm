@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { PrintIcon } from "@/components/icons";
+import { BookOpenIcon, PrintIcon } from "@/components/icons";
 import {
   Button,
+  Select,
   Table,
   TableHead,
   TableHeaderCell,
@@ -17,16 +18,6 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
-import {
-  BookOpen,
-  Printer,
-  FileSpreadsheet,
-  Scale,
-  Calendar,
-  Receipt,
-  Layers,
-  ArrowRight,
-} from "lucide-react";
 
 interface GeneralLedgerReportProps {
   accounts?: ChartOfAccount[];
@@ -117,10 +108,10 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
 
                   <div className="flex flex-wrap items-center gap-2.5">
                     <div className="w-full sm:w-80">
-                      <select
+                      <Select
                         value={selectedAccountId}
                         onChange={(e) => setSelectedAccountId(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-indigo-500 font-bold text-slate-800 shadow-2xs cursor-pointer"
+                        className="w-full text-xs font-bold text-slate-800 cursor-pointer"
                       >
                         <option value="">
                           Select an Account to Drill Down...
@@ -130,14 +121,14 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                             {acc.accountCode} - {acc.accountName} ({acc.type})
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </div>
 
                     {selectedAccountId && (
                       <Button
                         variant="outline"
                         size="sm"
-                        icon={<Printer size={14} />}
+                        icon={<PrintIcon size={14} />}
                         onClick={() => window.print()}
                         className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
                       >
@@ -150,7 +141,7 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                 {!selectedAccountId ? (
                   <div className="py-20 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50 space-y-3">
                     <div className="w-12 h-12 mx-auto rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-black">
-                      <BookOpen size={24} />
+                      <BookOpenIcon size={24} />
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-800">

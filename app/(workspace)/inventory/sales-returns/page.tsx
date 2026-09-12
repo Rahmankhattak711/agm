@@ -2,18 +2,11 @@
 
 import React, { useCallback, useMemo, useState } from "react";
 import {
-  Plus,
-  Search,
-  Printer,
-  RotateCcw,
-  FileSpreadsheet,
-  FileText,
-  CheckCircle2,
-  Clock,
-  Building2,
-  Eye,
-  ShieldCheck,
-} from "lucide-react";
+  PlusIcon,
+  PrintIcon,
+  RotateCcwIcon,
+  SearchIcon,
+} from "@/components/icons";
 import {
   Button,
   Table,
@@ -184,11 +177,10 @@ export default function SalesReturnsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Sales Returns (Credit Notes)
+            Sales Returns
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Manage client credit notes,
-            scope reductions, <br /> and invoice credit adjustments.
+            Process client returned goods, track credit adjustments, and update warehouse inventory.
           </p>
         </div>
 
@@ -198,7 +190,7 @@ export default function SalesReturnsPage() {
             size="sm"
             onClick={() => window.print()}
             className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
+            icon={<PrintIcon size={14} />}
           >
             Print Register
           </Button>
@@ -206,14 +198,11 @@ export default function SalesReturnsPage() {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => {
-              setForm(EMPTY_FORM);
-              setIsCreateOpen(true);
-            }}
-            icon={<Plus size={14} strokeWidth={2.5} />}
+            onClick={() => setIsCreateOpen(true)}
+            icon={<PlusIcon size={14} strokeWidth={2.5} />}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
-            Create Sales Return
+            Log Sales Return
           </Button>
         </div>
       </div>
@@ -315,18 +304,20 @@ export default function SalesReturnsPage() {
               {STATUS_FILTERS.map((tab) => {
                 const isActive = statusFilter === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setStatusFilter(tab.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -337,16 +328,14 @@ export default function SalesReturnsPage() {
           </div>
 
           <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <div className="w-full sm:w-96 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search return number, invoice ref, client..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            <Input
+              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+              placeholder="Search return number, invoice ref, client..."
+              containerClassName="w-full sm:w-96"
+              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
 
@@ -368,16 +357,16 @@ export default function SalesReturnsPage() {
                   Credit Note Voucher
                 </TableHeaderCell>
                 <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Invoice / QTN Ref
+                  Invoice Ref
                 </TableHeaderCell>
                 <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Client Name &amp; Scope
+                  Customer / Entity
                 </TableHeaderCell>
                 <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
                   Date
                 </TableHeaderCell>
                 <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Scope / Reason
+                  Return Reason
                 </TableHeaderCell>
                 <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
                   Status
@@ -386,7 +375,7 @@ export default function SalesReturnsPage() {
                   align="right"
                   className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
                 >
-                  Credit Amount (AED)
+                  Amount (AED)
                 </TableHeaderCell>
                 <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider print:hidden">
                   Actions
@@ -401,8 +390,8 @@ export default function SalesReturnsPage() {
                     colSpan={8}
                     className="py-12 text-center text-slate-400 italic"
                   >
-                    No sales return credit notes found. Click &quot;Create Sales
-                    Return&quot; to log a client credit note.
+                    No sales returns found. Log a customer credit note or
+                    rejected scope item.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -413,7 +402,7 @@ export default function SalesReturnsPage() {
                   >
                     <TableCell className="py-3 px-4 font-mono font-bold text-teal-800">
                       <div className="flex items-center gap-1.5">
-                        <RotateCcw
+                        <RotateCcwIcon
                           size={13}
                           className="text-teal-700 shrink-0"
                         />
@@ -451,13 +440,15 @@ export default function SalesReturnsPage() {
                       {formatAed(item.totalAmount)}
                     </TableCell>
                     <TableCell className="py-3 px-3 text-center print:hidden">
-                      <button
+                      <Button
                         type="button"
+                        variant="secondary"
+                        size="sm"
                         onClick={() => setSelectedReturn(item)}
                         className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 transition cursor-pointer"
                       >
                         Audit View
-                      </button>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -604,7 +595,7 @@ export default function SalesReturnsPage() {
                 size="sm"
                 onClick={() => window.print()}
                 className="text-xs flex items-center gap-1.5 cursor-pointer"
-                icon={<Printer size={13} />}
+                icon={<PrintIcon size={13} />}
               >
                 Print Voucher
               </Button>

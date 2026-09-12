@@ -233,8 +233,7 @@ export default function CustomerPaymentsPage() {
               Customer Payment Receipt Voucher
             </h1>
             <p className="text-xs text-slate-500">
-              AGM FITOUT TECHNICAL SERVICES LLC — Accounts Receivable Settlement
-              &amp; Bank Collection
+              Customer Accounts Receivable Settlement &amp; Bank Collection
             </p>
           </div>
           <p className="text-[10px] text-slate-400 font-mono">
@@ -247,15 +246,14 @@ export default function CustomerPaymentsPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-              Customer Payments &amp; Receipts
+              Customer Payments
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
               Double-Entry Synced
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Record customer receipts, update
-            Accounts Receivable (1200), and post to General Ledger.
+            Record customer receipts, reconcile outstanding invoice balances, and update accounts receivable.
           </p>
         </div>
 

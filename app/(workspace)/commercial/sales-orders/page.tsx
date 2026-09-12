@@ -2,19 +2,17 @@
 
 import { useState } from "react";
 import {
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Eye,
-  FileText,
-  Plus,
-  Receipt,
-  Search,
-  ShoppingCart,
-  Trash2,
-} from "lucide-react";
+  EyeIcon,
+  PlusIcon,
+  ReceiptIcon,
+  SearchIcon,
+  TrashIcon,
+} from "@/components/icons";
 import {
   Button,
+  Input,
+  Select,
+  Textarea,
   Table,
   TableHead,
   TableHeaderCell,
@@ -169,16 +167,14 @@ export default function SalesOrdersPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Sales Orders & Contracts
+              Sales Orders
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
               Sales Cycle — Step 2
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Track confirmed customer sales
-            orders, delivery timelines, project commitments, and convert them to
-            Sales Invoices.
+            Track confirmed customer orders, delivery timelines, and convert commitments into sales invoices.
           </p>
         </div>
 
@@ -187,7 +183,7 @@ export default function SalesOrdersPage() {
             variant="dark"
             size="sm"
             onClick={() => setIsCreateOpen(true)}
-            icon={<Plus size={14} />}
+            icon={<PlusIcon size={14} />}
             className="text-xs font-bold bg-slate-900 text-white hover:bg-slate-800"
           >
             Create Sales Order
@@ -233,34 +229,31 @@ export default function SalesOrdersPage() {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
-        <div className="relative flex-1 max-w-md">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-          <input
-            type="text"
+        <div className="flex-1 max-w-md">
+          <Input
             placeholder="Search order number, customer, project scope..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-blue-500"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            leftIcon={<SearchIcon size={14} className="text-slate-400" />}
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 text-xs overflow-x-auto no-scrollbar py-0.5 max-w-full">
           {["ALL", "CONFIRMED", "PROCESSING", "COMPLETED"].map((st) => (
-            <button
+            <Button
               key={st}
               type="button"
+              variant={statusFilter === st ? "primary" : "secondary"}
+              size="sm"
               onClick={() => setStatusFilter(st)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+              className={
                 statusFilter === st
-                  ? "bg-slate-900 text-white shadow-2xs"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
-              }`}
+                  ? "bg-slate-900 text-white shadow-2xs font-bold"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 font-bold"
+              }
             >
               {st}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -350,20 +343,21 @@ export default function SalesOrdersPage() {
                   </TableCell>
                   <TableCell className="py-3 px-3 text-center">
                     <div className="flex items-center justify-center gap-1.5">
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setSelectedOrder(so)}
+                        icon={<EyeIcon size={13} />}
                         className="p-1 text-slate-400 hover:text-blue-700 rounded-md hover:bg-blue-50"
                         title="View Details"
-                      >
-                        <Eye size={13} />
-                      </button>
+                      />
                       {so.status !== "COMPLETED" && (
                         <Button
                           variant="dark"
                           size="sm"
                           onClick={() => handleConvertToInvoice(so.id)}
-                          icon={<Receipt size={12} />}
+                          icon={<ReceiptIcon size={12} />}
                           className="text-[10px] font-bold bg-blue-700 text-white hover:bg-blue-800"
                         >
                           Convert to Invoice
@@ -386,53 +380,38 @@ export default function SalesOrdersPage() {
         >
           <form onSubmit={handleCreateOrder} className="space-y-4 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Select Customer
-                </label>
-                <select
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-blue-500 font-semibold"
-                  value={customerId}
-                  onChange={(e) => {
-                    setCustomerId(e.target.value);
-                    const c = customers.find(
-                      (cust) => cust.id === e.target.value,
-                    );
-                    if (c) setCustomerName(c.name);
-                  }}
-                >
-                  <option value="">Select registered customer...</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.customerCode})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label="Select Customer"
+                value={customerId}
+                onChange={(e) => {
+                  setCustomerId(e.target.value);
+                  const c = customers.find(
+                    (cust) => cust.id === e.target.value,
+                  );
+                  if (c) setCustomerName(c.name);
+                }}
+              >
+                <option value="">Select registered customer...</option>
+                {customers.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.customerCode})
+                  </option>
+                ))}
+              </Select>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Customer / Entity Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Customer Name"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-blue-500 font-semibold"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  required
-                />
-              </div>
+              <Input
+                label="Customer / Entity Name *"
+                placeholder="Customer Name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                required
+              />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Project Scope / Description
-              </label>
-              <input
-                type="text"
+              <Input
+                label="Project Scope / Description"
                 placeholder="e.g. Luxury Penthouse Fitout - Full Turnkey"
-                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-blue-500"
                 value={projectScope}
                 onChange={(e) => setProjectScope(e.target.value)}
               />
@@ -443,13 +422,16 @@ export default function SalesOrdersPage() {
                 <span className="font-bold text-slate-800">
                   Order Line Items
                 </span>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={addItem}
+                  icon={<PlusIcon size={13} />}
                   className="text-xs font-bold text-blue-700 hover:text-blue-800 flex items-center gap-1"
                 >
-                  <Plus size={13} /> Add Line
-                </button>
+                  Add Line
+                </Button>
               </div>
 
               <div className="space-y-2 max-h-56 overflow-y-auto">
@@ -459,10 +441,10 @@ export default function SalesOrdersPage() {
                     className="grid grid-cols-12 gap-2 items-start bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
                   >
                     <div className="col-span-6">
-                      <textarea
+                      <Textarea
                         rows={2}
                         placeholder="Description / scope points (press Enter for new points)..."
-                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-blue-500 resize-y min-h-[36px]"
+                        className="resize-y min-h-[36px]"
                         value={item.description}
                         onChange={(e) =>
                           updateItem(idx, "description", e.target.value)
@@ -471,11 +453,11 @@ export default function SalesOrdersPage() {
                       />
                     </div>
                     <div className="col-span-2">
-                      <input
+                      <Input
                         type="number"
                         min="1"
                         placeholder="Qty"
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-blue-500 font-mono"
+                        className="font-mono"
                         value={item.quantity}
                         onChange={(e) =>
                           updateItem(idx, "quantity", e.target.value)
@@ -484,11 +466,11 @@ export default function SalesOrdersPage() {
                       />
                     </div>
                     <div className="col-span-3">
-                      <input
+                      <Input
                         type="number"
                         step="0.01"
                         placeholder="Unit Price"
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-blue-500 font-mono font-bold"
+                        className="font-mono font-bold"
                         value={item.unitPrice || ""}
                         onChange={(e) =>
                           updateItem(idx, "unitPrice", e.target.value)
@@ -496,14 +478,15 @@ export default function SalesOrdersPage() {
                         required
                       />
                     </div>
-                    <div className="col-span-1 text-center">
-                      <button
+                    <div className="col-span-1 text-center pt-1">
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => removeItem(idx)}
+                        icon={<TrashIcon size={13} />}
                         className="text-slate-400 hover:text-rose-600 p-1"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                      />
                     </div>
                   </div>
                 ))}
@@ -670,7 +653,7 @@ export default function SalesOrdersPage() {
                     handleConvertToInvoice(selectedOrder.id);
                     setSelectedOrder(null);
                   }}
-                  icon={<Receipt size={13} />}
+                  icon={<ReceiptIcon size={13} />}
                   className="bg-blue-700 text-white"
                 >
                   Convert to Sales Invoice

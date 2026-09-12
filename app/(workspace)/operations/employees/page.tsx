@@ -15,7 +15,12 @@ import {
   EmploymentStatus,
   PaymentMethod,
 } from "@/lib/hooks/api-hooks";
-import { SearchIcon } from "@/components/icons";
+import {
+  EditIcon,
+  EmployeesIcon,
+  SearchIcon,
+  TrashIcon,
+} from "@/components/icons";
 import {
   Button,
   Input,
@@ -26,23 +31,6 @@ import {
   FormSelect,
   FormSubmit,
 } from "@/components/ui";
-import {
-  Users,
-  UserCheck,
-  Building2,
-  Phone,
-  Mail,
-  ShieldCheck,
-  CreditCard,
-  Printer,
-  Search,
-  CheckCircle2,
-  Clock,
-  Edit2,
-  Trash2,
-  Calendar,
-  Layers,
-} from "lucide-react";
 
 export default function EmployeesPage() {
   const { hasRole, isAdmin } = useAuth();
@@ -252,7 +240,7 @@ export default function EmployeesPage() {
         header: "Emp ID",
         cell: ({ row }) => (
           <span className="font-mono font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded text-xs inline-flex items-center gap-1">
-            <Users size={11} className="text-teal-700" />
+            <EmployeesIcon size={12} className="text-teal-700" />
             {row.original.employeeCode}
           </span>
         ),
@@ -366,16 +354,18 @@ export default function EmployeesPage() {
 
           return (
             <div className="flex items-center justify-center gap-1.5">
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => handleOpenEditModal(row.original)}
-                className="p-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-600 transition cursor-pointer"
+                icon={<EditIcon size={13} />}
                 title="Edit Employee"
               >
-                <Edit2 size={13} />
-              </button>
-              <button
-                type="button"
+                Edit
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
                 onClick={async () => {
                   if (
                     confirm(
@@ -385,11 +375,11 @@ export default function EmployeesPage() {
                     await deleteEmployeeMutation.mutateAsync(row.original.id);
                   }
                 }}
-                className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition cursor-pointer"
+                icon={<TrashIcon size={13} />}
                 title="Delete Employee"
               >
-                <Trash2 size={13} />
-              </button>
+                Delete
+              </Button>
             </div>
           );
         },
@@ -404,25 +394,13 @@ export default function EmployeesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Workforce &amp; Human Capital Directory
+            Employees Directory
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Manage employee master data, UAE
-            visa dates, labor cards, <br /> salary packages, and WPS details.
+            Manage employee master profiles, UAE labor contracts, visa statuses, and department records.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
-          >
-            Print Register
-          </Button>
-        </div>
       </div>
 
       {/* 4 Summary KPI Cards */}
@@ -533,18 +511,20 @@ export default function EmployeesPage() {
               ].map((tab) => {
                 const isActive = statusFilter === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     type="button"
+                    variant={isActive ? "outline" : "ghost"}
+                    size="sm"
                     onClick={() => setStatusFilter(tab.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`text-xs font-bold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -555,30 +535,28 @@ export default function EmployeesPage() {
           </div>
 
           <div className="pt-1 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div className="w-full sm:w-80 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search code, name, phone, Emirates ID..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            <Input
+              containerClassName="w-full sm:w-80"
+              placeholder="Search code, name, phone, Emirates ID..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              leftIcon={<SearchIcon size={16} />}
+              className="py-1.5 shadow-2xs"
+            />
 
             <div className="w-full sm:w-48">
-              <select
+              <Select
                 value={departmentFilter}
                 onChange={(e) => setDepartmentFilter(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
-              >
-                <option value="ALL">All Departments</option>
-                {departments.map((d: any) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
+                className="py-1.5 shadow-2xs cursor-pointer"
+                options={[
+                  { value: "ALL", label: "All Departments" },
+                  ...departments.map((d: any) => ({
+                    value: d,
+                    label: d,
+                  })),
+                ]}
+              />
             </div>
           </div>
         </div>

@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { BarChart3 } from "lucide-react";
+import { ReportsIcon } from "@/components/icons";
 
 export interface ChartBarItem {
   label: string;
@@ -46,7 +45,7 @@ export const ReportSummaryChart: React.FC<ReportSummaryChartProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-800">
-              <BarChart3 size={16} />
+              <ReportsIcon size={16} />
             </span>
             <h3 className="font-bold text-sm text-slate-900">{title}</h3>
           </div>

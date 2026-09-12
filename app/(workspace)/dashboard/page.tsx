@@ -17,28 +17,28 @@ import {
   useCustomerPayments,
 } from "@/lib/hooks/api-hooks";
 import {
-  Landmark,
-  DollarSign,
-  Receipt,
-  CreditCard,
-  Percent,
-  Clock,
-  AlertCircle,
-  AlertTriangle,
-  ArrowRight,
-  FileCheck,
-  FileClock,
-  Scale,
-  TrendingUp,
-  Activity,
-  ArrowUpRight as ArrowUpRightIcon,
-  ShieldCheck,
-  Calendar,
-  Sparkles,
-  ChevronDown,
-  Check,
-  X,
-} from "lucide-react";
+  AlertCircleIcon,
+  AlertTriangleIcon,
+  ArrowRightIcon,
+  ArrowUpRightIcon,
+  ActivityIcon,
+  CalendarIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  ClockIcon,
+  CreditCardIcon,
+  DollarSignIcon,
+  FileCheckIcon,
+  FileClockIcon,
+  LandmarkIcon,
+  PercentIcon,
+  ReceiptIcon,
+  ScaleIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  TrendingUpIcon,
+  XIcon,
+} from "@/components/icons";
 
 type PeriodOption = "THIS_MONTH" | "THIS_QUARTER" | "THIS_YEAR" | "CUSTOM";
 type ChartViewMode = "P_AND_L" | "CASH_FLOW";
@@ -445,7 +445,7 @@ export default function DashboardPage() {
         description: `${formatCurrency(arMetrics.overdue)} pending collection`,
         link: "/commercial/sales-invoices",
         actionText: "Collect Invoices",
-        icon: <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />,
+        icon: <AlertCircleIcon size={16} className="text-rose-500 flex-shrink-0" />,
         badge: "Overdue",
         badgeColor: "bg-rose-50 text-rose-700 border-rose-200",
       });
@@ -458,7 +458,7 @@ export default function DashboardPage() {
         description: `${formatCurrency(apMetrics.overdue)} awaiting payment`,
         link: "/commercial/supplier-bills",
         actionText: "Disburse Payment",
-        icon: <Clock className="w-4 h-4 text-amber-500 flex-shrink-0" />,
+        icon: <ClockIcon size={16} className="text-amber-500 flex-shrink-0" />,
         badge: "Due Soon",
         badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
       });
@@ -472,7 +472,7 @@ export default function DashboardPage() {
         description: "Unposted double-entry vouchers",
         link: "/finance/journal-entries",
         actionText: "Post Entries",
-        icon: <FileClock className="w-4 h-4 text-blue-500 flex-shrink-0" />,
+        icon: <FileClockIcon size={16} className="text-blue-500 flex-shrink-0" />,
         badge: "Draft",
         badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
       });
@@ -487,7 +487,7 @@ export default function DashboardPage() {
         description: "Draft status awaiting approval",
         link: "/finance/expenses",
         actionText: "Review Expenses",
-        icon: <FileCheck className="w-4 h-4 text-purple-500 flex-shrink-0" />,
+        icon: <FileCheckIcon size={16} className="text-purple-500 flex-shrink-0" />,
         badge: "Draft",
         badgeColor: "bg-purple-50 text-purple-700 border-purple-200",
       });
@@ -573,24 +573,24 @@ export default function DashboardPage() {
                 Live Ledger &bull; Real-time Accounting
               </span>
               <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-300/80 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full">
-                <Sparkles size={12} className="text-amber-400" />
+                <SparklesIcon size={12} className="text-amber-400" />
                 UAE FTA Tax Compliant
               </span>
             </div>
 
             <div>
               <h1 className="text-xl md:text-2xl font-black text-white tracking-tight">
-                Finance &amp; Operations Executive Dashboard
+                Finance &amp; Operations Dashboard
               </h1>
               <p className="text-xs text-slate-300/85 font-normal mt-0.5">
-                Real-time financial telemetry, cash liquidity &bull; AGM Interiors &amp; Fitout
+                Real-time financial performance, cash flow liquidity, and operational metrics.
               </p>
             </div>
 
             {/* Quick Live Snapshot Telemetry Chips */}
             <div className="flex flex-wrap items-center gap-2 pt-0.5">
               <div className="flex items-center gap-1.5 rounded-xl bg-white/10 border border-white/15 px-3 py-1.5 text-xs text-slate-200 backdrop-blur-md shadow-xs">
-                <Landmark size={13} className="text-emerald-400 shrink-0" />
+                <LandmarkIcon size={13} className="text-emerald-400 shrink-0" />
                 <span className="text-slate-400 font-medium">Treasury:</span>
                 <span className="font-mono font-bold text-white tracking-tight">
                   {formatCompact(treasuryMetrics.totalLiquid)}
@@ -598,7 +598,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="flex items-center gap-1.5 rounded-xl bg-white/10 border border-white/15 px-3 py-1.5 text-xs text-slate-200 backdrop-blur-md shadow-xs">
-                <TrendingUp size={13} className="text-emerald-400 shrink-0" />
+                <TrendingUpIcon size={13} className="text-emerald-400 shrink-0" />
                 <span className="text-slate-400 font-medium">Net Margin:</span>
                 <span className="font-mono font-bold text-emerald-300">
                   {marginPct.toFixed(1)}%
@@ -606,7 +606,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="flex items-center gap-1.5 rounded-xl bg-white/10 border border-white/15 px-3 py-1.5 text-xs text-slate-200 backdrop-blur-md shadow-xs">
-                <ShieldCheck
+                <ShieldCheckIcon
                   size={13}
                   className={isBalanced ? "text-emerald-400 shrink-0" : "text-amber-400 shrink-0"}
                 />
@@ -622,7 +622,7 @@ export default function DashboardPage() {
 
               {period === "CUSTOM" && (
                 <div className="flex items-center gap-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/35 px-3 py-1.5 text-xs text-emerald-200 backdrop-blur-md shadow-xs">
-                  <Calendar size={13} className="text-emerald-300 shrink-0" />
+                  <CalendarIcon size={13} className="text-emerald-300 shrink-0" />
                   <span className="text-slate-300 font-medium">Range:</span>
                   <span className="font-mono font-bold text-white">
                     {dateRange.periodLabel}
@@ -678,101 +678,137 @@ export default function DashboardPage() {
                 }`}
               >
                 <span>Custom</span>
-                <ChevronDown
+                <ChevronDownIcon
                   size={13}
                   className={`transition-transform duration-200 ${isCustomOpen ? "rotate-180" : ""}`}
                 />
               </button>
             </div>
 
-            {/* Sleek Floating Calendar Popover - Dark Executive Theme */}
+            {/* Premium Custom Date Range Popover */}
             {isCustomOpen && (
-              <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-2xl bg-slate-950 text-white p-4 shadow-[0_24px_50px_rgba(0,0,0,0.7)] border border-slate-700/80 backdrop-blur-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3.5 ring-1 ring-white/10">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-300">
-                      <Calendar size={14} />
+              <div
+                className="absolute right-0 top-full mt-3 w-[22rem] rounded-2xl overflow-hidden border border-white/12 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+                style={{
+                  background: "linear-gradient(180deg, #2c455a 0%, #233a4d 45%, #1d3345 100%)",
+                  boxShadow: "4px 0 28px rgba(38,59,77,0.35), 0 32px 64px -8px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)",
+                }}
+              >
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/10" style={{ background: "linear-gradient(135deg, #3f5d72 0%, #2c4a5c 100%)" }}>
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-500/20 ring-1 ring-emerald-400/30">
+                      <CalendarIcon size={13} className="text-emerald-400" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-white">Custom Date Range</h4>
-                      <p className="text-[10px] text-slate-400">Select start and end dates</p>
+                      <p className="text-[11px] font-black text-white tracking-wide uppercase">Custom Range</p>
+                      <p className="text-[9px] text-white/50 font-medium">Pick start &amp; end dates</p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsCustomOpen(false)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                    className="flex items-center justify-center w-6 h-6 rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
                   >
-                    <X size={14} />
+                    <XIcon size={12} />
                   </button>
                 </div>
 
-                {/* Quick Presets */}
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                    Quick Presets
-                  </span>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {[
-                      { label: "Today", start: 0, end: 0 },
-                      { label: "Yesterday", start: 1, end: 1 },
-                      { label: "2 Days Ago", start: 2, end: 2 },
-                      { label: "Last 7 Days", start: 6, end: 0 },
-                      { label: "Last 30 Days", start: 29, end: 0 },
-                      { label: "This Month", start: new Date().getDate() - 1, end: 0 },
-                    ].map((preset) => (
-                      <button
-                        key={preset.label}
-                        type="button"
-                        onClick={() => applyPreset(preset.start, preset.end)}
-                        className="px-2 py-1.5 rounded-lg bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 border border-white/10 text-[11px] font-medium text-slate-300 transition text-center cursor-pointer active:scale-95"
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
+                {/* Body */}
+                <div className="px-4 py-3.5 space-y-4">
+
+                  {/* Quick Presets */}
+                  <div className="space-y-2">
+                    <p className="text-[9.5px] font-bold uppercase tracking-widest text-white/40">Quick Presets</p>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { label: "Today", start: 0, end: 0 },
+                        { label: "Yesterday", start: 1, end: 1 },
+                        { label: "2 Days Ago", start: 2, end: 2 },
+                        { label: "Last 7 Days", start: 6, end: 0 },
+                        { label: "Last 30 Days", start: 29, end: 0 },
+                        { label: "This Month", start: new Date().getDate() - 1, end: 0 },
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => applyPreset(preset.start, preset.end)}
+                          className="px-1.5 py-2 rounded-xl bg-white/8 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-400/40 text-[10.5px] font-semibold text-white/60 hover:text-emerald-300 transition-all text-center cursor-pointer active:scale-95 leading-tight"
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-px bg-white/8" />
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-white/25">Or pick dates</span>
+                    <div className="flex-1 h-px bg-white/8" />
+                  </div>
+
+                  {/* Date Inputs */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1.5">
+                      <label className="flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider text-white/40">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                        From
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="date"
+                          value={customStartDate}
+                          onChange={(e) => {
+                            setCustomStartDate(e.target.value);
+                            setPeriod("CUSTOM");
+                          }}
+                          className="w-full pl-3 pr-2 py-2.5 rounded-xl bg-white/8 border border-white/12 hover:border-emerald-400/40 focus:border-emerald-400/60 text-white text-[11px] font-mono font-bold focus:outline-none focus:ring-1 focus:ring-emerald-400/40 transition-all [color-scheme:dark]"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider text-white/40">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />
+                        To
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="date"
+                          value={customEndDate}
+                          onChange={(e) => {
+                            setCustomEndDate(e.target.value);
+                            setPeriod("CUSTOM");
+                          }}
+                          className="w-full pl-3 pr-2 py-2.5 rounded-xl bg-white/8 border border-white/12 hover:border-blue-400/40 focus:border-blue-400/60 text-white text-[11px] font-mono font-bold focus:outline-none focus:ring-1 focus:ring-blue-400/40 transition-all [color-scheme:dark]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Live Range Preview */}
+                  <div className="rounded-xl bg-white/5 border border-white/8 px-3 py-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[10.5px] font-mono">
+                      <span className="font-bold text-emerald-400">{customStartDate}</span>
+                      <div className="flex items-center gap-1 text-slate-600">
+                        <div className="w-4 h-px bg-slate-600" />
+                        <ArrowRightIcon size={10} />
+                      </div>
+                      <span className="font-bold text-blue-400">{customEndDate}</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Date Inputs */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-400">From Date</label>
-                    <input
-                      type="date"
-                      value={customStartDate}
-                      onChange={(e) => {
-                        setCustomStartDate(e.target.value);
-                        setPeriod("CUSTOM");
-                      }}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-white/10 border border-white/15 text-white text-xs font-mono font-medium focus:outline-none focus:ring-1 focus:ring-emerald-400"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-400">To Date</label>
-                    <input
-                      type="date"
-                      value={customEndDate}
-                      onChange={(e) => {
-                        setCustomEndDate(e.target.value);
-                        setPeriod("CUSTOM");
-                      }}
-                      className="w-full px-2.5 py-1.5 rounded-lg bg-white/10 border border-white/15 text-white text-xs font-mono font-medium focus:outline-none focus:ring-1 focus:ring-emerald-400"
-                    />
-                  </div>
-                </div>
-
-                {/* Footer Action */}
-                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
-                  <span className="text-[11px] font-mono text-emerald-300">
-                    {customStartDate} &rarr; {customEndDate}
-                  </span>
+                {/* Footer */}
+                <div className="px-4 pb-4 pt-0" style={{ background: "rgba(29,51,69,0.5)" }}>
                   <button
                     type="button"
                     onClick={() => setIsCustomOpen(false)}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition flex items-center gap-1 shadow-sm cursor-pointer active:scale-95"
+                    className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white text-xs font-black tracking-wide transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer"
                   >
-                    <Check size={13} />
-                    <span>Apply Range</span>
+                    <CheckIcon size={13} />
+                    Apply Date Range
                   </button>
                 </div>
               </div>
@@ -791,7 +827,7 @@ export default function DashboardPage() {
           subtitle={`Total Liquid: ${formatCompact(treasuryMetrics.totalLiquid)}`}
           accentColor="emerald"
           loading={accLoading}
-          icon={<Landmark size={18} strokeWidth={2.2} />}
+          icon={<LandmarkIcon size={18} strokeWidth={2.2} />}
           trend={{
             label: `${cashFlowMetrics.netCashFlow >= 0 ? "+" : ""}${formatCompact(cashFlowMetrics.netCashFlow)} Net Flow`,
             up: cashFlowMetrics.netCashFlow >= 0,
@@ -806,7 +842,7 @@ export default function DashboardPage() {
           subtitle={`${formatCompact(arMetrics.totalCollected)} collected • ${arMetrics.count} inv`}
           accentColor="blue"
           loading={invLoading}
-          icon={<DollarSign size={18} strokeWidth={2.2} />}
+          icon={<DollarSignIcon size={18} strokeWidth={2.2} />}
           trend={{
             label:
               arMetrics.totalOutstanding === 0
@@ -826,7 +862,7 @@ export default function DashboardPage() {
           subtitle={`${formatCompact(apMetrics.totalPaid)} settled • ${apMetrics.count} bills`}
           accentColor="amber"
           loading={billsLoading}
-          icon={<Receipt size={18} strokeWidth={2.2} />}
+          icon={<ReceiptIcon size={18} strokeWidth={2.2} />}
           trend={{
             label:
               apMetrics.totalOutstanding === 0
@@ -844,7 +880,7 @@ export default function DashboardPage() {
           subtitle={`${totalLiabilities > 0 ? (totalAssets / totalLiabilities).toFixed(2) : "1.00"}x Current Ratio`}
           accentColor="slate"
           loading={bsLoading}
-          icon={<Scale size={18} strokeWidth={2.2} />}
+          icon={<ScaleIcon size={18} strokeWidth={2.2} />}
           trend={{
             label: isBalanced ? "Balanced" : "Audit Review",
             up: isBalanced,
@@ -874,7 +910,7 @@ export default function DashboardPage() {
           subtitle={`${revenue > 0 ? ((expenses / revenue) * 100).toFixed(1) : "0.0"}% of Revenue`}
           accentColor="rose"
           loading={plLoading}
-          icon={<CreditCard size={18} strokeWidth={2.2} />}
+          icon={<CreditCardIcon size={18} strokeWidth={2.2} />}
           trend={{
             label: "COGS & OPEX",
             up: false,
@@ -905,7 +941,7 @@ export default function DashboardPage() {
           subtitle={`Out ${formatCompact(vatMetrics.outputVat)} • In ${formatCompact(vatMetrics.inputVat)}`}
           accentColor="blue"
           loading={invLoading || billsLoading}
-          icon={<Percent size={18} strokeWidth={2.2} />}
+          icon={<PercentIcon size={18} strokeWidth={2.2} />}
           trend={{
             label:
               vatMetrics.netVatPayable >= 0 ? "Payable to FTA" : "Tax Refund",
@@ -921,7 +957,7 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
               <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                <TrendingUp size={16} className="text-emerald-700" />
+                <TrendingUpIcon size={16} className="text-emerald-700" />
                 {chartView === "P_AND_L"
                   ? "Income Statement & Margins"
                   : "Cash Inflows vs. Outflows"}
@@ -973,7 +1009,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <span className="p-1.5 rounded-lg bg-blue-50 text-blue-700">
-                  <Scale size={16} />
+                  <ScaleIcon size={16} />
                 </span>
                 <div>
                   <h3 className="font-bold text-sm text-slate-900">
@@ -991,7 +1027,7 @@ export default function DashboardPage() {
                     : "bg-amber-50 text-amber-800 border-amber-200"
                 }`}
               >
-                <ShieldCheck size={12} />
+                <ShieldCheckIcon size={12} />
                 {isBalanced ? "Balanced" : "Audit Review"}
               </span>
             </div>
@@ -1060,14 +1096,14 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
               <span className="p-1.5 rounded-lg bg-amber-50 text-amber-700">
-                <AlertTriangle size={16} />
+                <AlertTriangleIcon size={16} />
               </span>
               <div>
                 <h3 className="font-bold text-sm text-slate-900">
-                  Action Required &bull; Financial Tasks
+                  Action Required
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Pending receivables, due supplier bills &amp; draft entries
+                  Pending receivables, due supplier bills, and draft transactions
                 </p>
               </div>
             </div>
@@ -1109,7 +1145,7 @@ export default function DashboardPage() {
                     className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center justify-between pt-2 border-t border-slate-200/60 transition group"
                   >
                     <span>{item.actionText}</span>
-                    <ArrowRight
+                    <ArrowRightIcon
                       size={13}
                       className="group-hover:translate-x-0.5 transition-transform"
                     />
@@ -1125,7 +1161,7 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                <Activity size={16} className="text-emerald-700" />
+                <ActivityIcon size={16} className="text-emerald-700" />
                 Receivables &amp; Payables Aging
               </h3>
               <span className="text-[11px] text-slate-400 font-medium">
@@ -1230,10 +1266,10 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 className="font-bold text-sm text-slate-900">
-              Recent General Journal Entries &amp; Transactions
+              Recent Journal Entries
             </h3>
             <p className="text-xs text-slate-500">
-              Latest double-entry accounting transactions and audit trails
+              Latest double-entry transactions and posting audit records
             </p>
           </div>
           <Link

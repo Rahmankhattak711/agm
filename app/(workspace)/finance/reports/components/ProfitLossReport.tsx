@@ -2,24 +2,18 @@
 
 import React, { useState } from "react";
 import {
-  Calendar,
-  CalendarDays,
-  CalendarRange,
-  Clock,
-  Eye,
-  FileSpreadsheet,
-  Layers,
-  Percent,
-  Printer,
-  TrendingDown,
-  TrendingUp,
-  DollarSign,
-  Briefcase,
-  PieChart,
-  Scale,
-} from "lucide-react";
+  CalendarIcon,
+  ClockIcon,
+  EyeIcon,
+  LayersIcon,
+  PercentIcon,
+  PrintIcon,
+  TrendingDownIcon,
+  TrendingUpIcon,
+} from "@/components/icons";
 import {
   Button,
+  Input,
   Table,
   TableHead,
   TableHeaderCell,
@@ -97,11 +91,11 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
     label: string;
     icon: React.ReactNode;
   }[] = [
-    { id: "daily", label: "Daily", icon: <Clock size={13} /> },
-    { id: "weekly", label: "Weekly", icon: <CalendarDays size={13} /> },
-    { id: "monthly", label: "Monthly", icon: <Calendar size={13} /> },
-    { id: "yearly", label: "Yearly", icon: <CalendarRange size={13} /> },
-    { id: "all", label: "All Time", icon: <Layers size={13} /> },
+    { id: "daily", label: "Daily", icon: <ClockIcon size={13} /> },
+    { id: "weekly", label: "Weekly", icon: <CalendarIcon size={13} /> },
+    { id: "monthly", label: "Monthly", icon: <CalendarIcon size={13} /> },
+    { id: "yearly", label: "Yearly", icon: <CalendarIcon size={13} /> },
+    { id: "all", label: "All Time", icon: <LayersIcon size={13} /> },
   ];
 
   return (
@@ -159,36 +153,36 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC —{" "}
-                      {profitLoss?.periodLabel || "Financial Reporting Period"}
+                      Reporting period: {profitLoss?.periodLabel || "Current Financial Period"}
                     </p>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       onClick={() => setCompare(!compare)}
-                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer h-auto ${
                         compare
-                          ? "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs"
+                          ? "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs hover:bg-emerald-50"
                           : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
                       }`}
                     >
-                      <Percent
+                      <PercentIcon
                         size={13}
                         className={
                           compare ? "text-emerald-700" : "text-slate-400"
                         }
                       />
                       Compare Previous Period
-                    </button>
+                    </Button>
 
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => window.print()}
                       className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-                      icon={<Printer size={14} />}
+                      icon={<PrintIcon size={14} />}
                     >
                       Print Statement
                     </Button>
@@ -200,13 +194,14 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                     {periodButtons.map((btn) => {
                       const isActive = period === btn.id;
                       return (
-                        <button
+                        <Button
                           key={btn.id}
                           type="button"
+                          variant="ghost"
                           onClick={() => setPeriod(btn.id)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer h-auto ${
                             isActive
-                              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800 hover:bg-white"
                               : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                           }`}
                         >
@@ -218,15 +213,16 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             {btn.icon}
                           </span>
                           {btn.label}
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>
 
                   <div className="flex items-center gap-2 text-xs">
-                    <input
+                    <Input
                       type="date"
-                      className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                      className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs h-auto"
+                      containerClassName="w-auto"
                       value={customStart}
                       onChange={(e) => {
                         setCustomStart(e.target.value);
@@ -234,9 +230,10 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                       }}
                     />
                     <span className="text-slate-400 font-bold">to</span>
-                    <input
+                    <Input
                       type="date"
-                      className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                      className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs h-auto"
+                      containerClassName="w-auto"
                       value={customEnd}
                       onChange={(e) => {
                         setCustomEnd(e.target.value);
@@ -286,9 +283,9 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                                 }`}
                               >
                                 {incomeGrowth >= 0 ? (
-                                  <TrendingUp size={11} />
+                                  <TrendingUpIcon size={11} />
                                 ) : (
-                                  <TrendingDown size={11} />
+                                  <TrendingDownIcon size={11} />
                                 )}
                                 {Math.abs(incomeGrowth).toFixed(1)}%
                               </span>
@@ -560,16 +557,18 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                                   )}
                                   {onDrillDownAccount && item.id && (
                                     <TableCell className="py-2 px-2 text-center print:hidden">
-                                      <button
+                                      <Button
                                         type="button"
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={() =>
                                           onDrillDownAccount(item.id!)
                                         }
-                                        className="p-1 text-slate-400 hover:text-emerald-700 rounded-md hover:bg-emerald-50 transition-colors cursor-pointer"
+                                        className="p-1 text-slate-400 hover:text-emerald-700 rounded-md hover:bg-emerald-50 transition-colors cursor-pointer h-auto"
                                         title="Drill down to General Ledger"
                                       >
-                                        <Eye size={13} />
-                                      </button>
+                                        <EyeIcon size={13} />
+                                      </Button>
                                     </TableCell>
                                   )}
                                 </TableRow>
@@ -712,16 +711,18 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                                   )}
                                   {onDrillDownAccount && item.id && (
                                     <TableCell className="py-2 px-2 text-center print:hidden">
-                                      <button
+                                      <Button
                                         type="button"
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={() =>
                                           onDrillDownAccount(item.id!)
                                         }
-                                        className="p-1 text-slate-400 hover:text-blue-700 rounded-md hover:bg-blue-50 transition-colors cursor-pointer"
+                                        className="p-1 text-slate-400 hover:text-blue-700 rounded-md hover:bg-blue-50 transition-colors cursor-pointer h-auto"
                                         title="Drill down to General Ledger"
                                       >
-                                        <Eye size={13} />
-                                      </button>
+                                        <EyeIcon size={13} />
+                                      </Button>
                                     </TableCell>
                                   )}
                                 </TableRow>
@@ -864,16 +865,18 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                                   )}
                                   {onDrillDownAccount && item.id && (
                                     <TableCell className="py-2 px-2 text-center print:hidden">
-                                      <button
+                                      <Button
                                         type="button"
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={() =>
                                           onDrillDownAccount(item.id!)
                                         }
-                                        className="p-1 text-slate-400 hover:text-rose-700 rounded-md hover:bg-rose-50 transition-colors cursor-pointer"
+                                        className="p-1 text-slate-400 hover:text-rose-700 rounded-md hover:bg-rose-50 transition-colors cursor-pointer h-auto"
                                         title="Drill down to General Ledger"
                                       >
-                                        <Eye size={13} />
-                                      </button>
+                                        <EyeIcon size={13} />
+                                      </Button>
                                     </TableCell>
                                   )}
                                 </TableRow>

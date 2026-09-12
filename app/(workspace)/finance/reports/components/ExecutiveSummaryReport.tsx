@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { PrintIcon } from "@/components/icons";
+import {
+  PrintIcon,
+  ActivityIcon,
+  ShieldCheckIcon,
+} from "@/components/icons";
 import {
   Button,
   Table,
@@ -19,15 +23,6 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { ReportTab, QuarterTab, formatCurrency, formatNumber } from "./types";
-import {
-  TrendingUp,
-  Scale,
-  Receipt,
-  ShieldCheck,
-  Activity,
-  Layers,
-  Sparkles,
-} from "lucide-react";
 
 interface ExecutiveSummaryReportProps {
   profitLoss?: ProfitLossData;
@@ -392,18 +387,19 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                           { id: "Q4", label: "Q4 (Nov-Jan)" },
                         ] as const
                       ).map((tab) => (
-                        <button
+                        <Button
                           key={tab.id}
                           type="button"
+                          variant="ghost"
                           onClick={() => setQuarterlyTab(tab.id)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer h-auto ${
                             quarterlyTab === tab.id
-                              ? "bg-white text-slate-900 shadow-xs"
+                              ? "bg-white text-slate-900 shadow-xs hover:bg-white"
                               : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                           }`}
                         >
                           {tab.label}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
@@ -752,7 +748,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="p-5 rounded-2xl border border-slate-200/80 bg-white space-y-4 shadow-xs">
                     <h4 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                      <Activity size={15} className="text-emerald-700" />
+                      <ActivityIcon size={15} className="text-emerald-700" />
                       Financial Liquidity &amp; Efficiency Ratios
                     </h4>
                     <div className="grid grid-cols-2 gap-3">
@@ -808,7 +804,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
 
                   <div className="p-5 rounded-2xl border border-slate-200/80 bg-white space-y-4 shadow-xs">
                     <h4 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                      <ShieldCheck size={15} className="text-emerald-700" />
+                      <ShieldCheckIcon size={15} className="text-emerald-700" />
                       Statutory Accounting Audit &amp; Integrity
                     </h4>
                     <div className="space-y-2.5 text-xs">

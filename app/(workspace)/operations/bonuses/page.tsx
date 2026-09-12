@@ -25,20 +25,10 @@ import {
   FormSubmit,
 } from "@/components/ui";
 import {
-  Gift,
-  Award,
-  Users,
-  Printer,
-  Plus,
-  Trash2,
-  Check,
-  Building2,
-  ShieldCheck,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Search,
-} from "lucide-react";
+  CheckIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@/components/icons";
 
 export default function BonusesPage() {
   const { hasRole, isAdmin } = useAuth();
@@ -237,33 +227,35 @@ export default function BonusesPage() {
           return (
             <div className="flex items-center justify-center gap-1.5">
               {!isApproved && (
-                <button
-                  type="button"
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={async () => {
                     await updateBonus.mutateAsync({
                       id: row.original.id,
                       isApproved: true,
                     });
                   }}
-                  className="p-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition cursor-pointer text-xs font-bold flex items-center gap-1 px-2 py-1"
+                  icon={<CheckIcon size={12} strokeWidth={2.5} />}
+                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200 cursor-pointer"
                   title="Approve Bonus"
                 >
-                  <Check size={12} strokeWidth={2.5} />
                   Approve
-                </button>
+                </Button>
               )}
-              <button
-                type="button"
+              <Button
+                variant="danger"
+                size="sm"
                 onClick={async () => {
                   if (confirm("Delete this bonus grant?")) {
                     await deleteBonus.mutateAsync(row.original.id);
                   }
                 }}
-                className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 transition cursor-pointer"
+                icon={<TrashIcon size={13} />}
                 title="Delete Grant"
               >
-                <Trash2 size={13} />
-              </button>
+                Delete
+              </Button>
             </div>
           );
         },
@@ -278,34 +270,23 @@ export default function BonusesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Bonuses &amp; Performance Incentives
+            Bonuses &amp; Payroll
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Commission allocations, project
-            milestones, <br /> festival rewards, and management approvals.
+            Manage performance bonuses, commission allocations, milestone rewards, and approval statuses.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
-          >
-            Print Register
-          </Button>
-
           {isHR && (
             <Button
               variant="primary"
               size="sm"
               onClick={handleOpenModal}
-              icon={<Plus size={14} strokeWidth={2.5} />}
+              icon={<PlusIcon size={14} strokeWidth={2.5} />}
               className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
             >
-              Award Bonus / Incentive
+              Award Bonus
             </Button>
           )}
         </div>
@@ -419,18 +400,20 @@ export default function BonusesPage() {
               ].map((tab) => {
                 const isActive = statusFilter === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     type="button"
+                    variant={isActive ? "outline" : "ghost"}
+                    size="sm"
                     onClick={() => setStatusFilter(tab.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`text-xs font-bold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -442,47 +425,44 @@ export default function BonusesPage() {
 
           <div className="pt-1 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <select
+              <Select
+                containerClassName="w-auto"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(parseInt(e.target.value, 10))}
-                className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
-              >
-                {Array.from({ length: 12 }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {new Date(0, i).toLocaleString("default", {
-                      month: "long",
-                    })}
-                  </option>
-                ))}
-              </select>
+                className="py-1.5 shadow-2xs cursor-pointer"
+                options={Array.from({ length: 12 }, (_, i) => ({
+                  value: i + 1,
+                  label: new Date(0, i).toLocaleString("default", {
+                    month: "long",
+                  }),
+                }))}
+              />
 
-              <select
+              <Select
+                containerClassName="w-auto"
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
-                className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer font-mono"
-              >
-                {[2025, 2026, 2027].map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
+                className="py-1.5 shadow-2xs cursor-pointer font-mono"
+                options={[2025, 2026, 2027].map((y) => ({
+                  value: y,
+                  label: y.toString(),
+                }))}
+              />
             </div>
 
-            <div className="w-full sm:w-64">
-              <select
-                value={employeeFilter}
-                onChange={(e) => setEmployeeFilter(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
-              >
-                <option value="">All Employees</option>
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.firstName} {emp.lastName} ({emp.employeeCode})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              containerClassName="w-full sm:w-64"
+              value={employeeFilter}
+              onChange={(e) => setEmployeeFilter(e.target.value)}
+              className="py-1.5 shadow-2xs cursor-pointer"
+              options={[
+                { value: "", label: "All Employees" },
+                ...employees.map((emp) => ({
+                  value: emp.id,
+                  label: `${emp.firstName} ${emp.lastName} (${emp.employeeCode})`,
+                })),
+              ]}
+            />
           </div>
         </div>
 

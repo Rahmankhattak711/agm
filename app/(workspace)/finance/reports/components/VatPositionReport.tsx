@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { PrintIcon } from "@/components/icons";
+import { AlertCircleIcon, CheckIcon } from "@/components/icons";
 import {
   Button,
   Table,
@@ -19,17 +19,6 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
-import {
-  Receipt,
-  Printer,
-  ShieldCheck,
-  Building2,
-  Calendar,
-  CheckCircle2,
-  AlertTriangle,
-  Layers,
-  Percent,
-} from "lucide-react";
 
 interface VatPositionReportProps {
   vatSummary?: VatSummaryData;
@@ -159,19 +148,15 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2.5 py-1 rounded-lg bg-teal-700 text-white font-black text-xs shadow-xs">
-                        VAT
+                      <span className="px-2.5 py-1 rounded-lg bg-teal-700 text-white font-black text-xs shadow-xs tracking-wide">
+                        FTA 201
                       </span>
                       <h3 className="font-black text-lg text-slate-900 tracking-tight">
-                        VAT Summary Report &amp; Returns (FTA Form 201 Ready)
+                        VAT Return Declaration &amp; Summary
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — TRN:{" "}
-                      <span className="font-mono font-bold text-slate-700">
-                        104094432200003
-                      </span>{" "}
-                      • Standard Tax Rate: 5%
+                      Federal Tax Authority (FTA) Form 201 Filing • Standard 5% UAE VAT &amp; Recoverable Position
                     </p>
                   </div>
 
@@ -184,22 +169,13 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                       }`}
                     >
                       {netVat >= 0 ? (
-                        <AlertTriangle size={13} className="text-amber-700" />
+                        <AlertCircleIcon size={13} className="text-amber-700" />
                       ) : (
-                        <CheckCircle2 size={13} className="text-emerald-700" />
+                        <CheckIcon size={13} className="text-emerald-700" />
                       )}
                       {netVat >= 0 ? "Tax Payable to FTA" : "Tax Refund Claim"}
                     </span>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      icon={<Printer size={14} />}
-                      onClick={() => window.print()}
-                      className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-                    >
-                      Print Statement
-                    </Button>
                   </div>
                 </div>
 
@@ -315,11 +291,11 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                     </div>
 
                     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
-                      <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-                        <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+                        <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                           1. Quarterly VAT Returns &amp; Position
                         </h4>
-                        <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                        <span className="text-[11px] font-mono text-emerald-300 print:text-emerald-800 font-bold">
                           Standard Rate: 5%
                         </span>
                       </div>
@@ -455,11 +431,11 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                     </div>
 
                     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
-                      <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-                        <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+                        <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                           2. Monthly Net VAT Summary
                         </h4>
-                        <span className="text-[11px] font-mono text-slate-300 font-bold">
+                        <span className="text-[11px] font-mono text-slate-300 print:text-slate-700 font-bold">
                           12-Month Financial Year
                         </span>
                       </div>
@@ -524,25 +500,25 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                             ),
                           )}
 
-                          <TableRow className="bg-slate-900 text-white font-black">
-                            <TableCell className="py-4 px-5 uppercase tracking-wider font-bold text-xs">
+                          <TableRow className="bg-slate-900 text-white print:bg-slate-100 print:text-slate-900 print:border-t-2 print:border-slate-300 font-black">
+                            <TableCell className="py-4 px-5 uppercase tracking-wider font-bold text-xs text-white print:text-slate-900">
                               TOTAL YEAR-TO-DATE
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-4 px-5 text-right font-mono font-black text-sm text-emerald-400"
+                              className="py-4 px-5 text-right font-mono font-black text-sm text-emerald-400 print:text-emerald-800"
                             >
                               {formatNumber(totalInputVat)}
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-4 px-5 text-right font-mono font-black text-sm text-rose-400"
+                              className="py-4 px-5 text-right font-mono font-black text-sm text-rose-400 print:text-rose-800"
                             >
                               {formatNumber(totalOutputVat)}
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-4 px-5 text-right font-mono font-black text-sm text-amber-400"
+                              className="py-4 px-5 text-right font-mono font-black text-sm text-amber-400 print:text-amber-800"
                             >
                               {formatNumber(netVat)}
                             </TableCell>
@@ -552,12 +528,12 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                     </div>
 
                     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
-                      <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-                        <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+                        <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                           3. Monthly Purchase / Expense Summary (Input VAT
                           Breakdown)
                         </h4>
-                        <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                        <span className="text-[11px] font-mono text-emerald-300 print:text-emerald-800 font-bold">
                           Recoverable Input Tax
                         </span>
                       </div>
@@ -630,31 +606,31 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                             ),
                           )}
 
-                          <TableRow className="bg-slate-900 text-white font-black">
-                            <TableCell className="py-4 px-5 uppercase tracking-wider font-bold text-xs">
+                          <TableRow className="bg-slate-900 text-white print:bg-slate-100 print:text-slate-900 print:border-t-2 print:border-slate-300 font-black">
+                            <TableCell className="py-4 px-5 uppercase tracking-wider font-bold text-xs text-white print:text-slate-900">
                               TOTAL PURCHASES
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-4 px-4 text-right font-mono font-black text-sm text-slate-200"
+                              className="py-4 px-4 text-right font-mono font-black text-sm text-slate-200 print:text-slate-900"
                             >
                               {formatNumber(totalPurchasesTaxable)}
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-4 px-4 text-right font-mono font-bold text-slate-400"
+                              className="py-4 px-4 text-right font-mono font-bold text-slate-400 print:text-slate-600"
                             >
                               {formatNumber(totalPurchasesNonVat)}
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-4 px-4 text-right font-mono font-black text-sm text-emerald-400"
+                              className="py-4 px-4 text-right font-mono font-black text-sm text-emerald-400 print:text-emerald-800"
                             >
                               {formatNumber(totalPurchasesVat)}
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-4 px-5 text-right font-mono font-black text-sm text-white"
+                              className="py-4 px-5 text-right font-mono font-black text-sm text-white print:text-slate-900"
                             >
                               {formatNumber(totalPurchasesAmount)}
                             </TableCell>
@@ -664,11 +640,11 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                     </div>
 
                     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
-                      <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-                        <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+                        <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                           4. Monthly Income Summary (Output VAT Breakdown)
                         </h4>
-                        <span className="text-[11px] font-mono text-rose-300 font-bold">
+                        <span className="text-[11px] font-mono text-rose-300 print:text-rose-800 font-bold">
                           Sales &amp; Service Revenue
                         </span>
                       </div>
@@ -741,31 +717,31 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                             ),
                           )}
 
-                          <TableRow className="bg-slate-900 text-white font-black">
-                            <TableCell className="py-4 px-5 uppercase tracking-wider font-bold text-xs">
+                          <TableRow className="bg-slate-900 text-white print:bg-slate-100 print:text-slate-900 print:border-t-2 print:border-slate-300 font-black">
+                            <TableCell className="py-4 px-5 uppercase tracking-wider font-bold text-xs text-white print:text-slate-900">
                               TOTAL REVENUE
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-4 px-4 text-right font-mono font-black text-sm text-slate-200"
+                              className="py-4 px-4 text-right font-mono font-black text-sm text-slate-200 print:text-slate-900"
                             >
                               {formatNumber(totalIncomeTaxable)}
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-4 px-4 text-right font-mono font-bold text-slate-400"
+                              className="py-4 px-4 text-right font-mono font-bold text-slate-400 print:text-slate-600"
                             >
                               {formatNumber(totalIncomeNonVat)}
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-4 px-4 text-right font-mono font-black text-sm text-rose-400"
+                              className="py-4 px-4 text-right font-mono font-black text-sm text-rose-400 print:text-rose-800"
                             >
                               {formatNumber(totalIncomeVat)}
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-4 px-5 text-right font-mono font-black text-sm text-white"
+                              className="py-4 px-5 text-right font-mono font-black text-sm text-white print:text-slate-900"
                             >
                               {formatNumber(totalIncomeAmount)}
                             </TableCell>
@@ -775,11 +751,11 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                     </div>
 
                     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
-                      <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-                        <h4 className="font-black text-xs uppercase tracking-wider text-white">
+                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+                        <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                           5. Federal Tax Authority — Form 201 Box Breakdown
                         </h4>
-                        <span className="text-[11px] font-mono text-emerald-300 font-bold">
+                        <span className="text-[11px] font-mono text-emerald-300 print:text-emerald-800 font-bold">
                           Official Tax Box Schedule
                         </span>
                       </div>
@@ -893,16 +869,16 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                             </TableCell>
                           </TableRow>
 
-                          <TableRow className="bg-slate-900 text-white font-black">
-                            <TableCell className="py-3.5 px-5 font-mono font-black text-amber-400">
+                          <TableRow className="bg-slate-900 text-white print:bg-slate-100 print:text-slate-900 print:border-t-2 print:border-slate-300 font-black">
+                            <TableCell className="py-3.5 px-5 font-mono font-black text-amber-400 print:text-amber-800">
                               Box 13
                             </TableCell>
-                            <TableCell className="py-3.5 px-5 text-xs uppercase tracking-wider font-bold">
+                            <TableCell className="py-3.5 px-5 text-xs uppercase tracking-wider font-bold text-white print:text-slate-900">
                               PAYABLE TAX FOR THE PERIOD (NET TAX LIABILITY)
                             </TableCell>
                             <TableCell
                               align="right"
-                              className="py-3.5 px-5 text-right font-mono font-bold text-slate-400"
+                              className="py-3.5 px-5 text-right font-mono font-bold text-slate-400 print:text-slate-600"
                             >
                               —
                             </TableCell>
@@ -910,8 +886,8 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                               align="right"
                               className={`py-3.5 px-5 text-right font-mono font-black text-sm ${
                                 netVat >= 0
-                                  ? "text-amber-400"
-                                  : "text-emerald-400"
+                                  ? "text-amber-400 print:text-amber-800"
+                                  : "text-emerald-400 print:text-emerald-800"
                               }`}
                             >
                               {formatNumber(netVat)}

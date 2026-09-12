@@ -2,17 +2,11 @@
 
 import React, { useCallback, useMemo, useState } from "react";
 import {
-  Plus,
-  Printer,
-  RotateCcw,
-  Search,
-  Eye,
-  FileText,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  ShieldCheck,
-} from "lucide-react";
+  PlusIcon,
+  PrintIcon,
+  RotateCcwIcon,
+  SearchIcon,
+} from "@/components/icons";
 import {
   Button,
   Table,
@@ -186,12 +180,10 @@ export default function PurchaseReturnsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Purchase Returns (Debit Notes)
+            Purchase Returns
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Track rejected supplier
-            deliveries, return to vendor <br /> (RTV), and debit note
-            reconciliation.
+            Manage return-to-vendor records, track rejected materials, and issue debit notes.
           </p>
         </div>
 
@@ -201,7 +193,7 @@ export default function PurchaseReturnsPage() {
             size="sm"
             onClick={() => window.print()}
             className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
+            icon={<PrintIcon size={14} />}
           >
             Print Register
           </Button>
@@ -210,7 +202,7 @@ export default function PurchaseReturnsPage() {
             variant="primary"
             size="sm"
             onClick={handleOpenCreate}
-            icon={<Plus size={14} strokeWidth={2.5} />}
+            icon={<PlusIcon size={14} strokeWidth={2.5} />}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Create Purchase Return
@@ -322,18 +314,20 @@ export default function PurchaseReturnsPage() {
               ].map((tab) => {
                 const isActive = statusFilter === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setStatusFilter(tab.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -344,16 +338,14 @@ export default function PurchaseReturnsPage() {
           </div>
 
           <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <div className="w-full sm:w-96 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search return number, PO ref, supplier, or reason..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            <Input
+              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+              placeholder="Search return number, PO ref, supplier, or reason..."
+              containerClassName="w-full sm:w-96"
+              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
 
@@ -417,7 +409,7 @@ export default function PurchaseReturnsPage() {
                   >
                     <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
                       <div className="flex items-center gap-1.5">
-                        <RotateCcw
+                        <RotateCcwIcon
                           size={13}
                           className="text-amber-600 shrink-0"
                         />
@@ -461,13 +453,15 @@ export default function PurchaseReturnsPage() {
                     </TableCell>
 
                     <TableCell className="py-3 px-3 text-center print:hidden">
-                      <button
+                      <Button
                         type="button"
+                        variant="secondary"
+                        size="sm"
                         onClick={() => setSelectedReturn(item)}
                         className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 transition cursor-pointer"
                       >
                         Audit View
-                      </button>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -615,7 +609,7 @@ export default function PurchaseReturnsPage() {
                 size="sm"
                 onClick={() => window.print()}
                 className="text-xs flex items-center gap-1.5 cursor-pointer"
-                icon={<Printer size={13} />}
+                icon={<PrintIcon size={13} />}
               >
                 Print Voucher
               </Button>

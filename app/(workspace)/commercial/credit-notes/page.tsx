@@ -104,16 +104,14 @@ export default function CreditNotesPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Sales Returns & Credit Notes
+              Credit Notes
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
               Sales Cycle — Adjustments
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Issue client credit notes,
-            record scope cancellations, reduce Accounts Receivable, and adjust
-            Output VAT.
+            Issue customer credit notes, process sales returns, adjust accounts receivable, and update output VAT.
           </p>
         </div>
 

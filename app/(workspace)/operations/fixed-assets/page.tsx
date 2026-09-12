@@ -13,7 +13,6 @@ import { formatAed } from "@/lib/utils/format";
 import {
   Button,
   Input,
-  Select,
   DataTable,
   Modal,
   FormInput,
@@ -21,19 +20,10 @@ import {
   FormSubmit,
 } from "@/components/ui";
 import {
-  Truck,
-  Wrench,
-  Laptop,
-  Building2,
-  Printer,
-  Plus,
-  Search,
-  CheckCircle2,
-  ShieldCheck,
-  Calendar,
-  Layers,
-  FileSpreadsheet,
-} from "lucide-react";
+  BuildingIcon,
+  PlusIcon,
+  SearchIcon,
+} from "@/components/icons";
 
 const ASSET_CATEGORIES = [
   { value: "COMPANY_VEHICLE", label: "Company Vehicle" },
@@ -145,7 +135,7 @@ export default function FixedAssetsPage() {
         header: "Asset Code",
         cell: ({ row }) => (
           <span className="font-mono font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded text-xs inline-flex items-center gap-1">
-            <Building2 size={11} className="text-teal-700" />
+            <BuildingIcon size={12} className="text-teal-700" />
             {row.original.assetCode}
           </span>
         ),
@@ -214,31 +204,19 @@ export default function FixedAssetsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Fixed Assets &amp; Capital Equipment
+            Fixed Assets
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Register and manage capital
-            equipment, tools, <br /> company vehicles, and automated
-            depreciation schedules.
+            Track capital equipment, machinery, company vehicles, and automated depreciation schedules.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
-          >
-            Print Register
-          </Button>
-
-          <Button
             variant="primary"
             size="sm"
             onClick={handleOpenModal}
-            icon={<Plus size={14} strokeWidth={2.5} />}
+            icon={<PlusIcon size={14} strokeWidth={2.5} />}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Register New Asset
@@ -349,18 +327,20 @@ export default function FixedAssetsPage() {
                 (tab) => {
                   const isActive = selectedCategory === tab.value;
                   return (
-                    <button
+                    <Button
                       key={tab.value}
                       type="button"
+                      variant={isActive ? "outline" : "ghost"}
+                      size="sm"
                       onClick={() => setSelectedCategory(tab.value)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      className={`text-xs font-bold transition-all cursor-pointer ${
                         isActive
-                          ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                          ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                           : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                       }`}
                     >
                       {tab.label}
-                    </button>
+                    </Button>
                   );
                 },
               )}
@@ -372,16 +352,14 @@ export default function FixedAssetsPage() {
           </div>
 
           <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <div className="w-full sm:w-80 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search asset code, name, category..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            <Input
+              containerClassName="w-full sm:w-80"
+              placeholder="Search asset code, name, category..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              leftIcon={<SearchIcon size={16} />}
+              className="py-1.5 shadow-2xs"
+            />
           </div>
         </div>
 
@@ -416,7 +394,7 @@ export default function FixedAssetsPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Register Fixed Asset / Equipment"
-        maxWidth="lg"
+        maxWidth="xl"
       >
         {formError && (
           <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold mb-4">

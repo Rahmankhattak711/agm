@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PrintIcon, SearchIcon } from "@/components/icons";
+import {
+  PrintIcon,
+  SearchIcon,
+  CheckCircle2Icon,
+  AlertTriangleIcon,
+} from "@/components/icons";
 import {
   Button,
   Input,
@@ -18,16 +23,6 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
-import {
-  Scale,
-  ShieldCheck,
-  CheckCircle2,
-  AlertTriangle,
-  Printer,
-  Layers,
-  Search,
-  Filter,
-} from "lucide-react";
 
 interface TrialBalanceReportProps {
   trialBalance?: TrialBalanceData;
@@ -142,9 +137,7 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Comprehensive debit
-                      &amp; <br /> credit audit across all active chart of
-                      accounts
+                      Comprehensive debit and credit audit across all active accounts
                     </p>
                   </div>
 
@@ -157,21 +150,20 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       }`}
                     >
                       {isBalanced ? (
-                        <CheckCircle2 size={13} className="text-emerald-700" />
+                        <CheckCircle2Icon size={13} className="text-emerald-700" />
                       ) : (
-                        <AlertTriangle size={13} className="text-amber-700" />
+                        <AlertTriangleIcon size={13} className="text-amber-700" />
                       )}
-                      {isBalanced ? "In Balance" : "Variance Detected"}
+                      {isBalanced ? "Equation Balanced" : "Out of Balance"}
                     </span>
 
                     <Button
                       variant="outline"
                       size="sm"
-                      icon={<Printer size={14} />}
                       onClick={() => window.print()}
                       className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-                    >
-                      Print Statement
+                      icon={<PrintIcon size={14} />}
+                    >  Print Statement
                     </Button>
                   </div>
                 </div>
@@ -284,34 +276,33 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
 
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs print:hidden">
                       <div className="max-w-xs flex-1">
-                        <div className="relative">
-                          <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
-                          <input
-                            type="text"
-                            placeholder="Filter by account code or title..."
-                            value={tbSearch}
-                            onChange={(e) => setTbSearch(e.target.value)}
-                            className="w-full pl-8 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-teal-500 shadow-2xs"
-                          />
-                        </div>
+                        <Input
+                          type="text"
+                          placeholder="Filter by account code or title..."
+                          value={tbSearch}
+                          onChange={(e) => setTbSearch(e.target.value)}
+                          leftIcon={<SearchIcon size={14} />}
+                          className="text-xs font-semibold"
+                        />
                       </div>
 
                       <div className="flex flex-wrap items-center gap-1">
                         {typeFilterOptions.map((btn) => {
                           const isActive = tbTypeFilter === btn.id;
                           return (
-                            <button
+                            <Button
                               key={btn.id}
                               type="button"
+                              variant="ghost"
                               onClick={() => setTbTypeFilter(btn.id)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer h-auto ${
                                 isActive
-                                  ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-teal-800"
+                                  ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-teal-800 hover:bg-white"
                                   : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                               }`}
                             >
                               {btn.label}
-                            </button>
+                            </Button>
                           );
                         })}
                       </div>

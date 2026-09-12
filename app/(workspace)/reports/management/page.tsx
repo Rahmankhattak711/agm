@@ -9,28 +9,12 @@ import {
   usePayables,
 } from "@/lib/hooks/api-hooks";
 import { PrintIcon } from "@/components/icons";
-import { Button, Modal } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import {
   ReportSummaryChart,
   ChartBarItem,
 } from "@/components/reports/ReportSummaryChart";
-import {
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  ShieldCheck,
-  Building2,
-  DollarSign,
-  Scale,
-  Percent,
-  CheckCircle2,
-  AlertTriangle,
-  Layers,
-  Printer,
-  Sparkles,
-  Receipt,
-} from "lucide-react";
 
 export default function ManagementReportsPage() {
   const { data: profitLoss, isLoading: plLoading } = useProfitLoss();
@@ -137,12 +121,10 @@ export default function ManagementReportsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Management &amp; Executive Performance Reports
+            Executive Summary
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — High-level executive KPI
-            metrics, working capital health, liquidity <br /> ratios, and
-            statutory performance indicators.
+            Review executive financial KPIs, working capital health, liquidity ratios, and business performance metrics.
           </p>
         </div>
 

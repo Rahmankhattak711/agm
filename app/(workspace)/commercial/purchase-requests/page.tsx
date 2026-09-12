@@ -163,16 +163,14 @@ export default function PurchaseRequestsPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Purchase Requests & Requisitions
+              Purchase Requests
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-purple-50 text-purple-800 border border-purple-200">
               Procurement Cycle — Step 1
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Site team material requisitions,
-            administrative approvals, and one-click conversion into Purchase
-            Orders.
+            Manage site material requisitions, track approvals, and convert requisitions to purchase orders.
           </p>
         </div>
 

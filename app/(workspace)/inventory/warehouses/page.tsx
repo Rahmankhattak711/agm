@@ -80,12 +80,11 @@ export default function WarehousesPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900">
-            Warehouses & Storage Facilities
-          </h2>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Warehouses
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage central material depots, site storage containers, and
-            physical stock distributions.
+            Manage storage facilities, bin locations, warehouse managers, and stock allocations.
           </p>
         </div>
 

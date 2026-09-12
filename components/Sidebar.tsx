@@ -9,7 +9,9 @@ import {
   AccountsIcon,
   AttendanceIcon,
   BonusesIcon,
+  ChevronDownIcon,
   ChevronsLeftIcon,
+  CloseIcon,
   CustomersIcon,
   DashboardIcon,
   EmployeesIcon,
@@ -31,15 +33,6 @@ import {
   UserAdminIcon,
   WarehousesIcon,
 } from "./icons";
-import {
-  ChevronDown,
-  ChevronRight,
-  ShoppingCart,
-  Landmark,
-  DollarSign,
-  Wallet,
-  X,
-} from "lucide-react";
 
 interface SidebarProps {
   activeSection?: string;
@@ -384,8 +377,9 @@ export default function Sidebar({
 
           <button
             id="sidebar-toggle"
+            type="button"
             onClick={() => setCollapsed((c) => !c)}
-            className="ml-auto hidden md:flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 transition-all hover:bg-white/10 hover:text-white cursor-pointer"
+            className="ml-auto hidden md:flex h-7 w-7 p-0 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 transition-all hover:bg-white/10 hover:text-white cursor-pointer"
             title={effectiveCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <ChevronsLeftIcon
@@ -399,10 +393,10 @@ export default function Sidebar({
             <button
               type="button"
               onClick={onCloseMobile}
-              className="md:hidden ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white cursor-pointer"
+              className="md:hidden ml-auto flex h-8 w-8 p-0 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white cursor-pointer"
               aria-label="Close menu"
             >
-              <X size={16} />
+              <CloseIcon size={16} />
             </button>
           )}
         </div>
@@ -481,7 +475,7 @@ export default function Sidebar({
                               onClick={(e) => toggleGroup(item.id, e)}
                               className="p-1 rounded-md hover:bg-white/10 text-white/50 hover:text-white transition-colors"
                             >
-                              <ChevronDown
+                              <ChevronDownIcon
                                 size={12}
                                 className={`transition-transform duration-200 ${
                                   isExpanded ? "rotate-0" : "-rotate-90"
@@ -504,10 +498,10 @@ export default function Sidebar({
                               key={child.id}
                               type="button"
                               onClick={() => handleNavigateHref(child.href)}
-                              className={`flex items-center w-full px-2.5 py-1.5 rounded-lg text-[11.5px] text-left transition-colors cursor-pointer ${
+                              className={`flex items-center w-full px-2.5 py-1.5 rounded-lg text-[11.5px] text-left transition-all cursor-pointer ${
                                 childActive
-                                  ? "font-bold text-emerald-300 bg-white/10"
-                                  : "font-medium text-white/60 hover:text-white hover:bg-white/5"
+                                  ? "font-bold text-white bg-white/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]"
+                                  : "font-medium text-white/65 hover:text-white hover:bg-white/10"
                               }`}
                             >
                               <span className="truncate">{child.label}</span>
@@ -542,9 +536,10 @@ export default function Sidebar({
               </div>
               <button
                 id="nav-signout"
+                type="button"
                 onClick={logout}
                 title="Sign out"
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/8 text-red-200 transition-all hover:bg-red-500/15 hover:text-red-100 cursor-pointer"
+                className="flex h-7 w-7 p-0 shrink-0 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/8 text-red-200 transition-all hover:bg-red-500/15 hover:text-red-100 cursor-pointer"
               >
                 <LogoutIcon className="h-[13px] w-[13px]" strokeWidth={2} />
               </button>
@@ -552,9 +547,10 @@ export default function Sidebar({
           ) : (
             <div className="flex justify-center">
               <button
+                type="button"
                 onClick={logout}
                 title={`${user?.fullName || "Admin"} — Sign out`}
-                className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-white/10 bg-gradient-to-br from-[#59a06d] to-[#214d39] text-[11px] font-black text-white shadow-[0_4px_12px_rgba(28,82,58,0.3)] cursor-pointer"
+                className="flex h-9 w-9 p-0 items-center justify-center rounded-[10px] border border-white/10 bg-gradient-to-br from-[#59a06d] to-[#214d39] text-[11px] font-black text-white shadow-[0_4px_12px_rgba(28,82,58,0.3)] cursor-pointer"
               >
                 {initials}
               </button>
