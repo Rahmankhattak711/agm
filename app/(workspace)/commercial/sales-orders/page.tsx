@@ -33,6 +33,16 @@ import {
   SalesOrder,
 } from "@/lib/hooks/api-hooks";
 
+function parseDescriptionPoints(desc: string): string[] {
+  if (!desc) return [];
+  const normalized = String(desc).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const parts = normalized
+    .split(/(?:\n+|(?<=\S)\s+(?=\d+[\.\)]\s+)|(?<=\S)\s+(?=[•\-*]\s+))/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return parts.length > 0 ? parts : [desc];
+}
+
 export default function SalesOrdersPage() {
   const { data: salesOrders = [], isLoading } = useSalesOrders();
   const { data: customers = [] } = useCustomers();
@@ -446,13 +456,13 @@ export default function SalesOrdersPage() {
                 {items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200/60"
+                    className="grid grid-cols-12 gap-2 items-start bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
                   >
                     <div className="col-span-6">
-                      <input
-                        type="text"
-                        placeholder="Description..."
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-blue-500"
+                      <textarea
+                        rows={2}
+                        placeholder="Description / scope points (press Enter for new points)..."
+                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-blue-500 resize-y min-h-[36px]"
                         value={item.description}
                         onChange={(e) =>
                           updateItem(idx, "description", e.target.value)
@@ -588,8 +598,43 @@ export default function SalesOrdersPage() {
                 <TableBody>
                   {selectedOrder.items?.map((item: any) => (
                     <TableRow key={item.id}>
-                      <TableCell className="py-2 px-3 font-medium">
-                        {item.description}
+                      <TableCell className="py-2 px-3 font-medium text-left">
+                        {(() => {
+                          const points = parseDescriptionPoints(item.description);
+                          if (points.length <= 1) {
+                            return (
+                              <div className="leading-snug text-slate-800 whitespace-pre-line text-left">
+                                {item.description}
+                              </div>
+                            );
+                          }
+                          return (
+                            <div className="space-y-1 text-slate-800 text-left">
+                              {points.map((pt, pIdx) => {
+                                const match = pt.match(/^(\d+[\.\)]|[•\-*])\s*(.*)$/);
+                                if (match) {
+                                  const [, bullet, text] = match;
+                                  return (
+                                    <div
+                                      key={pIdx}
+                                      className="leading-snug flex items-start gap-1.5"
+                                    >
+                                      <span className="font-bold text-slate-900 shrink-0 select-none">
+                                        {bullet}
+                                      </span>
+                                      <span className="text-slate-800">{text}</span>
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <div key={pIdx} className="leading-snug">
+                                    {pt}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell align="right" className="py-2 px-3 font-mono">
                         {item.quantity}
