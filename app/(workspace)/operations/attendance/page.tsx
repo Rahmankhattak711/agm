@@ -12,7 +12,6 @@ import {
   AttendanceStatus,
   DailyAttendance,
 } from "@/lib/hooks/api-hooks";
-import { PlusIcon } from "@/components/icons";
 import {
   Button,
   Input,
@@ -23,20 +22,7 @@ import {
   FormSelect,
   FormSubmit,
 } from "@/components/ui";
-import {
-  Calendar,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Users,
-  Building2,
-  Printer,
-  Plus,
-  Trash2,
-  MapPin,
-  ShieldCheck,
-  Search,
-} from "lucide-react";
+import { PlusIcon, TrashIcon } from "@/components/icons";
 
 export default function AttendancePage() {
   const { canModify } = useAuth();
@@ -288,18 +274,19 @@ export default function AttendancePage() {
           if (!canModify(row.original.employeeId, ["HR"])) return null;
           return (
             <div className="flex items-center justify-center">
-              <button
-                type="button"
+              <Button
+                variant="danger"
+                size="sm"
                 onClick={async () => {
                   if (confirm("Delete this attendance entry?")) {
                     await deleteAttendance.mutateAsync(row.original.id);
                   }
                 }}
-                className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition cursor-pointer"
+                icon={<TrashIcon size={13} />}
                 title="Delete Entry"
               >
-                <Trash2 size={13} />
-              </button>
+                Delete
+              </Button>
             </div>
           );
         },
@@ -323,22 +310,12 @@ export default function AttendancePage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
-          >
-            Print Register
-          </Button>
-
           {canModify(null, ["HR"]) && (
             <Button
               variant="primary"
               size="sm"
               onClick={handleOpenModal}
-              icon={<Plus size={14} strokeWidth={2.5} />}
+              icon={<PlusIcon size={14} strokeWidth={2.5} />}
               className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
             >
               Record Attendance
@@ -451,18 +428,20 @@ export default function AttendancePage() {
               ].map((tab) => {
                 const isActive = statusFilter === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     type="button"
+                    variant={isActive ? "outline" : "ghost"}
+                    size="sm"
                     onClick={() => setStatusFilter(tab.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`text-xs font-bold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -474,27 +453,27 @@ export default function AttendancePage() {
 
           <div className="pt-1 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="w-full sm:w-60">
-              <input
+              <Input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer font-mono"
+                className="py-1.5 shadow-2xs cursor-pointer font-mono"
               />
             </div>
 
             <div className="w-full sm:w-64">
-              <select
+              <Select
                 value={employeeFilter}
                 onChange={(e) => setEmployeeFilter(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
-              >
-                <option value="">All Active Employees</option>
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.firstName} {emp.lastName} ({emp.employeeCode})
-                  </option>
-                ))}
-              </select>
+                className="py-1.5 shadow-2xs cursor-pointer"
+                options={[
+                  { value: "", label: "All Active Employees" },
+                  ...employees.map((emp) => ({
+                    value: emp.id,
+                    label: `${emp.firstName} ${emp.lastName} (${emp.employeeCode})`,
+                  })),
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -530,7 +509,7 @@ export default function AttendancePage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Record Site Attendance"
-        maxWidth="lg"
+        maxWidth="xl"
       >
         {formError && (
           <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold mb-4">
