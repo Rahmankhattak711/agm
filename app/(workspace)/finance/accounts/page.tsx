@@ -11,7 +11,18 @@ import {
   useAccountLedger,
   ChartOfAccount,
 } from "@/lib/hooks/api-hooks";
-import { SearchIcon, PlusIcon, PrintIcon, EyeIcon } from "@/components/icons";
+import {
+  SearchIcon,
+  PlusIcon,
+  PrintIcon,
+  EyeIcon,
+  FileSpreadsheetIcon,
+  LockIcon,
+  BookOpenIcon,
+  EditIcon,
+  TrashIcon,
+  LandmarkIcon,
+} from "@/components/icons";
 import {
   Button,
   Input,
@@ -29,29 +40,6 @@ import {
   TableCell,
 } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
-import {
-  BookOpen,
-  Building2,
-  Lock,
-  Edit2,
-  Trash2,
-  Landmark,
-  Wallet,
-  ArrowUpRight,
-  ArrowDownLeft,
-  DollarSign,
-  TrendingUp,
-  Scale,
-  Calendar,
-  Layers,
-  ChevronRight,
-  ShieldCheck,
-  CheckCircle2,
-  Plus,
-  Search,
-  Printer,
-  FileSpreadsheet,
-} from "lucide-react";
 
 const ACCOUNT_TYPES = [
   {
@@ -282,12 +270,12 @@ export default function AccountsPage() {
                 className="font-mono font-bold text-teal-800 bg-teal-50 border border-teal-200 hover:bg-teal-100 px-2 py-0.5 rounded text-xs cursor-pointer transition-colors inline-flex items-center gap-1"
                 title="Click to view Account Register"
               >
-                <FileSpreadsheet size={11} className="text-teal-700" />
+                <FileSpreadsheetIcon size={11} className="text-teal-700" />
                 {row.original.accountCode}
               </span>
               {row.original.isSystem && (
                 <span title="System Control Account (Protected)">
-                  <Lock size={12} className="text-slate-400" />
+                  <LockIcon size={12} className="text-slate-400" />
                 </span>
               )}
             </div>
@@ -388,31 +376,37 @@ export default function AccountsPage() {
           const acc = row.original;
           return (
             <div className="flex items-center justify-center gap-1.5">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setLedgerAccountId(acc.id)}
                 className="p-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-600 transition-colors cursor-pointer"
                 title="View Account Register & Ledger"
               >
-                <BookOpen size={13} />
-              </button>
-              <button
+                <BookOpenIcon size={13} />
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => handleOpenEdit(acc)}
                 className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
                 title="Edit Account Details"
               >
-                <Edit2 size={13} />
-              </button>
+                <EditIcon size={13} />
+              </Button>
               {!acc.isSystem && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setDeletingAccount(acc)}
                   className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer"
                   title="Archive or Delete Account"
                 >
-                  <Trash2 size={13} />
-                </button>
+                  <TrashIcon size={13} />
+                </Button>
               )}
             </div>
           );
@@ -443,7 +437,7 @@ export default function AccountsPage() {
             size="sm"
             onClick={() => window.print()}
             className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
+            icon={<PrintIcon size={14} />}
           >
             Print Chart
           </Button>
@@ -452,7 +446,7 @@ export default function AccountsPage() {
             variant="primary"
             size="sm"
             onClick={handleOpenCreate}
-            icon={<Plus size={14} strokeWidth={2.5} />}
+            icon={<PlusIcon size={14} strokeWidth={2.5} />}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Add Account
@@ -509,7 +503,7 @@ export default function AccountsPage() {
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
             <span className="p-1.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-200">
-              <Landmark size={16} />
+              <LandmarkIcon size={16} />
             </span>
             <div>
               <h3 className="font-bold text-xs uppercase tracking-wider text-slate-900">
@@ -577,18 +571,20 @@ export default function AccountsPage() {
               ].map((tab) => {
                 const isActive = statusFilter === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setStatusFilter(tab.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -599,20 +595,19 @@ export default function AccountsPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2.5 items-center justify-between pt-1 border-t border-slate-200/60">
-            <div className="w-full sm:w-80 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search account code, title, or parent..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            <Input
+              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+              placeholder="Search account code, title, or parent..."
+              containerClassName="w-full sm:w-80"
+              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <select
-                className="w-full sm:w-48 text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer"
+              <Select
+                containerClassName="w-full sm:w-48"
+                className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer"
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
               >
@@ -622,7 +617,7 @@ export default function AccountsPage() {
                 <option value="EQUITY">Equity</option>
                 <option value="REVENUE">Revenue</option>
                 <option value="EXPENSE">Expenses</option>
-              </select>
+              </Select>
             </div>
           </div>
         </div>

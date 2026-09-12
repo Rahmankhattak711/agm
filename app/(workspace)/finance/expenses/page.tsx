@@ -14,6 +14,7 @@ import {
   Button,
   Input,
   Select,
+  Textarea,
   Table,
   TableHead,
   TableHeaderCell,
@@ -25,26 +26,26 @@ import {
 } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import {
-  Plus,
-  Search,
-  Receipt,
-  FileText,
-  CreditCard,
-  Building2,
-  CheckCircle,
-  Clock,
-  Printer,
-  Trash2,
-  Eye,
-  DollarSign,
-  TrendingUp,
-  Tag,
-  Scale,
-  Calendar,
-  AlertTriangle,
-  X,
-  FileSpreadsheet,
-} from "lucide-react";
+  PlusIcon,
+  SearchIcon,
+  ReceiptIcon,
+  FileTextIcon,
+  CreditCardIcon,
+  BuildingIcon,
+  CheckCircle2Icon,
+  ClockIcon,
+  PrintIcon,
+  TrashIcon,
+  EyeIcon,
+  DollarSignIcon,
+  TrendingUpIcon,
+  TagIcon,
+  ScaleIcon,
+  CalendarIcon,
+  AlertTriangleIcon,
+  CloseIcon,
+  FileSpreadsheetIcon,
+} from "@/components/icons";
 
 const EXPENSE_CATEGORIES = [
   "Office Rent & Facilities",
@@ -245,7 +246,7 @@ export default function ExpensesPage() {
             size="sm"
             onClick={() => window.print()}
             className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
+            icon={<PrintIcon size={14} />}
           >
             Print Register
           </Button>
@@ -254,7 +255,7 @@ export default function ExpensesPage() {
             variant="primary"
             size="sm"
             onClick={handleOpenCreate}
-            icon={<Plus size={14} strokeWidth={2.5} />}
+            icon={<PlusIcon size={14} strokeWidth={2.5} />}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Record Expense
@@ -366,18 +367,20 @@ export default function ExpensesPage() {
               ].map((tab) => {
                 const isActive = selectedStatus === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setSelectedStatus(tab.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -390,20 +393,19 @@ export default function ExpensesPage() {
 
           {/* Search + Category + Payment Method Controls */}
           <div className="flex flex-col sm:flex-row gap-2.5 items-center justify-between pt-1 border-t border-slate-200/60">
-            <div className="w-full sm:w-80 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search expense #, payee, description..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            <Input
+              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+              placeholder="Search expense #, payee, description..."
+              containerClassName="w-full sm:w-80"
+              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
 
             <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
-              <select
-                className="w-full sm:w-56 text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
+              <Select
+                containerClassName="w-full sm:w-56"
+                className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
@@ -413,10 +415,11 @@ export default function ExpensesPage() {
                     {cat}
                   </option>
                 ))}
-              </select>
+              </Select>
 
-              <select
-                className="w-full sm:w-44 text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
+              <Select
+                containerClassName="w-full sm:w-44"
+                className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
                 value={selectedMethod}
                 onChange={(e) => setSelectedMethod(e.target.value)}
               >
@@ -425,7 +428,7 @@ export default function ExpensesPage() {
                 <option value="CREDIT_CARD">Credit Card</option>
                 <option value="CASH">Cash</option>
                 <option value="CHEQUE">Cheque</option>
-              </select>
+              </Select>
             </div>
           </div>
         </div>
@@ -493,7 +496,7 @@ export default function ExpensesPage() {
                   >
                     <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
                       <span className="flex items-center gap-1.5">
-                        <FileSpreadsheet
+                        <FileSpreadsheetIcon
                           size={13}
                           className="text-emerald-700 shrink-0"
                         />
@@ -529,7 +532,7 @@ export default function ExpensesPage() {
 
                     <TableCell className="py-3 px-4">
                       <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700">
-                        <CreditCard size={12} className="text-slate-400" />
+                        <CreditCardIcon size={12} className="text-slate-400" />
                         {exp.paymentMethod.replace("_", " ")}
                       </span>
                       {exp.paymentAccount && (
@@ -566,25 +569,29 @@ export default function ExpensesPage() {
 
                     <TableCell className="py-3 px-3 text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handlePrint(exp)}
                           className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
                           title="Print Expense Voucher"
                         >
-                          <Printer size={14} />
-                        </button>
+                          <PrintIcon size={14} />
+                        </Button>
 
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() =>
                             handleDelete(exp.id, exp.expenseNumber)
                           }
                           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                           title="Delete Expense"
                         >
-                          <Trash2 size={14} />
-                        </button>
+                          <TrashIcon size={14} />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -625,7 +632,7 @@ export default function ExpensesPage() {
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Category *
               </label>
-              <select
+              <Select
                 className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
                 value={formCategory}
                 onChange={(e) => setFormCategory(e.target.value)}
@@ -636,7 +643,7 @@ export default function ExpensesPage() {
                     {cat}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
 
@@ -684,7 +691,7 @@ export default function ExpensesPage() {
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 VAT Rate
               </label>
-              <select
+              <Select
                 className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
                 value={formTaxRate}
                 onChange={(e) => setFormTaxRate(e.target.value)}
@@ -692,7 +699,7 @@ export default function ExpensesPage() {
                 <option value="5">5% Standard VAT</option>
                 <option value="0">0% / Zero-rated</option>
                 <option value="0">Exempt</option>
-              </select>
+              </Select>
             </div>
 
             <div>
@@ -710,7 +717,7 @@ export default function ExpensesPage() {
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Payment Method
               </label>
-              <select
+              <Select
                 className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
                 value={formPaymentMethod}
                 onChange={(e) => setFormPaymentMethod(e.target.value as any)}
@@ -719,14 +726,14 @@ export default function ExpensesPage() {
                 <option value="CREDIT_CARD">Company Credit Card</option>
                 <option value="CASH">Cash on Hand</option>
                 <option value="CHEQUE">Cheque</option>
-              </select>
+              </Select>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Paid From (Asset Account)
               </label>
-              <select
+              <Select
                 className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
                 value={formPaymentAccountId}
                 onChange={(e) => setFormPaymentAccountId(e.target.value)}
@@ -737,7 +744,7 @@ export default function ExpensesPage() {
                     {acc.accountCode} - {acc.accountName}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
 
@@ -745,7 +752,7 @@ export default function ExpensesPage() {
             <label className="block text-xs font-bold text-slate-700 mb-1">
               Expense Account (Chart of Accounts)
             </label>
-            <select
+            <Select
               className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
               value={formExpenseAccountId}
               onChange={(e) => setFormExpenseAccountId(e.target.value)}
@@ -756,14 +763,14 @@ export default function ExpensesPage() {
                   {acc.accountCode} - {acc.accountName}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
               Description / Business Purpose
             </label>
-            <textarea
+            <Textarea
               className="w-full text-xs p-3 rounded-xl border border-slate-200 bg-white outline-none focus:border-emerald-600 transition"
               rows={2}
               placeholder="e.g. Monthly office internet subscription and landline bill"
@@ -941,7 +948,7 @@ export default function ExpensesPage() {
                 variant="primary"
                 size="sm"
                 onClick={() => window.print()}
-                icon={<Printer size={14} />}
+                icon={<PrintIcon size={14} />}
                 className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
               >
                 Print Voucher

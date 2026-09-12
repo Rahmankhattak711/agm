@@ -22,21 +22,9 @@ import {
   PlusIcon,
   SearchIcon,
   TrashIcon,
+  PrintIcon,
+  FileSpreadsheetIcon,
 } from "@/components/icons";
-import {
-  BookOpen,
-  CheckCircle2,
-  Clock,
-  Printer,
-  ShieldCheck,
-  Building2,
-  FileSpreadsheet,
-  AlertTriangle,
-  Receipt,
-  Scale,
-  Plus,
-  Search,
-} from "lucide-react";
 
 interface JournalLineFormItem {
   accountId: string;
@@ -323,7 +311,7 @@ export default function JournalEntriesPage() {
             size="sm"
             onClick={() => window.print()}
             className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
+            icon={<PrintIcon size={14} />}
           >
             Print Register
           </Button>
@@ -332,7 +320,7 @@ export default function JournalEntriesPage() {
             onClick={handleOpenAddModal}
             variant="primary"
             size="sm"
-            icon={<Plus size={14} strokeWidth={2.5} />}
+            icon={<PlusIcon size={14} strokeWidth={2.5} />}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             New Journal Entry
@@ -441,18 +429,20 @@ export default function JournalEntriesPage() {
             ].map((tab) => {
               const isActive = statusFilter === tab.id;
               return (
-                <button
+                <Button
                   key={tab.id}
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setStatusFilter(tab.id as any)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     isActive
-                      ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                      ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                       : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                   }`}
                 >
                   {tab.label}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -463,16 +453,14 @@ export default function JournalEntriesPage() {
         </div>
 
         <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-          <div className="w-full sm:w-80 relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search entry #, reference, memo..."
-              className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+          <Input
+            leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+            placeholder="Search entry #, reference, memo..."
+            containerClassName="w-full sm:w-80"
+            className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
       </div>
 
@@ -489,7 +477,7 @@ export default function JournalEntriesPage() {
           </div>
         ) : filteredEntries.length === 0 ? (
           <div className="py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 space-y-2">
-            <FileSpreadsheet className="w-8 h-8 mx-auto opacity-40 text-slate-500" />
+            <FileSpreadsheetIcon className="w-8 h-8 mx-auto opacity-40 text-slate-500" />
             <p className="text-sm font-semibold text-slate-600">
               No journal entries found
             </p>
@@ -533,7 +521,7 @@ export default function JournalEntriesPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                            <FileSpreadsheet
+                            <FileSpreadsheetIcon
                               size={14}
                               className="text-teal-700 shrink-0"
                             />
@@ -888,7 +876,7 @@ export default function JournalEntriesPage() {
                       size="sm"
                       variant="primary"
                       onClick={addLine}
-                      icon={<Plus size={13} strokeWidth={2.2} />}
+                      icon={<PlusIcon size={13} strokeWidth={2.2} />}
                       className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
                     >
                       Add Line
@@ -911,19 +899,9 @@ export default function JournalEntriesPage() {
                       const baseAmt = isDeb
                         ? Number(line.debit)
                         : Number(line.credit);
-                      const vatAmt = line.vatType
-                        ? Number((baseAmt * 0.05).toFixed(2))
-                        : 0;
-                      const totalWithVat = Number(
-                        (baseAmt + vatAmt).toFixed(2),
-                      );
-
-                      const isLineVat =
-                        line.vatType ||
-                        accounts
-                          ?.find((a) => a.id === line.accountId)
-                          ?.accountName.toLowerCase()
-                          .includes("vat");
+                      const vatAmt = Number(line.vatAmount) || 0;
+                      const totalWithVat = baseAmt + vatAmt;
+                      const isLineVat = Boolean(line.vatType);
 
                       return (
                         <div
@@ -935,7 +913,7 @@ export default function JournalEntriesPage() {
                           }`}
                         >
                           <div className="flex-1 min-w-[120px]">
-                            <select
+                            <Select
                               value={line.accountId}
                               onChange={(e) =>
                                 updateLineFields(idx, {
@@ -951,11 +929,11 @@ export default function JournalEntriesPage() {
                                   {acc.type})
                                 </option>
                               ))}
-                            </select>
+                            </Select>
                           </div>
 
                           <div className="w-20 sm:w-24">
-                            <input
+                            <Input
                               type="number"
                               step="any"
                               placeholder="Debit"
@@ -979,7 +957,7 @@ export default function JournalEntriesPage() {
                           </div>
 
                           <div className="w-20 sm:w-24">
-                            <input
+                            <Input
                               type="number"
                               step="any"
                               placeholder="Credit"
@@ -1003,7 +981,7 @@ export default function JournalEntriesPage() {
                           </div>
 
                           <div className="w-28 sm:w-32">
-                            <select
+                            <Select
                               value={line.vatType ? "VAT_5" : ""}
                               onChange={(e) => {
                                 const isVat = e.target.value === "VAT_5";
@@ -1032,8 +1010,7 @@ export default function JournalEntriesPage() {
                             >
                               <option value="">Non-VAT (0%)</option>
                               <option value="VAT_5">VAT (5%)</option>
-                            </select>
-                          </div>
+                            </Select>  </div>
 
                           <div
                             className={`w-24 sm:w-28 px-2 py-1.5 text-xs rounded-lg border font-mono font-bold text-right truncate ${
