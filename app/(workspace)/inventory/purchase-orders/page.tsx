@@ -17,7 +17,15 @@ import {
   PurchaseOrderStatus,
   ProductType,
 } from "@/lib/hooks/api-hooks";
-import { PlusIcon, SearchIcon, PrintIcon } from "@/components/icons";
+import {
+  PlusIcon,
+  SearchIcon,
+  PrintIcon,
+  ShoppingCartIcon,
+  EyeIcon,
+  TrashIcon,
+  CloseIcon,
+} from "@/components/icons";
 import { PurchaseOrderPrintModal } from "./PurchaseOrderPrintModal";
 import {
   Button,
@@ -36,23 +44,6 @@ import {
   FormTextarea,
   FormSubmit,
 } from "@/components/ui";
-import {
-  ShoppingCart,
-  Clock,
-  Truck,
-  CheckCircle2,
-  AlertCircle,
-  FileSpreadsheet,
-  Printer,
-  Plus,
-  Search,
-  Building2,
-  Package,
-  Trash2,
-  Eye,
-  FileText,
-  Boxes,
-} from "lucide-react";
 
 interface ItemRow {
   productId: string;
@@ -388,7 +379,7 @@ export default function PurchaseOrdersPage() {
         cell: ({ row }) => (
           <div>
             <span className="font-mono font-bold text-slate-900 text-xs flex items-center gap-1.5">
-              <ShoppingCart size={13} className="text-teal-700 shrink-0" />
+              <ShoppingCartIcon size={13} className="text-teal-700 shrink-0" />
               {row.original.poNumber}
             </span>
             {row.original.vendorReference && (
@@ -486,23 +477,27 @@ export default function PurchaseOrdersPage() {
 
           return (
             <div className="flex items-center justify-center gap-1.5">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setSelectedPO(row.original)}
                 className="p-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-600 transition-colors cursor-pointer"
                 title="View PO Details"
               >
-                <Eye size={13} />
-              </button>
+                <EyeIcon size={13} />
+              </Button>
 
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setPrintModalPO(row.original)}
                 className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
                 title="Print Official PO PDF"
               >
-                <Printer size={13} />
-              </button>
+                <PrintIcon size={13} />
+              </Button>
 
               {isDraft && canEdit && (
                 <Button
@@ -533,8 +528,10 @@ export default function PurchaseOrdersPage() {
               )}
 
               {isDraft && canEdit && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     if (
                       confirm(
@@ -547,8 +544,8 @@ export default function PurchaseOrdersPage() {
                   className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer"
                   title="Delete PO"
                 >
-                  <Trash2 size={13} />
-                </button>
+                  <TrashIcon size={13} />
+                </Button>
               )}
             </div>
           );
@@ -579,7 +576,7 @@ export default function PurchaseOrdersPage() {
             size="sm"
             onClick={() => window.print()}
             className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
+            icon={<PrintIcon size={14} />}
           >
             Print Register
           </Button>
@@ -588,7 +585,7 @@ export default function PurchaseOrdersPage() {
             variant="primary"
             size="sm"
             onClick={handleOpenCreate}
-            icon={<Plus size={14} strokeWidth={2.5} />}
+            icon={<PlusIcon size={14} strokeWidth={2.5} />}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Create Purchase Order
@@ -704,18 +701,20 @@ export default function PurchaseOrdersPage() {
               ].map((tab) => {
                 const isActive = statusFilter === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setStatusFilter(tab.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -726,20 +725,19 @@ export default function PurchaseOrdersPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2.5 items-center justify-between pt-1 border-t border-slate-200/60">
-            <div className="w-full sm:w-80 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search PO #, supplier, shop, quote ref..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            <Input
+              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+              placeholder="Search PO #, supplier, shop, quote ref..."
+              containerClassName="w-full sm:w-80"
+              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <select
-                className="w-full sm:w-56 text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
+              <Select
+                containerClassName="w-full sm:w-56"
+                className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
                 value={supplierFilter}
                 onChange={(e) => setSupplierFilter(e.target.value)}
               >
@@ -749,7 +747,7 @@ export default function PurchaseOrdersPage() {
                     {s.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
         </div>
@@ -1008,14 +1006,16 @@ export default function PurchaseOrdersPage() {
                               </Select>
                             </div>
 
-                            <button
+                            <Button
                               type="button"
+                              variant="secondary"
+                              size="sm"
                               onClick={() => handleOpenQuickProduct(idx)}
                               title="Create and select a new shop product for this row"
                               className="text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg whitespace-nowrap cursor-pointer"
                             >
                               + New Product
-                            </button>
+                            </Button>
 
                             <Input
                               type="number"
@@ -1054,14 +1054,16 @@ export default function PurchaseOrdersPage() {
                               ).toFixed(2)}
                             </div>
 
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="sm"
                               onClick={() => removeItem(idx)}
                               disabled={currentItems.length === 1}
-                              className="text-slate-400 hover:text-rose-600 disabled:opacity-30 cursor-pointer px-1.5 py-1"
+                              className="text-slate-400 hover:text-rose-600 disabled:opacity-30 cursor-pointer p-1"
                             >
-                              ✕
-                            </button>
+                              <CloseIcon size={12} />
+                            </Button>
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-100 text-xs">

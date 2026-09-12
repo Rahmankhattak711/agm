@@ -2,24 +2,15 @@
 
 import { useMemo, useState } from "react";
 import {
-  Banknote,
-  CheckCircle2,
-  Clock,
-  Eye,
-  FileCheck2,
-  FileSpreadsheet,
-  FileText,
-  Plus,
-  Printer,
-  Receipt,
-  Search,
-  Trash2,
-  Building2,
-  CreditCard,
-  Layers,
-  ArrowUpRight,
-  ShieldCheck,
-} from "lucide-react";
+  BanknoteIcon,
+  EyeIcon,
+  FileCheck2Icon,
+  PlusIcon,
+  PrintIcon,
+  ReceiptIcon,
+  SearchIcon,
+  TrashIcon,
+} from "@/components/icons";
 import {
   Button,
   Table,
@@ -30,6 +21,8 @@ import {
   TableCell,
   TableLoading,
   Modal,
+  Input,
+  Select,
 } from "@/components/ui";
 import {
   useSupplierBills,
@@ -236,7 +229,7 @@ export default function SupplierBillsPage() {
             size="sm"
             onClick={() => window.print()}
             className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<Printer size={14} />}
+            icon={<PrintIcon size={14} />}
           >
             Print Register
           </Button>
@@ -245,7 +238,7 @@ export default function SupplierBillsPage() {
             variant="primary"
             size="sm"
             onClick={() => setIsCreateOpen(true)}
-            icon={<Plus size={14} strokeWidth={2.5} />}
+            icon={<PlusIcon size={14} strokeWidth={2.5} />}
             className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Enter Supplier Bill
@@ -361,18 +354,20 @@ export default function SupplierBillsPage() {
               ].map((tab) => {
                 const isActive = statusFilter === tab.id;
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setStatusFilter(tab.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
+                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
                         : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -383,16 +378,14 @@ export default function SupplierBillsPage() {
           </div>
 
           <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <div className="w-full sm:w-80 relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search bill number, vendor, TRN..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            <Input
+              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+              placeholder="Search bill number, vendor, TRN..."
+              containerClassName="w-full sm:w-80"
+              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
 
@@ -467,7 +460,7 @@ export default function SupplierBillsPage() {
                     >
                       <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
                         <div className="flex items-center gap-1.5">
-                          <Receipt
+                          <ReceiptIcon
                             size={13}
                             className="text-teal-700 shrink-0"
                           />
@@ -482,45 +475,46 @@ export default function SupplierBillsPage() {
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
+                      <TableCell className="py-3 px-3 text-slate-600 font-mono">
                         {b.billDate
                           ? new Date(b.billDate).toLocaleDateString("en-GB")
-                          : "—"}
+                          : "-"}
                       </TableCell>
-                      <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
+                      <TableCell className="py-3 px-3 text-slate-600 font-mono">
                         {b.dueDate
                           ? new Date(b.dueDate).toLocaleDateString("en-GB")
-                          : "—"}
+                          : "-"}
                       </TableCell>
                       <TableCell
                         align="right"
-                        className="py-3 px-3 text-right font-mono font-black text-slate-900"
+                        className="py-3 px-3 text-right font-mono font-bold text-slate-900"
                       >
                         {formatNumber(b.totalAmount)}
-                        <span className="text-[10px] text-slate-400 font-normal block">
-                          Incl. 5% VAT: {formatNumber(b.vatAmount)}
-                        </span>
                       </TableCell>
                       <TableCell
                         align="right"
-                        className={`py-3 px-3 text-right font-mono font-bold ${
-                          Number(b.remainingBalance) > 0
-                            ? "text-rose-700"
-                            : "text-emerald-700"
-                        }`}
+                        className="py-3 px-3 text-right font-mono font-bold"
                       >
-                        {formatNumber(b.remainingBalance)}
+                        <span
+                          className={
+                            Number(b.remainingBalance) > 0
+                              ? "text-rose-700"
+                              : "text-slate-400"
+                          }
+                        >
+                          {formatNumber(b.remainingBalance)}
+                        </span>
                       </TableCell>
                       <TableCell className="py-3 px-3 text-center">
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                          className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                             b.status === "PAID"
-                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                               : b.status === "POSTED"
-                                ? "bg-sky-50 text-sky-800 border-sky-200"
+                                ? "bg-sky-50 text-sky-700 border border-sky-200"
                                 : b.status === "PARTIALLY_PAID"
-                                  ? "bg-amber-50 text-amber-800 border-amber-200"
-                                  : "bg-slate-100 text-slate-700 border-slate-200"
+                                  ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                  : "bg-slate-100 text-slate-600 border border-slate-200"
                           }`}
                         >
                           {b.status === "PAID"
@@ -534,20 +528,22 @@ export default function SupplierBillsPage() {
                       </TableCell>
                       <TableCell className="py-3 px-3 text-center">
                         <div className="flex items-center justify-center gap-1.5">
-                          <button
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="sm"
                             onClick={() => setSelectedBill(b)}
                             className="p-1.5 text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
                             title="View Bill Details"
                           >
-                            <Eye size={13} />
-                          </button>
+                            <EyeIcon size={13} />
+                          </Button>
                           {b.status === "DRAFT" && (
                             <Button
                               variant="dark"
                               size="sm"
                               onClick={() => handlePostBill(b.id)}
-                              icon={<FileCheck2 size={12} />}
+                              icon={<FileCheck2Icon size={12} />}
                               className="text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer"
                             >
                               Post to GL
@@ -561,7 +557,7 @@ export default function SupplierBillsPage() {
                                 setPaymentModalBill(b);
                                 setPaymentAmount(String(b.remainingBalance));
                               }}
-                              icon={<Banknote size={12} />}
+                              icon={<BanknoteIcon size={12} />}
                               className="text-[10px] font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer"
                             >
                               Disburse
@@ -592,8 +588,9 @@ export default function SupplierBillsPage() {
                 <label className="block font-bold text-slate-700 mb-1">
                   Supplier / Vendor *
                 </label>
-                <select
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold cursor-pointer shadow-2xs"
+                <Select
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold cursor-pointer shadow-2xs"
                   value={supplierId}
                   onChange={(e) => {
                     setSupplierId(e.target.value);
@@ -612,17 +609,18 @@ export default function SupplierBillsPage() {
                       {s.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
                   Supplier Name (Manual Override)
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="Supplier Name"
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs"
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs"
                   value={supplierName}
                   onChange={(e) => setSupplierName(e.target.value)}
                   required
@@ -633,10 +631,11 @@ export default function SupplierBillsPage() {
                 <label className="block font-bold text-slate-700 mb-1">
                   Supplier TRN (Tax Registration #)
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="100XXXXXXXXX003"
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
                   value={supplierTrn}
                   onChange={(e) => setSupplierTrn(e.target.value)}
                 />
@@ -646,10 +645,11 @@ export default function SupplierBillsPage() {
                 <label className="block font-bold text-slate-700 mb-1">
                   Vendor Bill / Invoice #
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="e.g. INV-94812"
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
                   value={billNumber}
                   onChange={(e) => setBillNumber(e.target.value)}
                 />
@@ -661,9 +661,10 @@ export default function SupplierBillsPage() {
                 <label className="block font-bold text-slate-700 mb-1">
                   Bill Date *
                 </label>
-                <input
+                <Input
                   type="date"
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs"
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs"
                   value={billDate}
                   onChange={(e) => setBillDate(e.target.value)}
                   required
@@ -674,9 +675,10 @@ export default function SupplierBillsPage() {
                 <label className="block font-bold text-slate-700 mb-1">
                   Due Date *
                 </label>
-                <input
+                <Input
                   type="date"
-                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs"
+                  containerClassName="w-full"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   required
@@ -689,13 +691,16 @@ export default function SupplierBillsPage() {
                 <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
                   Bill Line Items
                 </span>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={addItem}
-                  className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+                  icon={<PlusIcon size={13} />}
+                  className="text-xs font-bold text-emerald-700 hover:text-emerald-800 cursor-pointer"
                 >
-                  <Plus size={13} /> Add Line
-                </button>
+                  Add Line
+                </Button>
               </div>
 
               <div className="space-y-2 max-h-56 overflow-y-auto">
@@ -705,10 +710,11 @@ export default function SupplierBillsPage() {
                     className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
                   >
                     <div className="col-span-6">
-                      <input
+                      <Input
                         type="text"
                         placeholder="Description..."
-                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500"
+                        containerClassName="w-full"
+                        className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500"
                         value={item.description}
                         onChange={(e) =>
                           updateItem(idx, "description", e.target.value)
@@ -717,11 +723,12 @@ export default function SupplierBillsPage() {
                       />
                     </div>
                     <div className="col-span-2">
-                      <input
+                      <Input
                         type="number"
                         min="1"
                         placeholder="Qty"
-                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono"
+                        containerClassName="w-full"
+                        className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono"
                         value={item.quantity}
                         onChange={(e) =>
                           updateItem(idx, "quantity", e.target.value)
@@ -730,11 +737,12 @@ export default function SupplierBillsPage() {
                       />
                     </div>
                     <div className="col-span-3">
-                      <input
+                      <Input
                         type="number"
                         step="0.01"
                         placeholder="Unit Cost"
-                        className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold"
+                        containerClassName="w-full"
+                        className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold"
                         value={item.unitCost || ""}
                         onChange={(e) =>
                           updateItem(idx, "unitCost", e.target.value)
@@ -743,13 +751,15 @@ export default function SupplierBillsPage() {
                       />
                     </div>
                     <div className="col-span-1 text-center">
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => removeItem(idx)}
                         className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
                       >
-                        <Trash2 size={13} />
-                      </button>
+                        <TrashIcon size={13} />
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -836,11 +846,12 @@ export default function SupplierBillsPage() {
               <label className="block font-bold text-slate-700 mb-1">
                 Payment Amount (AED) *
               </label>
-              <input
+              <Input
                 type="number"
                 step="0.01"
                 placeholder="Amount"
-                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold shadow-2xs"
+                containerClassName="w-full"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold shadow-2xs"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
                 required
@@ -851,8 +862,9 @@ export default function SupplierBillsPage() {
               <label className="block font-bold text-slate-700 mb-1">
                 Disbursement Account / Method *
               </label>
-              <select
-                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs cursor-pointer"
+              <Select
+                containerClassName="w-full"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs cursor-pointer"
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
               >
@@ -861,17 +873,18 @@ export default function SupplierBillsPage() {
                 </option>
                 <option value="CHEQUE">Corporate Cheque</option>
                 <option value="CASH">Petty Cash Float (A/C 1010)</option>
-              </select>
+              </Select>
             </div>
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
                 Cheque / Transaction Reference #
               </label>
-              <input
+              <Input
                 type="text"
                 placeholder="e.g. TR-28492 or CHQ-00481"
-                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
+                containerClassName="w-full"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
                 value={paymentRef}
                 onChange={(e) => setPaymentRef(e.target.value)}
               />
@@ -1007,7 +1020,7 @@ export default function SupplierBillsPage() {
               <Button
                 variant="primary"
                 onClick={() => window.print()}
-                icon={<Printer size={13} />}
+                icon={<PrintIcon size={13} />}
                 className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
               >
                 Print Bill
