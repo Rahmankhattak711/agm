@@ -23,7 +23,7 @@ import {
 import {
   EditIcon,
   PlusIcon,
-  ProductsIcon,
+  ProtectedIcon,
   SearchIcon,
   TrashIcon,
 } from "@/components/icons";
@@ -324,7 +324,7 @@ export default function UsersPage() {
                   variant="secondary"
                   size="sm"
                   onClick={() => handleOpenEditModal(row.original)}
-                  icon={<ProductsIcon size={13} />}
+                  icon={<ProtectedIcon size={13} />}
                   title="Protected"
                 >
                   Protected
