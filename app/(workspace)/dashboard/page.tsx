@@ -580,10 +580,10 @@ export default function DashboardPage() {
 
             <div>
               <h1 className="text-xl md:text-2xl font-black text-white tracking-tight">
-                Finance &amp; Operations Executive Dashboard
+                Finance &amp; Operations Dashboard
               </h1>
               <p className="text-xs text-slate-300/85 font-normal mt-0.5">
-                Real-time financial telemetry, cash liquidity &bull; AGM Interiors &amp; Fitout
+                Real-time financial performance, cash flow liquidity, and operational metrics.
               </p>
             </div>
 
@@ -1100,10 +1100,10 @@ export default function DashboardPage() {
               </span>
               <div>
                 <h3 className="font-bold text-sm text-slate-900">
-                  Action Required &bull; Financial Tasks
+                  Action Required
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Pending receivables, due supplier bills &amp; draft entries
+                  Pending receivables, due supplier bills, and draft transactions
                 </p>
               </div>
             </div>
@@ -1266,10 +1266,10 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 className="font-bold text-sm text-slate-900">
-              Recent General Journal Entries &amp; Transactions
+              Recent Journal Entries
             </h3>
             <p className="text-xs text-slate-500">
-              Latest double-entry accounting transactions and audit trails
+              Latest double-entry transactions and posting audit records
             </p>
           </div>
           <Link
