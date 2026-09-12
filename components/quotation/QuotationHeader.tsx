@@ -16,21 +16,21 @@ export const QuotationHeader: React.FC<QuotationHeaderProps> = ({
         <Image
           src="/assets/logo.png"
           alt="AGM Aesthetic House"
-          width={120}
-          height={120}
+          width={150}
+          height={150}
           sizes="100vh"
           quality={100}
-          className="object-cover print:w-[105px] print:h-auto"
+          className="object-cover print:w-[150px] print:h-auto"
           priority
         />
       </div>
       <div className="text-right text-[12px] print:text-[11.5px] leading-5 print:leading-snug text-slate-800 max-w-[440px] print:max-w-[500px]">
-        <div className="font-bold text-[15px] print:text-[14px] mb-1 print:mb-1 text-agm-green">
+        <div className="font-bold text-[18px] print:text-[18px] mb-1 print:mb-1 text-agm-green">
           A G M FITOUT TECHNICAL SERVICES L.L.C
         </div>
         <div className="text-slate-700">
-          Sheikh Zayed Road, near Oasis Centre, Office No. 13-11 Building: Adel
-          Mohammed Ali Jassim Al Marzouqi, Al Quoz First 1, Dubai, UAE
+          Sheikh Zayed Road, near Oasis Centre, Office No. 13-11 <br /> Building: Adel
+          Mohammed Ali Jassim Al Marzouqi, <br /> Al Quoz First 1, Dubai, UAE
         </div>
         <div className="font-medium text-slate-900 mt-0.5">
           Tel: +971 48 749839 | Mob: +971 50 340 7300 | TRN: 104094432200003
