@@ -38,3 +38,5 @@ export * from "./SpinnerIcon";
 export * from "./FinanceIcons";
 export * from "./ProtectLock";
 export * from "./BuildingIcon";
+export * from "./FileSpreadsheetIcon";
+export * from "./ReceiptIcon";

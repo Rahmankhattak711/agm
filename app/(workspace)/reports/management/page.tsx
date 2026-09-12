@@ -9,28 +9,12 @@ import {
   usePayables,
 } from "@/lib/hooks/api-hooks";
 import { PrintIcon } from "@/components/icons";
-import { Button, Modal } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import {
   ReportSummaryChart,
   ChartBarItem,
 } from "@/components/reports/ReportSummaryChart";
-import {
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  ShieldCheck,
-  Building2,
-  DollarSign,
-  Scale,
-  Percent,
-  CheckCircle2,
-  AlertTriangle,
-  Layers,
-  Printer,
-  Sparkles,
-  Receipt,
-} from "lucide-react";
 
 export default function ManagementReportsPage() {
   const { data: profitLoss, isLoading: plLoading } = useProfitLoss();

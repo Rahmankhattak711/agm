@@ -16,8 +16,11 @@ export default function VatReportsPage() {
             VAT &amp; Tax Compliance Reports
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — FTA Form 201 returns, 5% Output
-            Tax, 5% Recoverable Input Tax, and Net Position.
+            AGM FITOUT TECHNICAL SERVICES LLC — TRN:{" "}
+            <span className="font-mono font-bold text-slate-700">
+              104094432200003
+            </span>{" "}
+            • Standard Tax Rate: 5% • FTA Form 201 Compliance
           </p>
         </div>
 

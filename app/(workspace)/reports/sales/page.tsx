@@ -7,7 +7,12 @@ import {
   useCustomers,
   SalesInvoice,
 } from "@/lib/hooks/api-hooks";
-import { SearchIcon, PrintIcon, EyeIcon } from "@/components/icons";
+import {
+  EyeIcon,
+  PrintIcon,
+  ReceiptIcon,
+  SearchIcon,
+} from "@/components/icons";
 import {
   Button,
   Input,
@@ -26,24 +31,54 @@ import {
   ReportSummaryChart,
   ChartBarItem,
 } from "@/components/reports/ReportSummaryChart";
-import {
-  Percent,
-  TrendingUp,
-  DollarSign,
-  Receipt,
-  Building2,
-  Calendar,
-  Layers,
-  Search,
-  Filter,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
-  Printer,
-  Sparkles,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+
+function parseDescriptionPoints(desc: string): string[] {
+  if (!desc) return [];
+  const normalized = String(desc).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const parts = normalized
+    .split(/(?:\n+|(?<=\S)\s+(?=\d+[\.\)]\s+)|(?<=\S)\s+(?=[•\-*]\s+))/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return parts.length > 0 ? parts : [desc.trim()];
+}
+
+function renderDescriptionPoints(desc?: string, fallback = "—") {
+  if (!desc) {
+    return <span className="text-slate-800">{fallback}</span>;
+  }
+  const points = parseDescriptionPoints(desc);
+  if (points.length <= 1) {
+    return (
+      <div className="leading-relaxed text-slate-800 whitespace-pre-line text-left">
+        {points[0] || fallback}
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-1.5 text-left py-0.5">
+      {points.map((pt, pIdx) => {
+        const match = pt.match(/^(\d+[\.\)]|[•\-*])\s*(.*)$/);
+        if (match) {
+          const [, bullet, text] = match;
+          return (
+            <div key={pIdx} className="leading-relaxed flex items-start gap-2">
+              <span className="font-semibold text-slate-900 shrink-0 select-none min-w-[1.25rem]">
+                {bullet}
+              </span>
+              <span className="text-slate-800">{text}</span>
+            </div>
+          );
+        }
+        return (
+          <div key={pIdx} className="leading-relaxed flex items-start gap-2">
+            <span className="text-slate-400 shrink-0 select-none">•</span>
+            <span className="text-slate-800">{pt}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function SalesReportsPage() {
   const [search, setSearch] = useState("");
@@ -268,7 +303,7 @@ export default function SalesReportsPage() {
               onClick={() => setSelectedInvoice(row.original)}
               className="font-mono font-bold text-blue-950 hover:underline cursor-pointer flex items-center gap-1.5"
             >
-              <Receipt size={13} className="text-emerald-700 shrink-0" />
+              <ReceiptIcon size={14} className="text-emerald-700 shrink-0" />
               {row.original.invoiceNumber}
             </span>
             {row.original.projectScope && (
@@ -374,14 +409,14 @@ export default function SalesReportsPage() {
         header: () => <div className="text-center">Action</div>,
         cell: ({ row }) => (
           <div className="flex items-center justify-center gap-1.5">
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setSelectedInvoice(row.original)}
-              className="p-1.5 text-slate-500 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors cursor-pointer"
+              className="p-1.5 text-slate-500 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors cursor-pointer h-auto"
               title="View Invoice Audit"
-            >
-              <EyeIcon className="w-4 h-4" />
-            </button>
+              icon={<EyeIcon className="w-4 h-4" />}
+            />
           </div>
         ),
       },
@@ -547,36 +582,38 @@ export default function SalesReportsPage() {
               {periodTabs.map((tab) => {
                 const isActive = periodFilter === tab.key;
                 return (
-                  <button
+                  <Button
                     key={tab.key}
                     type="button"
+                    size="sm"
+                    variant={isActive ? "outline" : "ghost"}
                     onClick={() => setPeriodFilter(tab.key)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer h-auto ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                        ? "!bg-white !text-emerald-900 shadow-xs border border-slate-200/90 hover:!bg-white"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
                     }`}
                   >
                     {tab.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
 
             {periodFilter === "CUSTOM" && (
               <div className="flex items-center gap-2 text-xs">
-                <input
+                <Input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                  containerClassName="w-36"
                 />
                 <span className="text-slate-400 font-bold">to</span>
-                <input
+                <Input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
+                  containerClassName="w-36"
                 />
               </div>
             )}
@@ -584,19 +621,14 @@ export default function SalesReportsPage() {
 
           <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-1 border-t border-slate-200/60">
             <div className="w-full lg:w-80">
-              <div className="relative">
-                <Search
-                  size={14}
-                  className="absolute left-3 top-2.5 text-slate-400"
-                />
-                <input
-                  type="text"
-                  placeholder="Search invoice #, client, TRN, or project..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                />
-              </div>
+              <Input
+                type="text"
+                placeholder="Search invoice #, client, TRN, or project..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                leftIcon={<SearchIcon className="w-4 h-4 text-slate-400" />}
+                containerClassName="w-full"
+              />
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
@@ -640,11 +672,11 @@ export default function SalesReportsPage() {
           </div>
         ) : (
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white">
+            <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+              <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                 Sales Invoices &amp; Billing Realization Register
               </h4>
-              <span className="text-[11px] font-mono text-emerald-300 font-bold">
+              <span className="text-[11px] font-mono text-emerald-300 print:text-emerald-800 font-bold">
                 {filteredInvoices.length} Matching Records
               </span>
             </div>
@@ -727,7 +759,7 @@ export default function SalesReportsPage() {
                 <span className="text-[10px] uppercase font-bold text-blue-800 block mb-0.5">
                   Project Scope &amp; Billing Milestone
                 </span>
-                <p className="text-slate-700 text-xs">
+                <p className="text-slate-700 text-xs whitespace-pre-line leading-relaxed">
                   {selectedInvoice.projectScope}
                 </p>
               </div>
@@ -757,18 +789,19 @@ export default function SalesReportsPage() {
                     <TableBody className="divide-y divide-slate-100">
                       {selectedInvoice.items.map((it: any, idx: number) => (
                         <TableRow key={idx}>
-                          <TableCell className="py-2 px-3 font-medium text-slate-800">
-                            {it.description ||
-                              it.product?.name ||
-                              `Item #${idx + 1}`}
+                          <TableCell className="py-2.5 px-3 font-medium text-slate-800 align-top">
+                            {renderDescriptionPoints(
+                              it.description || it.product?.name,
+                              `Item #${idx + 1}`,
+                            )}
                           </TableCell>
-                          <TableCell className="py-2 px-3 text-center font-mono">
+                          <TableCell className="py-2.5 px-3 text-center font-mono align-top">
                             {it.quantity} {it.unit || "Unit"}
                           </TableCell>
-                          <TableCell className="py-2 px-3 text-right font-mono">
+                          <TableCell className="py-2.5 px-3 text-right font-mono align-top">
                             {Number(it.unitPrice).toFixed(2)}
                           </TableCell>
-                          <TableCell className="py-2 px-3 text-right font-mono font-bold text-slate-900">
+                          <TableCell className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 align-top">
                             {Number(
                               it.totalPrice || it.quantity * it.unitPrice,
                             ).toFixed(2)}
