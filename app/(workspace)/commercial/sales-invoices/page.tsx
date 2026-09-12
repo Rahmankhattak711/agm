@@ -1119,7 +1119,7 @@ export default function SalesInvoicesPage() {
                             DESCRIPTION OF WORK / SERVICES
                           </th>
                           <th className="py-2.5 px-2 print:py-1.5 print:px-1 font-bold w-20 border border-agm-box-border text-white text-center align-middle">
-                            QTY
+                            QTY / SQM
                           </th>
                           <th className="py-2.5 px-3 print:py-1.5 print:px-2 font-bold w-28 border border-agm-box-border text-white text-right align-middle">
                             RATE (AED)
@@ -1143,7 +1143,7 @@ export default function SalesInvoicesPage() {
                                 {it.description}
                               </td>
                               <td className="py-2.5 px-2 print:py-1 print:px-1 align-middle text-center font-mono font-bold text-slate-800 border border-agm-box-border">
-                                {it.quantity} {it.unit ? `(${it.unit})` : ""}
+                                {it.quantity}
                               </td>
                               <td className="py-2.5 px-3 print:py-1 print:px-2 align-middle text-right font-mono font-semibold text-slate-800 border border-agm-box-border">
                                 {formatNumber(it.unitPrice)}
