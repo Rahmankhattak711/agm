@@ -394,11 +394,10 @@ export default function EmployeesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Workforce &amp; Human Capital Directory
+            Employees Directory
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Manage employee master data, UAE
-            visa dates, labor cards, <br /> salary packages, and WPS details.
+            Manage employee master profiles, UAE labor contracts, visa statuses, and department records.
           </p>
         </div>
 

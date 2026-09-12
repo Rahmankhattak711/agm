@@ -301,11 +301,10 @@ export default function AttendancePage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Daily Site Attendance &amp; Time Tracking
+            Daily Attendance
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Track daily worker attendance,
-            biometric check-ins, <br /> overtime logs, and site assignments.
+            Track workforce attendance, site check-ins, working hours, and overtime logs.
           </p>
         </div>
 

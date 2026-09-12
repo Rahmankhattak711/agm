@@ -265,12 +265,10 @@ export default function LeavesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Leave Management &amp; Approvals
+            Leave Management
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Submit and manage employee leave
-            requests, <br /> approve annual/sick leaves, and track time-off
-            balances.
+            Review leave applications, manage annual and sick leave approvals, and track time-off balances.
           </p>
         </div>
 
