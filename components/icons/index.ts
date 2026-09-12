@@ -75,3 +75,6 @@ export * from "./BanknoteIcon";
 export * from "./RotateCcwIcon";
 export * from "./XCircleIcon";
 export * from "./MapPinIcon";
+export * from "./FileCheckIcon";
+export * from "./FileClockIcon";
+export * from "./XIcon";
