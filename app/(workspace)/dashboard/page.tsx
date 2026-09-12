@@ -687,17 +687,23 @@ export default function DashboardPage() {
 
             {/* Premium Custom Date Range Popover */}
             {isCustomOpen && (
-              <div className="absolute right-0 top-full mt-3 w-[22rem] rounded-2xl overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.75)] border border-white/10 backdrop-blur-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div
+                className="absolute right-0 top-full mt-3 w-[22rem] rounded-2xl overflow-hidden border border-white/12 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+                style={{
+                  background: "linear-gradient(180deg, #2c455a 0%, #233a4d 45%, #1d3345 100%)",
+                  boxShadow: "4px 0 28px rgba(38,59,77,0.35), 0 32px 64px -8px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)",
+                }}
+              >
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 pt-4 pb-3 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-white/8">
+                <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/10" style={{ background: "linear-gradient(135deg, #3f5d72 0%, #2c4a5c 100%)" }}>
                   <div className="flex items-center gap-2.5">
                     <div className="flex items-center justify-center w-7 h-7 rounded-xl bg-emerald-500/20 ring-1 ring-emerald-400/30">
                       <CalendarIcon size={13} className="text-emerald-400" />
                     </div>
                     <div>
                       <p className="text-[11px] font-black text-white tracking-wide uppercase">Custom Range</p>
-                      <p className="text-[9px] text-slate-400 font-medium">Pick start & end dates</p>
+                      <p className="text-[9px] text-white/50 font-medium">Pick start &amp; end dates</p>
                     </div>
                   </div>
                   <button
@@ -710,11 +716,11 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Body */}
-                <div className="bg-slate-900/95 px-4 py-3.5 space-y-4">
+                <div className="px-4 py-3.5 space-y-4">
 
                   {/* Quick Presets */}
                   <div className="space-y-2">
-                    <p className="text-[9.5px] font-bold uppercase tracking-widest text-slate-500">Quick Presets</p>
+                    <p className="text-[9.5px] font-bold uppercase tracking-widest text-white/40">Quick Presets</p>
                     <div className="grid grid-cols-3 gap-1.5">
                       {[
                         { label: "Today", start: 0, end: 0 },
@@ -728,7 +734,7 @@ export default function DashboardPage() {
                           key={preset.label}
                           type="button"
                           onClick={() => applyPreset(preset.start, preset.end)}
-                          className="px-1.5 py-2 rounded-xl bg-white/5 hover:bg-emerald-500/15 border border-white/8 hover:border-emerald-400/40 text-[10.5px] font-semibold text-slate-400 hover:text-emerald-300 transition-all text-center cursor-pointer active:scale-95 leading-tight"
+                          className="px-1.5 py-2 rounded-xl bg-white/8 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-400/40 text-[10.5px] font-semibold text-white/60 hover:text-emerald-300 transition-all text-center cursor-pointer active:scale-95 leading-tight"
                         >
                           {preset.label}
                         </button>
@@ -739,14 +745,14 @@ export default function DashboardPage() {
                   {/* Divider */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-px bg-white/8" />
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-600">Or pick dates</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-white/25">Or pick dates</span>
                     <div className="flex-1 h-px bg-white/8" />
                   </div>
 
                   {/* Date Inputs */}
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1.5">
-                      <label className="flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-500">
+                      <label className="flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider text-white/40">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                         From
                       </label>
@@ -763,7 +769,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-500">
+                      <label className="flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider text-white/40">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />
                         To
                       </label>
@@ -795,7 +801,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Footer */}
-                <div className="px-4 pb-4 pt-0 bg-slate-900/95">
+                <div className="px-4 pb-4 pt-0" style={{ background: "rgba(29,51,69,0.5)" }}>
                   <button
                     type="button"
                     onClick={() => setIsCustomOpen(false)}
