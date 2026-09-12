@@ -421,12 +421,10 @@ export default function AccountsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Chart of Accounts (COA) &amp; General Ledger
+            Chart of Accounts
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Master chart of accounts,
-            real-time balances, parent-child hierarchies, <br /> and one-click
-            account registers.
+            Manage your master chart of accounts, view real-time balances, and organize account structures.
           </p>
         </div>
 
