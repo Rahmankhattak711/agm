@@ -117,16 +117,33 @@ export default function SignupPage() {
 
         <div className="relative z-10 max-w-md">
           <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-[#a3e6ba] border border-emerald-400/30 text-xs font-bold uppercase tracking-wider mb-4">
-            New Account Registration
+            AGM ERP
           </span>
-          <h1 className="text-4xl font-extrabold text-white tracking-tight leading-tight">
-            Interior Fitout & Project Accounting Suite
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            Manage your entire business here.
           </h1>
-          <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-            Create an administrator profile to manage inventory records,
-            employee attendance, double-entry vouchers, and statutory VAT
-            reports.
+          <p className="mt-3 text-sm text-slate-300 leading-relaxed">
+            Create an account to access accounting, commercial, inventory, and team management tools.
           </p>
+
+          <div className="mt-6 space-y-2.5 text-xs text-slate-200">
+            <div className="flex items-center gap-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+              <span>Track general ledgers, P&amp;L, and VAT returns</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+              <span>Issue quotations, invoices, and payments</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+              <span>Control inventory, purchase orders, and warehouses</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+              <span>Manage employees, attendance, and payroll</span>
+            </div>
+          </div>
         </div>
 
         <div className="relative z-10 text-xs text-slate-400 flex items-center justify-between border-t border-white/10 pt-6">
@@ -143,10 +160,10 @@ export default function SignupPage() {
 
           <div className="mb-6 text-center lg:text-left">
             <h2 className="text-2xl font-bold text-[#263b4d] tracking-tight">
-              Create an Account
+              Create Account
             </h2>
             <p className="text-xs text-slate-500 mt-1 max-w-xs">
-              Register a new administrative or accounting user profile.
+              Enter your details to create your user profile.
             </p>
           </div>
 
@@ -342,7 +359,7 @@ export default function SignupPage() {
                       Creating Account...
                     </>
                   ) : (
-                    "Create Account & Proceed"
+                    "Create Account"
                   )}
                 </button>
               )}
