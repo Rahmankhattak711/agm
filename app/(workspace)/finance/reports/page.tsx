@@ -69,7 +69,7 @@ function ReportsContent() {
     {
       id: "tax-invoices",
       label: "Tax Invoices",
-      icon: <FileCheck2Icon size={14} className="text-teal-600" />,
+      icon: <FileCheck2Icon size={14} className="text-emerald-600" />,
     },
     {
       id: "profit-loss",
@@ -114,13 +114,11 @@ function ReportsContent() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Financial Reports &amp; Statements
+              Financial Statements
             </h2>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Real-time statutory accounting
-            statements, receivables &amp; payables aging, general ledger, and
-            UAE VAT Form 201 returns.
+            Generate real-time balance sheets, profit &amp; loss, general ledger, and statutory financial statements.
           </p>
         </div>
       </div>

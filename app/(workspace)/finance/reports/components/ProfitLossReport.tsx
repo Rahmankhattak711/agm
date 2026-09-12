@@ -153,8 +153,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC —{" "}
-                      {profitLoss?.periodLabel || "Financial Reporting Period"}
+                      Reporting period: {profitLoss?.periodLabel || "Current Financial Period"}
                     </p>
                   </div>
 

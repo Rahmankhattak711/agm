@@ -13,14 +13,14 @@ export default function VatReportsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            VAT &amp; Tax Compliance Reports
+            VAT &amp; Tax Return
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — TRN:{" "}
+            TRN:{" "}
             <span className="font-mono font-bold text-slate-700">
               104094432200003
             </span>{" "}
-            • Standard Tax Rate: 5% • FTA Form 201 Compliance
+            • Standard Tax Rate: 5% • Review taxable supplies, input/output VAT, and FTA Form 201 returns.
           </p>
         </div>
 

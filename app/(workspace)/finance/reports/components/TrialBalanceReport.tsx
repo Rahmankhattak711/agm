@@ -137,9 +137,7 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Comprehensive debit
-                      &amp; <br /> credit audit across all active chart of
-                      accounts
+                      Comprehensive debit and credit audit across all active accounts
                     </p>
                   </div>
 

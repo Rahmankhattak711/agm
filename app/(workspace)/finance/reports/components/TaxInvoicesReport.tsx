@@ -195,46 +195,50 @@ export const TaxInvoicesReport: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 print:hidden">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-teal-800/80 border border-teal-600/50 flex items-center justify-center text-teal-300">
-                    <ReceiptIcon size={20} />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4 print:hidden">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700 shadow-2xs shrink-0">
+                      <ReceiptIcon size={20} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-base sm:text-lg text-slate-900 tracking-tight">
+                          Tax Invoices &amp; Output VAT
+                        </h3>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-mono">
+                          FTA Form 201
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Standard UAE FTA Tax Invoices &bull; Real-time output VAT &amp; taxable supplies auditing
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-black text-lg text-white tracking-tight">
-                      Tax Invoices Summary &amp; Register
-                    </h3>
-                    <p className="text-xs text-teal-200">
-                      Standard UAE FTA Tax Invoices (Form 201 Taxable Supplies
-                      Auditing)
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2 print:hidden">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.print()}
-                    className="border-teal-600/60 bg-teal-800/60 hover:bg-teal-800 text-teal-100 text-xs font-bold"
-                    icon={<PrintIcon size={13} />}
-                  >
-                    Print Statement (A4)
-                  </Button>
+                  <div className="flex items-center gap-2 print:hidden shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePrint}
+                      className="text-xs font-bold text-slate-700 border-slate-300 bg-white hover:bg-slate-50 hover:text-slate-900 shadow-2xs cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl"
+                      icon={<PrintIcon size={14} className="text-slate-500" />}
+                    >
+                      Print Statement
+                    </Button>
+                  </div>
                 </div>
-              </div>
 
               {/* 4 Cards in a row with Profit & Loss UI */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 my-5 print:my-3 print-avoid-break">
                 {/* Card 1 */}
                 <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                  <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
+                  <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-600" />
                   <div>
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
                         1. Gross Invoiced
                       </span>
-                      <span className="text-[10px] font-mono font-bold text-teal-800 bg-teal-50 px-1.5 py-0.5 rounded-md border border-teal-200/60">
+                      <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
                         {filteredInvoices.length} Invoices
                       </span>
                     </div>
@@ -360,7 +364,7 @@ export const TaxInvoicesReport: React.FC = () => {
                           onClick={() => setStatusFilter(p.key)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer h-auto ${
                             isActive
-                              ? "bg-teal-700 text-white shadow-xs hover:bg-teal-700"
+                              ? "bg-emerald-700 text-white shadow-xs hover:bg-emerald-800"
                               : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
                           }`}
                         >
@@ -377,7 +381,7 @@ export const TaxInvoicesReport: React.FC = () => {
                     <Select
                       value={dateFilter}
                       onChange={(e) => setDateFilter(e.target.value)}
-                      className="px-2.5 py-1 text-xs font-semibold bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-teal-600"
+                      className="px-2.5 py-1 text-xs font-semibold bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-emerald-600"
                     >
                       <option value="ALL">All Periods</option>
                       <option value="THIS_MONTH">This Month</option>
@@ -414,12 +418,12 @@ export const TaxInvoicesReport: React.FC = () => {
               </div>
 
               <div className="mt-4 rounded-xl border border-slate-200/80 overflow-hidden shadow-xs">
-                <div className="bg-slate-900 text-white p-3 px-4 flex items-center justify-between">
+                <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3 px-4 flex items-center justify-between">
                   <h4 className="font-bold text-xs uppercase tracking-wider text-white flex items-center gap-2">
-                    <FileSpreadsheetIcon size={14} className="text-teal-400" />
+                    <FileSpreadsheetIcon size={14} className="text-emerald-400" />
                     <span>Statutory Tax Invoices Register</span>
                   </h4>
-                  <span className="text-[11px] font-mono text-teal-300 font-bold">
+                  <span className="text-[11px] font-mono text-emerald-300 font-bold">
                     {filteredInvoices.length} Recorded Tax Invoices
                   </span>
                 </div>
@@ -525,7 +529,7 @@ export const TaxInvoicesReport: React.FC = () => {
                             <TableCell className="py-2 px-3">
                               <div className="flex flex-col gap-0.5">
                                 {inv.quotationRef && (
-                                  <span className="inline-block px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 font-mono text-[9.5px] print:text-[8px] font-bold border border-teal-200 w-fit">
+                                  <span className="inline-block px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 font-mono text-[9.5px] print:text-[8px] font-bold border border-emerald-200 w-fit">
                                     {inv.quotationRef}
                                   </span>
                                 )}
@@ -599,7 +603,7 @@ export const TaxInvoicesReport: React.FC = () => {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setSelectedInvoice(inv)}
-                                className="p-1.5 text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer h-auto"
+                                className="p-1.5 text-slate-400 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 transition cursor-pointer h-auto"
                                 title="View Line Items &amp; Tax Breakdown"
                               >
                                 <EyeIcon size={13} />
@@ -934,7 +938,7 @@ export const TaxInvoicesReport: React.FC = () => {
                   {selectedInvoice.projectScope || "—"}
                 </span>
                 {selectedInvoice.quotationRef && (
-                  <span className="text-[10px] text-teal-800 font-mono font-bold block">
+                  <span className="text-[10px] text-emerald-800 font-mono font-bold block">
                     Converted from: {selectedInvoice.quotationRef}
                   </span>
                 )}
@@ -1048,7 +1052,7 @@ export const TaxInvoicesReport: React.FC = () => {
                 onClick={() => {
                   window.location.href = `/commercial/sales-invoices`;
                 }}
-                className="bg-teal-700 hover:bg-teal-800 text-white"
+                className="bg-emerald-700 hover:bg-emerald-800 text-white"
               >
                 Open in Sales Invoices
               </Button>

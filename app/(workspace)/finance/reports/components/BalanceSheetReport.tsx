@@ -150,8 +150,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      AGM FITOUT TECHNICAL SERVICES LLC — Statutory GAAP
-                      Equation: Assets = Liabilities + Equity
+                      Standard accounting equation: Assets = Liabilities + Equity
                     </p>
                   </div>
 
