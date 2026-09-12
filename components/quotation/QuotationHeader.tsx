@@ -16,16 +16,16 @@ export const QuotationHeader: React.FC<QuotationHeaderProps> = ({
         <Image
           src="/assets/logo.png"
           alt="AGM Aesthetic House"
-          width={150}
-          height={150}
+          width={160}
+          height={160}
           sizes="100vh"
           quality={100}
-          className="object-cover print:w-[150px] print:h-auto"
+          className="object-cover print:w-[160px] print:h-auto"
           priority
         />
       </div>
-      <div className="text-right text-[12px] print:text-[11.5px] leading-5 print:leading-snug text-slate-800 max-w-[440px] print:max-w-[500px]">
-        <div className="font-bold text-[18px] print:text-[18px] mb-1 print:mb-1 text-agm-green">
+      <div className="text-right text-[12px] print:text-[11.5px] leading-5 print:leading-snug text-slate-800 max-w-[500px] print:max-w-[500px]">
+        <div className="font-bold text-[22px] print:text-[22px] mb-1 print:mb-1 text-agm-green">
           A G M FITOUT TECHNICAL SERVICES L.L.C
         </div>
         <div className="text-slate-700">
