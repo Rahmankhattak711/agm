@@ -189,12 +189,10 @@ export default function CommercialQuotationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Commercial Quotations &amp; Proposals
+            Quotations
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Create official commercial{" "}
-            <br /> proposals, generate multi-point BOQ scope bundles, and
-            convert <br /> accepted proposals into Sales Orders.
+            Create commercial proposals, generate itemized BOQs, and convert accepted quotes into sales orders.
           </p>
         </div>
 

@@ -135,12 +135,10 @@ export default function CustomersMasterPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Customer Directory &amp; Statements
+            Customers
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Comprehensive client database,
-            credit limit controls, <br /> and real-time Statement of Account
-            ledgers.
+            Manage client profiles, credit limits, contact information, and real-time statements of account.
           </p>
         </div>
 

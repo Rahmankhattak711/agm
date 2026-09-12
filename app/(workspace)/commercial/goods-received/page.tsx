@@ -168,9 +168,7 @@ export default function GoodsReceivedPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Receive warehouse shipments,
-            verify delivery notes, record accepted and damaged quantities, and
-            auto-update stock on hand.
+            Verify warehouse shipments against purchase orders, record received items, and update inventory balances.
           </p>
         </div>
 

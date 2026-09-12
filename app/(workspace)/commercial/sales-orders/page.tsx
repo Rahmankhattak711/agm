@@ -167,16 +167,14 @@ export default function SalesOrdersPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Sales Orders & Contracts
+              Sales Orders
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
               Sales Cycle — Step 2
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Track confirmed customer sales
-            orders, delivery timelines, project commitments, and convert them to
-            Sales Invoices.
+            Track confirmed customer orders, delivery timelines, and convert commitments into sales invoices.
           </p>
         </div>
 

@@ -119,8 +119,7 @@ export default function SupplierPaymentsPage() {
               Supplier Payment Disbursal Voucher
             </h1>
             <p className="text-xs text-slate-500">
-              AGM FITOUT TECHNICAL SERVICES LLC — Accounts Payable Settlement &
-              Vendor Payment Schedule
+              Accounts Payable Settlement &amp; Vendor Payment Schedule
             </p>
           </div>
           <p className="text-[10px] text-slate-400 font-mono">
@@ -133,15 +132,14 @@ export default function SupplierPaymentsPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Supplier Payments & Disbursals
+              Supplier Payments
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
               Procurement Cycle — Step 4
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            AGM FITOUT TECHNICAL SERVICES LLC — Disburse payments to suppliers,
-            clear open Accounts Payable bills, and track bank reconciliations.
+            Disburse payments to vendors, settle open purchase bills, and track bank disbursements.
           </p>
         </div>
 

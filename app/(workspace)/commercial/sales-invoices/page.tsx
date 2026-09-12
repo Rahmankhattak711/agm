@@ -258,12 +258,10 @@ export default function SalesInvoicesPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
           <div>
             <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-              Commercial Sales Invoices &amp; Tax Billing
+              Sales Invoices
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
-              AGM FITOUT TECHNICAL SERVICES LLC — Issue tax-compliant sales
-              invoices, calculate 5% Output VAT, <br className="hidden sm:inline" /> update Accounts
-              Receivable, and post transactions directly to General Ledger.
+              Issue tax-compliant sales invoices, calculate 5% output VAT, and track customer receivables.
             </p>
           </div>
 
