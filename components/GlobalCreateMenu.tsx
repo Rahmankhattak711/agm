@@ -2,26 +2,26 @@
 
 import { useAuth } from "@/context/AuthContext";
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  BookOpen,
-  Box,
-  ChevronDown,
-  CreditCard,
-  FileCheck,
-  FileText,
-  Layers,
-  PackageCheck,
-  Plus,
-  Receipt,
-  RotateCcw,
-  Search,
-  ShoppingCart,
-  Sparkles,
-  Truck,
-  Users,
-  X,
-} from "lucide-react";
+  ArrowDownLeftIcon,
+  ArrowUpRightIcon,
+  BookOpenIcon,
+  BoxesIcon,
+  ChevronDownIcon,
+  CreditCardIcon,
+  FileCheckIcon,
+  FileTextIcon,
+  LayersIcon,
+  PackageIcon,
+  PlusIcon,
+  ReceiptIcon,
+  RotateCcwIcon,
+  SearchIcon,
+  ShoppingCartIcon,
+  SparklesIcon,
+  TruckIcon,
+  UserIcon,
+  XIcon,
+} from "@/components/icons";
 import Link from "next/link";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
@@ -43,10 +43,10 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Quotation",
     sublabel: "Create client price quote & BOQ",
     href: "/commercial/quotations",
-    icon: <FileText size={16} className="text-emerald-600" />,
+    icon: <FileTextIcon size={16} className="text-emerald-500" />,
     category: "SALES",
     badge: "Popular",
-    badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    badgeColor: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
     isPopular: true,
   },
   {
@@ -54,7 +54,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Sales Order",
     sublabel: "Confirmed client contract/order",
     href: "/commercial/sales-orders",
-    icon: <FileCheck size={16} className="text-emerald-600" />,
+    icon: <FileCheckIcon size={16} className="text-emerald-500" />,
     category: "SALES",
   },
   {
@@ -62,10 +62,10 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Sales Invoice",
     sublabel: "Official UAE Tax invoice with 5% VAT",
     href: "/commercial/sales-invoices",
-    icon: <Receipt size={16} className="text-emerald-600" />,
+    icon: <ReceiptIcon size={16} className="text-emerald-500" />,
     category: "SALES",
     badge: "Tax Inv",
-    badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    badgeColor: "bg-blue-500/15 text-blue-300 border-blue-500/30",
     isPopular: true,
   },
   {
@@ -73,7 +73,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Customer Receipt",
     sublabel: "Record customer inbound payment",
     href: "/commercial/customer-payments",
-    icon: <ArrowDownLeft size={16} className="text-emerald-600" />,
+    icon: <ArrowDownLeftIcon size={16} className="text-emerald-500" />,
     category: "SALES",
   },
   {
@@ -81,7 +81,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Credit Note",
     sublabel: "Sales return or client scope deduction",
     href: "/commercial/credit-notes",
-    icon: <RotateCcw size={16} className="text-purple-600" />,
+    icon: <RotateCcwIcon size={16} className="text-purple-400" />,
     category: "SALES",
   },
 
@@ -90,7 +90,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Purchase Request",
     sublabel: "Site team material requisition",
     href: "/commercial/purchase-requests",
-    icon: <ShoppingCart size={16} className="text-amber-600" />,
+    icon: <ShoppingCartIcon size={16} className="text-amber-400" />,
     category: "PURCHASES",
   },
   {
@@ -98,7 +98,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Purchase Order",
     sublabel: "Vendor order & pricing commitment",
     href: "/commercial/purchase-orders",
-    icon: <ShoppingCart size={16} className="text-amber-600" />,
+    icon: <ShoppingCartIcon size={16} className="text-amber-400" />,
     category: "PURCHASES",
     isPopular: true,
   },
@@ -107,7 +107,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Goods Received (GRN)",
     sublabel: "Receive materials & update stock",
     href: "/commercial/goods-received",
-    icon: <PackageCheck size={16} className="text-amber-600" />,
+    icon: <PackageIcon size={16} className="text-amber-400" />,
     category: "PURCHASES",
   },
   {
@@ -115,7 +115,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Supplier Bill",
     sublabel: "Vendor purchase invoice & Input VAT",
     href: "/commercial/supplier-bills",
-    icon: <Receipt size={16} className="text-amber-600" />,
+    icon: <ReceiptIcon size={16} className="text-amber-400" />,
     category: "PURCHASES",
     isPopular: true,
   },
@@ -124,7 +124,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Supplier Payment",
     sublabel: "Disburse vendor payment via bank/cheque",
     href: "/commercial/supplier-payments",
-    icon: <ArrowUpRight size={16} className="text-amber-600" />,
+    icon: <ArrowUpRightIcon size={16} className="text-amber-400" />,
     category: "PURCHASES",
   },
   {
@@ -132,7 +132,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Debit Note",
     sublabel: "Purchase return / vendor deduction",
     href: "/commercial/debit-notes",
-    icon: <RotateCcw size={16} className="text-purple-600" />,
+    icon: <RotateCcwIcon size={16} className="text-purple-400" />,
     category: "PURCHASES",
   },
 
@@ -141,7 +141,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Direct Expense",
     sublabel: "Operational expense voucher",
     href: "/finance/expenses",
-    icon: <CreditCard size={16} className="text-blue-600" />,
+    icon: <CreditCardIcon size={16} className="text-blue-400" />,
     category: "ACCOUNTING",
     isPopular: true,
   },
@@ -150,7 +150,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Journal Entry",
     sublabel: "Manual double-entry GL adjustment",
     href: "/finance/journal-entries",
-    icon: <BookOpen size={16} className="text-blue-600" />,
+    icon: <BookOpenIcon size={16} className="text-blue-400" />,
     category: "ACCOUNTING",
   },
   {
@@ -158,7 +158,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "Chart of Accounts",
     sublabel: "Manage general ledger accounts",
     href: "/finance/accounts",
-    icon: <Layers size={16} className="text-blue-600" />,
+    icon: <LayersIcon size={16} className="text-blue-400" />,
     category: "ACCOUNTING",
   },
 
@@ -167,7 +167,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "New Customer",
     sublabel: "Add client profile & TRN number",
     href: "/commercial/customers",
-    icon: <Users size={16} className="text-teal-600" />,
+    icon: <UserIcon size={16} className="text-teal-400" />,
     category: "MASTER_DATA",
   },
   {
@@ -175,7 +175,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "New Supplier",
     sublabel: "Vendor directory & terms",
     href: "/inventory/suppliers",
-    icon: <Truck size={16} className="text-indigo-600" />,
+    icon: <TruckIcon size={16} className="text-indigo-400" />,
     category: "MASTER_DATA",
   },
   {
@@ -183,7 +183,7 @@ const ACTION_ITEMS: ActionItem[] = [
     label: "New Product / SKU",
     sublabel: "Add stock item, rates & categories",
     href: "/inventory/products",
-    icon: <Box size={16} className="text-slate-600" />,
+    icon: <BoxesIcon size={16} className="text-slate-400" />,
     category: "MASTER_DATA",
   },
 ];
@@ -191,27 +191,31 @@ const ACTION_ITEMS: ActionItem[] = [
 const CATEGORY_META = {
   SALES: {
     title: "Sales & Revenue",
-    color: "text-emerald-700",
-    bgColor: "bg-emerald-50/70",
-    borderColor: "border-emerald-100",
+    accent: "text-emerald-400",
+    dot: "bg-emerald-500",
+    iconBg: "bg-emerald-500/10 border-emerald-500/20",
+    hover: "hover:bg-emerald-500/8 hover:border-emerald-500/25",
   },
   PURCHASES: {
     title: "Procurement & Payables",
-    color: "text-amber-700",
-    bgColor: "bg-amber-50/70",
-    borderColor: "border-amber-100",
+    accent: "text-amber-400",
+    dot: "bg-amber-500",
+    iconBg: "bg-amber-500/10 border-amber-500/20",
+    hover: "hover:bg-amber-500/8 hover:border-amber-500/25",
   },
   ACCOUNTING: {
     title: "Accounting & General Ledger",
-    color: "text-blue-700",
-    bgColor: "bg-blue-50/70",
-    borderColor: "border-blue-100",
+    accent: "text-blue-400",
+    dot: "bg-blue-500",
+    iconBg: "bg-blue-500/10 border-blue-500/20",
+    hover: "hover:bg-blue-500/8 hover:border-blue-500/25",
   },
   MASTER_DATA: {
     title: "Master Data & Registry",
-    color: "text-slate-700",
-    bgColor: "bg-slate-50/70",
-    borderColor: "border-slate-100",
+    accent: "text-slate-400",
+    dot: "bg-slate-500",
+    iconBg: "bg-slate-500/10 border-slate-500/20",
+    hover: "hover:bg-slate-500/8 hover:border-slate-500/25",
   },
 };
 
@@ -281,21 +285,21 @@ export default function GlobalCreateMenu() {
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
-      {}
+      {/* Trigger Button */}
       <button
         type="button"
         id="global-create-button"
         aria-expanded={isOpen}
         aria-haspopup="true"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#28633a] to-[#1f4d2d] hover:from-[#215330] hover:to-[#173b22] text-white text-xs font-bold transition-all shadow-sm hover:shadow active:scale-95 cursor-pointer min-h-[38px] border border-emerald-600/30"
+        className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 hover:from-emerald-400 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md shadow-emerald-900/30 hover:shadow-emerald-700/40 active:scale-95 cursor-pointer min-h-[38px] border border-emerald-400/20"
         title="Create new document or record (Ctrl+K)"
       >
-        <span className="w-5 h-5 rounded-lg bg-white/15 flex items-center justify-center">
-          <Plus size={13} strokeWidth={2.5} />
+        <span className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center">
+          <PlusIcon size={12} strokeWidth={2.5} />
         </span>
         <span className="tracking-wide">Create</span>
-        <ChevronDown
+        <ChevronDownIcon
           size={13}
           className={`transition-transform duration-200 opacity-80 ${
             isOpen ? "rotate-180" : ""
@@ -303,45 +307,50 @@ export default function GlobalCreateMenu() {
         />
       </button>
 
+      {/* Modal Panel */}
       {isOpen && (
         <div
           role="menu"
-          className="fixed md:absolute right-4 md:right-0 top-[76px] md:top-full mt-2 w-[94vw] sm:w-[580px] md:w-[620px] rounded-2xl border border-slate-200/90 bg-white shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-150 text-slate-800 flex flex-col overflow-hidden"
+          className="fixed md:absolute right-4 md:right-0 top-[76px] md:top-full mt-2 w-[94vw] sm:w-[580px] md:w-[620px] rounded-2xl overflow-hidden border border-white/12 animate-in fade-in slide-in-from-top-2 duration-200 text-white flex flex-col"
           style={{
             zIndex: 99999,
             maxHeight: "calc(100vh - 95px)",
-            boxShadow:
-              "0 20px 45px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.06)",
+            background: "linear-gradient(180deg, #2c455a 0%, #233a4d 45%, #1d3345 100%)",
+            boxShadow: "4px 0 28px rgba(38,59,77,0.35), 0 32px 64px -8px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)",
           }}
         >
-          <div className="flex-shrink-0 pb-3 border-b border-slate-100 flex items-center justify-between gap-3">
+          {/* Header */}
+          <div className="flex-shrink-0 px-5 pt-4 pb-3.5 border-b border-white/10 flex items-center justify-between gap-3" style={{ background: "linear-gradient(135deg, #3f5d72 0%, #2c4a5c 100%)" }}>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-800">
-                  Quick Create Command Center
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-black uppercase tracking-widest text-white">
+                  Quick Create
                 </span>
-                <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                  <Sparkles size={10} /> Fast Action
+                <span className="flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/25">
+                  <SparklesIcon size={9} />
+                  Command Center
                 </span>
               </div>
-              <p className="text-[11.5px] text-slate-500 mt-0.5 font-medium">
-                Select a financial voucher, commercial order, or master entity
+              <p className="text-[11px] text-slate-400 mt-0.5 font-medium">
+                Select a voucher, order, or master entity
               </p>
             </div>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+              className="flex items-center justify-center w-7 h-7 rounded-xl text-slate-500 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
             >
-              <X size={16} />
+              <XIcon size={14} />
             </button>
           </div>
 
-          <div className="flex-shrink-0 py-2.5 space-y-2">
+          {/* Search + Category Filters */}
+          <div className="flex-shrink-0 px-5 py-3 space-y-2.5 border-b border-white/10">
+            {/* Search */}
             <div className="relative">
-              <Search
-                size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              <SearchIcon
+                size={13}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
               />
               <input
                 ref={searchInputRef}
@@ -349,20 +358,21 @@ export default function GlobalCreateMenu() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search action (e.g., invoice, quotation, payment, bill)..."
-                className="w-full pl-9 pr-8 py-2 text-xs bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200/80 focus:border-emerald-600 rounded-xl outline-none font-medium transition placeholder:text-slate-400 text-slate-900"
+                className="w-full pl-8.5 pr-8 py-2 text-xs bg-white/8 hover:bg-white/12 focus:bg-white/15 border border-white/15 focus:border-emerald-300/50 rounded-xl outline-none font-medium transition placeholder:text-white/30 text-white [color-scheme:dark]"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition"
                 >
-                  <X size={13} />
+                  <XIcon size={12} />
                 </button>
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+            {/* Category Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
               {[
                 { key: "ALL", label: "All Actions" },
                 { key: "SALES", label: "Sales & Revenue" },
@@ -374,10 +384,10 @@ export default function GlobalCreateMenu() {
                   key={cat.key}
                   type="button"
                   onClick={() => setActiveCategory(cat.key)}
-                  className={`px-2.5 py-1 rounded-lg text-[10.5px] font-bold whitespace-nowrap transition cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-[10.5px] font-bold whitespace-nowrap transition-all cursor-pointer border ${
                     activeCategory === cat.key
-                      ? "bg-slate-900 text-white shadow-xs"
-                      : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/70 hover:text-slate-900"
+                      ? "bg-white/20 text-white border-white/30 shadow-sm"
+                      : "bg-white/6 text-white/50 border-white/10 hover:bg-white/12 hover:text-white/80"
                   }`}
                 >
                   {cat.label}
@@ -386,15 +396,18 @@ export default function GlobalCreateMenu() {
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto pr-1.5 space-y-4 pt-1 pb-2">
+          {/* Action Items Grid */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-3 space-y-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
             {filteredItems.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-xs font-bold text-slate-700">
+              <div className="text-center py-12">
+                <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-3">
+                  <SearchIcon size={18} className="text-slate-600" />
+                </div>
+                <p className="text-xs font-bold text-slate-400">
                   No matching action found
                 </p>
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Try searching for &quot;quotation&quot;, &quot;bill&quot;, or
-                  &quot;customer&quot;
+                <p className="text-[11px] text-slate-600 mt-1">
+                  Try &quot;quotation&quot;, &quot;bill&quot;, or &quot;customer&quot;
                 </p>
               </div>
             ) : (
@@ -409,14 +422,14 @@ export default function GlobalCreateMenu() {
                 const meta = CATEGORY_META[catKey];
 
                 return (
-                  <div key={catKey} className="space-y-1.5">
-                    <div className="flex items-center gap-2 px-1">
-                      <span
-                        className={`text-[10px] font-black uppercase tracking-wider ${meta.color}`}
-                      >
+                  <div key={catKey} className="space-y-2">
+                    {/* Section header */}
+                    <div className="flex items-center gap-2 px-0.5">
+                      <span className={`w-1.5 h-1.5 rounded-full ${meta.dot} flex-shrink-0`} />
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${meta.accent}`}>
                         {meta.title}
                       </span>
-                      <span className="h-[1px] flex-1 bg-slate-100" />
+                      <span className="h-px flex-1 bg-white/6" />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -425,26 +438,26 @@ export default function GlobalCreateMenu() {
                           key={item.id}
                           href={item.href}
                           onClick={() => setIsOpen(false)}
-                          className="group flex items-start gap-2.5 p-2.5 rounded-xl border border-slate-100 hover:border-emerald-200 bg-slate-50/50 hover:bg-emerald-50/40 transition-all duration-150 relative"
+                          className={`group flex items-start gap-3 p-3 rounded-xl border border-white/10 bg-white/6 ${meta.hover} transition-all duration-150 relative`}
                         >
-                          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200/80 group-hover:border-emerald-200 flex items-center justify-center flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                          <div className={`w-8 h-8 rounded-xl ${meta.iconBg} border flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
                             {item.icon}
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-1">
-                              <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-900 truncate">
+                              <span className="text-xs font-bold text-slate-200 group-hover:text-white truncate">
                                 {item.label}
                               </span>
                               {item.badge && (
                                 <span
-                                  className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${item.badgeColor}`}
+                                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border flex-shrink-0 ${item.badgeColor}`}
                                 >
                                   {item.badge}
                                 </span>
                               )}
                             </div>
                             {item.sublabel && (
-                              <p className="text-[10px] text-slate-500 group-hover:text-slate-600 truncate mt-0.5">
+                              <p className="text-[10px] text-slate-500 group-hover:text-slate-400 truncate mt-0.5">
                                 {item.sublabel}
                               </p>
                             )}
@@ -458,15 +471,16 @@ export default function GlobalCreateMenu() {
             )}
           </div>
 
-          <div className="flex-shrink-0 pt-2.5 mt-auto border-t border-slate-100 flex items-center justify-between text-[10.5px] text-slate-400 font-medium px-1">
-            <span>
+          {/* Footer */}
+          <div className="flex-shrink-0 px-5 py-3 border-t border-white/10 flex items-center justify-between text-[10px] text-white/30 font-medium" style={{ background: "rgba(29,51,69,0.8)" }}>
+            <span className="flex items-center gap-1.5">
               Tip: Press{" "}
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[9px] border border-slate-200">
+              <kbd className="px-1.5 py-0.5 rounded-lg bg-white/10 text-white/60 font-mono text-[9px] border border-white/15">
                 Ctrl+K
               </kbd>{" "}
               to open anytime
             </span>
-            <span className="text-slate-400">AGM Financial Command Center</span>
+            <span className="text-white/25">AGM Command Center</span>
           </div>
         </div>
       )}
