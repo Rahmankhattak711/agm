@@ -353,26 +353,15 @@ export const PurchaseOrderPrintModal: React.FC<
               </ol>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 px-10 mt-3.5 mb-2 text-[11px] print-avoid-break">
-              <div className="border border-slate-200 rounded-xl p-2.5 text-center bg-white">
-                <div className="font-bold text-slate-800 mb-6">
-                  Prepared & Authorized By (AGM Fitout)
-                </div>
-                <div className="border-t border-dashed border-slate-300 pt-1 text-[10px] text-slate-400">
-                  Authorized Signature & Company Stamp
-                </div>
-              </div>
-              <div className="border border-slate-200 rounded-xl p-2.5 text-center bg-white">
-                <div className="font-bold text-slate-800 mb-6">
-                  Accepted & Confirmed By (Vendor / Supplier)
-                </div>
-                <div className="border-t border-dashed border-slate-300 pt-1 text-[10px] text-slate-400">
-                  Supplier Signature, Date & Stamp
-                </div>
-              </div>
+            {/* Fixed bottom footer for print */}
+            <div className="print-footer-bottom fixed-print-footer hidden print:block">
+              <QuotationFooter />
             </div>
 
-            <QuotationFooter />
+            {/* Screen view footer */}
+            <div className="px-10 pb-6 print:hidden">
+              <QuotationFooter className="mt-6" />
+            </div>
           </div>
         </div>
       </div>

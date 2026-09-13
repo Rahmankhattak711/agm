@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 import {
   PrintIcon,
   SearchIcon,
@@ -23,6 +24,7 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
+import { ReportKpiCard, ReportKpiGrid } from "./ReportKpiCard";
 
 interface TrialBalanceReportProps {
   trialBalance?: TrialBalanceData;
@@ -82,8 +84,14 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
     { id: "EXPENSE", label: "Expenses" },
   ];
 
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Trial-Balance-Report",
+  });
+
   return (
-    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+    <div ref={printRef} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -97,8 +105,15 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
 
         <tfoot className="print-page-footer-group">
           <tr>
-            <td className="p-0 border-none">
-              <div className="h-[140px] w-full hidden print:block" />
+            <td className="p-0 border-none align-bottom">
+              <div
+                className="w-full opacity-0 pointer-events-none select-none"
+                style={{ minHeight: "175px" }}
+                aria-hidden="true"
+              >
+                <QuotationFooter />
+                <div style={{ height: "45px", minHeight: "45px" }} />
+              </div>
             </td>
           </tr>
         </tfoot>
@@ -129,9 +144,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2.5 py-1 rounded-lg bg-teal-700 text-white font-black text-xs shadow-xs">
-                        TB
-                      </span>
                       <h3 className="font-black text-lg text-slate-900 tracking-tight">
                         Trial Balance Audit Statement
                       </h3>
@@ -142,25 +154,10 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
-                        isBalanced
-                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                          : "bg-amber-50 text-amber-800 border-amber-200"
-                      }`}
-                    >
-                      {isBalanced ? (
-                        <CheckCircle2Icon size={13} className="text-emerald-700" />
-                      ) : (
-                        <AlertTriangleIcon size={13} className="text-amber-700" />
-                      )}
-                      {isBalanced ? "Equation Balanced" : "Out of Balance"}
-                    </span>
-
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.print()}
+                      onClick={() => handlePrint()}
                       className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
                       icon={<PrintIcon size={14} />}
                     >  Print Statement
@@ -175,102 +172,73 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 print-avoid-break">
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-                        <div>
-                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                            1. Total Debits
-                          </span>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Assets &amp; Expense Postings
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
-                            {formatNumber(totalDebit)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-                        <div>
-                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                            2. Total Credits
-                          </span>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Liabilities, Equity &amp; Revenue
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
-                            {formatNumber(totalCredit)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
-                        <div>
-                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                            3. Active Ledgers
-                          </span>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Chart of Accounts Monitored
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
+                    <ReportKpiGrid cols={3}>
+                      <ReportKpiCard
+                        title="1. Total Debits"
+                        subtitle="Assets & Expense Postings"
+                        value={formatNumber(totalDebit)}
+                        accentColor="sky"
+                        valueColor="text-slate-900"
+                      />
+                      <ReportKpiCard
+                        title="2. Total Credits"
+                        subtitle="Liabilities, Equity & Revenue"
+                        value={formatNumber(totalCredit)}
+                        accentColor="emerald"
+                        valueColor="text-emerald-800"
+                      />
+                      <ReportKpiCard
+                        title="3. Active Ledgers"
+                        subtitle="Chart of Accounts Monitored"
+                        value={
+                          <span>
                             {allRows.length}
-                          </span>
-                          <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
-                            Accounts
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div
-                          className={`absolute inset-x-0 top-0 h-[2.5px] ${isBalanced ? "bg-emerald-500" : "bg-amber-500"}`}
-                        />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              4. Ledger Equality
+                            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
+                              Accounts
                             </span>
-                            <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
-                                isBalanced
-                                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                  : "bg-amber-50 text-amber-800 border-amber-200"
-                              }`}
-                            >
-                              {isBalanced ? "In Balance" : "Variance"}
-                            </span>
-                          </div>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Total Debits - Total Credits
                           </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
+                        }
+                        currency={false}
+                        accentColor="indigo"
+                        valueColor="text-slate-900"
+                      />
+                      <ReportKpiCard
+                        title="4. Ledger Equality"
+                        subtitle="Total Debits - Total Credits"
+                        value={isBalanced ? "0.00" : formatNumber(difference)}
+                        accentColor={isBalanced ? "emerald" : "amber"}
+                        valueColor={isBalanced ? "text-emerald-800" : "text-amber-800"}
+                        badge={
                           <span
-                            className={`text-xl print:text-base font-black font-mono ${
-                              isBalanced ? "text-emerald-800" : "text-amber-800"
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                              isBalanced
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                : "bg-amber-50 text-amber-800 border-amber-200"
                             }`}
                           >
-                            {isBalanced ? "0.00" : formatNumber(difference)}
+                            {isBalanced ? "In Balance" : "Variance"}
                           </span>
-                        </div>
+                        }
+                      />
+                    </ReportKpiGrid>
+
+                    {/* Compact Printable Trial Balance Summary Strip */}
+                    <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Total Debits</span>
+                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalDebit)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Total Credits</span>
+                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalCredit)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Chart Accounts</span>
+                        <span className="font-mono font-black text-slate-900">{allRows.length} Accounts</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Audit Status</span>
+                        <span className="font-mono font-black text-emerald-800">{isBalanced ? "In Balance (0.00)" : `Variance: ${formatCurrency(difference)}`}</span>
                       </div>
                     </div>
 
@@ -308,7 +276,7 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
                       <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white">
                           Trial Balance Ledger Postings

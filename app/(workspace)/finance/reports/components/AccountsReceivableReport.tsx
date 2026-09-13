@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 import {
   ClockIcon,
   CloseIcon,
@@ -21,6 +22,7 @@ import {
 import { useReceivables } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
+import { ReportKpiCard, ReportKpiGrid } from "./ReportKpiCard";
 
 export const AccountsReceivableReport: React.FC = () => {
   const { data: receivables, isLoading } = useReceivables();
@@ -54,9 +56,11 @@ export const AccountsReceivableReport: React.FC = () => {
     0,
   );
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Accounts-Receivable-Aging-Report",
+  });
 
   const agingPills = [
     { key: "ALL", label: "All Receivables" },
@@ -67,7 +71,7 @@ export const AccountsReceivableReport: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+    <div ref={printRef} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -81,8 +85,15 @@ export const AccountsReceivableReport: React.FC = () => {
 
         <tfoot className="print-page-footer-group">
           <tr>
-            <td className="p-0 border-none">
-              <div className="h-[140px] w-full hidden print:block" />
+            <td className="p-0 border-none align-bottom">
+              <div
+                className="w-full opacity-0 pointer-events-none select-none"
+                style={{ minHeight: "175px" }}
+                aria-hidden="true"
+              >
+                <QuotationFooter />
+                <div style={{ height: "45px", minHeight: "45px" }} />
+              </div>
             </td>
           </tr>
         </tfoot>
@@ -113,19 +124,13 @@ export const AccountsReceivableReport: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-4 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2.5 py-1 rounded-lg bg-emerald-700 text-white font-black text-xs shadow-xs">
-                        A/R
-                      </span>
                       <h3 className="font-black text-lg text-slate-900 tracking-tight">
                         Accounts Receivable &amp; Client Aging
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
                       Real-time accounts receivable balances mapped to GL
-                      Account{" "}
-                      <span className="font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                        1200 - Accounts Receivable (Asset)
-                      </span>
+                      Account
                     </p>
                   </div>
 
@@ -134,7 +139,7 @@ export const AccountsReceivableReport: React.FC = () => {
                       variant="outline"
                       size="sm"
                       icon={<PrintIcon size={14} />}
-                      onClick={() => window.print()}
+                      onClick={() => handlePrint()}
                       className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
                     >
                       Print Statement
@@ -152,129 +157,73 @@ export const AccountsReceivableReport: React.FC = () => {
                 ) : (
                   <div className="space-y-6">
                     {}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 print:grid-cols-5 gap-3.5 print:gap-2 print-avoid-break">
-                      {}
-                      <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              Total Outstanding
-                            </span>
-                            <ReceiptIcon size={14} className="text-rose-600" />
-                          </div>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            {items.length} Active Client Accounts
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-rose-700 font-mono">
-                            {formatNumber(receivables?.totalReceivables || 0)}
-                          </span>
-                        </div>
-                      </div>
+                    <ReportKpiGrid cols={3}>
+                      <ReportKpiCard
+                        title="Total Outstanding"
+                        subtitle={`${items.length} Active Client Accounts`}
+                        value={formatNumber(receivables?.totalReceivables || 0)}
+                        accentColor="rose"
+                        valueColor="text-rose-700"
+                        icon={<ReceiptIcon size={14} className="text-rose-600" />}
+                      />
 
-                      {}
-                      <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              Current (0–30d)
-                            </span>
-                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                          </div>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Normal Credit Terms
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-emerald-800 font-mono">
-                            {formatNumber(aging.current)}
-                          </span>
-                        </div>
-                      </div>
+                      <ReportKpiCard
+                        title="Current (0–30d)"
+                        subtitle="Normal Credit Terms"
+                        value={formatNumber(aging.current)}
+                        accentColor="emerald"
+                        valueColor="text-emerald-800"
+                        icon={<span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />}
+                      />
 
-                      {}
-                      <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-blue-500" />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              31–60 Days
-                            </span>
-                            <span className="h-2 w-2 rounded-full bg-blue-500" />
-                          </div>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            First Follow-up
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-blue-800 font-mono">
-                            {formatNumber(aging.days30)}
-                          </span>
-                        </div>
-                      </div>
+                      <ReportKpiCard
+                        title="31–60 Days"
+                        subtitle="First Follow-up"
+                        value={formatNumber(aging.days30)}
+                        accentColor="blue"
+                        valueColor="text-blue-800"
+                        icon={<span className="h-2 w-2 rounded-full bg-blue-500 inline-block" />}
+                      />
 
-                      {}
-                      <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              61–90 Days
-                            </span>
-                            <span className="h-2 w-2 rounded-full bg-amber-500" />
-                          </div>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Overdue Notice
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-amber-700 font-mono">
-                            {formatNumber(aging.days60)}
-                          </span>
-                        </div>
-                      </div>
+                      <ReportKpiCard
+                        title="61–90 Days"
+                        subtitle="Overdue Notice"
+                        value={formatNumber(aging.days60)}
+                        accentColor="amber"
+                        valueColor="text-amber-700"
+                        icon={<span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />}
+                      />
 
-                      {}
-                      <div className="relative overflow-hidden p-4.5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-600" />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              90+ Days Critical
-                            </span>
-                            <span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse" />
-                          </div>
-                          <span className="text-xs print:text-[11px] text-rose-600 font-bold mt-0.5 block truncate">
-                            High Risk Recovery
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-rose-700 font-mono">
-                            {formatNumber(aging.days90Plus)}
-                          </span>
-                        </div>
+                      <ReportKpiCard
+                        title="90+ Days Critical"
+                        subtitle="High Risk Recovery"
+                        value={formatNumber(aging.days90Plus)}
+                        accentColor="rose"
+                        valueColor="text-rose-700"
+                        icon={<span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse inline-block" />}
+                      />
+                    </ReportKpiGrid>
+
+                    {/* Compact Printable Receivables Summary Strip */}
+                    <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">Current (0-30d)</span>
+                        <span className="font-mono font-black text-emerald-800">{formatCurrency(aging.current)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">31-60 Days</span>
+                        <span className="font-mono font-black text-blue-800">{formatCurrency(aging.days30)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">61-90 Days</span>
+                        <span className="font-mono font-black text-amber-700">{formatCurrency(aging.days60)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">90+ Days Critical</span>
+                        <span className="font-mono font-black text-rose-700">{formatCurrency(aging.days90Plus)}</span>
                       </div>
                     </div>
 
-                    {}
                     <div className="flex flex-col sm:flex-row gap-3 items-center justify-between p-2 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs print:hidden">
                       <div className="flex-1 w-full max-w-sm">
                         <Input
@@ -306,7 +255,7 @@ export const AccountsReceivableReport: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
                       <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white">
                           Customer Aging &amp; Outstanding Invoices Ledger

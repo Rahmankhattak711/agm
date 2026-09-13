@@ -634,8 +634,13 @@ export default function QuotationTemplate({
             <tr>
               <td className="p-0 border-none align-bottom">
                 {/* Spacer row to prevent body rows from overlapping the fixed bottom footer */}
-                <div className="w-full opacity-0 pointer-events-none" aria-hidden="true">
+                <div
+                  className="w-full opacity-0 pointer-events-none select-none"
+                  style={{ minHeight: "175px" }}
+                  aria-hidden="true"
+                >
                   <QuotationFooter />
+                  <div style={{ height: "45px", minHeight: "45px" }} />
                 </div>
               </td>
             </tr>

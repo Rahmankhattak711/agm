@@ -26,6 +26,7 @@ import {
   AgingBucketCard,
   AgingBucket,
 } from "@/components/reports/AgingBucketCard";
+import { ReportKpiCard, ReportKpiGrid } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 import { Building2, FileText, Mail, Phone, Clock } from "lucide-react";
 
 export default function SupplierReportsPage() {
@@ -387,55 +388,38 @@ export default function SupplierReportsPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Active Suppliers
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {totalSuppliersCount}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Registered materials &amp; fitout vendors
-          </p>
-        </div>
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="Total Active Suppliers"
+          subtitle="Registered materials & fitout vendors"
+          value={totalSuppliersCount}
+          currency={false}
+          accentColor="sky"
+        />
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Open Accounts Payable (A/P)
-          </p>
-          <p className="text-2xl font-black text-amber-700 mt-1">
-            {formatCurrency(totalOutstandingAP)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Pending supplier payment liabilities
-          </p>
-        </div>
+        <ReportKpiCard
+          title="Open Accounts Payable (A/P)"
+          subtitle="Pending supplier payment liabilities"
+          value={Number(totalOutstandingAP).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          accentColor="amber"
+          valueColor="text-amber-700"
+        />
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Procurement Spend
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {formatCurrency(totalProcurementBilled)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Cumulative vendor invoice volume
-          </p>
-        </div>
+        <ReportKpiCard
+          title="Total Procurement Spend"
+          subtitle="Cumulative vendor invoice volume"
+          value={Number(totalProcurementBilled).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          accentColor="slate"
+        />
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Disbursed Settlements
-          </p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">
-            {formatCurrency(totalDisbursed)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Realized vendor payments
-          </p>
-        </div>
-      </div>
+        <ReportKpiCard
+          title="Disbursed Settlements"
+          subtitle="Realized vendor payments"
+          value={Number(totalDisbursed).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          accentColor="emerald"
+          valueColor="text-emerald-800"
+        />
+      </ReportKpiGrid>
 
       <AgingBucketCard
         title="Accounts Payable (A/P) Aging Schedule"
@@ -643,8 +627,15 @@ export default function SupplierReportsPage() {
 
           <tfoot className="print-page-footer-group">
             <tr>
-              <td className="p-0 border-none">
-                <div className="h-[140px] w-full hidden print:block" />
+              <td className="p-0 border-none align-bottom">
+                <div
+                  className="w-full opacity-0 pointer-events-none select-none"
+                  style={{ minHeight: "175px" }}
+                  aria-hidden="true"
+                >
+                  <QuotationFooter />
+                  <div style={{ height: "45px", minHeight: "45px" }} />
+                </div>
               </td>
             </tr>
           </tfoot>

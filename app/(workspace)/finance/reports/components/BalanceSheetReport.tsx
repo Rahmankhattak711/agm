@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 import {
   PrintIcon,
   CheckCircle2Icon,
@@ -21,6 +22,7 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
+import { ReportKpiCard, ReportKpiGrid } from "./ReportKpiCard";
 
 interface BalanceSheetReportProps {
   balanceSheet?: BalanceSheetData;
@@ -95,8 +97,14 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
   const balanceCheck = totalAssets - totalLiabilitiesAndEquity;
   const isBalanced = Math.abs(balanceCheck) < 0.01;
 
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Balance-Sheet-Report",
+  });
+
   return (
-    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+    <div ref={printRef} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -110,8 +118,15 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
 
         <tfoot className="print-page-footer-group">
           <tr>
-            <td className="p-0 border-none">
-              <div className="h-[140px] w-full hidden print:block" />
+            <td className="p-0 border-none align-bottom">
+              <div
+                className="w-full opacity-0 pointer-events-none select-none"
+                style={{ minHeight: "175px" }}
+                aria-hidden="true"
+              >
+                <QuotationFooter />
+                <div style={{ height: "45px", minHeight: "45px" }} />
+              </div>
             </td>
           </tr>
         </tfoot>
@@ -142,41 +157,21 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2.5 py-1 rounded-lg bg-sky-700 text-white font-black text-xs shadow-xs">
-                        BS
-                      </span>
                       <h3 className="font-black text-lg text-slate-900 tracking-tight">
-                        Statement of Financial Position (Balance Sheet)
+                        Statement of Financial Position
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      Standard accounting equation: Assets = Liabilities + Equity
+                      Assets = Liabilities + Equity
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
-                        isBalanced
-                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                          : "bg-amber-50 text-amber-800 border-amber-200"
-                      }`}
-                    >
-                      {isBalanced ? (
-                        <CheckCircle2Icon size={13} className="text-emerald-700" />
-                      ) : (
-                        <AlertTriangleIcon size={13} className="text-amber-700" />
-                      )}
-                      {isBalanced
-                        ? "Equation Balanced"
-                        : "Audit Review Required"}
-                    </span>
-
                     <Button
                       variant="outline"
                       size="sm"
                       icon={<PrintIcon size={14} />}
-                      onClick={() => window.print()}
+                      onClick={() => handlePrint()}
                       className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
                     >
                       Print Statement
@@ -191,112 +186,69 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 print-avoid-break">
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-                        <div>
-                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                            1. Total Assets
-                          </span>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Current &amp; Fixed Assets
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
-                            {formatNumber(totalAssets)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-                        <div>
-                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                            2. Total Liabilities
-                          </span>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Payables &amp; Accruals
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-amber-800 font-mono">
-                            {formatNumber(totalLiabilities)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-                        <div>
-                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                            3. Total Equity
-                          </span>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Partner Capital &amp; P&amp;L
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
+                    <ReportKpiGrid cols={3}>
+                      <ReportKpiCard
+                        title="1. Total Assets"
+                        subtitle="Current & Fixed Assets"
+                        value={formatNumber(totalAssets)}
+                        accentColor="sky"
+                        valueColor="text-slate-900"
+                      />
+                      <ReportKpiCard
+                        title="2. Total Liabilities"
+                        subtitle="Payables & Accruals"
+                        value={formatNumber(totalLiabilities)}
+                        accentColor="amber"
+                        valueColor="text-amber-800"
+                      />
+                      <ReportKpiCard
+                        title="3. Total Equity"
+                        subtitle="Partner Capital & P&L"
+                        value={formatNumber(totalEquity)}
+                        accentColor="emerald"
+                        valueColor={totalEquity >= 0 ? "text-emerald-800" : "text-rose-700"}
+                      />
+                      <ReportKpiCard
+                        title="4. Balance Check"
+                        subtitle="Assets - (Liabilities + Equity)"
+                        value={isBalanced ? "0.00" : formatNumber(balanceCheck)}
+                        accentColor={isBalanced ? "emerald" : "amber"}
+                        valueColor={isBalanced ? "text-emerald-800" : "text-amber-800"}
+                        badge={
                           <span
-                            className={`text-xl print:text-base font-black font-mono ${
-                              totalEquity >= 0
-                                ? "text-emerald-800"
-                                : "text-rose-700"
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                              isBalanced
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                : "bg-amber-50 text-amber-800 border-amber-200"
                             }`}
                           >
-                            {formatNumber(totalEquity)}
+                            {isBalanced ? "Balanced" : "Variance"}
                           </span>
-                        </div>
-                      </div>
+                        }
+                      />
+                    </ReportKpiGrid>
 
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div
-                          className={`absolute inset-x-0 top-0 h-[2.5px] ${isBalanced ? "bg-emerald-500" : "bg-amber-500"}`}
-                        />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              4. Balance Check
-                            </span>
-                            <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
-                                isBalanced
-                                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                  : "bg-amber-50 text-amber-800 border-amber-200"
-                              }`}
-                            >
-                              {isBalanced ? "Balanced" : "Variance"}
-                            </span>
-                          </div>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Assets - (Liabilities + Equity)
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span
-                            className={`text-xl print:text-base font-black font-mono ${
-                              isBalanced ? "text-emerald-800" : "text-amber-800"
-                            }`}
-                          >
-                            {isBalanced ? "0.00" : formatNumber(balanceCheck)}
-                          </span>
-                        </div>
+                    {/* Compact Printable Balance Sheet Summary Strip */}
+                    <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Total Assets</span>
+                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalAssets)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Total Liabilities</span>
+                        <span className="font-mono font-black text-amber-800">{formatCurrency(totalLiabilities)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Total Equity</span>
+                        <span className="font-mono font-black text-emerald-800">{formatCurrency(totalEquity)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Balance Status</span>
+                        <span className="font-mono font-black text-emerald-800">{isBalanced ? "Balanced (0.00)" : formatCurrency(balanceCheck)}</span>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
                       <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white">
                           Balance Sheet Ledger Breakdown

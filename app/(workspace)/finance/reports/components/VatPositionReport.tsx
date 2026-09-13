@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
-import { AlertCircleIcon, CheckIcon } from "@/components/icons";
+import React, { useRef } from "react";
+import { useReactToPrint } from "react-to-print";
+import { AlertCircleIcon, CheckIcon, PrintIcon } from "@/components/icons";
 import {
   Button,
   Table,
@@ -19,6 +20,7 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
+import { ReportKpiCard, ReportKpiGrid } from "./ReportKpiCard";
 
 interface VatPositionReportProps {
   vatSummary?: VatSummaryData;
@@ -101,8 +103,14 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
     0,
   );
 
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "VAT-Position-Declaration-Report",
+  });
+
   return (
-    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+    <div ref={printRef} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -116,8 +124,15 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
 
         <tfoot className="print-page-footer-group">
           <tr>
-            <td className="p-0 border-none">
-              <div className="h-[140px] w-full hidden print:block" />
+            <td className="p-0 border-none align-bottom">
+              <div
+                className="w-full opacity-0 pointer-events-none select-none"
+                style={{ minHeight: "175px" }}
+                aria-hidden="true"
+              >
+                <QuotationFooter />
+                <div style={{ height: "45px", minHeight: "45px" }} />
+              </div>
             </td>
           </tr>
         </tfoot>
@@ -148,9 +163,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2.5 py-1 rounded-lg bg-teal-700 text-white font-black text-xs shadow-xs tracking-wide">
-                        FTA 201
-                      </span>
                       <h3 className="font-black text-lg text-slate-900 tracking-tight">
                         VAT Return Declaration &amp; Summary
                       </h3>
@@ -161,21 +173,16 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
-                        netVat >= 0
-                          ? "bg-amber-50 text-amber-800 border-amber-200"
-                          : "bg-emerald-50 text-emerald-800 border-emerald-200"
-                      }`}
-                    >
-                      {netVat >= 0 ? (
-                        <AlertCircleIcon size={13} className="text-amber-700" />
-                      ) : (
-                        <CheckIcon size={13} className="text-emerald-700" />
-                      )}
-                      {netVat >= 0 ? "Tax Payable to FTA" : "Tax Refund Claim"}
-                    </span>
 
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      icon={<PrintIcon size={14} />}
+                      onClick={() => handlePrint()}
+                      className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+                    >
+                      Print Statement
+                    </Button>
                   </div>
                 </div>
 
@@ -189,109 +196,72 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-8">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 print-avoid-break">
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-                        <div>
-                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                            1. Taxable Turnover
-                          </span>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Total sales (excl. VAT)
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
-                            {formatNumber(totalIncomeTaxable)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-                        <div>
-                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                            2. Output VAT (5%)
-                          </span>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Tax collected on sales
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-amber-800 font-mono">
-                            {formatNumber(totalOutputVat)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-                        <div>
-                          <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                            3. Recoverable Input VAT
-                          </span>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Tax paid on purchases
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-emerald-800 font-mono">
-                            {formatNumber(totalInputVat)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div
-                          className={`absolute inset-x-0 top-0 h-[2.5px] ${netVat >= 0 ? "bg-amber-500" : "bg-teal-500"}`}
-                        />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              4. Net VAT Position
-                            </span>
-                            <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
-                                netVat >= 0
-                                  ? "bg-amber-50 text-amber-800 border-amber-200"
-                                  : "bg-emerald-50 text-emerald-800 border-emerald-200"
-                              }`}
-                            >
-                              {netVat >= 0 ? "Payable" : "Refund"}
-                            </span>
-                          </div>
-                          <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                            Output minus Input VAT
-                          </span>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
+                    <ReportKpiGrid cols={3}>
+                      <ReportKpiCard
+                        title="1. Taxable Turnover"
+                        subtitle="Total sales (excl. VAT)"
+                        value={formatNumber(totalIncomeTaxable)}
+                        accentColor="sky"
+                        valueColor="text-slate-900"
+                      />
+                      <ReportKpiCard
+                        title="2. Output VAT (5%)"
+                        subtitle="Tax collected on sales"
+                        value={formatNumber(totalOutputVat)}
+                        accentColor="amber"
+                        valueColor="text-amber-800"
+                      />
+                      <ReportKpiCard
+                        title="3. Recoverable Input VAT"
+                        subtitle="Tax paid on purchases"
+                        value={formatNumber(totalInputVat)}
+                        accentColor="emerald"
+                        valueColor="text-emerald-800"
+                      />
+                      <ReportKpiCard
+                        title="4. Net VAT Position"
+                        subtitle="Output minus Input VAT"
+                        value={formatNumber(Math.abs(netVat))}
+                        accentColor={netVat >= 0 ? "amber" : "teal"}
+                        valueColor={netVat >= 0 ? "text-amber-800" : "text-emerald-800"}
+                        badge={
                           <span
-                            className={`text-xl print:text-base font-black font-mono ${
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
                               netVat >= 0
-                                ? "text-amber-800"
-                                : "text-emerald-800"
+                                ? "bg-amber-50 text-amber-800 border-amber-200"
+                                : "bg-emerald-50 text-emerald-800 border-emerald-200"
                             }`}
                           >
-                            {formatNumber(Math.abs(netVat))}
+                            {netVat >= 0 ? "Payable" : "Refund"}
                           </span>
-                        </div>
+                        }
+                      />
+                    </ReportKpiGrid>
+
+                    {/* Compact Printable VAT Position Summary Strip */}
+                    <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Taxable Turnover</span>
+                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalIncomeTaxable)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Output VAT (5%)</span>
+                        <span className="font-mono font-black text-amber-800">{formatCurrency(totalOutputVat)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Recoverable Input VAT</span>
+                        <span className="font-mono font-black text-emerald-800">{formatCurrency(totalInputVat)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Net VAT Position</span>
+                        <span className={`font-mono font-black ${netVat >= 0 ? "text-amber-800" : "text-emerald-800"}`}>
+                          {formatCurrency(Math.abs(netVat))} ({netVat >= 0 ? "Payable" : "Refund"})
+                        </span>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
-                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-none print:!bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                           1. Quarterly VAT Returns &amp; Position
                         </h4>
@@ -430,8 +400,8 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                       </Table>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
-                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-none print:!bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                           2. Monthly Net VAT Summary
                         </h4>
@@ -527,8 +497,8 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                       </Table>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
-                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-none print:!bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                           3. Monthly Purchase / Expense Summary (Input VAT
                           Breakdown)
@@ -639,8 +609,8 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                       </Table>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
-                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-none print:!bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                           4. Monthly Income Summary (Output VAT Breakdown)
                         </h4>
@@ -750,8 +720,8 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                       </Table>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
-                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+                      <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-none print:!bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                           5. Federal Tax Authority — Form 201 Box Breakdown
                         </h4>

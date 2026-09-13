@@ -31,6 +31,7 @@ import {
   ChartBarItem,
   ReportSummaryChart,
 } from "@/components/reports/ReportSummaryChart";
+import { ReportKpiCard, ReportKpiGrid } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 
 function parseDescriptionPoints(desc: string): string[] {
   if (!desc) return [];
@@ -429,114 +430,51 @@ export default function PurchaseReportsPage() {
       </div>
 
       {/* 5 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 print:grid-cols-5">
-        {/* 1. Procurement Spend */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Procurement Spend
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              {nonCancelledBills.length} supplier bills
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-slate-900 font-mono">
-              {formatNumber(totalProcurementSpend)}
-            </span>
-          </div>
-        </div>
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="1. Procurement Spend"
+          subtitle={`${nonCancelledBills.length} supplier bills`}
+          value={formatNumber(totalProcurementSpend)}
+          accentColor="sky"
+        />
 
-        {/* 2. Settled Disbursals */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Settled Disbursals
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Cleared payments
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-emerald-800 font-mono">
-              {formatNumber(totalDisbursed)}
-            </span>
-          </div>
-        </div>
+        <ReportKpiCard
+          title="2. Settled Disbursals"
+          subtitle="Cleared payments"
+          value={formatNumber(totalDisbursed)}
+          accentColor="emerald"
+          valueColor="text-emerald-800"
+        />
 
-        {/* 3. Open Accounts Payable */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-          <div>
-            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Open Accounts Payable
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Pending liabilities
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-amber-700 font-mono">
-              {formatNumber(totalOutstandingAP)}
-            </span>
-          </div>
-        </div>
+        <ReportKpiCard
+          title="3. Open Accounts Payable"
+          subtitle="Pending liabilities"
+          value={formatNumber(totalOutstandingAP)}
+          accentColor="amber"
+          valueColor="text-amber-700"
+        />
 
-        {/* 4. 5% Input VAT */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-blue-500" />
-          <div>
-            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
-              4. 5% Input VAT (Recoverable)
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              FTA Form 201 Box 9
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-blue-700 font-mono">
-              {formatNumber(totalInputVat)}
-            </span>
-          </div>
-        </div>
+        <ReportKpiCard
+          title="4. 5% Input VAT (Recoverable)"
+          subtitle="FTA Form 201 Box 9"
+          value={formatNumber(totalInputVat)}
+          accentColor="blue"
+          valueColor="text-blue-700"
+        />
 
-        {/* 5. Settlement Ratio */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
-                5. Settlement Ratio
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
-                Disbursed
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              AP clearing efficiency
+        <ReportKpiCard
+          title="5. Settlement Ratio"
+          subtitle="AP clearing efficiency"
+          value={`${settlementRatio.toFixed(1)}%`}
+          currency={false}
+          accentColor="indigo"
+          badge={
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
+              Disbursed
             </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xl font-black text-slate-900 font-mono">
-              {settlementRatio.toFixed(1)}%
-            </span>
-          </div>
-        </div>
-      </div>
+          }
+        />
+      </ReportKpiGrid>
 
       {/* Chart: Top Suppliers by Spend */}
       {topSuppliersChartData.length > 0 && (
@@ -650,7 +588,7 @@ export default function PurchaseReportsPage() {
           </div>
         ) : (
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+            <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-none print:!bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
               <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                 Supplier Procurement Bills &amp; Liabilities Register
               </h4>
@@ -842,8 +780,15 @@ export default function PurchaseReportsPage() {
 
           <tfoot className="print-page-footer-group">
             <tr>
-              <td className="p-0 border-none">
-                <div className="h-[140px] w-full hidden print:block" />
+              <td className="p-0 border-none align-bottom">
+                <div
+                  className="w-full opacity-0 pointer-events-none select-none"
+                  style={{ minHeight: "175px" }}
+                  aria-hidden="true"
+                >
+                  <QuotationFooter />
+                  <div style={{ height: "45px", minHeight: "45px" }} />
+                </div>
               </td>
             </tr>
           </tfoot>

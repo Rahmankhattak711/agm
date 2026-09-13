@@ -14,7 +14,6 @@ import {
   BuildingIcon,
   EditIcon,
   PlusIcon,
-  PrintIcon,
   SearchIcon,
   TrashIcon,
 } from "@/components/icons";
@@ -26,6 +25,10 @@ import {
   FormInput,
   FormSubmit,
 } from "@/components/ui";
+import {
+  ReportKpiCard,
+  ReportKpiGrid,
+} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 
 export default function SuppliersPage() {
   const [search, setSearch] = useState("");
@@ -279,16 +282,6 @@ export default function SuppliersPage() {
 
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<PrintIcon size={14} />}
-          >
-            Print Register
-          </Button>
-
-          <Button
             variant="primary"
             size="sm"
             onClick={handleOpenCreate}
@@ -301,98 +294,88 @@ export default function SuppliersPage() {
       </div>
 
       {/* 4 Elevated Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Total Suppliers */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Total Approved Suppliers
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="1. Total Approved Suppliers"
+          subtitle="Active vendor network"
+          value={suppliers.length}
+          currency={false}
+          accentColor="sky"
+          footerText="Vendors"
+        />
+        <ReportKpiCard
+          title="2. VAT Registered (TRN)"
+          subtitle="VAT compliant invoices"
+          value={trnCount}
+          currency={false}
+          accentColor="emerald"
+          valueColor="text-emerald-800"
+          footerText="Tax Compliant"
+        />
+        <ReportKpiCard
+          title="3. Sourced Catalog SKUs"
+          subtitle="Supplied materials catalog"
+          value={totalCatalogSkus}
+          currency={false}
+          accentColor="purple"
+          valueColor="text-purple-800"
+          footerText="Products"
+        />
+        <ReportKpiCard
+          title="4. Partner Status"
+          subtitle="Direct supplier relations"
+          badge={
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
+              Verified
             </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Active vendor network
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-slate-900 font-mono">
-              {suppliers.length}
-            </span>
-            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
-              Vendors
-            </span>
-          </div>
-        </div>
+          }
+          value="100% Direct"
+          currency={false}
+          accentColor="teal"
+          valueColor="text-teal-900"
+        />
+      </ReportKpiGrid>
 
-        {/* 2. Tax Registered (TRN) */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. VAT Registered (TRN)
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              VAT compliant invoices
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-emerald-800 font-mono">
-              {trnCount}
-            </span>
-            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
-              Tax Compliant
-            </span>
-          </div>
+      {/* Print-Only Compact Summary Strip */}
+      <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
+            Total Suppliers
+          </span>
+          <span className="font-mono font-bold text-slate-900">
+            {suppliers.length}
+          </span>
         </div>
-
-        {/* 3. Active Supply Lines */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Sourced Catalog SKUs
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Supplied materials catalog
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-purple-800 font-mono">
-              {totalCatalogSkus}
-            </span>
-            <span className="text-xs font-bold text-purple-700 font-sans ml-1.5">
-              Products
-            </span>
-          </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-emerald-600 font-bold block">
+            TRN Registered
+          </span>
+          <span className="font-mono font-bold text-emerald-800">
+            {trnCount}
+          </span>
         </div>
-
-        {/* 4. Verification Network */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                4. Partner Status
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
-                Verified
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Direct supplier relations
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xl font-black text-teal-900 font-sans">
-              100% Direct
-            </span>
-          </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-purple-600 font-bold block">
+            Catalog SKUs
+          </span>
+          <span className="font-mono font-bold text-purple-800">
+            {totalCatalogSkus}
+          </span>
+        </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-teal-600 font-bold block">
+            Relations
+          </span>
+          <span className="font-mono font-bold text-teal-900">
+            100% Direct
+          </span>
         </div>
       </div>
 
       {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         {/* Search & Filter Strip */}
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
           <div className="flex flex-wrap items-center justify-between gap-2">
             {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1">

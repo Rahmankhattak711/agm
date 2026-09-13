@@ -7,6 +7,7 @@ import {
   ChartBarItem,
   ReportSummaryChart,
 } from "@/components/reports/ReportSummaryChart";
+import { ReportKpiCard, ReportKpiGrid } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 import {
   Button,
   DataTable,
@@ -265,56 +266,42 @@ export default function ExpenseReportsPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Expenditure
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {formatCurrency(metrics.totalExpenses)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {metrics.count} total expense items
-          </p>
-        </div>
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="Total Expenditure"
+          subtitle={`${metrics.count} total expense items`}
+          value={metrics.totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          accentColor="sky"
+        />
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Net Operating Costs
-          </p>
-          <p className="text-2xl font-black text-emerald-900 mt-1">
-            {formatCurrency(metrics.netAmount)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Excluding recoverable input VAT
-          </p>
-        </div>
+        <ReportKpiCard
+          title="Net Operating Costs"
+          subtitle="Excluding recoverable input VAT"
+          value={metrics.netAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          accentColor="emerald"
+          valueColor="text-emerald-800"
+        />
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Recoverable VAT (5%)
-          </p>
-          <p className="text-2xl font-black text-purple-900 mt-1">
-            {formatCurrency(metrics.totalTax)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Claimable on VAT 201 return
-          </p>
-        </div>
+        <ReportKpiCard
+          title="Recoverable VAT (5%)"
+          subtitle="Claimable on VAT 201 return"
+          value={metrics.totalTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          accentColor="purple"
+          valueColor="text-purple-800"
+        />
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Settlement Channels
-          </p>
-          <p className="text-sm font-bold text-slate-800 mt-1">
-            Bank: {formatCurrency(metrics.bankTransferTotal)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Card: {formatCurrency(metrics.cardTotal)} · Cash:{" "}
-            {formatCurrency(metrics.cashTotal)}
-          </p>
-        </div>
-      </div>
+        <ReportKpiCard
+          title="Settlement Channels"
+          subtitle={`Card: ${formatCurrency(metrics.cardTotal)} · Cash: ${formatCurrency(metrics.cashTotal)}`}
+          value={metrics.bankTransferTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          accentColor="indigo"
+          badge={
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
+              Bank
+            </span>
+          }
+        />
+      </ReportKpiGrid>
 
       {categoryBreakdown.length > 0 && (
         <ReportSummaryChart
@@ -483,8 +470,15 @@ export default function ExpenseReportsPage() {
 
           <tfoot className="print-page-footer-group">
             <tr>
-              <td className="p-0 border-none">
-                <div className="h-[140px] w-full hidden print:block" />
+              <td className="p-0 border-none align-bottom">
+                <div
+                  className="w-full opacity-0 pointer-events-none select-none"
+                  style={{ minHeight: "175px" }}
+                  aria-hidden="true"
+                >
+                  <QuotationFooter />
+                  <div style={{ height: "45px", minHeight: "45px" }} />
+                </div>
               </td>
             </tr>
           </tfoot>

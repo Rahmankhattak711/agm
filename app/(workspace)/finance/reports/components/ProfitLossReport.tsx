@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 import {
   CalendarIcon,
   ClockIcon,
@@ -24,6 +25,7 @@ import {
 import { ProfitLossItem, useProfitLoss } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatCurrency, formatNumber } from "./types";
+import { ReportKpiCard, ReportKpiGrid } from "./ReportKpiCard";
 
 export type PeriodType =
   "daily" | "weekly" | "monthly" | "yearly" | "custom" | "all";
@@ -98,8 +100,14 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
     { id: "all", label: "All Time", icon: <LayersIcon size={13} /> },
   ];
 
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Profit-and-Loss-Statement",
+  });
+
   return (
-    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+    <div ref={printRef} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -113,8 +121,15 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
 
         <tfoot className="print-page-footer-group">
           <tr>
-            <td className="p-0 border-none">
-              <div className="h-[140px] w-full hidden print:block" />
+            <td className="p-0 border-none align-bottom">
+              <div
+                className="w-full opacity-0 pointer-events-none select-none"
+                style={{ minHeight: "175px" }}
+                aria-hidden="true"
+              >
+                <QuotationFooter />
+                <div style={{ height: "45px", minHeight: "45px" }} />
+              </div>
             </td>
           </tr>
         </tfoot>
@@ -145,24 +160,22 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2.5 py-1 rounded-lg bg-emerald-700 text-white font-black text-xs shadow-xs">
-                        P&amp;L
-                      </span>
                       <h3 className="font-black text-lg text-slate-900 tracking-tight">
-                        Statement of Profit &amp; Loss (Income Statement)
+                        Profit & Loss Statement
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      Reporting period: {profitLoss?.periodLabel || "Current Financial Period"}
+                      Period: {profitLoss?.periodLabel || "Current Financial Period"}
                     </p>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2.5">
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
+                      size="sm"
                       onClick={() => setCompare(!compare)}
-                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer h-auto ${
+                      className={`${
                         compare
                           ? "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs hover:bg-emerald-50"
                           : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
@@ -180,7 +193,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.print()}
+                      onClick={() => handlePrint()}
                       className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
                       icon={<PrintIcon size={14} />}
                     >
@@ -198,6 +211,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           key={btn.id}
                           type="button"
                           variant="ghost"
+                          size="sm"
                           onClick={() => setPeriod(btn.id)}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer h-auto ${
                             isActive
@@ -266,154 +280,120 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 gap-4 print:gap-2.5 print-avoid-break">
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              1. Total Income
+                    <ReportKpiGrid cols={3}>
+                      <ReportKpiCard
+                        title="1. Total Income"
+                        subtitle="Contract revenue & billings"
+                        value={formatNumber(totalIncome)}
+                        accentColor="emerald"
+                        valueColor="text-slate-900"
+                        badge={
+                          compare && prevTotalIncome > 0 ? (
+                            <span
+                              className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                                incomeGrowth >= 0
+                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  : "bg-rose-50 text-rose-700 border border-rose-200"
+                              }`}
+                            >
+                              {incomeGrowth >= 0 ? (
+                                <TrendingUpIcon size={11} />
+                              ) : (
+                                <TrendingDownIcon size={11} />
+                              )}
+                              {Math.abs(incomeGrowth).toFixed(1)}%
                             </span>
-                            {compare && prevTotalIncome > 0 && (
-                              <span
-                                className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                                  incomeGrowth >= 0
-                                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                    : "bg-rose-50 text-rose-700 border border-rose-200"
-                                }`}
-                              >
-                                {incomeGrowth >= 0 ? (
-                                  <TrendingUpIcon size={11} />
-                                ) : (
-                                  <TrendingDownIcon size={11} />
-                                )}
-                                {Math.abs(incomeGrowth).toFixed(1)}%
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
-                            Contract revenue &amp; billings
-                          </p>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
-                          </span>
-                          <span className="text-xl print:text-base font-black text-slate-900 font-mono">
-                            {formatNumber(totalIncome)}
-                          </span>
-                          {compare && prevTotalIncome > 0 && (
-                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
-                              Prior: {formatCurrency(prevTotalIncome)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                          ) : null
+                        }
+                        footerText={
+                          compare && prevTotalIncome > 0
+                            ? `Prior: ${formatCurrency(prevTotalIncome)}`
+                            : undefined
+                        }
+                      />
 
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              2. Direct Costs (COGS)
-                            </span>
-                            <span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200/60">
-                              {totalIncome > 0
-                                ? (
-                                    (totalDirectExpenses / totalIncome) *
-                                    100
-                                  ).toFixed(1)
-                                : "0.0"}
-                              %
-                            </span>
-                          </div>
-                          <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
-                            Project materials &amp; labor
-                          </p>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
+                      <ReportKpiCard
+                        title="2. Direct Costs (COGS)"
+                        subtitle="Project materials & labor"
+                        value={formatNumber(totalDirectExpenses)}
+                        accentColor="rose"
+                        valueColor="text-rose-800"
+                        badge={
+                          <span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200/60">
+                            {totalIncome > 0
+                              ? (
+                                  (totalDirectExpenses / totalIncome) *
+                                  100
+                                ).toFixed(1)
+                              : "0.0"}
+                            %
                           </span>
-                          <span className="text-xl print:text-base font-black text-rose-800 font-mono">
-                            {formatNumber(totalDirectExpenses)}
-                          </span>
-                          {compare && prevTotalDirectExpenses > 0 && (
-                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
-                              Prior: {formatCurrency(prevTotalDirectExpenses)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                        }
+                        footerText={
+                          compare && prevTotalDirectExpenses > 0
+                            ? `Prior: ${formatCurrency(prevTotalDirectExpenses)}`
+                            : undefined
+                        }
+                      />
 
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-600" />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              3. Gross Profit
-                            </span>
-                            <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
-                              {grossMargin.toFixed(1)}%
-                            </span>
-                          </div>
-                          <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
-                            Revenue after Direct COGS
-                          </p>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
+                      <ReportKpiCard
+                        title="3. Gross Profit"
+                        subtitle="Revenue after Direct COGS"
+                        value={formatNumber(grossProfit)}
+                        accentColor="emerald"
+                        valueColor="text-emerald-800"
+                        badge={
+                          <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                            {grossMargin.toFixed(1)}%
                           </span>
-                          <span className="text-xl print:text-base font-black text-emerald-800 font-mono">
-                            {formatNumber(grossProfit)}
-                          </span>
-                          {compare && prevGrossProfit > 0 && (
-                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
-                              Prior: {formatCurrency(prevGrossProfit)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                        }
+                        footerText={
+                          compare && prevGrossProfit > 0
+                            ? `Prior: ${formatCurrency(prevGrossProfit)}`
+                            : undefined
+                        }
+                      />
 
-                      <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2 print:space-y-1">
-                        <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              4. Net Profit
-                            </span>
-                            <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded-md border border-indigo-200/60">
-                              {netMargin.toFixed(1)}%
-                            </span>
-                          </div>
-                          <p className="text-xs print:text-[11px] text-slate-500 mt-0.5 truncate">
-                            Bottom line yield
-                          </p>
-                        </div>
-                        <div className="pt-2 print:pt-0">
-                          <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                            AED
+                      <ReportKpiCard
+                        title="4. Net Profit"
+                        subtitle="Bottom line yield"
+                        value={formatNumber(netProfit)}
+                        accentColor="indigo"
+                        valueColor={netProfit >= 0 ? "text-slate-900" : "text-rose-700"}
+                        badge={
+                          <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded-md border border-indigo-200/60">
+                            {netMargin.toFixed(1)}%
                           </span>
-                          <span
-                            className={`text-xl print:text-base font-black font-mono ${
-                              netProfit >= 0
-                                ? "text-slate-900"
-                                : "text-rose-700"
-                            }`}
-                          >
-                            {formatNumber(netProfit)}
-                          </span>
-                          {compare && (
-                            <p className="text-[10.5px] text-slate-400 mt-0.5 font-medium print:hidden">
-                              Prior: {formatCurrency(prevNetProfit)}
-                            </p>
-                          )}
-                        </div>
+                        }
+                        footerText={
+                          compare
+                            ? `Prior: ${formatCurrency(prevNetProfit)}`
+                            : undefined
+                        }
+                      />
+                    </ReportKpiGrid>
+
+                    {/* Compact Printable Profit & Loss Summary Strip */}
+                    <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Total Income</span>
+                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalIncome)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Direct Expenses</span>
+                        <span className="font-mono font-black text-rose-700">({formatCurrency(totalDirectExpenses)})</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Gross Profit</span>
+                        <span className="font-mono font-black text-emerald-800">{formatCurrency(grossProfit)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Net Profit</span>
+                        <span className="font-mono font-black text-emerald-800">{formatCurrency(netProfit)}</span>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs print-avoid-break">
+                    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
                       <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white">
                           Comprehensive Income Statement Ledger
