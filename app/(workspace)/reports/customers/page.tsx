@@ -27,6 +27,7 @@ import {
   AgingBucketCard,
   AgingBucket,
 } from "@/components/reports/AgingBucketCard";
+import { ReportKpiCard, ReportKpiGrid } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 import {
   FileText,
   Users2,
@@ -346,55 +347,40 @@ export default function CustomerReportsPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Registered Clients
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {totalClients}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Active corporate &amp; individual accounts
-          </p>
-        </div>
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="Total Registered Clients"
+          subtitle="Active corporate & individual accounts"
+          value={totalClients}
+          currency={false}
+          accentColor="sky"
+        />
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Cumulative Outstanding A/R
-          </p>
-          <p className="text-2xl font-black text-rose-700 mt-1">
-            {formatCurrency(totalReceivables)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Across {clientsWithBalanceCount} open customer ledgers
-          </p>
-        </div>
+        <ReportKpiCard
+          title="Cumulative Outstanding A/R"
+          subtitle={`Across ${clientsWithBalanceCount} open customer ledgers`}
+          value={Number(totalReceivables).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          accentColor="rose"
+          valueColor="text-rose-700"
+        />
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Clients With Open Balance
-          </p>
-          <p className="text-2xl font-black text-amber-700 mt-1">
-            {clientsWithBalanceCount}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Require collection follow-up
-          </p>
-        </div>
+        <ReportKpiCard
+          title="Clients With Open Balance"
+          subtitle="Require collection follow-up"
+          value={clientsWithBalanceCount}
+          currency={false}
+          accentColor="amber"
+          valueColor="text-amber-700"
+        />
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Credit Limit Extended
-          </p>
-          <p className="text-2xl font-black text-blue-700 mt-1">
-            {formatCurrency(totalCreditLimit)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Approved client credit facilities
-          </p>
-        </div>
-      </div>
+        <ReportKpiCard
+          title="Total Credit Limit Extended"
+          subtitle="Approved client credit facilities"
+          value={Number(totalCreditLimit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          accentColor="blue"
+          valueColor="text-blue-700"
+        />
+      </ReportKpiGrid>
 
       <AgingBucketCard
         title="Accounts Receivable (A/R) Aging Schedule"
@@ -598,8 +584,15 @@ export default function CustomerReportsPage() {
 
           <tfoot className="print-page-footer-group">
             <tr>
-              <td className="p-0 border-none">
-                <div className="h-[140px] w-full hidden print:block" />
+              <td className="p-0 border-none align-bottom">
+                <div
+                  className="w-full opacity-0 pointer-events-none select-none"
+                  style={{ minHeight: "175px" }}
+                  aria-hidden="true"
+                >
+                  <QuotationFooter />
+                  <div style={{ height: "45px", minHeight: "45px" }} />
+                </div>
               </td>
             </tr>
           </tfoot>

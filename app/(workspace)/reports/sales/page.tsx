@@ -31,6 +31,7 @@ import {
   ReportSummaryChart,
   ChartBarItem,
 } from "@/components/reports/ReportSummaryChart";
+import { ReportKpiCard, ReportKpiGrid } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 
 function parseDescriptionPoints(desc: string): string[] {
   if (!desc) return [];
@@ -450,114 +451,51 @@ export default function SalesReportsPage() {
       </div>
 
       {/* 5 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 print:grid-cols-5">
-        {/* 1. Total Invoiced Sales */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Total Invoiced Sales
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              {nonCancelledInvoices.length} billing vouchers
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-slate-900 font-mono">
-              {formatNumber(totalInvoicedSales)}
-            </span>
-          </div>
-        </div>
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="1. Total Invoiced Sales"
+          subtitle={`${nonCancelledInvoices.length} billing vouchers`}
+          value={formatNumber(totalInvoicedSales)}
+          accentColor="sky"
+        />
 
-        {/* 2. Settled Receipts */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Settled Receipts
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Realized bank &amp; cash
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-emerald-800 font-mono">
-              {formatNumber(totalCollected)}
-            </span>
-          </div>
-        </div>
+        <ReportKpiCard
+          title="2. Settled Receipts"
+          subtitle="Realized bank & cash"
+          value={formatNumber(totalCollected)}
+          accentColor="emerald"
+          valueColor="text-emerald-800"
+        />
 
-        {/* 3. Outstanding Due */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
-          <div>
-            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Outstanding Due
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Open customer balance
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-rose-700 font-mono">
-              {formatNumber(totalOutstanding)}
-            </span>
-          </div>
-        </div>
+        <ReportKpiCard
+          title="3. Outstanding Due"
+          subtitle="Open customer balance"
+          value={formatNumber(totalOutstanding)}
+          accentColor="rose"
+          valueColor="text-rose-700"
+        />
 
-        {/* 4. Output VAT */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-          <div>
-            <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 block">
-              4. UAE 5% Output VAT
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              FTA Form 201 Box 1
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-amber-800 font-mono">
-              {formatNumber(totalOutputVat)}
-            </span>
-          </div>
-        </div>
+        <ReportKpiCard
+          title="4. UAE 5% Output VAT"
+          subtitle="FTA Form 201 Box 1"
+          value={formatNumber(totalOutputVat)}
+          accentColor="amber"
+          valueColor="text-amber-800"
+        />
 
-        {/* 5. Collection Rate */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
-                5. Collection Rate
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
-                Yield
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Realization efficiency
+        <ReportKpiCard
+          title="5. Collection Rate"
+          subtitle="Realization efficiency"
+          value={`${collectionEfficiency.toFixed(1)}%`}
+          currency={false}
+          accentColor="indigo"
+          badge={
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
+              Yield
             </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xl font-black text-slate-900 font-mono">
-              {collectionEfficiency.toFixed(1)}%
-            </span>
-          </div>
-        </div>
-      </div>
+          }
+        />
+      </ReportKpiGrid>
 
       {/* Chart: Top Clients by Sales */}
       {topClientsChartData.length > 0 && (
@@ -671,7 +609,7 @@ export default function SalesReportsPage() {
           </div>
         ) : (
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+            <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-none print:!bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
               <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
                 Sales Invoices &amp; Billing Realization Register
               </h4>
@@ -878,8 +816,15 @@ export default function SalesReportsPage() {
 
           <tfoot className="print-page-footer-group">
             <tr>
-              <td className="p-0 border-none">
-                <div className="h-[140px] w-full hidden print:block" />
+              <td className="p-0 border-none align-bottom">
+                <div
+                  className="w-full opacity-0 pointer-events-none select-none"
+                  style={{ minHeight: "175px" }}
+                  aria-hidden="true"
+                >
+                  <QuotationFooter />
+                  <div style={{ height: "45px", minHeight: "45px" }} />
+                </div>
               </td>
             </tr>
           </tfoot>

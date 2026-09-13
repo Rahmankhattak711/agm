@@ -15,6 +15,7 @@ import {
   ReportSummaryChart,
   ChartBarItem,
 } from "@/components/reports/ReportSummaryChart";
+import { ReportKpiCard, ReportKpiGrid } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 
 export default function ManagementReportsPage() {
   const { data: profitLoss, isLoading: plLoading } = useProfitLoss();
@@ -140,137 +141,78 @@ export default function ManagementReportsPage() {
       </div>
 
       {/* 4 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Total Billed Revenue */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                1. Total Billed Revenue
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                {grossMargin.toFixed(1)}% GM
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Gross commercial turnover
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="1. Total Billed Revenue"
+          subtitle="Gross commercial turnover"
+          value={formatNumber(totalRevenue)}
+          accentColor="sky"
+          badge={
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+              {grossMargin.toFixed(1)}% GM
             </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-2xl font-black text-slate-900 font-mono">
-              {formatNumber(totalRevenue)}
-            </span>
-          </div>
-        </div>
+          }
+        />
 
-        {/* 2. Net Operating Profit */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                2. Net Operating Profit
-              </span>
-              <span
-                className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
-                  netProfit >= 0
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                    : "bg-rose-50 text-rose-800 border-rose-200"
-                }`}
-              >
-                {netMargin.toFixed(1)}% Return
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Net earnings after overheads
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
+        <ReportKpiCard
+          title="2. Net Operating Profit"
+          subtitle="Net earnings after overheads"
+          value={formatNumber(netProfit)}
+          accentColor="emerald"
+          valueColor={netProfit >= 0 ? "text-emerald-800" : "text-rose-700"}
+          badge={
             <span
-              className={`text-2xl font-black font-mono ${
-                netProfit >= 0 ? "text-emerald-800" : "text-rose-700"
+              className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
+                netProfit >= 0
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                  : "bg-rose-50 text-rose-800 border-rose-200"
               }`}
             >
-              {formatNumber(netProfit)}
+              {netMargin.toFixed(1)}% Return
             </span>
-          </div>
-        </div>
+          }
+        />
 
-        {/* 3. Net Working Capital */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Net Working Capital
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Current assets minus liabilities
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span
-              className={`text-2xl font-black font-mono ${
-                workingCapital >= 0 ? "text-blue-900" : "text-amber-700"
-              }`}
-            >
-              {formatNumber(workingCapital)}
-            </span>
-          </div>
-        </div>
+        <ReportKpiCard
+          title="3. Net Working Capital"
+          subtitle="Current assets minus liabilities"
+          value={formatNumber(workingCapital)}
+          accentColor="indigo"
+          valueColor={workingCapital >= 0 ? "text-blue-900" : "text-amber-700"}
+        />
 
-        {/* 4. Current Liquidity Ratio */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                4. Current Liquidity Ratio
-              </span>
-              <span
-                className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
-                  currentRatio >= 1.5
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                    : currentRatio >= 1.0
-                      ? "bg-sky-50 text-sky-800 border-sky-200"
-                      : "bg-rose-50 text-rose-800 border-rose-200"
-                }`}
-              >
-                {currentRatio >= 1.5
-                  ? "Strong"
-                  : currentRatio >= 1.0
-                    ? "Adequate"
-                    : "Tight"}
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Short-term solvency ratio
-            </span>
-          </div>
-          <div className="pt-2">
+        <ReportKpiCard
+          title="4. Current Liquidity Ratio"
+          subtitle="Short-term solvency ratio"
+          value={currentRatio > 0 ? `${currentRatio.toFixed(2)}x` : "1.00x"}
+          currency={false}
+          accentColor="teal"
+          valueColor={
+            currentRatio >= 1.5
+              ? "text-emerald-800"
+              : currentRatio >= 1.0
+                ? "text-blue-900"
+                : "text-rose-700"
+          }
+          badge={
             <span
-              className={`text-2xl font-black font-mono ${
+              className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
                 currentRatio >= 1.5
-                  ? "text-emerald-800"
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                   : currentRatio >= 1.0
-                    ? "text-blue-900"
-                    : "text-rose-700"
+                    ? "bg-sky-50 text-sky-800 border-sky-200"
+                    : "bg-rose-50 text-rose-800 border-rose-200"
               }`}
             >
-              {currentRatio > 0 ? `${currentRatio.toFixed(2)}x` : "1.00x"}
+              {currentRatio >= 1.5
+                ? "Strong"
+                : currentRatio >= 1.0
+                  ? "Adequate"
+                  : "Tight"}
             </span>
-          </div>
-        </div>
-      </div>
+          }
+        />
+      </ReportKpiGrid>
 
       {/* Visual Chart */}
       <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
@@ -482,8 +424,15 @@ export default function ManagementReportsPage() {
 
           <tfoot className="print-page-footer-group">
             <tr>
-              <td className="p-0 border-none">
-                <div className="h-[140px] w-full hidden print:block" />
+              <td className="p-0 border-none align-bottom">
+                <div
+                  className="w-full opacity-0 pointer-events-none select-none"
+                  style={{ minHeight: "175px" }}
+                  aria-hidden="true"
+                >
+                  <QuotationFooter />
+                  <div style={{ height: "45px", minHeight: "45px" }} />
+                </div>
               </td>
             </tr>
           </tfoot>
