@@ -33,6 +33,10 @@ import {
   useProducts,
   SupplierBill,
 } from "@/lib/hooks/api-hooks";
+import {
+  ReportKpiCard,
+  ReportKpiGrid,
+} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 
 export default function SupplierBillsPage() {
   const { data: bills = [], isLoading, error } = useSupplierBills();
@@ -223,16 +227,6 @@ export default function SupplierBillsPage() {
 
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<PrintIcon size={14} />}
-          >
-            Print Register
-          </Button>
-
-          <Button
             variant="primary"
             size="sm"
             onClick={() => setIsCreateOpen(true)}
@@ -245,101 +239,85 @@ export default function SupplierBillsPage() {
       </div>
 
       {/* 4 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Total Billed by Suppliers */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Total Invoiced Spend
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="1. Total Invoiced Spend"
+          subtitle="All vendor billings"
+          value={formatNumber(totalPayables)}
+          currency="AED"
+          accentColor="sky"
+        />
+        <ReportKpiCard
+          title="2. Outstanding Accounts Payable"
+          subtitle="Open liability balance"
+          value={formatNumber(totalOutstanding)}
+          currency="AED"
+          accentColor="rose"
+          valueColor="text-rose-700"
+        />
+        <ReportKpiCard
+          title="3. Settled Disbursals"
+          subtitle="Cleared vendor payments"
+          value={formatNumber(totalSettled)}
+          currency="AED"
+          accentColor="emerald"
+          valueColor="text-emerald-800"
+        />
+        <ReportKpiCard
+          title="4. Recoverable Input VAT (5%)"
+          subtitle="FTA Form 201 Tax Credit"
+          badge={
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200">
+              Box 9
             </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              All vendor billings
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-slate-900 font-mono">
-              {formatNumber(totalPayables)}
-            </span>
-          </div>
-        </div>
+          }
+          value={formatNumber(totalInputVat)}
+          currency="AED"
+          accentColor="purple"
+          valueColor="text-purple-800"
+        />
+      </ReportKpiGrid>
 
-        {/* 2. Outstanding A/P */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Outstanding Accounts Payable
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Open liability balance
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-rose-500 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-rose-700 font-mono">
-              {formatNumber(totalOutstanding)}
-            </span>
-          </div>
+      {/* Print-Only Compact Summary Strip */}
+      <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
+            Total Spend
+          </span>
+          <span className="font-mono font-bold text-slate-900">
+            AED {formatNumber(totalPayables)}
+          </span>
         </div>
-
-        {/* 3. Settled Disbursals */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Settled Disbursals
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Cleared vendor payments
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-emerald-600 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-emerald-800 font-mono">
-              {formatNumber(totalSettled)}
-            </span>
-          </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-rose-600 font-bold block">
+            Outstanding A/P
+          </span>
+          <span className="font-mono font-bold text-rose-700">
+            AED {formatNumber(totalOutstanding)}
+          </span>
         </div>
-
-        {/* 4. Recoverable Input VAT */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                4. Recoverable Input VAT (5%)
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-50 text-purple-800 border border-purple-200">
-                Box 9
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              FTA Form 201 Tax Credit
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-purple-600 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-purple-800 font-mono">
-              {formatNumber(totalInputVat)}
-            </span>
-          </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-emerald-600 font-bold block">
+            Settled Disbursals
+          </span>
+          <span className="font-mono font-bold text-emerald-800">
+            AED {formatNumber(totalSettled)}
+          </span>
+        </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-purple-600 font-bold block">
+            Recoverable VAT (5%)
+          </span>
+          <span className="font-mono font-bold text-purple-800">
+            AED {formatNumber(totalInputVat)}
+          </span>
         </div>
       </div>
 
       {/* Main Filter & Table Card */}
       <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         {/* Search & Filter Strip */}
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
           <div className="flex flex-wrap items-center justify-between gap-2">
             {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
@@ -393,49 +371,47 @@ export default function SupplierBillsPage() {
           </div>
         ) : (
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white">
+            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between print:bg-none print:!bg-slate-100 print:!text-slate-900">
+              <h4 className="font-black text-xs uppercase tracking-wider text-white print:!text-slate-900">
                 Accounts Payable &amp; Vendor Invoices Register
               </h4>
-              <span className="text-[11px] font-mono text-emerald-300 font-bold">
+              <span className="text-[11px] font-mono text-emerald-300 font-bold print:!text-slate-700">
                 {filteredBills.length} Active Records
               </span>
             </div>
 
             <Table className="w-full text-xs text-left">
               <TableHead className="bg-slate-50 border-b border-slate-200">
-                <TableRow>
-                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Bill No
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Supplier / Vendor
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Bill Date
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Due Date
-                  </TableHeaderCell>
-                  <TableHeaderCell
-                    align="right"
-                    className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-                  >
-                    Total (AED)
-                  </TableHeaderCell>
-                  <TableHeaderCell
-                    align="right"
-                    className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-                  >
-                    Balance Due
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Status
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                    Actions
-                  </TableHeaderCell>
-                </TableRow>
+                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Bill No
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Supplier / Vendor
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Bill Date
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Due Date
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
+                >
+                  Total (AED)
+                </TableHeaderCell>
+                <TableHeaderCell
+                  align="right"
+                  className="py-3 px-3 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
+                >
+                  Balance Due
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                  Status
+                </TableHeaderCell>
+                <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider print:hidden">
+                  Actions
+                </TableHeaderCell>
               </TableHead>
 
               <TableBody className="divide-y divide-slate-100 font-medium">
@@ -942,29 +918,27 @@ export default function SupplierBillsPage() {
             <div className="border border-slate-200 rounded-xl overflow-hidden">
               <Table className="w-full text-xs">
                 <TableHead className="bg-slate-50 border-b border-slate-200">
-                  <TableRow>
-                    <TableHeaderCell className="py-2 px-3 font-bold text-slate-600">
-                      Description
-                    </TableHeaderCell>
-                    <TableHeaderCell
-                      align="right"
-                      className="py-2 px-3 font-bold text-slate-600"
-                    >
-                      Qty
-                    </TableHeaderCell>
-                    <TableHeaderCell
-                      align="right"
-                      className="py-2 px-3 font-bold text-slate-600"
-                    >
-                      Unit Cost (AED)
-                    </TableHeaderCell>
-                    <TableHeaderCell
-                      align="right"
-                      className="py-2 px-3 font-bold text-slate-600"
-                    >
-                      Total (AED)
-                    </TableHeaderCell>
-                  </TableRow>
+                  <TableHeaderCell className="py-2 px-3 font-bold text-slate-600">
+                    Description
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    align="right"
+                    className="py-2 px-3 font-bold text-slate-600"
+                  >
+                    Qty
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    align="right"
+                    className="py-2 px-3 font-bold text-slate-600"
+                  >
+                    Unit Cost (AED)
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    align="right"
+                    className="py-2 px-3 font-bold text-slate-600"
+                  >
+                    Total (AED)
+                  </TableHeaderCell>
                 </TableHead>
                 <TableBody className="divide-y divide-slate-100">
                   {selectedBill.items?.map((item: any) => (

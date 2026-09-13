@@ -267,16 +267,6 @@ export default function SalesInvoicesPage() {
 
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.print()}
-              className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer flex-1 sm:flex-initial"
-              icon={<PrintIcon size={14} />}
-            >
-              Print Register
-            </Button>
-
-            <Button
               variant="primary"
               size="sm"
               onClick={() => setIsCreateOpen(true)}
@@ -1370,8 +1360,13 @@ export default function SalesInvoicesPage() {
               <tr>
                 <td className="p-0 border-none align-bottom">
                   {/* Invisible spacer so body rows don't overlap the fixed bottom footer */}
-                  <div className="w-full opacity-0 pointer-events-none" aria-hidden="true">
+                  <div
+                    className="w-full opacity-0 pointer-events-none select-none"
+                    style={{ minHeight: "175px" }}
+                    aria-hidden="true"
+                  >
                     <QuotationFooter />
+                    <div style={{ height: "45px", minHeight: "45px" }} />
                   </div>
                 </td>
               </tr>

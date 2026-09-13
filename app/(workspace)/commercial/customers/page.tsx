@@ -144,16 +144,6 @@ export default function CustomersMasterPage() {
 
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer flex-1 sm:flex-initial"
-            icon={<PrintIcon size={14} />}
-          >
-            Print Register
-          </Button>
-
-          <Button
             variant="primary"
             size="sm"
             onClick={() => setIsCreateOpen(true)}
