@@ -28,6 +28,10 @@ import {
 } from "@/components/icons";
 import { PurchaseOrderPrintModal } from "./PurchaseOrderPrintModal";
 import {
+  ReportKpiCard,
+  ReportKpiGrid,
+} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
+import {
   Button,
   Input,
   Select,
@@ -570,16 +574,6 @@ export default function PurchaseOrdersPage() {
 
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<PrintIcon size={14} />}
-          >
-            Print Register
-          </Button>
-
-          <Button
             variant="primary"
             size="sm"
             onClick={handleOpenCreate}
@@ -592,101 +586,88 @@ export default function PurchaseOrdersPage() {
       </div>
 
       {/* 4 Elevated Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Total POs */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Total Purchase Orders
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="1. Total Purchase Orders"
+          subtitle="All procurement records"
+          value={totalPOs}
+          currency={false}
+          accentColor="sky"
+          footerText="Orders"
+        />
+        <ReportKpiCard
+          title="2. Draft Orders"
+          subtitle="Awaiting supplier issuance"
+          value={draftCount}
+          currency={false}
+          accentColor="amber"
+          valueColor="text-amber-700"
+          footerText="Drafts"
+        />
+        <ReportKpiCard
+          title="3. Pending Deliveries"
+          subtitle="Awaiting warehouse receipt"
+          value={orderedCount}
+          currency={false}
+          accentColor="blue"
+          valueColor="text-blue-800"
+          footerText="Ordered"
+        />
+        <ReportKpiCard
+          title="4. Procurement Spend"
+          subtitle="Cumulative purchase volume"
+          badge={
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+              Active
             </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              All procurement records
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-slate-900 font-mono">
-              {totalPOs}
-            </span>
-            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
-              Orders
-            </span>
-          </div>
-        </div>
+          }
+          value={formatNumber(totalPurchasesValue)}
+          currency="AED"
+          accentColor="emerald"
+          valueColor="text-emerald-800"
+        />
+      </ReportKpiGrid>
 
-        {/* 2. Draft Orders */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Draft Orders
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Awaiting supplier issuance
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-amber-700 font-mono">
-              {draftCount}
-            </span>
-            <span className="text-xs font-bold text-amber-700 font-sans ml-1.5">
-              Drafts
-            </span>
-          </div>
+      {/* Print-Only Compact Summary Strip */}
+      <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
+            Total Orders
+          </span>
+          <span className="font-mono font-bold text-slate-900">
+            {totalPOs}
+          </span>
         </div>
-
-        {/* 3. Pending Deliveries */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-blue-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Pending Deliveries
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Awaiting warehouse receipt
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-blue-800 font-mono">
-              {orderedCount}
-            </span>
-            <span className="text-xs font-bold text-blue-700 font-sans ml-1.5">
-              Ordered
-            </span>
-          </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-amber-600 font-bold block">
+            Drafts
+          </span>
+          <span className="font-mono font-bold text-amber-700">
+            {draftCount}
+          </span>
         </div>
-
-        {/* 4. Procurement Volume */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                4. Procurement Spend
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Active
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Cumulative purchase volume
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-emerald-800 font-mono">
-              {formatNumber(totalPurchasesValue)}
-            </span>
-          </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-blue-600 font-bold block">
+            Pending Delivery
+          </span>
+          <span className="font-mono font-bold text-blue-800">
+            {orderedCount}
+          </span>
+        </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-emerald-600 font-bold block">
+            Procurement Spend
+          </span>
+          <span className="font-mono font-bold text-emerald-800">
+            AED {formatNumber(totalPurchasesValue)}
+          </span>
         </div>
       </div>
 
       {/* Main Filter & Table Card */}
       <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         {/* Search & Filter Strip */}
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
           <div className="flex flex-wrap items-center justify-between gap-2">
             {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
@@ -756,11 +737,11 @@ export default function PurchaseOrdersPage() {
           </div>
         ) : (
           <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white">
+            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between print:bg-none print:!bg-slate-100 print:!text-slate-900">
+              <h4 className="font-black text-xs uppercase tracking-wider text-white print:!text-slate-900">
                 Procurement &amp; Purchase Orders Register
               </h4>
-              <span className="text-[11px] font-mono text-emerald-300 font-bold">
+              <span className="text-[11px] font-mono text-emerald-300 font-bold print:!text-slate-700">
                 {filteredPOs.length} Records
               </span>
             </div>

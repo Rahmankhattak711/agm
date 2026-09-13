@@ -23,6 +23,10 @@ import {
 } from "@/components/ui";
 import { useSuppliers } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
+import {
+  ReportKpiCard,
+  ReportKpiGrid,
+} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 
 type ReturnStatus =
   "DRAFT" | "SUBMITTED" | "APPROVED" | "COMPLETED" | "REJECTED";
@@ -189,16 +193,6 @@ export default function PurchaseReturnsPage() {
 
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<PrintIcon size={14} />}
-          >
-            Print Register
-          </Button>
-
-          <Button
             variant="primary"
             size="sm"
             onClick={handleOpenCreate}
@@ -211,96 +205,83 @@ export default function PurchaseReturnsPage() {
       </div>
 
       {/* 4 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Total Return Value */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Total Debit Notes Value
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Cumulative supplier returns
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-rose-500 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-rose-700 font-mono">
-              {formatNumber(totalReturnVal)}
-            </span>
-          </div>
-        </div>
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="1. Total Debit Notes Value"
+          subtitle="Cumulative supplier returns"
+          value={formatNumber(totalReturnVal)}
+          currency="AED"
+          accentColor="rose"
+          valueColor="text-rose-700"
+        />
+        <ReportKpiCard
+          title="2. Total Return Vouchers"
+          subtitle="All logged RTV orders"
+          value={returnsList.length}
+          currency={false}
+          accentColor="sky"
+          footerText="Records"
+        />
+        <ReportKpiCard
+          title="3. Settled Reversals"
+          subtitle="Credited by vendor"
+          value={completedCount}
+          currency={false}
+          accentColor="emerald"
+          valueColor="text-emerald-800"
+          footerText="Settled"
+        />
+        <ReportKpiCard
+          title="4. In-Review Reversals"
+          subtitle="Pending supplier credit note"
+          value={activeReviewCount}
+          currency={false}
+          accentColor="amber"
+          valueColor="text-amber-700"
+          footerText="Pending"
+        />
+      </ReportKpiGrid>
 
-        {/* 2. Total Records */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Total Return Vouchers
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              All logged RTV orders
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-slate-900 font-mono">
-              {returnsList.length}
-            </span>
-            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
-              Records
-            </span>
-          </div>
+      {/* Print-Only Compact Summary Strip */}
+      <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-rose-600 font-bold block">
+            Total Debit Notes
+          </span>
+          <span className="font-mono font-bold text-rose-700">
+            AED {formatNumber(totalReturnVal)}
+          </span>
         </div>
-
-        {/* 3. Completed Reversals */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Settled Reversals
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Credited by vendor
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-emerald-800 font-mono">
-              {completedCount}
-            </span>
-            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
-              Settled
-            </span>
-          </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
+            Total Returns
+          </span>
+          <span className="font-mono font-bold text-slate-900">
+            {returnsList.length}
+          </span>
         </div>
-
-        {/* 4. Active In-Review */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              4. In-Review Reversals
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Pending supplier credit note
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-amber-700 font-mono">
-              {activeReviewCount}
-            </span>
-            <span className="text-xs font-bold text-amber-700 font-sans ml-1.5">
-              Pending
-            </span>
-          </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-emerald-600 font-bold block">
+            Settled
+          </span>
+          <span className="font-mono font-bold text-emerald-800">
+            {completedCount}
+          </span>
+        </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-amber-600 font-bold block">
+            In-Review
+          </span>
+          <span className="font-mono font-bold text-amber-700">
+            {activeReviewCount}
+          </span>
         </div>
       </div>
 
       {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
         {/* Search & Filter Strip */}
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
           <div className="flex flex-wrap items-center justify-between gap-2">
             {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1">
@@ -351,43 +332,41 @@ export default function PurchaseReturnsPage() {
 
         {/* Purchase Returns Table */}
         <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-          <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-            <h4 className="font-black text-xs uppercase tracking-wider text-white">
+          <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between print:bg-none print:!bg-slate-100 print:!text-slate-900">
+            <h4 className="font-black text-xs uppercase tracking-wider text-white print:!text-slate-900">
               Purchase Returns &amp; Debit Note Register
             </h4>
-            <span className="text-[11px] font-mono text-emerald-300 font-bold">
+            <span className="text-[11px] font-mono text-emerald-300 font-bold print:!text-slate-700">
               {filteredReturns.length} Vouchers
             </span>
           </div>
 
           <Table className="w-full text-xs text-left">
             <TableHead className="bg-slate-50 border-b border-slate-200">
-              <TableRow>
-                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Return No &amp; PO
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Supplier / Vendor
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Return Reason
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Return Date
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Status
-                </TableHeaderCell>
-                <TableHeaderCell
-                  align="right"
-                  className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-                >
-                  Amount (AED)
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider print:hidden">
-                  Actions
-                </TableHeaderCell>
-              </TableRow>
+              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                Return No &amp; PO
+              </TableHeaderCell>
+              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                Supplier / Vendor
+              </TableHeaderCell>
+              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                Return Reason
+              </TableHeaderCell>
+              <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                Return Date
+              </TableHeaderCell>
+              <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+                Status
+              </TableHeaderCell>
+              <TableHeaderCell
+                align="right"
+                className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
+              >
+                Amount (AED)
+              </TableHeaderCell>
+              <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider print:hidden">
+                Actions
+              </TableHeaderCell>
             </TableHead>
 
             <TableBody className="divide-y divide-slate-100 font-medium">

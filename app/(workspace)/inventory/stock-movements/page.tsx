@@ -23,6 +23,10 @@ import {
   FormTextarea,
   FormSubmit,
 } from "@/components/ui";
+import {
+  ReportKpiCard,
+  ReportKpiGrid,
+} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 
 export default function StockMovementsPage() {
   const [search, setSearch] = useState("");
@@ -260,55 +264,79 @@ export default function StockMovementsPage() {
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={handleOpenModal}
-          icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-        >
-          Record Stock Movement
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleOpenModal}
+            icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+          >
+            Record Stock Movement
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+      {/* 3 Summary KPI Cards */}
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="1. Total Transactions"
+          subtitle="Logged inventory transfers"
+          value={totalMovements}
+          currency={false}
+          accentColor="sky"
+          footerText="Movements"
+        />
+        <ReportKpiCard
+          title="2. Inbound Inflow (+)"
+          subtitle="Purchases, audits, returns in"
+          value={inMovements}
+          currency={false}
+          accentColor="emerald"
+          valueColor="text-emerald-800"
+          footerText="Inflow units"
+        />
+        <ReportKpiCard
+          title="3. Outbound Consumption (-)"
+          subtitle="Site usage, sales, write-offs"
+          value={outMovements}
+          currency={false}
+          accentColor="rose"
+          valueColor="text-rose-800"
+          footerText="Outflow units"
+        />
+      </ReportKpiGrid>
+
+      {/* Print-Only Compact Summary Strip */}
+      <div className="hidden print:grid print:grid-cols-3 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
             Total Transactions
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
+          </span>
+          <span className="font-mono font-bold text-slate-900">
             {totalMovements}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Logged inventory transfers
-          </p>
+          </span>
         </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-emerald-600 font-bold block">
             Inbound Inflow (+)
-          </p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">
+          </span>
+          <span className="font-mono font-bold text-emerald-800">
             {inMovements}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Purchases, audits, returns in
-          </p>
+          </span>
         </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Outbound Consumption (-)
-          </p>
-          <p className="text-2xl font-black text-rose-800 mt-1">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-rose-600 font-bold block">
+            Outbound Outflow (-)
+          </span>
+          <span className="font-mono font-bold text-rose-800">
             {outMovements}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Site usage, sales, write-offs
-          </p>
+          </span>
         </div>
       </div>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
+        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between print:hidden">
           <div className="w-full lg:w-80">
             <Input
               placeholder="Search product, SKU, reference..."

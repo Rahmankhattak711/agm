@@ -19,6 +19,10 @@ import {
   TableCell,
   Modal,
 } from "@/components/ui";
+import {
+  ReportKpiCard,
+  ReportKpiGrid,
+} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 import { useProducts } from "@/lib/hooks/api-hooks";
 
 interface SalesVoucherLine {
@@ -251,54 +255,80 @@ export default function SalesVouchersPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             onClick={() => setIsCreateOpen(true)}
             icon={<PlusIcon size={14} />}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Create Sales Voucher
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex flex-col justify-between space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
-            Total Sales Billed (Incl. VAT)
-          </p>
-          <p className="text-xl font-black text-emerald-950 font-mono">
-            AED{" "}
-            {totalSalesRevenue.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
-          </p>
-        </div>
+      {/* 3 Summary KPI Cards */}
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="1. Total Sales Billed (Incl. VAT)"
+          subtitle="Cumulative sales billing"
+          value={totalSalesRevenue.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+          })}
+          currency="AED"
+          accentColor="emerald"
+          valueColor="text-emerald-950"
+        />
+        <ReportKpiCard
+          title="2. Output VAT 5% Collected"
+          subtitle="Tax collected for FTA"
+          value={totalVatCollected.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+          })}
+          currency="AED"
+          accentColor="blue"
+          valueColor="text-blue-950"
+        />
+        <ReportKpiCard
+          title="3. Active Vouchers"
+          subtitle="Logged point-of-sale transactions"
+          value={vouchers.length}
+          currency={false}
+          accentColor="slate"
+          footerText="Vouchers"
+        />
+      </ReportKpiGrid>
 
-        <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-800">
-            Output VAT 5% Collected
-          </p>
-          <p className="text-xl font-black text-blue-950 font-mono">
-            AED{" "}
-            {totalVatCollected.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
-          </p>
+      {/* Print-Only Compact Summary Strip */}
+      <div className="hidden print:grid print:grid-cols-3 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-emerald-700 font-bold block">
+            Total Sales Billed
+          </span>
+          <span className="font-mono font-bold text-emerald-950">
+            AED {totalSalesRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          </span>
         </div>
-
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-blue-700 font-bold block">
+            VAT 5% Collected
+          </span>
+          <span className="font-mono font-bold text-blue-950">
+            AED {totalVatCollected.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          </span>
+        </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
             Active Vouchers
-          </p>
-          <p className="text-xl font-black text-slate-900 font-mono">
-            {vouchers.length} Vouchers
-          </p>
+          </span>
+          <span className="font-mono font-bold text-slate-900">
+            {vouchers.length}
+          </span>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70 print:hidden">
         <div className="flex-1 max-w-md">
           <Input
             placeholder="Search voucher number, client, project..."
@@ -364,7 +394,7 @@ export default function SalesVouchersPage() {
             <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[11px]">
               Status
             </TableHeaderCell>
-            <TableHeaderCell className="py-3 px-3 text-center w-16">
+            <TableHeaderCell className="py-3 px-3 text-center w-16 print:hidden">
               View
             </TableHeaderCell>
           </TableHead>

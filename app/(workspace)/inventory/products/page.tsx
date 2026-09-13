@@ -18,6 +18,10 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { PlusIcon, SearchIcon } from "@/components/icons";
 import {
+  ReportKpiCard,
+  ReportKpiGrid,
+} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
+import {
   Button,
   Input,
   Select,
@@ -435,63 +439,96 @@ export default function ProductsPage() {
           </p>
         </div>
 
-        {canManageInventory && (
-          <Button
-            variant="primary"
-            onClick={handleOpenCreate}
-            icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-          >
-            Add Product / SKU
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {canManageInventory && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleOpenCreate}
+              icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            >
+              Add Product / SKU
+            </Button>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Unique SKUs
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
+      {/* 4 Summary KPI Cards */}
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="1. Total Unique SKUs"
+          subtitle="Active stock keeping units"
+          value={totalProducts}
+          currency={false}
+          accentColor="sky"
+          footerText="SKUs"
+        />
+        <ReportKpiCard
+          title="2. Total Units on Hand"
+          subtitle="Across all facilities"
+          value={totalStockItems}
+          currency={false}
+          accentColor="blue"
+          footerText="Units"
+        />
+        <ReportKpiCard
+          title="3. Low Stock Alerts"
+          subtitle="Below reorder trigger"
+          value={lowStockCount}
+          currency={false}
+          accentColor="amber"
+          valueColor="text-amber-600"
+          footerText="Alerts"
+        />
+        <ReportKpiCard
+          title="4. Inventory Valuation"
+          subtitle="Based on cost price"
+          value={formatCurrency(totalInventoryValue)}
+          currency={false}
+          accentColor="emerald"
+          valueColor="text-emerald-800"
+        />
+      </ReportKpiGrid>
+
+      {/* Print-Only Compact Summary Strip */}
+      <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
+            Total SKUs
+          </span>
+          <span className="font-mono font-bold text-slate-900">
             {totalProducts}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Active stock keeping units
-          </p>
+          </span>
         </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Units on Hand
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-blue-600 font-bold block">
+            Units on Hand
+          </span>
+          <span className="font-mono font-bold text-blue-800">
             {totalStockItems}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Across all facilities</p>
+          </span>
         </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-amber-600 font-bold block">
             Low Stock Alerts
-          </p>
-          <p className="text-2xl font-black text-amber-600 mt-1">
+          </span>
+          <span className="font-mono font-bold text-amber-600">
             {lowStockCount}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Below reorder trigger</p>
+          </span>
         </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Inventory Valuation
-          </p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-emerald-600 font-bold block">
+            Total Valuation
+          </span>
+          <span className="font-mono font-bold text-emerald-800">
             {formatCurrency(totalInventoryValue)}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Based on cost price</p>
+          </span>
         </div>
       </div>
 
       <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
+        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between print:hidden">
           <div className="w-full lg:w-80">
             <Input
               placeholder="Search product, brand, shop code, SKU..."

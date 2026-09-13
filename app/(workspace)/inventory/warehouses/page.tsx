@@ -11,6 +11,10 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { PlusIcon } from "@/components/icons";
 import { Button, Modal, FormInput, FormSubmit } from "@/components/ui";
+import {
+  ReportKpiCard,
+  ReportKpiGrid,
+} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 
 export default function WarehousesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,52 +92,85 @@ export default function WarehousesPage() {
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={handleOpenCreate}
-          icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-        >
-          Add Warehouse
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleOpenCreate}
+            icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+          >
+            Add Warehouse
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Facilities
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
-            {warehouses.length}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Active depots & sites</p>
-        </div>
+      {/* 3 Summary KPI Cards */}
+      <ReportKpiGrid cols={3}>
+        <ReportKpiCard
+          title="1. Total Facilities"
+          subtitle="Active depots & sites"
+          value={warehouses.length}
+          currency={false}
+          accentColor="sky"
+          footerText="Depots"
+        />
+        <ReportKpiCard
+          title="2. Tracked SKU Positions"
+          subtitle="Total inventory storage points"
+          value={warehouses.reduce(
+            (acc, w) => acc + (w.stockLevels?.length || 0),
+            0,
+          )}
+          currency={false}
+          accentColor="emerald"
+          valueColor="text-emerald-800"
+          footerText="Positions"
+        />
+        <ReportKpiCard
+          title="3. Total Logged Transfers"
+          subtitle="Movements recorded"
+          value={warehouses.reduce(
+            (acc, w) => acc + (w._count?.stockMovements || 0),
+            0,
+          )}
+          currency={false}
+          accentColor="slate"
+          footerText="Transfers"
+        />
+      </ReportKpiGrid>
 
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Tracked SKU Positions
-          </p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">
+      {/* Print-Only Compact Summary Strip */}
+      <div className="hidden print:grid print:grid-cols-3 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
+            Facilities
+          </span>
+          <span className="font-mono font-bold text-slate-900">
+            {warehouses.length}
+          </span>
+        </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-emerald-600 font-bold block">
+            SKU Positions
+          </span>
+          <span className="font-mono font-bold text-emerald-800">
             {warehouses.reduce(
               (acc, w) => acc + (w.stockLevels?.length || 0),
               0,
             )}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Total inventory storage points
-          </p>
+          </span>
         </div>
-
-        <div className="p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Total Logged Transfers
-          </p>
-          <p className="text-2xl font-black text-slate-900 mt-1">
+        <div>
+          <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
+            Logged Transfers
+          </span>
+          <span className="font-mono font-bold text-slate-900">
             {warehouses.reduce(
               (acc, w) => acc + (w._count?.stockMovements || 0),
               0,
             )}
-          </p>
-          <p className="text-xs text-slate-500 mt-0.5">Movements recorded</p>
+          </span>
         </div>
       </div>
 
