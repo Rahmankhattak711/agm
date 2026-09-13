@@ -1,17 +1,26 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  Fragment,
+} from "react";
+import { useReactToPrint } from "react-to-print";
 import {
   BuildingIcon,
+  ChevronDownIcon,
+  CloseIcon,
   FileTextIcon,
   PlusIcon,
   PrintIcon,
   SearchIcon,
+  ShieldCheckIcon,
 } from "@/components/icons";
 import {
   Button,
   Input,
-  Textarea,
   Modal,
   Table,
   TableHead,
@@ -19,7 +28,6 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  TableEmpty,
   TableLoading,
 } from "@/components/ui";
 import {
@@ -42,6 +50,704 @@ const EMPTY_FORM = {
   creditLimit: "",
 };
 
+function formatNumber(val: number | string | undefined): string {
+  const num = Number(val || 0);
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+// ----------------------------------------------------------------------
+// 1. Official Quotation-Style A4 Print Document for Statement of Account
+// ----------------------------------------------------------------------
+interface CustomerStatementDocumentProps {
+  customer: Customer;
+  statement: any[];
+  summary: {
+    totalBilled: number;
+    totalPaid: number;
+    totalCredits: number;
+    currentOutstanding: number;
+  };
+}
+
+const CustomerStatementDocument: React.FC<CustomerStatementDocumentProps> = ({
+  customer,
+  statement = [],
+  summary,
+}) => {
+  const currentDate = new Date().toLocaleDateString("en-GB");
+
+  return (
+    <div
+      id="printable-statement"
+      className="mx-auto bg-white max-w-4xl min-w-[700px] md:min-w-0 rounded-xl print:rounded-none overflow-visible print:overflow-visible print:w-full print:shadow-none font-sans"
+    >
+      <table className="print-page-table w-full border-collapse">
+        <thead className="print-page-header-group">
+          <tr>
+            <th className="p-0 font-normal text-left border-none">
+              <QuotationHeader />
+            </th>
+          </tr>
+        </thead>
+
+        <tfoot className="print-page-footer-group">
+          <tr>
+            <td className="p-0 border-none align-bottom">
+              {/* Spacer row to prevent body rows from overlapping the fixed bottom footer */}
+              <div
+                className="w-full opacity-0 pointer-events-none select-none"
+                style={{ minHeight: "175px" }}
+                aria-hidden="true"
+              >
+                <QuotationFooter />
+                <div style={{ height: "45px", minHeight: "45px" }} />
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+
+        <tbody className="print-page-body-group">
+          {/* Document Title Bar */}
+          <tr>
+            <td className="p-0 border-none align-top">
+              <div className="px-10 py-3.5 print:px-8 print:py-2.5 w-full border-b border-slate-100 bg-slate-50/50">
+                <div className="flex items-center justify-between gap-8">
+                  <div>
+                    <h1 className="text-2xl print:text-2xl font-black text-slate-900 tracking-tight">
+                      STATEMENT OF ACCOUNT
+                    </h1>
+                    <p className="text-[11px] print:text-[11px] font-semibold text-emerald-700 mt-0.5 print:mt-0">
+                      Official UAE Commercial Account Statement &amp; Receivables Ledger
+                    </p>
+                  </div>
+
+                  <div className="w-[340px] print:w-[340px] space-y-1 text-[12px] print:text-[12px]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 font-semibold whitespace-nowrap">
+                        Statement Date:
+                      </span>
+                      <span className="font-bold text-slate-900">
+                        {currentDate}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 font-semibold whitespace-nowrap">
+                        Customer Code:
+                      </span>
+                      <span className="font-mono font-bold text-slate-900">
+                        {customer.customerCode}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 font-semibold whitespace-nowrap">
+                        Currency:
+                      </span>
+                      <span className="font-mono font-bold text-slate-900">
+                        AED (UAE Dirham)
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 font-semibold whitespace-nowrap">
+                        Account Status:
+                      </span>
+                      <span
+                        className={`font-bold ${
+                          summary.currentOutstanding > 0
+                            ? "text-rose-700"
+                            : "text-emerald-800"
+                        }`}
+                      >
+                        {summary.currentOutstanding > 0
+                          ? "OUTSTANDING DUE"
+                          : "SETTLED"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          {/* Client & Financial Recap Cards */}
+          <tr>
+            <td className="p-0 border-none align-top">
+              <div className="grid grid-cols-2 gap-4 print:gap-3 px-10 py-3.5 print:px-8 print:py-2 text-[12px] print:text-[12px] print-avoid-break">
+                {/* Left Card: Customer Profile */}
+                <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs">
+                  <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[11px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
+                    CLIENT / ACCOUNT ENTITY
+                  </div>
+                  <div className="space-y-1.5 print:space-y-1">
+                    <div className="flex items-start gap-1">
+                      <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
+                        Client Name:
+                      </span>
+                      <span className="font-bold text-slate-900">
+                        {customer.name}
+                      </span>
+                    </div>
+
+                    {customer.companyName && (
+                      <div className="flex items-start gap-1">
+                        <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
+                          Company:
+                        </span>
+                        <span className="text-slate-700 font-medium">
+                          {customer.companyName}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-start gap-1">
+                      <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
+                        UAE VAT TRN:
+                      </span>
+                      <span className="font-mono text-slate-800 font-bold">
+                        {customer.trn || "N/A"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-start gap-1">
+                      <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
+                        Address:
+                      </span>
+                      <span className="text-slate-700">
+                        {customer.address || "United Arab Emirates"}
+                      </span>
+                    </div>
+
+                    {(customer.contactPerson || customer.phone) && (
+                      <div className="flex items-start gap-1">
+                        <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
+                          Contact:
+                        </span>
+                        <span className="text-slate-700">
+                          {[customer.contactPerson, customer.phone]
+                            .filter(Boolean)
+                            .join(" • ")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Card: Financial Recap */}
+                <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs flex flex-col justify-between">
+                  <div>
+                    <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[11px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
+                      FINANCIAL RECAPITULATION
+                    </div>
+                    <div className="space-y-1.5 print:space-y-1 text-[11.5px] print:text-[11px]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">
+                          Total Invoiced (Debit):
+                        </span>
+                        <span className="font-mono font-bold text-slate-900">
+                          AED {formatNumber(summary.totalBilled)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">
+                          Total Payments (Credit):
+                        </span>
+                        <span className="font-mono font-bold text-emerald-700">
+                          AED {formatNumber(summary.totalPaid)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">
+                          Credit Note Adjustments:
+                        </span>
+                        <span className="font-mono font-bold text-sky-700">
+                          AED {formatNumber(summary.totalCredits)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-2.5 pt-2 border-t border-slate-200 flex items-center justify-between bg-white print:bg-transparent p-2 rounded-lg border">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-700">
+                      Closing Net Balance Due:
+                    </span>
+                    <span className="font-mono text-base font-black text-rose-700">
+                      AED {formatNumber(summary.currentOutstanding)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          {/* Ledger Table */}
+          <tr>
+            <td className="p-0 border-none align-top">
+              <div className="px-10 py-2 print:px-8 print:py-1">
+                <table className="w-full border-collapse text-[11.5px] print:text-[10.5px]">
+                  <thead>
+                    <tr className="bg-agm-green border border-agm-box-border text-white">
+                      <th className="py-2.5 px-2.5 font-bold w-24 border border-agm-box-border text-white text-left align-middle">
+                        Date
+                      </th>
+                      <th className="py-2.5 px-2.5 font-bold w-28 border border-agm-box-border text-white text-left align-middle">
+                        Doc / Ref #
+                      </th>
+                      <th className="py-2.5 px-3 font-bold border border-agm-box-border text-white text-left align-middle">
+                        Particulars / Description
+                      </th>
+                      <th className="py-2.5 px-2 font-bold w-24 border border-agm-box-border text-white text-center align-middle">
+                        Doc Type
+                      </th>
+                      <th className="py-2.5 px-3 font-bold w-28 border border-agm-box-border text-white text-right align-middle">
+                        Debit (AED)
+                      </th>
+                      <th className="py-2.5 px-3 font-bold w-28 border border-agm-box-border text-white text-right align-middle">
+                        Credit (AED)
+                      </th>
+                      <th className="py-2.5 px-3 font-bold w-32 border border-agm-box-border text-white text-right align-middle">
+                        Balance (AED)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-agm-box-border">
+                    {statement.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          className="py-6 text-center text-slate-400 italic border border-agm-box-border"
+                        >
+                          No ledger transactions recorded for this account.
+                        </td>
+                      </tr>
+                    ) : (
+                      statement.map((tx, idx) => (
+                        <tr
+                          key={idx}
+                          className="hover:bg-slate-50/50 bg-white print-avoid-break"
+                        >
+                          <td className="py-2 px-2.5 align-middle text-left font-mono text-slate-700 border border-agm-box-border">
+                            {tx.date}
+                          </td>
+                          <td className="py-2 px-2.5 align-middle text-left font-mono font-bold text-slate-900 border border-agm-box-border">
+                            {tx.ref || tx.reference}
+                          </td>
+                          <td className="py-2 px-3 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
+                            {tx.description}
+                          </td>
+                          <td className="py-2 px-2 align-middle text-center border border-agm-box-border">
+                            <span className="font-mono text-[10px] font-bold uppercase text-slate-700">
+                              {tx.type}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 align-middle text-right font-mono font-semibold text-slate-900 border border-agm-box-border">
+                            {Number(tx.debit) > 0
+                              ? formatNumber(tx.debit)
+                              : "—"}
+                          </td>
+                          <td className="py-2 px-3 align-middle text-right font-mono font-semibold text-emerald-700 border border-agm-box-border">
+                            {Number(tx.credit) > 0
+                              ? formatNumber(tx.credit)
+                              : "—"}
+                          </td>
+                          <td className="py-2 px-3 align-middle text-right font-mono font-black text-slate-900 border border-agm-box-border">
+                            {formatNumber(tx.runningBalance)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+
+          {/* Statement Remittance & Closing Summary */}
+          <tr>
+            <td className="p-0 border-none align-top">
+              <div className="px-10 print:px-8">
+                <div className="flex items-stretch justify-between gap-4 mt-3.5 print:mt-2 print-avoid-break">
+                  {/* Left: Remittance Instructions */}
+                  <div className="flex-1 border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2 rounded-xl text-[11px] print:text-[10px] flex flex-col justify-center shadow-2xs">
+                    <div className="font-bold mb-1 text-slate-900 uppercase text-[10.5px] print:text-[10px] tracking-wider text-agm-green flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
+                      PAYMENT &amp; REMITTANCE ADVICE
+                    </div>
+                    <div className="space-y-1 text-slate-600 font-medium leading-relaxed">
+                      <div>
+                        Please remit all outstanding dues in favor of{" "}
+                        <strong>Al Ghaith Metal Industries LLC</strong> within
+                        the agreed credit cycle.
+                      </div>
+                      <div className="text-[10px] text-slate-500">
+                        Remittance reference: Customer Code (
+                        {customer.customerCode}) or corresponding Tax Invoice
+                        numbers.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Closing Net Summary */}
+                  <div className="w-80 border border-slate-200 print:border-slate-300 bg-white rounded-xl overflow-hidden shadow-2xs text-[12px] print:text-[11px]">
+                    <div className="divide-y divide-slate-100 print:divide-slate-200">
+                      <div className="flex items-center justify-between px-4 py-2 bg-slate-50/40">
+                        <span className="font-semibold text-slate-600">
+                          Total Billed Invoices:
+                        </span>
+                        <span className="font-mono font-bold text-slate-900">
+                          AED {formatNumber(summary.totalBilled)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between px-4 py-2 bg-slate-50/40">
+                        <span className="font-semibold text-slate-600">
+                          Total Paid / Settled:
+                        </span>
+                        <span className="font-mono font-bold text-emerald-700">
+                          AED {formatNumber(summary.totalPaid)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between px-4 py-2.5 bg-agm-green text-white">
+                        <span className="font-bold text-xs uppercase tracking-wider">
+                          Net Due Balance:
+                        </span>
+                        <span className="font-mono font-black text-sm">
+                          AED {formatNumber(summary.currentOutstanding)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Fixed Footer pinned to the bottom of every page in print */}
+      <div className="print-footer-bottom fixed-print-footer hidden print:block">
+        <QuotationFooter />
+      </div>
+
+      {/* On-Screen / Print Preview Footer */}
+      <div className="px-10 pb-6 print:hidden">
+        <QuotationFooter className="mt-6" />
+      </div>
+    </div>
+  );
+};
+
+// ----------------------------------------------------------------------
+// 2. Landing Page QA-Style Accordion Expanded Drawer Component
+// ----------------------------------------------------------------------
+interface CustomerExpandedRowProps {
+  customer: Customer;
+  onPrint: () => void;
+  onClose: () => void;
+}
+
+function CustomerExpandedRow({
+  customer,
+  onPrint,
+  onClose,
+}: CustomerExpandedRowProps) {
+  const { data: statementData, isLoading } = useCustomerStatement(customer.id);
+  const summary = statementData?.summary;
+  const recentStatements = useMemo(() => {
+    if (!statementData?.statement) return [];
+    return statementData.statement.slice(-4).reverse();
+  }, [statementData]);
+
+  const outstanding = Number(
+    summary?.currentOutstanding ?? customer.currentBalance ?? 0,
+  );
+  const creditLimit = Number(customer.creditLimit || 0);
+  const availableCredit =
+    creditLimit > 0 ? Math.max(0, creditLimit - outstanding) : 0;
+
+  return (
+    <TableRow className="hover:bg-transparent bg-slate-50/70">
+      <TableCell colSpan={7} className="p-0 border-b-2 border-emerald-600/40">
+        <div className="px-6 py-5 space-y-4 border-l-4 border-l-emerald-600 bg-gradient-to-b from-white via-slate-50/40 to-slate-100/40 shadow-inner">
+          {/* QA Header Ribbon */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="px-2.5 py-1 rounded-lg bg-teal-900 text-teal-200 font-mono font-bold text-xs shadow-2xs">
+                {customer.customerCode}
+              </span>
+              <span className="text-xs font-bold text-slate-900">
+                {customer.name}
+              </span>
+              {customer.companyName && (
+                <span className="text-[11px] font-medium text-slate-500">
+                  ({customer.companyName})
+                </span>
+              )}
+              {customer.trn ? (
+                <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-bold flex items-center gap-1">
+                  <ShieldCheckIcon size={12} className="text-emerald-700" />
+                  TRN: {customer.trn}
+                </span>
+              ) : (
+                <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                  No TRN Registered
+                </span>
+              )}
+              <span
+                className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                  outstanding > 0
+                    ? "bg-rose-50 text-rose-800 border-rose-200"
+                    : "bg-emerald-50 text-emerald-800 border-emerald-200"
+                }`}
+              >
+                {outstanding > 0
+                  ? `Outstanding: AED ${formatNumber(outstanding)}`
+                  : "Account Settled"}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onPrint}
+                icon={<PrintIcon size={13} className="text-emerald-700" />}
+                className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs"
+              >
+                Print Statement (PDF)
+              </Button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-xs text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 transition cursor-pointer"
+                title="Collapse preview"
+              >
+                <CloseIcon size={15} />
+              </button>
+            </div>
+          </div>
+
+          {/* 4 Metric Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="p-3 bg-rose-50/90 border border-rose-200/80 rounded-xl space-y-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block">
+                Outstanding Balance
+              </span>
+              <span className="text-base font-black font-mono text-rose-800 block">
+                AED {formatNumber(outstanding)}
+              </span>
+              <span className="text-[10px] text-rose-600/90 font-medium block truncate">
+                {outstanding > 0
+                  ? "Pending collection / settlement"
+                  : "Zero balance due"}
+              </span>
+            </div>
+
+            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-0.5 shadow-2xs">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                Credit Facility Limit
+              </span>
+              <span className="text-base font-black font-mono text-slate-900 block">
+                AED {formatNumber(creditLimit)}
+              </span>
+              <span className="text-[10px] text-slate-500 block truncate">
+                Available: AED {formatNumber(availableCredit)}
+              </span>
+            </div>
+
+            <div className="p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-xl space-y-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
+                Total Settled / Paid
+              </span>
+              <span className="text-base font-black font-mono text-emerald-900 block">
+                AED {isLoading ? "..." : formatNumber(summary?.totalPaid ?? 0)}
+              </span>
+              <span className="text-[10px] text-emerald-700 font-medium block truncate">
+                Invoiced: AED{" "}
+                {isLoading ? "..." : formatNumber(summary?.totalBilled ?? 0)}
+              </span>
+            </div>
+
+            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-0.5 shadow-2xs">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                Contact Person &amp; Phone
+              </span>
+              <span className="text-xs font-bold text-slate-900 block truncate">
+                {customer.contactPerson || "Primary Representative"}
+              </span>
+              <span className="text-[11px] font-mono text-slate-600 block truncate">
+                {customer.phone || customer.email || "No direct phone"}
+              </span>
+            </div>
+          </div>
+
+          {/* 2-Column QA Details Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Left Box: Client Profile & Billing Details */}
+            <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs space-y-2.5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span className="font-bold text-xs uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
+                  <BuildingIcon size={14} className="text-teal-700" />
+                  Client Profile &amp; Billing Data
+                </span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">
+                  Verified Account
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
+                <div>
+                  <span className="text-[10px] font-semibold text-slate-400 block">
+                    Full Legal Name
+                  </span>
+                  <span className="font-bold text-slate-800">
+                    {customer.name}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] font-semibold text-slate-400 block">
+                    Company / Trade Name
+                  </span>
+                  <span className="text-slate-700 font-medium">
+                    {customer.companyName || "—"}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] font-semibold text-slate-400 block">
+                    UAE VAT TRN (15 Digits)
+                  </span>
+                  <span className="font-mono font-bold text-emerald-800">
+                    {customer.trn || "Not Registered"}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] font-semibold text-slate-400 block">
+                    Billing Location
+                  </span>
+                  <span className="text-slate-700 truncate block">
+                    {customer.address || "United Arab Emirates"}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] font-semibold text-slate-400 block">
+                    Phone / Mobile
+                  </span>
+                  <span className="font-mono text-slate-700">
+                    {customer.phone || "—"}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] font-semibold text-slate-400 block">
+                    Email Address
+                  </span>
+                  <span className="text-slate-700 truncate block">
+                    {customer.email || "—"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Box: Ledger & Recent Activity Preview */}
+            <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs space-y-2.5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span className="font-bold text-xs uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
+                    <FileTextIcon size={14} className="text-teal-700" />
+                    Recent Transactions &amp; Activity
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase font-mono">
+                    {statementData?.statement?.length ?? 0} Total Records
+                  </span>
+                </div>
+
+                {isLoading ? (
+                  <div className="py-6 text-center text-slate-400 text-xs animate-pulse">
+                    Loading ledger preview...
+                  </div>
+                ) : recentStatements.length === 0 ? (
+                  <div className="py-6 text-center text-slate-400 text-xs italic">
+                    No transactions recorded on this account yet.
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 pt-2">
+                    {recentStatements.map((tx: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between py-1.5 px-2.5 rounded-lg bg-slate-50/70 border border-slate-100 text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase font-mono ${
+                              tx.type === "INVOICE"
+                                ? "bg-amber-100 text-amber-900"
+                                : tx.type === "PAYMENT"
+                                  ? "bg-emerald-100 text-emerald-900"
+                                  : "bg-sky-100 text-sky-900"
+                            }`}
+                          >
+                            {tx.type}
+                          </span>
+                          <span className="font-mono font-bold text-slate-800">
+                            {tx.ref || tx.reference}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
+                            {tx.date}
+                          </span>
+                        </div>
+                        <div className="font-mono text-right">
+                          <span
+                            className={`font-bold ${
+                              tx.debit > 0
+                                ? "text-slate-900"
+                                : "text-emerald-700"
+                            }`}
+                          >
+                            {tx.debit > 0
+                              ? `+AED ${formatNumber(tx.debit)}`
+                              : `-AED ${formatNumber(tx.credit)}`}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-[11px] text-slate-500">
+                  Real-time ledger activity &amp; payments history.
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onPrint}
+                  icon={<PrintIcon size={12} className="text-emerald-700" />}
+                  className="text-xs font-bold text-teal-800 hover:text-teal-900 cursor-pointer p-0 h-auto flex items-center gap-1"
+                >
+                  Print Full Statement →
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+// ----------------------------------------------------------------------
+// 3. Main Customers Master Page
+// ----------------------------------------------------------------------
 export default function CustomersMasterPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
@@ -51,18 +757,64 @@ export default function CustomersMasterPage() {
   const createCustomerMutation = useCreateCustomer();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
+  const [expandedCustomerId, setExpandedCustomerId] = useState<string | null>(
     null,
   );
 
-  const { data: statementData } = useCustomerStatement(selectedCustomerId);
+  // Isolated Printing State
+  const [statementToPrint, setStatementToPrint] = useState<{
+    customer: Customer;
+    statement: any[];
+    summary: {
+      totalBilled: number;
+      totalPaid: number;
+      totalCredits: number;
+      currentOutstanding: number;
+    };
+  } | null>(null);
 
-  const formatNumber = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+  const printDocumentRef = useRef<HTMLDivElement>(null);
+
+  const triggerPrint = useReactToPrint({
+    contentRef: printDocumentRef,
+    documentTitle: statementToPrint?.customer?.customerCode
+      ? `Statement-${statementToPrint.customer.customerCode}`
+      : "Customer-Statement-of-Account",
+  });
+
+  const handlePrintCustomer = async (
+    customer: Customer,
+    existingData?: {
+      customer: Customer;
+      statement: any[];
+      summary: {
+        totalBilled: number;
+        totalPaid: number;
+        totalCredits: number;
+        currentOutstanding: number;
+      };
+    },
+  ) => {
+    if (existingData) {
+      setStatementToPrint(existingData);
+      setTimeout(() => {
+        triggerPrint();
+      }, 100);
+      return;
+    }
+    try {
+      const res = await fetch(
+        `/api/commercial/customers/${customer.id}/statement`,
+      );
+      if (!res.ok) throw new Error("Failed to load customer statement");
+      const data = await res.json();
+      setStatementToPrint(data);
+      setTimeout(() => {
+        triggerPrint();
+      }, 100);
+    } catch (err: any) {
+      alert(`Unable to print statement: ${err.message}`);
+    }
   };
 
   const [form, setForm] = useState({ ...EMPTY_FORM });
@@ -362,76 +1114,141 @@ export default function CustomersMasterPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredCustomers.map((c) => (
-                    <TableRow
-                      key={c.id}
-                      className="hover:bg-slate-50/60 text-slate-700 transition"
-                    >
-                      <TableCell className="py-3 px-4 font-mono font-bold text-teal-800">
-                        <div className="flex items-center gap-1.5">
-                          <BuildingIcon
-                            size={13}
-                            className="text-teal-700 shrink-0"
-                          />
-                          <span>{c.customerCode}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-3 px-4 font-bold text-slate-900">
-                        <div>{c.name}</div>
-                        {c.companyName && (
-                          <div className="text-[10px] text-slate-400 font-normal">
-                            {c.companyName}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-3 px-4 font-mono text-slate-600">
-                        {c.trn ? (
-                          <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-mono font-bold">
-                            {c.trn}
-                          </span>
-                        ) : (
-                          <span className="text-slate-300">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-3 px-4 text-slate-600">
-                        <div className="font-semibold text-slate-800">
-                          {c.contactPerson || c.phone || "—"}
-                        </div>
-                        {c.email && (
-                          <div className="text-[10px] text-slate-400">
-                            {c.email}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className="py-3 px-4 text-right font-mono font-semibold text-slate-700"
-                      >
-                        {formatNumber(c.creditLimit)}
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className={`py-3 px-4 text-right font-mono font-black text-xs ${
-                          Number(c.currentBalance) > 0
-                            ? "text-rose-700"
-                            : "text-emerald-700"
-                        }`}
-                      >
-                        {formatNumber(c.currentBalance)}
-                      </TableCell>
-                      <TableCell className="py-3 px-4 text-center print:hidden">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => setSelectedCustomerId(c.id)}
-                          icon={<FileTextIcon size={12} />}
-                          className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 transition cursor-pointer"
+                  filteredCustomers.map((c) => {
+                    const isExpanded = expandedCustomerId === c.id;
+                    return (
+                      <Fragment key={c.id}>
+                        <TableRow
+                          onClick={() =>
+                            setExpandedCustomerId(isExpanded ? null : c.id)
+                          }
+                          className={`hover:bg-emerald-50/40 cursor-pointer transition-colors ${
+                            isExpanded
+                              ? "bg-emerald-50/50 font-semibold"
+                              : "text-slate-700"
+                          }`}
                         >
-                          Statement
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                          <TableCell className="py-3 px-4 font-mono font-bold text-teal-800">
+                            <div className="flex items-center gap-2">
+                              <ChevronDownIcon
+                                size={15}
+                                className={`shrink-0 transition-transform duration-200 ${
+                                  isExpanded
+                                    ? "rotate-180 text-emerald-800"
+                                    : "text-slate-400"
+                                }`}
+                              />
+                              <BuildingIcon
+                                size={13}
+                                className="text-teal-700 shrink-0"
+                              />
+                              <span className="hover:text-emerald-800 transition-colors">
+                                {c.customerCode}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-3 px-4 font-bold text-slate-900">
+                            <div>{c.name}</div>
+                            {c.companyName && (
+                              <div className="text-[10px] text-slate-400 font-normal">
+                                {c.companyName}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="py-3 px-4 font-mono text-slate-600">
+                            {c.trn ? (
+                              <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-mono font-bold">
+                                {c.trn}
+                              </span>
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-slate-600">
+                            <div className="font-semibold text-slate-800">
+                              {c.contactPerson || c.phone || "—"}
+                            </div>
+                            {c.email && (
+                              <div className="text-[10px] text-slate-400">
+                                {c.email}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            className="py-3 px-4 text-right font-mono font-semibold text-slate-700"
+                          >
+                            {formatNumber(c.creditLimit)}
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            className={`py-3 px-4 text-right font-mono font-black text-xs ${
+                              Number(c.currentBalance) > 0
+                                ? "text-rose-700"
+                                : "text-emerald-700"
+                            }`}
+                          >
+                            {formatNumber(c.currentBalance)}
+                          </TableCell>
+                          <TableCell className="py-3 px-4 text-center print:hidden">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePrintCustomer(c);
+                                }}
+                                icon={<PrintIcon size={13} className="text-emerald-700" />}
+                                className="px-3 py-1.5 text-[11px] font-bold rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                                title="Print Statement (PDF)"
+                              >
+                                Print
+                              </Button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedCustomerId(
+                                    isExpanded ? null : c.id,
+                                  );
+                                }}
+                                className={`p-1.5 rounded-lg transition cursor-pointer ${
+                                  isExpanded
+                                    ? "text-emerald-800 bg-emerald-100"
+                                    : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                }`}
+                                title={
+                                  isExpanded
+                                    ? "Collapse preview"
+                                    : "Expand preview"
+                                }
+                              >
+                                <ChevronDownIcon
+                                  size={14}
+                                  className={`transition-transform duration-200 ${
+                                    isExpanded
+                                      ? "rotate-180 text-emerald-800"
+                                      : ""
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+
+                        {/* QA-Style Accordion Expanded Drawer */}
+                        {isExpanded && (
+                          <CustomerExpandedRow
+                            customer={c}
+                            onPrint={() => handlePrintCustomer(c)}
+                            onClose={() => setExpandedCustomerId(null)}
+                          />
+                        )}
+                      </Fragment>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
@@ -550,150 +1367,27 @@ export default function CustomersMasterPage() {
         </Modal>
       )}
 
-      {/* Statement of Account Modal */}
-      {selectedCustomerId && statementData && (
-        <Modal
-          isOpen={!!selectedCustomerId}
-          onClose={() => setSelectedCustomerId(null)}
-          title={`Statement of Account — ${statementData.customer.name}`}
-          maxWidth="2xl"
-        >
-          <div className="space-y-4 text-xs">
-            <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-              <div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase">
-                  Customer Profile
-                </p>
-                <p className="text-sm font-black text-slate-900">
-                  {statementData.customer.name}
-                </p>
-                {statementData.customer.companyName && (
-                  <p className="text-slate-600 font-medium">
-                    {statementData.customer.companyName}
-                  </p>
-                )}
-                <p className="text-slate-500 font-mono mt-0.5">
-                  TRN: {statementData.customer.trn || "N/A"}
-                </p>
-              </div>
 
-              <div className="text-right font-mono space-y-1">
-                <p className="text-[11px] font-bold text-slate-400 uppercase">
-                  Total Outstanding
-                </p>
-                <p className="text-xl font-black text-rose-700">
-                  AED {formatNumber(statementData.summary.currentOutstanding)}
-                </p>
-                <p className="text-[11px] text-slate-500">
-                  Billed: AED {formatNumber(statementData.summary.totalBilled)}{" "}
-                  | Paid: AED {formatNumber(statementData.summary.totalPaid)}
-                </p>
-              </div>
-            </div>
 
-            <div className="rounded-xl border border-slate-200 overflow-hidden">
-              <Table className="w-full text-xs">
-                <TableHead className="bg-slate-100">
-                  <TableRow>
-                    <TableHeaderCell className="py-2.5 px-3">
-                      Date
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-2.5 px-3">
-                      Doc #
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-2.5 px-3">
-                      Type
-                    </TableHeaderCell>
-                    <TableHeaderCell
-                      align="right"
-                      className="py-2.5 px-3 text-right"
-                    >
-                      Debit (Billed)
-                    </TableHeaderCell>
-                    <TableHeaderCell
-                      align="right"
-                      className="py-2.5 px-3 text-right"
-                    >
-                      Credit (Paid)
-                    </TableHeaderCell>
-                    <TableHeaderCell
-                      align="right"
-                      className="py-2.5 px-3 text-right"
-                    >
-                      Balance
-                    </TableHeaderCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody className="divide-y divide-slate-100 font-medium">
-                  {(statementData.statement || []).map(
-                    (tx: any, idx: number) => (
-                      <TableRow key={idx}>
-                        <TableCell className="py-2.5 px-3 font-mono">
-                          {tx.date}
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 font-mono font-bold text-slate-900">
-                          {tx.ref}
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              tx.type === "INVOICE"
-                                ? "bg-amber-50 text-amber-800 border border-amber-200"
-                                : tx.type === "PAYMENT"
-                                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                                  : "bg-sky-50 text-sky-800 border border-sky-200"
-                            }`}
-                          >
-                            {tx.type}
-                          </span>
-                        </TableCell>
-                        <TableCell
-                          align="right"
-                          className="py-2.5 px-3 text-right font-mono text-slate-700"
-                        >
-                          {tx.debit > 0 ? formatNumber(tx.debit) : "—"}
-                        </TableCell>
-                        <TableCell
-                          align="right"
-                          className="py-2.5 px-3 text-right font-mono text-emerald-800"
-                        >
-                          {tx.credit > 0 ? formatNumber(tx.credit) : "—"}
-                        </TableCell>
-                        <TableCell
-                          align="right"
-                          className="py-2.5 px-3 text-right font-mono font-black text-slate-900"
-                        >
-                          AED {formatNumber(tx.runningBalance)}
-                        </TableCell>
-                      </TableRow>
-                    ),
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-
-            <div className="flex justify-between items-center pt-3 border-t border-slate-100">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.print()}
-                icon={<PrintIcon size={13} />}
-                className="cursor-pointer"
-              >
-                Print Statement of Account
-              </Button>
-              <Button
-                variant="dark"
-                size="sm"
-                onClick={() => setSelectedCustomerId(null)}
-                className="cursor-pointer"
-              >
-                Close Statement
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
+      {/* Off-screen Isolated Container for direct useReactToPrint */}
+      <div
+        style={{
+          position: "fixed",
+          left: "-99999px",
+          top: "-99999px",
+          width: "210mm",
+        }}
+      >
+        <div ref={printDocumentRef}>
+          {statementToPrint && (
+            <CustomerStatementDocument
+              customer={statementToPrint.customer}
+              statement={statementToPrint.statement}
+              summary={statementToPrint.summary}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
