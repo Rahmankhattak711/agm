@@ -1,11 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  PrintIcon,
-  ActivityIcon,
-  ShieldCheckIcon,
-} from "@/components/icons";
+import React, { useState, useRef } from "react";
+import { useReactToPrint } from "react-to-print";
+import { PrintIcon, ActivityIcon, ShieldCheckIcon } from "@/components/icons";
 import {
   Button,
   Table,
@@ -23,6 +20,7 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { ReportTab, QuarterTab, formatCurrency, formatNumber } from "./types";
+import { ReportKpiCard, ReportKpiGrid } from "./ReportKpiCard";
 
 interface ExecutiveSummaryReportProps {
   profitLoss?: ProfitLossData;
@@ -128,8 +126,17 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
     netVat: quartersList.reduce((s, q) => s + q.netVat, 0),
   };
 
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Executive-Summary-Report",
+  });
+
   return (
-    <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-8 print:p-0 print:m-0 print:border-none">
+    <div
+      ref={printRef}
+      className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-8 print:p-0 print:m-0 print:border-none"
+    >
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -143,8 +150,15 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
 
         <tfoot className="print-page-footer-group">
           <tr>
-            <td className="p-0 border-none">
-              <div className="h-[140px] w-full hidden print:block" />
+            <td className="p-0 border-none align-bottom">
+              <div
+                className="w-full opacity-0 pointer-events-none select-none"
+                style={{ minHeight: "175px" }}
+                aria-hidden="true"
+              >
+                <QuotationFooter />
+                <div style={{ height: "45px", minHeight: "45px" }} />
+              </div>
             </td>
           </tr>
         </tfoot>
@@ -174,16 +188,12 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:hidden">
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded-lg bg-emerald-700 text-white font-black text-xs shadow-xs">
-                      AGM
-                    </span>
                     <div>
                       <h3 className="font-black text-base text-slate-900 tracking-tight">
                         Fitout Executive Financial Summary
                       </h3>
                       <p className="text-xs text-slate-500">
-                        Consolidated performance, quarterly velocity &amp;
-                        statutory compliance
+                        Consolidated Performance • Quarterly Trends • Compliance
                       </p>
                     </div>
                   </div>
@@ -194,7 +204,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                       icon={
                         <PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />
                       }
-                      onClick={() => window.print()}
+                      onClick={() => handlePrint()}
                       className="cursor-pointer"
                     >
                       Print Statement
@@ -203,164 +213,104 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                 </div>
 
                 {/* 6 High-Level Key Performance Indicators */}
-                <div className="grid grid-cols-1 md:grid-cols-3 report-kpi-grid gap-4 print:gap-2.5 print-avoid-break">
-                  {/* Card 1: Turnover */}
-                  <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
-                    <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-                    <div>
-                      <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                        1. Total Turnover
-                      </span>
-                      <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                        Revenue from Fitout
-                      </span>
-                    </div>
-                    <div className="pt-2 print:pt-0">
-                      <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                        AED
-                      </span>
-                      <span className="text-xl print:text-base font-black text-slate-900 font-mono">
-                        {formatNumber(totalRevenue)}
-                      </span>
-                    </div>
-                  </div>
+                <ReportKpiGrid cols={3}>
+                  <ReportKpiCard
+                    title="1. Total Turnover"
+                    subtitle="Revenue from Fitout"
+                    value={formatNumber(totalRevenue)}
+                    accentColor="emerald"
+                  />
 
-                  {/* Card 2: Gross Profit */}
-                  <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
-                    <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-600" />
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                          2. Gross Profit
-                        </span>
-                        <span className="text-[10.5px] print:text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
-                          {grossMargin.toFixed(1)}%
-                        </span>
-                      </div>
-                      <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                        After Direct Costs
+                  <ReportKpiCard
+                    title="2. Gross Profit"
+                    subtitle="After Direct Costs"
+                    value={formatNumber(grossProfit)}
+                    accentColor="emerald"
+                    valueColor="text-emerald-800"
+                    badge={
+                      <span className="text-[10.5px] print:text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+                        {grossMargin.toFixed(1)}%
                       </span>
-                    </div>
-                    <div className="pt-2 print:pt-0">
-                      <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                        AED
-                      </span>
-                      <span className="text-xl print:text-base font-black text-emerald-800 font-mono">
-                        {formatNumber(grossProfit)}
-                      </span>
-                    </div>
-                  </div>
+                    }
+                  />
 
-                  {/* Card 3: Net Profit */}
-                  <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
-                    <div className="absolute inset-x-0 top-0 h-[2.5px] bg-indigo-500" />
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                          3. Net Income
-                        </span>
-                        <span className="text-[10.5px] print:text-[9px] font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/60">
-                          {netMargin.toFixed(1)}%
-                        </span>
-                      </div>
-                      <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                        Bottom Line Margin
+                  <ReportKpiCard
+                    title="3. Net Income"
+                    subtitle="Bottom Line Margin"
+                    value={formatNumber(netProfit)}
+                    accentColor="indigo"
+                    valueColor={netProfit >= 0 ? "text-slate-900" : "text-rose-700"}
+                    badge={
+                      <span className="text-[10.5px] print:text-[9px] font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/60">
+                        {netMargin.toFixed(1)}%
                       </span>
-                    </div>
-                    <div className="pt-2 print:pt-0">
-                      <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                        AED
-                      </span>
+                    }
+                  />
+
+                  <ReportKpiCard
+                    title="4. Total Assets"
+                    subtitle="Current & Fixed Assets"
+                    value={formatNumber(totalAssets)}
+                    accentColor="sky"
+                  />
+
+                  <ReportKpiCard
+                    title="5. Total Liabilities"
+                    subtitle="Payables & Accruals"
+                    value={formatNumber(totalLiabilities)}
+                    accentColor="amber"
+                    valueColor="text-amber-800"
+                  />
+
+                  <ReportKpiCard
+                    title="6. UAE VAT Position"
+                    subtitle="Output - Input Tax"
+                    value={formatNumber(Math.abs(netVat))}
+                    accentColor="teal"
+                    valueColor={netVat >= 0 ? "text-amber-800" : "text-emerald-800"}
+                    badge={
                       <span
-                        className={`text-xl print:text-base font-black font-mono ${
-                          netProfit >= 0 ? "text-slate-900" : "text-rose-700"
+                        className={`text-[10px] print:text-[9px] font-bold px-2 py-0.5 rounded-md border ${
+                          netVat >= 0
+                            ? "bg-amber-50 text-amber-800 border-amber-200/70"
+                            : "bg-emerald-50 text-emerald-800 border-emerald-200/70"
                         }`}
                       >
-                        {formatNumber(netProfit)}
+                        {netVat >= 0 ? "Payable" : "Refund"}
                       </span>
-                    </div>
-                  </div>
+                    }
+                  />
+                </ReportKpiGrid>
 
-                  {/* Card 4: Total Assets */}
-                  <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
-                    <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-                    <div>
-                      <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                        4. Total Assets
-                      </span>
-                      <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                        Current &amp; Fixed Assets
-                      </span>
-                    </div>
-                    <div className="pt-2 print:pt-0">
-                      <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                        AED
-                      </span>
-                      <span className="text-xl print:text-base font-black text-slate-900 font-mono">
-                        {formatNumber(totalAssets)}
-                      </span>
-                    </div>
+                {/* Compact Printable Executive Summary Metrics Strip */}
+                <div className="hidden print:grid grid-cols-3 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break">
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Total Turnover</span>
+                    <span className="font-mono font-black text-slate-900">{formatCurrency(totalRevenue)}</span>
                   </div>
-
-                  {/* Card 5: Total Liabilities */}
-                  <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
-                    <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-                    <div>
-                      <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                        5. Total Liabilities
-                      </span>
-                      <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                        Payables &amp; Accruals
-                      </span>
-                    </div>
-                    <div className="pt-2 print:pt-0">
-                      <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                        AED
-                      </span>
-                      <span className="text-xl print:text-base font-black text-amber-800 font-mono">
-                        {formatNumber(totalLiabilities)}
-                      </span>
-                    </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Gross Profit</span>
+                    <span className="font-mono font-black text-emerald-800">{formatCurrency(grossProfit)} ({grossMargin.toFixed(1)}%)</span>
                   </div>
-
-                  {/* Card 6: VAT Position */}
-                  <div className="relative overflow-hidden p-5 print:p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3 print:space-y-1">
-                    <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                          6. UAE VAT Position
-                        </span>
-                        <span
-                          className={`text-[10px] print:text-[9px] font-bold px-2 py-0.5 rounded-md border ${
-                            netVat >= 0
-                              ? "bg-amber-50 text-amber-800 border-amber-200/70"
-                              : "bg-emerald-50 text-emerald-800 border-emerald-200/70"
-                          }`}
-                        >
-                          {netVat >= 0 ? "Payable" : "Refund"}
-                        </span>
-                      </div>
-                      <span className="text-xs print:text-[11px] text-slate-500 mt-0.5 block truncate">
-                        Output - Input Tax
-                      </span>
-                    </div>
-                    <div className="pt-2 print:pt-0">
-                      <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                        AED
-                      </span>
-                      <span
-                        className={`text-xl print:text-base font-black font-mono ${
-                          netVat >= 0 ? "text-amber-800" : "text-emerald-800"
-                        }`}
-                      >
-                        {formatNumber(Math.abs(netVat))}
-                      </span>
-                    </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Net Income</span>
+                    <span className="font-mono font-black text-slate-900">{formatCurrency(netProfit)} ({netMargin.toFixed(1)}%)</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Total Assets</span>
+                    <span className="font-mono font-black text-slate-900">{formatCurrency(totalAssets)}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">5. Total Liabilities</span>
+                    <span className="font-mono font-black text-amber-800">{formatCurrency(totalLiabilities)}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">6. UAE VAT Position</span>
+                    <span className="font-mono font-black text-emerald-800">{formatCurrency(Math.abs(netVat))} ({netVat >= 0 ? "Payable" : "Refund"})</span>
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200/80 bg-white p-5 print:p-3 space-y-6 print:space-y-3 shadow-xs print-avoid-break">
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-5 print:p-3 space-y-6 print:space-y-3 shadow-xs">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 print:pb-2">
                     <div>
                       <div className="flex flex-col items-start gap-2">
@@ -368,12 +318,11 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                           Quarterly Analytics
                         </div>
                         <h4 className="font-black text-sm text-slate-900 tracking-tight">
-                          3-Month Group Performance &amp;  <br />Quarterly Summary
+                          Quarterly Performance Summary
                         </h4>
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        AGM Financial Year grouped into 4 distinct <br /> three-month
-                        quarters (Q1, Q2, Q3, Q4).
+                        Four quarters: Q1, Q2, Q3, and Q4.
                       </p>
                     </div>
 
@@ -391,8 +340,9 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                           key={tab.id}
                           type="button"
                           variant="ghost"
+                          size="sm"
                           onClick={() => setQuarterlyTab(tab.id)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer h-auto ${
+                          className={`${
                             quarterlyTab === tab.id
                               ? "bg-white text-slate-900 shadow-xs hover:bg-white"
                               : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
@@ -408,7 +358,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     {filteredQuarters.map((q) => (
                       <div
                         key={q.key}
-                        className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs space-y-3 hover:border-slate-300 hover:shadow-sm transition"
+                        className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs space-y-3 hover:border-slate-300 hover:shadow-sm transition print-avoid-break"
                       >
                         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                           <div className="flex items-center gap-2">
@@ -746,7 +696,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="p-5 rounded-2xl border border-slate-200/80 bg-white space-y-4 shadow-xs">
+                  <div className="p-5 rounded-2xl border border-slate-200/80 bg-white space-y-4 shadow-xs print-avoid-break">
                     <h4 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                       <ActivityIcon size={15} className="text-emerald-700" />
                       Financial Liquidity &amp; Efficiency Ratios
@@ -802,7 +752,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl border border-slate-200/80 bg-white space-y-4 shadow-xs">
+                  <div className="p-5 rounded-2xl border border-slate-200/80 bg-white space-y-4 shadow-xs print-avoid-break">
                     <h4 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                       <ShieldCheckIcon size={15} className="text-emerald-700" />
                       Statutory Accounting Audit &amp; Integrity

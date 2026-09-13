@@ -10,3 +10,4 @@ export * from "./AccountsPayableReport";
 export * from "./GeneralLedgerReport";
 export * from "./VatPositionReport";
 export * from "./QuotationPrintModal";
+export * from "./ReportKpiCard";

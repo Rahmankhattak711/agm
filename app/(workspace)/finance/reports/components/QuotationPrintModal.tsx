@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 import { PrintIcon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import QuotationTemplate, {
   QuotationItem,
   QuotationMeta,
-} from "@/components/QuotationTemplate";
+} from "@/components/QuotationTemplate"; 
 import { Product } from "@/lib/hooks/api-hooks";
 
 interface QuotationPrintModalProps {
@@ -24,6 +25,13 @@ export const QuotationPrintModal: React.FC<QuotationPrintModalProps> = ({
   dynamicQuotationItems,
   products,
 }) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef,
+    documentTitle: dynamicQuotationMeta.quotationNo || "Commercial-Quotation",
+  });
+
   if (!isOpen) return null;
 
   return (
@@ -49,7 +57,7 @@ export const QuotationPrintModal: React.FC<QuotationPrintModalProps> = ({
               variant="primary"
               size="md"
               icon={<PrintIcon className="w-4 h-4" strokeWidth={2} />}
-              onClick={() => window.print()}
+              onClick={() => handlePrint()}
             >
               Print / Save PDF
             </Button>
@@ -64,7 +72,7 @@ export const QuotationPrintModal: React.FC<QuotationPrintModalProps> = ({
           </div>
         </div>
 
-        <div className="bg-white p-2 sm:p-4">
+        <div ref={contentRef} className="bg-white p-2 sm:p-4">
           <QuotationTemplate
             initialMeta={dynamicQuotationMeta}
             initialItems={dynamicQuotationItems}
