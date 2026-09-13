@@ -51,6 +51,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+@media screen {
+  .print-page-footer-group,
+  tfoot.print-page-footer-group {
+    display: none !important;
+  }
+}
+
 @media print {
   @page {
     size: A4 portrait;
@@ -168,10 +175,15 @@ body {
     page-break-inside: auto !important;
   }
 
-  .report-kpi-grid {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 8px !important;
+
+
+  /* Ensure print background colors override any dark radial gradients or base backgrounds */
+  [class*="print:bg-slate-100"],
+  [class*="print:bg-slate-50"],
+  [class*="print:bg-white"],
+  [class*="print:bg-gray-100"] {
+    background-color: #f1f5f9 !important;
+    background-image: none !important;
   }
 
   .report-quarter-grid {
