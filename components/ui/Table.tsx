@@ -26,11 +26,22 @@ export const Table: React.FC<TableProps> = ({
 export const TableHead: React.FC<
   React.HTMLAttributes<HTMLTableSectionElement>
 > = ({ children, className = "", ...props }) => {
+  const hasRow = React.Children.toArray(children).some(
+    (child) =>
+      React.isValidElement(child) &&
+      (child.type === TableRow ||
+        (typeof child.type === "string" && child.type === "tr")),
+  );
+
   return (
     <thead className={className} {...props}>
-      <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-wider font-semibold">
-        {children}
-      </tr>
+      {hasRow ? (
+        children
+      ) : (
+        <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-wider font-semibold">
+          {children}
+        </tr>
+      )}
     </thead>
   );
 };
