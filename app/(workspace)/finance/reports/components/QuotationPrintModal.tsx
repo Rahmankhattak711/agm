@@ -7,7 +7,7 @@ import { Button } from "@/components/ui";
 import QuotationTemplate, {
   QuotationItem,
   QuotationMeta,
-} from "@/components/QuotationTemplate"; 
+} from "@/components/QuotationTemplate";
 import { Product } from "@/lib/hooks/api-hooks";
 
 interface QuotationPrintModalProps {

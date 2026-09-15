@@ -110,7 +110,10 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
   });
 
   return (
-    <div ref={printRef} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+    <div
+      ref={printRef}
+      className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none"
+    >
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -168,12 +171,12 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      Federal Tax Authority (FTA) Form 201 Filing • Standard 5% UAE VAT &amp; Recoverable Position
+                      Federal Tax Authority (FTA) Form 201 Filing • Standard 5%
+                      UAE VAT &amp; Recoverable Position
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2">
-
                     <Button
                       variant="outline"
                       size="sm"
@@ -196,7 +199,7 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-8">
-                    <ReportKpiGrid cols={3}>
+                    <ReportKpiGrid cols={4}>
                       <ReportKpiCard
                         title="1. Taxable Turnover"
                         subtitle="Total sales (excl. VAT)"
@@ -223,7 +226,9 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                         subtitle="Output minus Input VAT"
                         value={formatNumber(Math.abs(netVat))}
                         accentColor={netVat >= 0 ? "amber" : "teal"}
-                        valueColor={netVat >= 0 ? "text-amber-800" : "text-emerald-800"}
+                        valueColor={
+                          netVat >= 0 ? "text-amber-800" : "text-emerald-800"
+                        }
                         badge={
                           <span
                             className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
@@ -238,24 +243,40 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                       />
                     </ReportKpiGrid>
 
-                    {/* Compact Printable VAT Position Summary Strip */}
                     <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Taxable Turnover</span>
-                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalIncomeTaxable)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          1. Taxable Turnover
+                        </span>
+                        <span className="font-mono font-black text-slate-900">
+                          {formatCurrency(totalIncomeTaxable)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Output VAT (5%)</span>
-                        <span className="font-mono font-black text-amber-800">{formatCurrency(totalOutputVat)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          2. Output VAT (5%)
+                        </span>
+                        <span className="font-mono font-black text-amber-800">
+                          {formatCurrency(totalOutputVat)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Recoverable Input VAT</span>
-                        <span className="font-mono font-black text-emerald-800">{formatCurrency(totalInputVat)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          3. Recoverable Input VAT
+                        </span>
+                        <span className="font-mono font-black text-emerald-800">
+                          {formatCurrency(totalInputVat)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Net VAT Position</span>
-                        <span className={`font-mono font-black ${netVat >= 0 ? "text-amber-800" : "text-emerald-800"}`}>
-                          {formatCurrency(Math.abs(netVat))} ({netVat >= 0 ? "Payable" : "Refund"})
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          4. Net VAT Position
+                        </span>
+                        <span
+                          className={`font-mono font-black ${netVat >= 0 ? "text-amber-800" : "text-emerald-800"}`}
+                        >
+                          {formatCurrency(Math.abs(netVat))} (
+                          {netVat >= 0 ? "Payable" : "Refund"})
                         </span>
                       </div>
                     </div>

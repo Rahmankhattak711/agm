@@ -212,7 +212,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                   </div>
                 </div>
 
-                {/* 6 High-Level Key Performance Indicators */}
                 <ReportKpiGrid cols={3}>
                   <ReportKpiCard
                     title="1. Total Turnover"
@@ -239,7 +238,9 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     subtitle="Bottom Line Margin"
                     value={formatNumber(netProfit)}
                     accentColor="indigo"
-                    valueColor={netProfit >= 0 ? "text-slate-900" : "text-rose-700"}
+                    valueColor={
+                      netProfit >= 0 ? "text-slate-900" : "text-rose-700"
+                    }
                     badge={
                       <span className="text-[10.5px] print:text-[9px] font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/60">
                         {netMargin.toFixed(1)}%
@@ -267,7 +268,9 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                     subtitle="Output - Input Tax"
                     value={formatNumber(Math.abs(netVat))}
                     accentColor="teal"
-                    valueColor={netVat >= 0 ? "text-amber-800" : "text-emerald-800"}
+                    valueColor={
+                      netVat >= 0 ? "text-amber-800" : "text-emerald-800"
+                    }
                     badge={
                       <span
                         className={`text-[10px] print:text-[9px] font-bold px-2 py-0.5 rounded-md border ${
@@ -282,31 +285,55 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                   />
                 </ReportKpiGrid>
 
-                {/* Compact Printable Executive Summary Metrics Strip */}
                 <div className="hidden print:grid grid-cols-3 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break">
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Total Turnover</span>
-                    <span className="font-mono font-black text-slate-900">{formatCurrency(totalRevenue)}</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      1. Total Turnover
+                    </span>
+                    <span className="font-mono font-black text-slate-900">
+                      {formatCurrency(totalRevenue)}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Gross Profit</span>
-                    <span className="font-mono font-black text-emerald-800">{formatCurrency(grossProfit)} ({grossMargin.toFixed(1)}%)</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      2. Gross Profit
+                    </span>
+                    <span className="font-mono font-black text-emerald-800">
+                      {formatCurrency(grossProfit)} ({grossMargin.toFixed(1)}%)
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Net Income</span>
-                    <span className="font-mono font-black text-slate-900">{formatCurrency(netProfit)} ({netMargin.toFixed(1)}%)</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      3. Net Income
+                    </span>
+                    <span className="font-mono font-black text-slate-900">
+                      {formatCurrency(netProfit)} ({netMargin.toFixed(1)}%)
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Total Assets</span>
-                    <span className="font-mono font-black text-slate-900">{formatCurrency(totalAssets)}</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      4. Total Assets
+                    </span>
+                    <span className="font-mono font-black text-slate-900">
+                      {formatCurrency(totalAssets)}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">5. Total Liabilities</span>
-                    <span className="font-mono font-black text-amber-800">{formatCurrency(totalLiabilities)}</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      5. Total Liabilities
+                    </span>
+                    <span className="font-mono font-black text-amber-800">
+                      {formatCurrency(totalLiabilities)}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">6. UAE VAT Position</span>
-                    <span className="font-mono font-black text-emerald-800">{formatCurrency(Math.abs(netVat))} ({netVat >= 0 ? "Payable" : "Refund"})</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      6. UAE VAT Position
+                    </span>
+                    <span className="font-mono font-black text-emerald-800">
+                      {formatCurrency(Math.abs(netVat))} (
+                      {netVat >= 0 ? "Payable" : "Refund"})
+                    </span>
                   </div>
                 </div>
 

@@ -91,7 +91,10 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
   });
 
   return (
-    <div ref={printRef} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+    <div
+      ref={printRef}
+      className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none"
+    >
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -133,7 +136,9 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                   </div>
                   <div className="text-right">
                     <p className="text-slate-700 font-mono font-bold text-xs">
-                      {isBalanced ? "Debits = Credits (Balanced)" : "Audit Review"}
+                      {isBalanced
+                        ? "Debits = Credits (Balanced)"
+                        : "Audit Review"}
                     </p>
                     <p className="text-slate-400 text-[10px]">
                       Printed: {new Date().toLocaleDateString("en-GB")}
@@ -149,7 +154,8 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      Comprehensive debit and credit audit across all active accounts
+                      Comprehensive debit and credit audit across all active
+                      accounts
                     </p>
                   </div>
 
@@ -160,7 +166,9 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       onClick={() => handlePrint()}
                       className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
                       icon={<PrintIcon size={14} />}
-                    >  Print Statement
+                    >
+                      {" "}
+                      Print Statement
                     </Button>
                   </div>
                 </div>
@@ -172,7 +180,7 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <ReportKpiGrid cols={3}>
+                    <ReportKpiGrid cols={4}>
                       <ReportKpiCard
                         title="1. Total Debits"
                         subtitle="Assets & Expense Postings"
@@ -207,7 +215,9 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                         subtitle="Total Debits - Total Credits"
                         value={isBalanced ? "0.00" : formatNumber(difference)}
                         accentColor={isBalanced ? "emerald" : "amber"}
-                        valueColor={isBalanced ? "text-emerald-800" : "text-amber-800"}
+                        valueColor={
+                          isBalanced ? "text-emerald-800" : "text-amber-800"
+                        }
                         badge={
                           <span
                             className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
@@ -222,23 +232,40 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                       />
                     </ReportKpiGrid>
 
-                    {/* Compact Printable Trial Balance Summary Strip */}
                     <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Total Debits</span>
-                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalDebit)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          1. Total Debits
+                        </span>
+                        <span className="font-mono font-black text-slate-900">
+                          {formatCurrency(totalDebit)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Total Credits</span>
-                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalCredit)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          2. Total Credits
+                        </span>
+                        <span className="font-mono font-black text-slate-900">
+                          {formatCurrency(totalCredit)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Chart Accounts</span>
-                        <span className="font-mono font-black text-slate-900">{allRows.length} Accounts</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          3. Chart Accounts
+                        </span>
+                        <span className="font-mono font-black text-slate-900">
+                          {allRows.length} Accounts
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Audit Status</span>
-                        <span className="font-mono font-black text-emerald-800">{isBalanced ? "In Balance (0.00)" : `Variance: ${formatCurrency(difference)}`}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          4. Audit Status
+                        </span>
+                        <span className="font-mono font-black text-emerald-800">
+                          {isBalanced
+                            ? "In Balance (0.00)"
+                            : `Variance: ${formatCurrency(difference)}`}
+                        </span>
                       </div>
                     </div>
 

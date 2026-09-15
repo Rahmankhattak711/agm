@@ -161,7 +161,6 @@ export const TaxInvoicesReport: React.FC = () => {
       ref={printRef}
       className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none"
     >
-      {}
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -238,14 +237,17 @@ export const TaxInvoicesReport: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 4 Cards in a row with Profit & Loss UI */}
-                <ReportKpiGrid cols={3}>
+                <ReportKpiGrid cols={4}>
                   <ReportKpiCard
                     title="1. Gross Invoiced"
                     subtitle="Total billing inclusive of VAT"
                     value={formatNumber(totalGrossInvoiced)}
                     accentColor="emerald"
-                    badge={<span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">{filteredInvoices.length} Invoices</span>}
+                    badge={
+                      <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                        {filteredInvoices.length} Invoices
+                      </span>
+                    }
                     footerText={`Net: ${formatCurrency(totalNetTaxable)}`}
                   />
 
@@ -254,7 +256,11 @@ export const TaxInvoicesReport: React.FC = () => {
                     subtitle="Turnover before 5% Output VAT"
                     value={formatNumber(totalNetTaxable)}
                     accentColor="sky"
-                    badge={<span className="text-[10px] font-mono font-bold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded-md border border-sky-200/60">Revenue Base</span>}
+                    badge={
+                      <span className="text-[10px] font-mono font-bold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded-md border border-sky-200/60">
+                        Revenue Base
+                      </span>
+                    }
                     footerText="FTA Standard 5% Rated"
                   />
 
@@ -264,7 +270,11 @@ export const TaxInvoicesReport: React.FC = () => {
                     value={formatNumber(totalVatAssessed)}
                     accentColor="emerald"
                     valueColor="text-emerald-800"
-                    badge={<span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">UAE FTA</span>}
+                    badge={
+                      <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                        UAE FTA
+                      </span>
+                    }
                     footerText={`Collected: ${formatCurrency(totalPaidCollected)}`}
                   />
 
@@ -274,34 +284,58 @@ export const TaxInvoicesReport: React.FC = () => {
                     value={formatNumber(totalOutstanding)}
                     accentColor="amber"
                     valueColor="text-amber-800"
-                    badge={<span className="text-[10px] font-mono font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200/60">{totalGrossInvoiced > 0 ? ((totalOutstanding / totalGrossInvoiced) * 100).toFixed(1) : "0.0"}% Due</span>}
+                    badge={
+                      <span className="text-[10px] font-mono font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200/60">
+                        {totalGrossInvoiced > 0
+                          ? (
+                              (totalOutstanding / totalGrossInvoiced) *
+                              100
+                            ).toFixed(1)
+                          : "0.0"}
+                        % Due
+                      </span>
+                    }
                     footerText={`Settled: ${formatCurrency(totalPaidCollected)}`}
                   />
                 </ReportKpiGrid>
 
-                {/* Compact Printable Tax Invoices Summary Strip */}
                 <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Gross Invoiced</span>
-                    <span className="font-mono font-black text-slate-900">{formatCurrency(totalGrossInvoiced)}</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      1. Gross Invoiced
+                    </span>
+                    <span className="font-mono font-black text-slate-900">
+                      {formatCurrency(totalGrossInvoiced)}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Net Taxable</span>
-                    <span className="font-mono font-black text-slate-900">{formatCurrency(totalNetTaxable)}</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      2. Net Taxable
+                    </span>
+                    <span className="font-mono font-black text-slate-900">
+                      {formatCurrency(totalNetTaxable)}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Output VAT (5%)</span>
-                    <span className="font-mono font-black text-emerald-800">{formatCurrency(totalVatAssessed)}</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      3. Output VAT (5%)
+                    </span>
+                    <span className="font-mono font-black text-emerald-800">
+                      {formatCurrency(totalVatAssessed)}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Outstanding Due</span>
-                    <span className="font-mono font-black text-amber-800">{formatCurrency(totalOutstanding)}</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      4. Outstanding Due
+                    </span>
+                    <span className="font-mono font-black text-amber-800">
+                      {formatCurrency(totalOutstanding)}
+                    </span>
                   </div>
                 </div>
 
                 <div className="p-3.5 bg-slate-50/90 rounded-xl border border-slate-200/70 space-y-3 print:hidden">
                   <div className="flex flex-wrap items-center justify-between gap-2.5">
-                    {}
                     <div className="flex flex-wrap gap-1.5">
                       {statusPills.map((p) => {
                         const isActive = statusFilter === p.key;
@@ -313,7 +347,7 @@ export const TaxInvoicesReport: React.FC = () => {
                             onClick={() => setStatusFilter(p.key)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer h-auto ${
                               isActive
-                                ? "bg-emerald-700 text-white shadow-xs hover:bg-emerald-800"
+                                ? "bg-agm-green text-white shadow-xs hover:bg-agm-green-2"
                                 : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200"
                             }`}
                           >
@@ -607,7 +641,6 @@ export const TaxInvoicesReport: React.FC = () => {
                   </div>
                 </div>
 
-                {/* TAX INVOICE PROFIT & LOSS REALIZATION SECTION */}
                 <div className="rounded-2xl border border-slate-200/80 bg-white p-5 print:p-3 space-y-4 print:space-y-2.5 shadow-xs">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2">
@@ -638,14 +671,17 @@ export const TaxInvoicesReport: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 4 P&L Realization Cards matching ProfitLoss UI */}
                   <ReportKpiGrid cols={3}>
                     <ReportKpiCard
                       title="1. Total Income"
                       subtitle="Contract revenue & billings"
                       value={formatNumber(totalNetTaxable)}
                       accentColor="emerald"
-                      badge={<span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">100% Taxable</span>}
+                      badge={
+                        <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                          100% Taxable
+                        </span>
+                      }
                       footerText={`Gross: ${formatCurrency(totalGrossInvoiced)}`}
                     />
 
@@ -655,7 +691,17 @@ export const TaxInvoicesReport: React.FC = () => {
                       value={formatNumber(totalDirectCost)}
                       accentColor="rose"
                       valueColor="text-rose-800"
-                      badge={<span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200/60">{totalNetTaxable > 0 ? ((totalDirectCost / totalNetTaxable) * 100).toFixed(1) : "0.0"}%</span>}
+                      badge={
+                        <span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200/60">
+                          {totalNetTaxable > 0
+                            ? (
+                                (totalDirectCost / totalNetTaxable) *
+                                100
+                              ).toFixed(1)
+                            : "0.0"}
+                          %
+                        </span>
+                      }
                       footerText="Cost of Sales Allocation"
                     />
 
@@ -665,7 +711,11 @@ export const TaxInvoicesReport: React.FC = () => {
                       value={formatNumber(grossProfit)}
                       accentColor="emerald"
                       valueColor="text-emerald-800"
-                      badge={<span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">{grossMarginPct.toFixed(1)}%</span>}
+                      badge={
+                        <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60">
+                          {grossMarginPct.toFixed(1)}%
+                        </span>
+                      }
                       footerText="Trading Profit Yield"
                     />
 
@@ -674,13 +724,18 @@ export const TaxInvoicesReport: React.FC = () => {
                       subtitle="Net income after overheads"
                       value={formatNumber(netProfit)}
                       accentColor="indigo"
-                      valueColor={netProfit >= 0 ? "text-indigo-950" : "text-rose-700"}
-                      badge={<span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded-md border border-indigo-200/60">{netMarginPct.toFixed(1)}%</span>}
+                      valueColor={
+                        netProfit >= 0 ? "text-indigo-950" : "text-rose-700"
+                      }
+                      badge={
+                        <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded-md border border-indigo-200/60">
+                          {netMarginPct.toFixed(1)}%
+                        </span>
+                      }
                       footerText="Bottom Line Margin"
                     />
                   </ReportKpiGrid>
 
-                  {/* P&L Statement Table Breakdown */}
                   <div className="rounded-xl border border-slate-200/80 overflow-hidden">
                     <Table className="w-full text-xs text-left">
                       <TableHead className="bg-slate-50 border-b border-slate-200">
@@ -830,7 +885,6 @@ export const TaxInvoicesReport: React.FC = () => {
         </tbody>
       </table>
 
-      {/* Fixed Footer pinned to bottom on every page, including the last page */}
       <div className="print-footer-bottom fixed-print-footer hidden print:block">
         <QuotationFooter />
       </div>
@@ -979,7 +1033,7 @@ export const TaxInvoicesReport: React.FC = () => {
                 onClick={() => {
                   window.location.href = `/commercial/sales-invoices`;
                 }}
-                className="bg-emerald-700 hover:bg-emerald-800 text-white"
+                className="bg-agm-green hover:bg-agm-green-2 text-white"
               >
                 Open in Sales Invoices
               </Button>

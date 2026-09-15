@@ -37,6 +37,7 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  DashboardCard,
 } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 
@@ -417,14 +418,14 @@ export default function AccountsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Chart of Accounts
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage your master chart of accounts, view real-time balances, and organize account structures.
+            Manage your master chart of accounts, view real-time balances, and
+            organize account structures.
           </p>
         </div>
 
@@ -434,14 +435,13 @@ export default function AccountsPage() {
             size="sm"
             onClick={handleOpenCreate}
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Add Account
           </Button>
         </div>
       </div>
 
-      {/* 5 Accounting Class KPI Cards (Interactive Filters) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
         {ACCOUNT_TYPES.map((t) => {
           const isSelected = selectedType === t.value;
@@ -450,42 +450,29 @@ export default function AccountsPage() {
             totalBalance: 0,
           };
           return (
-            <button
+            <DashboardCard
               key={t.value}
               onClick={() => setSelectedType(isSelected ? "ALL" : t.value)}
-              className={`relative overflow-hidden p-4 rounded-2xl border text-left transition-all cursor-pointer shadow-xs flex flex-col justify-between ${
-                isSelected
-                  ? "bg-white border-emerald-500 ring-2 ring-emerald-500/20"
-                  : "bg-white border-slate-200/80 hover:border-slate-300"
-              }`}
-            >
-              <div
-                className={`absolute inset-x-0 top-0 h-[2.5px] ${t.accentColor}`}
-              />
-              <div className="flex items-center justify-between w-full">
-                <span className="text-xs font-bold text-slate-700">
-                  {t.label}
-                </span>
+              title={t.label}
+              value={`AED ${formatNumber(summary.totalBalance)}`}
+              badge={
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${t.color}`}
                 >
                   {summary.count} A/C
                 </span>
-              </div>
-              <div className="pt-2">
-                <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                  AED
-                </span>
-                <span className="text-lg font-black font-mono text-slate-900">
-                  {formatNumber(summary.totalBalance)}
-                </span>
-              </div>
-            </button>
+              }
+              variant="default"
+              className={
+                isSelected
+                  ? "ring-2 ring-emerald-500/30 border-emerald-500"
+                  : ""
+              }
+            />
           );
         })}
       </div>
 
-      {/* Treasury & Liquid Cash Position */}
       <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
@@ -543,12 +530,9 @@ export default function AccountsPage() {
         </div>
       </div>
 
-      {/* Main Filter & Table Card */}
       <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
               {[
                 { id: "ALL", label: "All Statuses" },
@@ -635,7 +619,6 @@ export default function AccountsPage() {
         )}
       </div>
 
-      {/* Add Account Modal */}
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -731,7 +714,7 @@ export default function AccountsPage() {
               form={createForm}
               variant="primary"
               loading={createAccountMutation.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Save Account
             </FormSubmit>
@@ -739,7 +722,6 @@ export default function AccountsPage() {
         </form>
       </Modal>
 
-      {/* Edit Account Modal */}
       {editingAccount && (
         <Modal
           isOpen={Boolean(editingAccount)}
@@ -856,7 +838,7 @@ export default function AccountsPage() {
                 form={editForm}
                 variant="primary"
                 loading={updateAccountMutation.isPending}
-                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+                className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
               >
                 Update Account
               </FormSubmit>
@@ -865,7 +847,6 @@ export default function AccountsPage() {
         </Modal>
       )}
 
-      {/* Account Register & General Ledger Modal */}
       {ledgerAccountId && (
         <Modal
           isOpen={Boolean(ledgerAccountId)}
@@ -1007,7 +988,6 @@ export default function AccountsPage() {
         </Modal>
       )}
 
-      {/* Delete Confirmation Modal */}
       {deletingAccount && (
         <Modal
           isOpen={Boolean(deletingAccount)}
