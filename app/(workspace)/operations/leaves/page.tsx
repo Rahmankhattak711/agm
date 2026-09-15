@@ -23,13 +23,10 @@ import {
   FormSelect,
   FormTextarea,
   FormSubmit,
+  DashboardCard,
+  DashboardCardGrid,
 } from "@/components/ui";
-import {
-  CheckIcon,
-  CloseIcon,
-  PlusIcon,
-  TrashIcon,
-} from "@/components/icons";
+import { CheckIcon, CloseIcon, PlusIcon, TrashIcon } from "@/components/icons";
 
 export default function LeavesPage() {
   const { hasRole, canModify } = useAuth();
@@ -261,14 +258,14 @@ export default function LeavesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Leave Management
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Review leave applications, manage annual and sick leave approvals, and track time-off balances.
+            Review leave applications, manage annual and sick leave approvals,
+            and track time-off balances.
           </p>
         </div>
 
@@ -278,106 +275,43 @@ export default function LeavesPage() {
             size="sm"
             onClick={handleOpenModal}
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Apply for Leave
           </Button>
         </div>
       </div>
 
-      {/* 4 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Pending Approvals */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Pending Approvals
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Awaiting HR review
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-amber-700 font-mono">
-              {stats.pending}
-            </span>
-            <span className="text-xs font-bold text-amber-700 font-sans ml-1.5">
-              Requests
-            </span>
-          </div>
-        </div>
+      <DashboardCardGrid cols={4}>
+        <DashboardCard
+          title="Pending Approvals"
+          value={stats.pending}
+          subtitle="Awaiting HR review"
+          variant={stats.pending > 0 ? "warning" : "default"}
+        />
+        <DashboardCard
+          title="Approved Leaves"
+          value={stats.approved}
+          subtitle="Granted time-off"
+          variant="success"
+        />
+        <DashboardCard
+          title="Total Leave Days"
+          value={stats.totalDays}
+          subtitle="Approved leave volume"
+          variant="default"
+        />
+        <DashboardCard
+          title="Rejected Requests"
+          value={stats.rejected}
+          subtitle="Denied leave applications"
+          variant={stats.rejected > 0 ? "danger" : "default"}
+        />
+      </DashboardCardGrid>
 
-        {/* 2. Approved Leaves */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Approved Leaves
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Granted time-off
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-emerald-800 font-mono">
-              {stats.approved}
-            </span>
-            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
-              Approved
-            </span>
-          </div>
-        </div>
-
-        {/* 3. Approved Days Logged */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Total Leave Days
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Approved leave volume
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-slate-900 font-mono">
-              {stats.totalDays}
-            </span>
-            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
-              Days Taken
-            </span>
-          </div>
-        </div>
-
-        {/* 4. Rejected Requests */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              4. Rejected Requests
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Denied leave applications
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-rose-700 font-mono">
-              {stats.rejected}
-            </span>
-            <span className="text-xs font-bold text-rose-700 font-sans ml-1.5">
-              Rejected
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1">
               {[
                 { id: "ALL", label: "All Requests" },
@@ -454,7 +388,6 @@ export default function LeavesPage() {
         )}
       </div>
 
-      {/* Modal for Creating Leave Request */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -568,7 +501,7 @@ export default function LeavesPage() {
             <FormSubmit
               form={form}
               loading={createLeave.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Submit Leave Application
             </FormSubmit>

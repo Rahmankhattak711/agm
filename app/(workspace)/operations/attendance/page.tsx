@@ -21,6 +21,8 @@ import {
   FormInput,
   FormSelect,
   FormSubmit,
+  DashboardCard,
+  DashboardCardGrid,
 } from "@/components/ui";
 import { PlusIcon, TrashIcon } from "@/components/icons";
 
@@ -297,14 +299,14 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Daily Attendance
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Track workforce attendance, site check-ins, working hours, and overtime logs.
+            Track workforce attendance, site check-ins, working hours, and
+            overtime logs.
           </p>
         </div>
 
@@ -315,7 +317,7 @@ export default function AttendancePage() {
               size="sm"
               onClick={handleOpenModal}
               icon={<PlusIcon size={14} strokeWidth={2.5} />}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
             >
               Record Attendance
             </Button>
@@ -323,99 +325,36 @@ export default function AttendancePage() {
         </div>
       </div>
 
-      {/* 4 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Present On-Site */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Present On-Site
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Active workers today
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-emerald-800 font-mono">
-              {stats.present}
-            </span>
-            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
-              Present
-            </span>
-          </div>
-        </div>
+      <DashboardCardGrid cols={4}>
+        <DashboardCard
+          title="Present On-Site"
+          value={stats.present}
+          subtitle="Active workers today"
+          variant="success"
+        />
+        <DashboardCard
+          title="Late Check-Ins"
+          value={stats.late}
+          subtitle="Tardy arrivals logged"
+          variant={stats.late > 0 ? "warning" : "default"}
+        />
+        <DashboardCard
+          title="Overtime Logged"
+          value={`${stats.overtime} hrs`}
+          subtitle="Approved extra hours"
+          variant="default"
+        />
+        <DashboardCard
+          title="Absent & On Leave"
+          value={stats.absent + stats.onLeave}
+          subtitle="Non-duty headcount"
+          variant={stats.absent + stats.onLeave > 0 ? "danger" : "default"}
+        />
+      </DashboardCardGrid>
 
-        {/* 2. Late Arrivals */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Late Check-Ins
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Tardy arrivals logged
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-amber-700 font-mono">
-              {stats.late}
-            </span>
-            <span className="text-xs font-bold text-amber-700 font-sans ml-1.5">
-              Late
-            </span>
-          </div>
-        </div>
-
-        {/* 3. Total Overtime */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Overtime Logged
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Approved extra hours
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-purple-800 font-mono">
-              {stats.overtime}
-            </span>
-            <span className="text-xs font-bold text-purple-700 font-sans ml-1.5">
-              Hours OT
-            </span>
-          </div>
-        </div>
-
-        {/* 4. Absent & On Leave */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              4. Absent &amp; On Leave
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Non-duty headcount
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-rose-700 font-mono">
-              {stats.absent + stats.onLeave}
-            </span>
-            <span className="text-xs font-bold text-rose-700 font-sans ml-1.5">
-              Off-Duty
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Filter & Table Card */}
       <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
               {[
                 { id: "ALL", label: "All Records" },
@@ -503,7 +442,6 @@ export default function AttendancePage() {
         )}
       </div>
 
-      {/* Modal for Recording Attendance */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -651,7 +589,7 @@ export default function AttendancePage() {
             <FormSubmit
               form={form}
               loading={recordAttendance.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Save Attendance Record
             </FormSubmit>

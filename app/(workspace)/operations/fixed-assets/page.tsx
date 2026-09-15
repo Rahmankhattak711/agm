@@ -18,12 +18,10 @@ import {
   FormInput,
   FormSelect,
   FormSubmit,
+  DashboardCard,
+  DashboardCardGrid,
 } from "@/components/ui";
-import {
-  BuildingIcon,
-  PlusIcon,
-  SearchIcon,
-} from "@/components/icons";
+import { BuildingIcon, PlusIcon, SearchIcon } from "@/components/icons";
 
 const ASSET_CATEGORIES = [
   { value: "COMPANY_VEHICLE", label: "Company Vehicle" },
@@ -200,14 +198,14 @@ export default function FixedAssetsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Fixed Assets
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Track capital equipment, machinery, company vehicles, and automated depreciation schedules.
+            Track capital equipment, machinery, company vehicles, and automated
+            depreciation schedules.
           </p>
         </div>
 
@@ -217,111 +215,51 @@ export default function FixedAssetsPage() {
             size="sm"
             onClick={handleOpenModal}
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Register New Asset
           </Button>
         </div>
       </div>
 
-      {/* 4 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Gross Asset Value */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Gross Fixed Assets
+      <DashboardCardGrid cols={4}>
+        <DashboardCard
+          title="Gross Fixed Assets"
+          value={`AED ${Number(totalAssetCost).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
+          subtitle="Historical acquisition cost"
+          variant="default"
+        />
+        <DashboardCard
+          title="Total Capital Assets"
+          value={assets.length}
+          subtitle="Plant, tools & vehicles"
+          variant="default"
+        />
+        <DashboardCard
+          title="Asset Categories"
+          value={ASSET_CATEGORIES.length}
+          subtitle="Active ledger asset groups"
+          variant="default"
+        />
+        <DashboardCard
+          title="Capitalization"
+          value="100% Capitalized"
+          subtitle="Automated straight-line depr."
+          badge={
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200">
+              Active
             </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Historical acquisition cost
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-emerald-600 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-emerald-800 font-mono">
-              {Number(totalAssetCost).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-        </div>
+          }
+          variant="default"
+        />
+      </DashboardCardGrid>
 
-        {/* 2. Total Assets */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Total Capital Assets
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Plant, tools &amp; vehicles
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-slate-900 font-mono">
-              {assets.length}
-            </span>
-            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
-              Assets
-            </span>
-          </div>
-        </div>
-
-        {/* 3. Asset Classes */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Asset Categories
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Active ledger asset groups
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-purple-800 font-mono">
-              {ASSET_CATEGORIES.length}
-            </span>
-            <span className="text-xs font-bold text-purple-700 font-sans ml-1.5">
-              Classes
-            </span>
-          </div>
-        </div>
-
-        {/* 4. Capitalization Status */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                4. Capitalization
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
-                Active
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Automated straight-line depr.
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xl font-black text-teal-900 font-sans">
-              100% Capitalized
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Category Quick Pills */}
             <div className="flex flex-wrap items-center gap-1">
               {[{ value: "ALL", label: "All Assets" }, ...ASSET_CATEGORIES].map(
                 (tab) => {
@@ -389,7 +327,6 @@ export default function FixedAssetsPage() {
         )}
       </div>
 
-      {/* Modal for Creating Asset */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -552,7 +489,7 @@ export default function FixedAssetsPage() {
             <FormSubmit
               form={form}
               loading={createAssetMutation.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Save &amp; Capitalize Asset
             </FormSubmit>

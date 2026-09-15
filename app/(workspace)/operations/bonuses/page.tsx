@@ -23,12 +23,10 @@ import {
   FormSelect,
   FormTextarea,
   FormSubmit,
+  DashboardCard,
+  DashboardCardGrid,
 } from "@/components/ui";
-import {
-  CheckIcon,
-  PlusIcon,
-  TrashIcon,
-} from "@/components/icons";
+import { CheckIcon, PlusIcon, TrashIcon } from "@/components/icons";
 
 export default function BonusesPage() {
   const { hasRole, isAdmin } = useAuth();
@@ -266,14 +264,14 @@ export default function BonusesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Bonuses &amp; Payroll
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage performance bonuses, commission allocations, milestone rewards, and approval statuses.
+            Manage performance bonuses, commission allocations, milestone
+            rewards, and approval statuses.
           </p>
         </div>
 
@@ -284,7 +282,7 @@ export default function BonusesPage() {
               size="sm"
               onClick={handleOpenModal}
               icon={<PlusIcon size={14} strokeWidth={2.5} />}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
             >
               Award Bonus
             </Button>
@@ -292,105 +290,42 @@ export default function BonusesPage() {
         </div>
       </div>
 
-      {/* 4 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Approved Total */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Approved Bonus Pool
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Authorized performance rewards
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-emerald-600 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-emerald-800 font-mono">
-              {Number(approvedTotal).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-        </div>
+      <DashboardCardGrid cols={4}>
+        <DashboardCard
+          title="Approved Bonus Pool"
+          value={`AED ${Number(approvedTotal).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
+          subtitle="Authorized performance rewards"
+          variant="success"
+        />
+        <DashboardCard
+          title="Pending Authorization"
+          value={pendingApprovals}
+          subtitle="Awaiting management review"
+          variant={pendingApprovals > 0 ? "warning" : "default"}
+        />
+        <DashboardCard
+          title="Total Incentive Grants"
+          value={bonuses.length}
+          subtitle="All logged incentive awards"
+          variant="default"
+        />
+        <DashboardCard
+          title="Disbursed via Payroll"
+          value={`AED ${Number(paidTotal).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
+          subtitle="Paid bonuses in WPS"
+          variant="default"
+        />
+      </DashboardCardGrid>
 
-        {/* 2. Pending Approvals */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Pending Authorization
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Awaiting management review
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-amber-700 font-mono">
-              {pendingApprovals}
-            </span>
-            <span className="text-xs font-bold text-amber-700 font-sans ml-1.5">
-              Pending
-            </span>
-          </div>
-        </div>
-
-        {/* 3. Total Grants */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Total Incentive Grants
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              All logged incentive awards
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-slate-900 font-mono">
-              {bonuses.length}
-            </span>
-            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
-              Grants
-            </span>
-          </div>
-        </div>
-
-        {/* 4. Disbursed / Paid */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              4. Disbursed via Payroll
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Paid bonuses in WPS
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-purple-600 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-purple-800 font-mono">
-              {Number(paidTotal).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1">
               {[
                 { id: "ALL", label: "All Grants" },
@@ -492,7 +427,6 @@ export default function BonusesPage() {
         )}
       </div>
 
-      {/* Modal for Creating Bonus */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -616,7 +550,7 @@ export default function BonusesPage() {
             <FormSubmit
               form={form}
               loading={createBonus.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Save &amp; Grant Bonus
             </FormSubmit>
