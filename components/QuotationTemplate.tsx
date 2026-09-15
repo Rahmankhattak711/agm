@@ -99,6 +99,9 @@ export default function QuotationTemplate({
   const [paymentTerms, setPaymentTerms] = useState<string[]>(
     DEFAULT_PAYMENT_TERMS,
   );
+  const [quotationTerms, setQuotationTerms] = useState<
+    { id: number | string; title: string; text: string }[]
+  >(DEFAULT_TERMS_AND_CONDITIONS);
   const [vatPct, setVatPct] = useState<number | string>(5);
   const [discount, setDiscount] = useState<number | string>(0);
 
@@ -127,6 +130,31 @@ export default function QuotationTemplate({
 
   const removePaymentTerm = (idx: number) => {
     setPaymentTerms((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const updateQuotationTerm = (
+    idx: number,
+    field: "title" | "text",
+    val: string,
+  ) => {
+    setQuotationTerms((prev) =>
+      prev.map((term, i) => (i === idx ? { ...term, [field]: val } : term)),
+    );
+  };
+
+  const addQuotationTerm = () => {
+    setQuotationTerms((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        title: "Additional Condition:",
+        text: "Specify any custom requirements, approvals, site clearance, or warranty conditions.",
+      },
+    ]);
+  };
+
+  const removeQuotationTerm = (idx: number) => {
+    setQuotationTerms((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleProductSelect = (id: number | string, productId: string) => {
@@ -184,6 +212,7 @@ export default function QuotationTemplate({
     });
     setItems(SAMPLE_SCOPE_ITEMS);
     setPaymentTerms(DEFAULT_PAYMENT_TERMS);
+    setQuotationTerms(DEFAULT_TERMS_AND_CONDITIONS);
     setVatPct(5);
     setDiscount(0);
     setSaveSuccessMsg("Loaded Quotation Scope Sample!");
@@ -204,8 +233,11 @@ export default function QuotationTemplate({
   };
 
   const subtotal = items.reduce((s, it) => s + calculateRowTotal(it), 0);
-  const vatAmt = (subtotal * Number(vatPct || 0)) / 100;
-  const total = subtotal + vatAmt - Number(discount || 0);
+  const discountNum = Math.max(0, Number(discount) || 0);
+  const afterDiscount = Math.max(0, subtotal - discountNum);
+  const vatRate = Math.max(0, Number(vatPct) || 0);
+  const vatAmt = Math.round(afterDiscount * (vatRate / 100) * 100) / 100;
+  const total = Math.round((afterDiscount + vatAmt) * 100) / 100;
 
   const handleSaveToDb = async () => {
     try {
@@ -323,8 +355,8 @@ export default function QuotationTemplate({
       !confirm(
         `Post this Tax Invoice (${meta.quotationNo}) to the General Ledger?\n\n` +
           `• Debit Accounts Receivable: AED ${formatCurrency(total)}\n` +
-          `• Credit Fitout Revenue: AED ${formatCurrency(subtotal - Number(discount || 0))}\n` +
-          `• Credit UAE VAT Output (5%): AED ${formatCurrency(vatAmt)}\n\n` +
+          `• Credit Fitout Revenue: AED ${formatCurrency(afterDiscount)}\n` +
+          `• Credit UAE VAT Output (${vatRate}%): AED ${formatCurrency(vatAmt)}\n\n` +
           `This will record turnover in Profit & Loss and update the VAT Return!`,
       )
     ) {
@@ -377,14 +409,14 @@ export default function QuotationTemplate({
           {
             accountId: revAccount.id,
             debit: 0,
-            credit: subtotal - Number(discount || 0),
+            credit: afterDiscount,
           },
           {
             accountId: vatOutAccount.id,
             debit: 0,
             credit: vatAmt,
             vatType: "OUTPUT" as const,
-            taxableAmount: subtotal - Number(discount || 0),
+            taxableAmount: afterDiscount,
             vatAmount: vatAmt,
           },
         ],
@@ -434,6 +466,7 @@ export default function QuotationTemplate({
       },
     ]);
     setPaymentTerms(DEFAULT_PAYMENT_TERMS);
+    setQuotationTerms(DEFAULT_TERMS_AND_CONDITIONS);
     setDiscount(0);
     setVatPct(5);
     setStatus("DRAFT");
@@ -458,10 +491,10 @@ export default function QuotationTemplate({
       className={
         hideOuterWrapper
           ? "w-full"
-          : "min-h-screen bg-slate-100 py-8 px-4 print:bg-white print:py-0 print:px-0"
+          : "min-h-screen print:bg-white print:py-0 print:px-0"
       }
     >
-      <div className="max-w-4xl mx-auto mb-4 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3 print:hidden">
+      <div className="max-w-full mx-auto mb-4 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200">
             <Button
@@ -618,103 +651,108 @@ export default function QuotationTemplate({
 
       <div className="overflow-x-auto min-w-0 max-w-full custom-scrollbar print:overflow-visible">
         <div
-          className="mx-auto bg-white shadow-lg print:shadow-none max-w-4xl min-w-[700px] md:min-w-0 rounded-xl print:rounded-none overflow-visible print:overflow-visible"
+          className="mx-auto bg-white shadow-lg print:shadow-none max-w-full min-w-full rounded-xl print:rounded-none overflow-visible print:overflow-visible"
           id="printable-voucher"
         >
-        <table className="print-page-table w-full border-collapse">
-          <thead className="print-page-header-group">
-            <tr>
-              <th className="p-0 font-normal text-left border-none">
-                <QuotationHeader />
-              </th>
-            </tr>
-          </thead>
+          <table className="print-page-table w-full border-collapse">
+            <thead className="print-page-header-group">
+              <tr>
+                <th className="p-0 font-normal text-left border-none">
+                  <QuotationHeader />
+                </th>
+              </tr>
+            </thead>
 
-          <tfoot className="print-page-footer-group">
-            <tr>
-              <td className="p-0 border-none align-bottom">
-                {/* Spacer row to prevent body rows from overlapping the fixed bottom footer */}
-                <div
-                  className="w-full opacity-0 pointer-events-none select-none"
-                  style={{ minHeight: "175px" }}
-                  aria-hidden="true"
-                >
-                  <QuotationFooter />
-                  <div style={{ height: "45px", minHeight: "45px" }} />
-                </div>
-              </td>
-            </tr>
-          </tfoot>
+            <tfoot className="print-page-footer-group">
+              <tr>
+                <td className="p-0 border-none align-bottom">
+                  <div
+                    className="w-full opacity-0 pointer-events-none select-none"
+                    style={{ minHeight: "175px" }}
+                    aria-hidden="true"
+                  >
+                    <QuotationFooter />
+                    <div style={{ height: "45px", minHeight: "45px" }} />
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
 
-          <tbody className="print-page-body-group">
-            <tr>
-              <td className="p-0 border-none align-top">
-                <QuotationDocTitleBar
-                  docType={docType}
-                  meta={meta}
-                  onUpdateMeta={updateMeta}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td className="p-0 border-none align-top">
-                <QuotationDetailsCards meta={meta} onUpdateMeta={updateMeta} />
-              </td>
-            </tr>
-            <tr>
-              <td className="p-0 border-none align-top">
-                <QuotationItemsTable
-                  items={items}
-                  availableProducts={availableProducts}
-                  onProductSelect={handleProductSelect}
-                  onUpdateItem={updateItem}
-                  onAddItem={addItem}
-                  onRemoveItem={removeItem}
-                  calculateRowTotal={calculateRowTotal}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td className="p-0 border-none align-top">
-                <QuotationTotalsTable
-                  subtotal={subtotal}
-                  vatPct={vatPct}
-                  vatAmt={vatAmt}
-                  discount={discount}
-                  total={total}
-                  onUpdateVatPct={(val) => setVatPct(val)}
-                  onUpdateDiscount={(val) => setDiscount(val)}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td className="p-0 border-none align-top">
-                <QuotationTerms termsList={DEFAULT_TERMS_AND_CONDITIONS} />
-              </td>
-            </tr>
-            <tr>
-              <td className="p-0 border-none align-top pb-6 print:pb-0">
-                <QuotationPaymentTerms
-                  paymentTerms={paymentTerms}
-                  onUpdatePaymentTerm={updatePaymentTerm}
-                  onAddPaymentTerm={addPaymentTerm}
-                  onRemovePaymentTerm={removePaymentTerm}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            <tbody className="print-page-body-group">
+              <tr>
+                <td className="p-0 border-none align-top">
+                  <QuotationDocTitleBar
+                    docType={docType}
+                    meta={meta}
+                    onUpdateMeta={updateMeta}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td className="p-0 border-none align-top">
+                  <QuotationDetailsCards
+                    meta={meta}
+                    onUpdateMeta={updateMeta}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td className="p-0 border-none align-top">
+                  <QuotationItemsTable
+                    items={items}
+                    availableProducts={availableProducts}
+                    onProductSelect={handleProductSelect}
+                    onUpdateItem={updateItem}
+                    onAddItem={addItem}
+                    onRemoveItem={removeItem}
+                    calculateRowTotal={calculateRowTotal}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td className="p-0 border-none align-top">
+                  <QuotationTotalsTable
+                    subtotal={subtotal}
+                    vatPct={vatPct}
+                    vatAmt={vatAmt}
+                    discount={discount}
+                    total={total}
+                    onUpdateVatPct={(val) => setVatPct(val)}
+                    onUpdateDiscount={(val) => setDiscount(val)}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td className="p-0 border-none align-top">
+                  <QuotationTerms
+                    termsList={quotationTerms}
+                    onUpdateTerm={updateQuotationTerm}
+                    onAddTerm={addQuotationTerm}
+                    onRemoveTerm={removeQuotationTerm}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td className="p-0 border-none align-top pb-6 print:pb-0">
+                  <QuotationPaymentTerms
+                    paymentTerms={paymentTerms}
+                    onUpdatePaymentTerm={updatePaymentTerm}
+                    onAddPaymentTerm={addPaymentTerm}
+                    onRemovePaymentTerm={removePaymentTerm}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-        {/* Fixed Footer pinned to the bottom of every page (including the last page) */}
-        <div className="print-footer-bottom fixed-print-footer hidden print:block">
-          <QuotationFooter />
+          <div className="print-footer-bottom fixed-print-footer hidden print:block">
+            <QuotationFooter />
+          </div>
+
+          <div className="px-10 pb-6 print:hidden">
+            <QuotationFooter className="mt-6" />
+          </div>
         </div>
-
-        {/* On-Screen Footer */}
-        <div className="px-10 pb-6 print:hidden">
-          <QuotationFooter className="mt-6" />
-        </div>
-      </div>
       </div>
     </div>
   );

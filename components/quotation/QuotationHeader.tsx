@@ -29,8 +29,9 @@ export const QuotationHeader: React.FC<QuotationHeaderProps> = ({
           A G M FITOUT TECHNICAL SERVICES L.L.C
         </div>
         <div className="text-slate-700">
-          Sheikh Zayed Road, near Oasis Centre, Office No. 13-11 <br /> Building: Adel
-          Mohammed Ali Jassim Al Marzouqi, <br /> Al Quoz First 1, Dubai, UAE
+          Sheikh Zayed Road, near Oasis Centre, Office No. 13-11 <br />{" "}
+          Building: Adel Mohammed Ali Jassim Al Marzouqi, <br /> Al Quoz First
+          1, Dubai, UAE
         </div>
         <div className="font-medium text-slate-900 mt-0.5">
           Tel: +971 48 749839 | Mob: +971 50 340 7300 | TRN: 104094432200003

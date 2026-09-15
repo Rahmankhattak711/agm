@@ -21,6 +21,21 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
   onUpdateVatPct,
   onUpdateDiscount,
 }) => {
+  const discountNum = Math.max(0, Number(discount) || 0);
+  const afterDiscount = Math.max(0, subtotal - discountNum);
+
+  const getAmountInWords = (amount: number): string => {
+    const rounded = Math.round((Number(amount) || 0) * 100) / 100;
+    const whole = Math.floor(rounded);
+    const fils = Math.round((rounded - whole) * 100);
+    const wholeWords = numberToWords(whole);
+    if (fils > 0) {
+      const filsWords = numberToWords(fils);
+      return `${wholeWords} UAE Dirhams and ${filsWords} Fils Only`;
+    }
+    return `${wholeWords} UAE Dirhams Only`;
+  };
+
   return (
     <div className="px-10 print:px-8 overflow-hidden">
       <div className="flex items-stretch justify-between overflow-hidden gap-4 mt-3.5 print:mt-3.5 print-avoid-break">
@@ -66,15 +81,19 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
         <div className="w-80 print:w-84 border border-slate-200 print:border-slate-300 bg-white rounded-xl overflow-hidden shadow-2xs text-[12px] print:text-[12.5px] flex flex-col justify-between">
           <div className="divide-y divide-slate-100 print:divide-slate-200 flex-1 flex flex-col justify-between">
             <div className="flex items-center justify-between px-4 py-2.5 print:py-2 bg-slate-50/40">
-              <span className="font-semibold text-slate-600 print:text-slate-700 print:text-[12.5px]">Subtotal</span>
+              <span className="font-semibold text-slate-600 print:text-slate-700 print:text-[12.5px]">
+                Subtotal
+              </span>
               <span className="font-mono font-bold text-slate-900 text-[12.5px] print:text-[13px]">
                 {formatCurrency(subtotal)}
               </span>
             </div>
 
-              <div className="flex items-center justify-between px-4 py-2 print:py-2">
+            <div className="flex items-center justify-between px-4 py-2 print:py-2">
               <div className="flex items-center gap-1">
-                <span className="font-semibold text-slate-600 print:text-slate-700 print:text-[12.5px]">Discount</span>
+                <span className="font-semibold text-slate-600 print:text-slate-700 print:text-[12.5px]">
+                  Discount
+                </span>
                 <span className="text-[10px] print:text-[11px] text-slate-400 font-normal">
                   (AED)
                 </span>
@@ -83,6 +102,8 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
                 <input
                   type="number"
                   min="0"
+                  max={subtotal}
+                  step="any"
                   placeholder="0.00"
                   className="w-24 text-right font-mono font-semibold text-rose-600 bg-transparent outline-none border border-transparent hover:border-slate-200 focus:border-emerald-500 rounded px-1.5 py-0.5 transition-colors print:hidden"
                   value={discount}
@@ -91,15 +112,27 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
                   }
                 />
                 <span className="hidden print:inline font-mono font-semibold text-slate-800 print:text-[12.5px]">
-                  {Number(discount) > 0 ? `-${formatCurrency(Number(discount))}` : "0.00"}
+                  {discountNum > 0 ? `-${formatCurrency(discountNum)}` : "0.00"}
                 </span>
               </div>
+            </div>
+
+            <div className="flex items-center justify-between px-4 py-2.5 print:py-2 bg-slate-50/40">
+              <span className="font-semibold text-slate-600 print:text-slate-700 print:text-[12.5px]">
+                After Discount
+              </span>
+              <span className="font-mono font-bold text-slate-900 text-[12.5px] print:text-[13px]">
+                {formatCurrency(afterDiscount)}
+              </span>
             </div>
 
             <div className="flex items-center justify-between px-4 py-2 print:py-2">
               <div className="flex items-center gap-1.5">
                 <span className="font-semibold text-slate-600 print:text-slate-700 print:text-[12.5px]">
-                  VAT <span className="hidden print:inline font-bold text-emerald-800">({vatPct}%)</span>
+                  VAT{" "}
+                  <span className="hidden print:inline font-bold text-emerald-800">
+                    ({vatPct}%)
+                  </span>
                 </span>
                 <div className="flex items-center bg-emerald-50 print:hidden border border-emerald-200 rounded px-1 py-0.2">
                   <input
@@ -133,6 +166,9 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
           </div>
         </div>
       </div>
+      <p className="text-[16px] text-agm-green font-bold mt-3">
+        {getAmountInWords(total)}
+      </p>
     </div>
   );
 };

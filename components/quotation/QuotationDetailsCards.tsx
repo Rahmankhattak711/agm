@@ -28,7 +28,9 @@ export const QuotationDetailsCards: React.FC<QuotationDetailsCardsProps> = ({
             <span className={labelBase}>Client Name:</span>
             <input
               placeholder="Client / Company Name"
-              className={inputBase + " font-bold text-slate-900 print:text-[12.5px]"}
+              className={
+                inputBase + " font-bold text-slate-900 print:text-[12.5px]"
+              }
               value={meta.customer}
               onChange={(e) => onUpdateMeta("customer", e.target.value)}
             />
@@ -77,7 +79,9 @@ export const QuotationDetailsCards: React.FC<QuotationDetailsCardsProps> = ({
             <span className={labelBase}>Project:</span>
             <input
               placeholder="Project / Scope Name"
-              className={inputBase + " font-bold text-slate-900 print:text-[12.5px]"}
+              className={
+                inputBase + " font-bold text-slate-900 print:text-[12.5px]"
+              }
               value={meta.project}
               onChange={(e) => onUpdateMeta("project", e.target.value)}
             />
@@ -100,16 +104,6 @@ export const QuotationDetailsCards: React.FC<QuotationDetailsCardsProps> = ({
               className={inputBase}
               value={meta.reference}
               onChange={(e) => onUpdateMeta("reference", e.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center gap-1">
-            <span className={labelBase}>Prepared by:</span>
-            <input
-              placeholder="Estimator / Representative"
-              className={inputBase}
-              value={meta.preparedBy}
-              onChange={(e) => onUpdateMeta("preparedBy", e.target.value)}
             />
           </div>
 

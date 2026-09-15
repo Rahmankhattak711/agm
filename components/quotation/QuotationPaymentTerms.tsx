@@ -55,7 +55,9 @@ export const QuotationPaymentTerms: React.FC<QuotationPaymentTermsProps> = ({
                     }
                   />
                 ) : (
-                  <span className="text-[11px] print:text-[12px] print:text-slate-900">{pt}</span>
+                  <span className="text-[11px] print:text-[12px] print:text-slate-900">
+                    {pt}
+                  </span>
                 )}
               </div>
 
