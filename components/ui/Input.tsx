@@ -29,13 +29,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={containerClassName}>
         {label && (
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-bold text-agm-text mb-1">
             {label}
           </label>
         )}
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-agm-subtle pointer-events-none">
               {leftIcon}
             </div>
           )}
@@ -43,7 +43,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             className={`w-full ${
               leftIcon ? "pl-9" : "px-3"
-            } py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-800 disabled:bg-slate-50 disabled:text-slate-400 placeholder:text-slate-400 ${
+            } py-2 text-xs rounded-xl border border-agm-box-border bg-white focus:outline-none focus:ring-2 focus:ring-agm-green/20 focus:border-agm-green text-agm-text disabled:bg-agm-box-bg disabled:text-agm-subtle placeholder:text-agm-subtle ${
               error
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
                 : ""
@@ -83,13 +83,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className={containerClassName}>
         {label && (
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-bold text-agm-text mb-1">
             {label}
           </label>
         )}
         <select
           ref={ref}
-          className={`w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-700 font-medium disabled:bg-slate-50 disabled:text-slate-400 ${
+          className={`w-full px-3 py-2 text-xs rounded-xl border border-agm-box-border bg-white focus:outline-none focus:ring-2 focus:ring-agm-green/20 focus:border-agm-green text-agm-text font-medium disabled:bg-agm-box-bg disabled:text-agm-subtle ${
             error
               ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
               : ""
@@ -127,13 +127,13 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className={containerClassName}>
         {label && (
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-bold text-agm-text mb-1">
             {label}
           </label>
         )}
         <textarea
           ref={ref}
-          className={`w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-800 disabled:bg-slate-50 disabled:text-slate-400 placeholder:text-slate-400 ${
+          className={`w-full px-3 py-2 text-xs rounded-xl border border-agm-box-border bg-white focus:outline-none focus:ring-2 focus:ring-agm-green/20 focus:border-agm-green text-agm-text disabled:bg-agm-box-bg disabled:text-agm-subtle placeholder:text-agm-subtle ${
             error
               ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
               : ""

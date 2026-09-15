@@ -14,9 +14,10 @@ export interface FormInputProps extends Omit<
   "value" | "onChange" | "onBlur" | "error"
 > {
   field: any;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export function FormInput({ field, ...props }: FormInputProps) {
+export function FormInput({ field, onChange, ...props }: FormInputProps) {
   const isTouched = field.state.meta.isTouched;
   const errors = field.state.meta.errors;
   const errorMessage =
@@ -34,7 +35,10 @@ export function FormInput({ field, ...props }: FormInputProps) {
     <Input
       name={field.name}
       value={field.state.value ?? ""}
-      onChange={(e) => field.handleChange(e.target.value)}
+      onChange={(e) => {
+        field.handleChange(e.target.value);
+        if (onChange) onChange(e);
+      }}
       onBlur={field.handleBlur}
       error={errorMessage}
       {...props}
@@ -47,12 +51,14 @@ export interface FormSelectProps extends Omit<
   "value" | "onChange" | "onBlur" | "error"
 > {
   field: any;
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
 export function FormSelect({
   field,
   children,
   options,
+  onChange,
   ...props
 }: FormSelectProps) {
   const isTouched = field.state.meta.isTouched;
@@ -72,7 +78,10 @@ export function FormSelect({
     <Select
       name={field.name}
       value={field.state.value ?? ""}
-      onChange={(e) => field.handleChange(e.target.value)}
+      onChange={(e) => {
+        field.handleChange(e.target.value);
+        if (onChange) onChange(e);
+      }}
       onBlur={field.handleBlur}
       error={errorMessage}
       options={options}
@@ -88,9 +97,10 @@ export interface FormTextareaProps extends Omit<
   "value" | "onChange" | "onBlur" | "error"
 > {
   field: any;
+  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
-export function FormTextarea({ field, ...props }: FormTextareaProps) {
+export function FormTextarea({ field, onChange, ...props }: FormTextareaProps) {
   const isTouched = field.state.meta.isTouched;
   const errors = field.state.meta.errors;
   const errorMessage =
@@ -108,7 +118,10 @@ export function FormTextarea({ field, ...props }: FormTextareaProps) {
     <Textarea
       name={field.name}
       value={field.state.value ?? ""}
-      onChange={(e) => field.handleChange(e.target.value)}
+      onChange={(e) => {
+        field.handleChange(e.target.value);
+        if (onChange) onChange(e);
+      }}
       onBlur={field.handleBlur}
       error={errorMessage}
       {...props}

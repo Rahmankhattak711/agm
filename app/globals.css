@@ -24,7 +24,7 @@
 @theme inline {
   --color-background: var(--agm-bg);
   --color-foreground: var(--agm-text);
-  --font-poppins: var(--font-poppins);
+  --font-inter: var(--font-inter);
 
   --color-agm-navy: var(--agm-navy);
   --color-agm-navy-2: var(--agm-navy-2);
@@ -38,17 +38,32 @@
   --color-agm-muted: var(--agm-muted);
   --color-agm-subtle: var(--agm-subtle);
   --color-agm-green-dark: var(--agm-green-dark);
+  --color-agm-bg: var(--agm-bg);
+  --color-agm-sidebar: var(--agm-sidebar);
+  --color-agm-sidebar-border: var(--agm-sidebar-border);
   --color-agm-charcoal: var(--agm-charcoal);
   --color-agm-box-bg: var(--agm-box-bg);
   --color-agm-box-border: var(--agm-box-border);
 }
+
+* {
+  font-family: "Inter", var(--font-inter), sans-serif;
+}
+
 body {
-  height: 100%;
-  font-family: var(--font-poppins);
-  background: var(--agm-bg);
+  font-family: "Inter", var(--font-inter), sans-serif;
   color: var(--agm-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+  background: var(--agm-bg);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 @media screen {
@@ -175,8 +190,6 @@ body {
     page-break-inside: auto !important;
   }
 
-
-
   /* Ensure print background colors override any dark radial gradients or base backgrounds */
   [class*="print:bg-slate-100"],
   [class*="print:bg-slate-50"],
@@ -265,4 +278,28 @@ body {
 .quotation-footer svg {
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
+}
+
+/* Custom Sleek Scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
 }

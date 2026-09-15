@@ -107,7 +107,10 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
   });
 
   return (
-    <div ref={printRef} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+    <div
+      ref={printRef}
+      className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none"
+    >
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -165,7 +168,8 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                       </h3>
                     </div>
                     <p className="text-xs text-slate-500">
-                      Period: {profitLoss?.periodLabel || "Current Financial Period"}
+                      Period:{" "}
+                      {profitLoss?.periodLabel || "Current Financial Period"}
                     </p>
                   </div>
 
@@ -359,7 +363,9 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                         subtitle="Bottom line yield"
                         value={formatNumber(netProfit)}
                         accentColor="indigo"
-                        valueColor={netProfit >= 0 ? "text-slate-900" : "text-rose-700"}
+                        valueColor={
+                          netProfit >= 0 ? "text-slate-900" : "text-rose-700"
+                        }
                         badge={
                           <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded-md border border-indigo-200/60">
                             {netMargin.toFixed(1)}%
@@ -373,23 +379,38 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                       />
                     </ReportKpiGrid>
 
-                    {/* Compact Printable Profit & Loss Summary Strip */}
                     <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Total Income</span>
-                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalIncome)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          1. Total Income
+                        </span>
+                        <span className="font-mono font-black text-slate-900">
+                          {formatCurrency(totalIncome)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Direct Expenses</span>
-                        <span className="font-mono font-black text-rose-700">({formatCurrency(totalDirectExpenses)})</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          2. Direct Expenses
+                        </span>
+                        <span className="font-mono font-black text-rose-700">
+                          ({formatCurrency(totalDirectExpenses)})
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Gross Profit</span>
-                        <span className="font-mono font-black text-emerald-800">{formatCurrency(grossProfit)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          3. Gross Profit
+                        </span>
+                        <span className="font-mono font-black text-emerald-800">
+                          {formatCurrency(grossProfit)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Net Profit</span>
-                        <span className="font-mono font-black text-emerald-800">{formatCurrency(netProfit)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          4. Net Profit
+                        </span>
+                        <span className="font-mono font-black text-emerald-800">
+                          {formatCurrency(netProfit)}
+                        </span>
                       </div>
                     </div>
 

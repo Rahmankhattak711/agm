@@ -23,6 +23,8 @@ import {
   TableCell,
   TableLoading,
   Modal,
+  DashboardCard,
+  DashboardCardGrid,
 } from "@/components/ui";
 import {
   PlusIcon,
@@ -218,14 +220,14 @@ export default function ExpensesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Purchase Expenses
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Record and manage operational expenses, vendor bills, and company expenditure claims.
+            Record and manage operational expenses, vendor bills, and company
+            expenditure claims.
           </p>
         </div>
 
@@ -235,107 +237,47 @@ export default function ExpensesPage() {
             size="sm"
             onClick={handleOpenCreate}
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Record Expense
           </Button>
         </div>
       </div>
 
-      {/* 4 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Total Expenses */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Total Recorded Expenses
+      <DashboardCardGrid cols={4}>
+        <DashboardCard
+          title="Total Recorded Expenses"
+          value={`AED ${formatNumber(summary.totalAmount)}`}
+          subtitle={`${summary.count} claims & vouchers`}
+          variant="default"
+        />
+        <DashboardCard
+          title="Current Month Spend"
+          value={`AED ${formatNumber(thisMonthExpenses)}`}
+          subtitle="Monthly operating overhead"
+          variant="default"
+        />
+        <DashboardCard
+          title="VAT Recoverable (5%)"
+          value={`AED ${formatNumber(summary.totalTax)}`}
+          subtitle="FTA Form 201 Box 9 input tax"
+          variant="default"
+        />
+        <DashboardCard
+          title="General Ledger"
+          value="100% Balanced"
+          subtitle="Real-time Journal balancing"
+          badge={
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200">
+              Auto Sync
             </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              {summary.count} claims &amp; vouchers
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-2xl font-black text-slate-900 font-mono">
-              {formatNumber(summary.totalAmount)}
-            </span>
-          </div>
-        </div>
+          }
+          variant="default"
+        />
+      </DashboardCardGrid>
 
-        {/* 2. This Month */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Current Month Spend
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Monthly operating overhead
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-2xl font-black text-emerald-800 font-mono">
-              {formatNumber(thisMonthExpenses)}
-            </span>
-          </div>
-        </div>
-
-        {/* 3. VAT Recoverable */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. VAT Recoverable (5%)
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              FTA Form 201 Box 9 input tax
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-2xl font-black text-purple-900 font-mono">
-              {formatNumber(summary.totalTax)}
-            </span>
-          </div>
-        </div>
-
-        {/* 4. Automated Posting */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                4. General Ledger
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
-                Auto Sync
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Real-time Journal balancing
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xl font-black text-teal-900 font-sans">
-              100% Balanced
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-          {/* Status Quick Pills */}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-1">
               {[
@@ -364,13 +306,11 @@ export default function ExpensesPage() {
               })}
             </div>
 
-            {/* Record count badge */}
             <span className="text-[11px] font-bold text-slate-500 font-mono">
               {expenses.length} Records Found
             </span>
           </div>
 
-          {/* Search + Category + Payment Method Controls */}
           <div className="flex flex-col sm:flex-row gap-2.5 items-center justify-between pt-1 border-t border-slate-200/60">
             <Input
               leftIcon={<SearchIcon size={14} className="text-slate-400" />}
@@ -412,7 +352,6 @@ export default function ExpensesPage() {
           </div>
         </div>
 
-        {/* Table */}
         <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
           <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
             <h4 className="font-black text-xs uppercase tracking-wider text-white">
@@ -570,7 +509,6 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      {/* Create Expense Modal */}
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
@@ -776,7 +714,7 @@ export default function ExpensesPage() {
               type="submit"
               variant="primary"
               disabled={createMutation.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               {createMutation.isPending
                 ? "Recording..."

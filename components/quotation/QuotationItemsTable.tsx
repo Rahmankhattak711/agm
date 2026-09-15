@@ -438,7 +438,10 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
                     >
                       <input
                         type="text"
-                        className={cellInputClass + " text-center font-bold print:text-[12.5px] text-slate-900"}
+                        className={
+                          cellInputClass +
+                          " text-center font-bold print:text-[12.5px] text-slate-900"
+                        }
                         value={it.qty}
                         onChange={(e: ChangeEvent<HTMLInputElement>) =>
                           onUpdateItem(it.id, "qty", e.target.value)

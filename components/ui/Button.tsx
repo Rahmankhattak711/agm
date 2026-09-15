@@ -35,15 +35,16 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantClasses: Record<ButtonVariant, string> = {
     primary:
-      "bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white shadow-sm",
+      "bg-agm-green hover:bg-agm-green-2 active:bg-agm-green-dark text-white shadow-xs",
     secondary:
-      "bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 border border-slate-200/80",
+      "bg-agm-box-bg hover:bg-slate-200 active:bg-slate-300 text-agm-text border border-agm-box-border",
     outline:
-      "border border-slate-200 hover:bg-slate-100 active:bg-slate-200 text-slate-700 bg-white",
+      "border border-agm-box-border hover:bg-agm-box-bg active:bg-slate-200 text-agm-text bg-white",
     danger:
       "border border-red-200 bg-red-50 hover:bg-red-100 active:bg-red-200 text-red-700",
-    dark: "bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white shadow-sm",
-    ghost: "text-slate-600 hover:bg-slate-100 active:bg-slate-200",
+    dark: "bg-agm-navy hover:bg-agm-navy-2 active:bg-agm-sidebar text-white shadow-xs",
+    ghost:
+      "text-agm-muted hover:text-agm-text hover:bg-agm-box-bg active:bg-slate-200",
   };
 
   return (

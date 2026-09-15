@@ -121,7 +121,8 @@ function LoginForm() {
             All-in-one business management.
           </h1>
           <p className="mt-3 text-sm text-slate-300 leading-relaxed">
-            Everything you need to run finance, sales, inventory, and operations in one system.
+            Everything you need to run finance, sales, inventory, and operations
+            in one system.
           </p>
 
           <div className="mt-6 space-y-2.5 text-xs text-slate-200">
@@ -157,10 +158,10 @@ function LoginForm() {
           </div>
 
           <div className="mb-6 text-center lg:text-left">
-            <h2 className="text-2xl font-bold text-[#263b4d] tracking-tight">
+            <h2 className="text-2xl font-bold text-agm-text tracking-tight">
               Sign In
             </h2>
-            <p className="text-xs text-slate-500 mt-1 max-w-xs">
+            <p className="text-xs text-agm-muted mt-1 max-w-xs">
               Enter your email and password to access your workspace.
             </p>
           </div>
@@ -310,7 +311,7 @@ function LoginForm() {
                 <button
                   type="submit"
                   disabled={!canSubmit || mutation.isPending || isSubmitting}
-                  className="w-full rounded-xl bg-gradient-to-r from-[#215a36] to-[#1c472d] hover:from-[#28633a] hover:to-[#225537] py-3 text-xs font-bold text-white shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 mt-2"
+                  className="w-full rounded-xl bg-agm-green hover:bg-agm-green-2 py-3 text-xs font-bold text-white shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-agm-green/30 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 mt-2"
                 >
                   {mutation.isPending || isSubmitting ? (
                     <>
@@ -325,11 +326,11 @@ function LoginForm() {
             </form.Subscribe>
           </form>
 
-          <p className="mt-6 text-center text-xs text-slate-500">
+          <p className="mt-6 text-center text-xs text-agm-muted">
             Don&apos;t have an account?{" "}
             <Link
               href="/signup"
-              className="font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
+              className="font-bold text-agm-green hover:text-agm-green-2 hover:underline"
             >
               Create an account
             </Link>
@@ -344,8 +345,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-slate-50">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700" />
+        <div className="flex min-h-screen items-center justify-center bg-agm-bg">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-agm-green" />
         </div>
       }
     >

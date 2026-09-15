@@ -118,7 +118,8 @@ function ReportsContent() {
             </h2>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Generate real-time balance sheets, profit &amp; loss, general ledger, and statutory financial statements.
+            Generate real-time balance sheets, profit &amp; loss, general
+            ledger, and statutory financial statements.
           </p>
         </div>
       </div>

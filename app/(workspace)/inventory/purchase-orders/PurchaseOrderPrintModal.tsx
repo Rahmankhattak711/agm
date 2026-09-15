@@ -353,12 +353,10 @@ export const PurchaseOrderPrintModal: React.FC<
               </ol>
             </div>
 
-            {/* Fixed bottom footer for print */}
             <div className="print-footer-bottom fixed-print-footer hidden print:block">
               <QuotationFooter />
             </div>
 
-            {/* Screen view footer */}
             <div className="px-10 pb-6 print:hidden">
               <QuotationFooter className="mt-6" />
             </div>

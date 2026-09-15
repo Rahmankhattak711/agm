@@ -26,17 +26,10 @@ import {
   ReportKpiCard,
   ReportKpiGrid,
 } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
-import {
-  QuotationHeader,
-  QuotationFooter,
-} from "@/components/quotation";
+import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 
 type ReturnStatus =
-  | "DRAFT"
-  | "SUBMITTED"
-  | "APPROVED"
-  | "COMPLETED"
-  | "REJECTED";
+  "DRAFT" | "SUBMITTED" | "APPROVED" | "COMPLETED" | "REJECTED";
 
 interface SalesReturnItem {
   id: string;
@@ -112,7 +105,6 @@ const EMPTY_FORM: ReturnFormState = {
   returnAmount: "",
 };
 
-// Component for Official Quotation-Style Credit Note Document
 interface SalesReturnDocumentProps {
   item: SalesReturnItem;
 }
@@ -141,7 +133,6 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
         <tfoot className="print-page-footer-group">
           <tr>
             <td className="p-0 border-none align-bottom">
-              {/* Spacer row to prevent body rows from overlapping the fixed bottom footer */}
               <div
                 className="w-full opacity-0 pointer-events-none select-none"
                 style={{ minHeight: "175px" }}
@@ -155,7 +146,6 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
         </tfoot>
 
         <tbody className="print-page-body-group">
-          {/* Document Title Bar */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="px-10 py-3.5 print:px-8 print:py-2.5 w-full border-b border-slate-100 bg-slate-50/50">
@@ -165,7 +155,8 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                       SALES CREDIT NOTE
                     </h1>
                     <p className="text-[11px] print:text-[11px] font-semibold text-emerald-700 mt-0.5 print:mt-0">
-                      Official UAE FTA Credit Adjustment Document (Standard Rated 5% VAT)
+                      Official UAE FTA Credit Adjustment Document (Standard
+                      Rated 5% VAT)
                     </p>
                   </div>
 
@@ -211,11 +202,9 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
             </td>
           </tr>
 
-          {/* Client & Project Details Cards */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="grid grid-cols-2 gap-4 print:gap-3 px-10 py-3.5 print:px-8 print:py-2 text-[12px] print:text-[12px] print-avoid-break">
-                {/* Left Card: Client Details */}
                 <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs">
                   <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[11px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -251,7 +240,6 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                   </div>
                 </div>
 
-                {/* Right Card: Project Scope & Return Details */}
                 <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs">
                   <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[11px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -290,7 +278,6 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
             </td>
           </tr>
 
-          {/* Scope / Return Line Items Table */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="px-10 mt-2 print:px-8 print:mt-1">
@@ -324,7 +311,8 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                           {item.reason}
                         </div>
                         <div className="text-[11px] text-slate-500 mt-0.5">
-                          Scope: {item.projectScope} • Reversal against Tax Invoice Ref: {item.invoiceReference}
+                          Scope: {item.projectScope} • Reversal against Tax
+                          Invoice Ref: {item.invoiceReference}
                         </div>
                       </td>
                       <td className="py-3 px-2 print:py-2 print:px-1 align-middle text-center font-mono font-bold text-slate-800 border border-agm-box-border">
@@ -343,12 +331,10 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
             </td>
           </tr>
 
-          {/* Totals & Financial Adjustment Notice */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="px-10 print:px-8">
                 <div className="flex items-stretch justify-between gap-4 mt-3.5 print:mt-2 print-avoid-break">
-                  {/* Left: Commercial & Accounting Memo */}
                   <div className="flex-1 border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2 rounded-xl text-[11.5px] print:text-[10px] flex flex-col justify-center shadow-2xs">
                     <div className="font-bold mb-1 text-slate-900 uppercase text-[11px] print:text-[10px] tracking-wider text-agm-green flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -356,15 +342,17 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                     </div>
                     <div className="space-y-1 text-slate-700 font-medium leading-relaxed">
                       <div>
-                        This Credit Note certifies an agreed reduction in Accounts Receivable for client <strong>{item.customerName}</strong>.
+                        This Credit Note certifies an agreed reduction in
+                        Accounts Receivable for client{" "}
+                        <strong>{item.customerName}</strong>.
                       </div>
                       <div className="text-[10.5px] text-slate-600 font-mono">
-                        Double-Entry GL Impact: Dr. Service Income (4000) • Dr. VAT Output (2210) • Cr. Accounts Receivable (1200)
+                        Double-Entry GL Impact: Dr. Service Income (4000) • Dr.
+                        VAT Output (2210) • Cr. Accounts Receivable (1200)
                       </div>
                     </div>
                   </div>
 
-                  {/* Right: Subtotal, VAT & Total Table */}
                   <div className="w-80 border border-slate-200 print:border-slate-300 bg-white rounded-xl overflow-hidden shadow-2xs text-[12px] print:text-[11px]">
                     <div className="divide-y divide-slate-100 print:divide-slate-200">
                       <div className="flex items-center justify-between px-4 py-2.5 print:py-1.5 bg-slate-50/40">
@@ -397,16 +385,13 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
               </div>
             </td>
           </tr>
-
         </tbody>
       </table>
 
-      {/* Fixed Footer pinned to the bottom of every page in print */}
       <div className="print-footer-bottom fixed-print-footer hidden print:block">
         <QuotationFooter />
       </div>
 
-      {/* On-Screen Footer */}
       <div className="px-10 pb-6 print:hidden">
         <QuotationFooter className="mt-6" />
       </div>
@@ -427,7 +412,6 @@ export default function SalesReturnsPage() {
   const [expandedReturnId, setExpandedReturnId] = useState<string | null>(null);
   const [form, setForm] = useState<ReturnFormState>(EMPTY_FORM);
 
-  // Reference for react-to-print isolated printing
   const printDocumentRef = useRef<HTMLDivElement>(null);
 
   const triggerPrint = useReactToPrint({
@@ -522,14 +506,14 @@ export default function SalesReturnsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Sales Returns
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Process client returned goods, track credit adjustments, and update warehouse inventory.
+            Process client returned goods, track credit adjustments, and update
+            warehouse inventory.
           </p>
         </div>
 
@@ -539,16 +523,15 @@ export default function SalesReturnsPage() {
             size="sm"
             onClick={() => setIsCreateOpen(true)}
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Log Sales Return
           </Button>
         </div>
       </div>
 
-      {/* 4 Summary KPI Cards */}
       <div className="print:hidden">
-        <ReportKpiGrid cols={3}>
+        <ReportKpiGrid cols={4}>
           <ReportKpiCard
             title="1. Total Sales Credit Notes"
             subtitle="Cumulative client credits"
@@ -586,12 +569,9 @@ export default function SalesReturnsPage() {
         </ReportKpiGrid>
       </div>
 
-      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 print:hidden">
-        {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1">
               {STATUS_FILTERS.map((tab) => {
                 const isActive = statusFilter === tab.id;
@@ -631,7 +611,6 @@ export default function SalesReturnsPage() {
           </div>
         </div>
 
-        {/* Sales Returns Table */}
         <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
           <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
             <h4 className="font-black text-xs uppercase tracking-wider text-white">
@@ -730,7 +709,9 @@ export default function SalesReturnsPage() {
                           )}
                         </TableCell>
                         <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
-                          {new Date(item.returnDate).toLocaleDateString("en-GB")}
+                          {new Date(item.returnDate).toLocaleDateString(
+                            "en-GB",
+                          )}
                         </TableCell>
                         <TableCell className="py-3 px-4 max-w-xs truncate text-slate-600">
                           {item.reason}
@@ -759,7 +740,12 @@ export default function SalesReturnsPage() {
                                 handlePrintRow(item);
                               }}
                               className="px-3 py-1.5 text-[11px] font-bold rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 transition cursor-pointer flex items-center gap-1.5 border border-slate-200/80 shadow-2xs"
-                              icon={<PrintIcon size={14} className="text-emerald-700" />}
+                              icon={
+                                <PrintIcon
+                                  size={14}
+                                  className="text-emerald-700"
+                                />
+                              }
                             >
                               Print
                             </Button>
@@ -767,19 +753,27 @@ export default function SalesReturnsPage() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setExpandedReturnId(isExpanded ? null : item.id);
+                                setExpandedReturnId(
+                                  isExpanded ? null : item.id,
+                                );
                               }}
                               className={`p-1.5 rounded-lg transition cursor-pointer ${
                                 isExpanded
                                   ? "text-emerald-800 bg-emerald-100"
                                   : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
                               }`}
-                              title={isExpanded ? "Collapse preview" : "Expand preview"}
+                              title={
+                                isExpanded
+                                  ? "Collapse preview"
+                                  : "Expand preview"
+                              }
                             >
                               <ChevronDownIcon
                                 size={14}
                                 className={`transition-transform duration-200 ${
-                                  isExpanded ? "rotate-180 text-emerald-800" : ""
+                                  isExpanded
+                                    ? "rotate-180 text-emerald-800"
+                                    : ""
                                 }`}
                               />
                             </button>
@@ -787,7 +781,6 @@ export default function SalesReturnsPage() {
                         </TableCell>
                       </TableRow>
 
-                      {/* Landing Page QA-Style Accordion Expanded Drawer */}
                       {isExpanded && (
                         <TableRow className="hover:bg-transparent bg-slate-50/70">
                           <TableCell
@@ -795,7 +788,6 @@ export default function SalesReturnsPage() {
                             className="p-0 border-b-2 border-emerald-600/40"
                           >
                             <div className="px-6 py-5 space-y-4 border-l-4 border-l-emerald-600 bg-gradient-to-b from-white via-slate-50/40 to-slate-100/40 shadow-inner">
-                              {/* QA Header Ribbon */}
                               <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
                                 <div className="flex flex-wrap items-center gap-2.5">
                                   <span className="px-2.5 py-1 rounded-lg bg-teal-900 text-teal-200 font-mono font-bold text-xs shadow-2xs">
@@ -819,7 +811,12 @@ export default function SalesReturnsPage() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handlePrintRow(item)}
-                                    icon={<PrintIcon size={13} className="text-emerald-700" />}
+                                    icon={
+                                      <PrintIcon
+                                        size={13}
+                                        className="text-emerald-700"
+                                      />
+                                    }
                                     className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs"
                                   >
                                     Print Voucher (PDF)
@@ -835,7 +832,6 @@ export default function SalesReturnsPage() {
                                 </div>
                               </div>
 
-                              {/* 3 Metric Summary Cards */}
                               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div className="p-3 bg-rose-50/90 border border-rose-200/80 rounded-xl space-y-0.5">
                                   <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block">
@@ -866,7 +862,11 @@ export default function SalesReturnsPage() {
                                     Output VAT Adjustment (5%)
                                   </span>
                                   <span className="text-base font-black font-mono text-emerald-800 block">
-                                    AED {formatNumber(item.totalAmount - item.totalAmount / 1.05)}
+                                    AED{" "}
+                                    {formatNumber(
+                                      item.totalAmount -
+                                        item.totalAmount / 1.05,
+                                    )}
                                   </span>
                                   <span className="text-[10px] text-emerald-600/90 block">
                                     UAE FTA standard rated (5%)
@@ -874,7 +874,6 @@ export default function SalesReturnsPage() {
                                 </div>
                               </div>
 
-                              {/* 2-Column QA Detail Cards */}
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="p-4 bg-white rounded-xl border border-slate-200/90 space-y-2.5 shadow-2xs">
                                   <div className="flex items-center gap-1.5 pb-2 border-b border-slate-100 text-slate-900 font-bold text-[11px] uppercase tracking-wider">
@@ -883,20 +882,39 @@ export default function SalesReturnsPage() {
                                   </div>
                                   <div className="space-y-1.5 text-xs">
                                     <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">Customer:</span>
-                                      <span className="font-bold text-slate-900 text-right">{item.customerName}</span>
+                                      <span className="text-slate-500 font-medium">
+                                        Customer:
+                                      </span>
+                                      <span className="font-bold text-slate-900 text-right">
+                                        {item.customerName}
+                                      </span>
                                     </div>
                                     <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">Project Scope:</span>
-                                      <span className="font-semibold text-slate-800 text-right">{item.projectScope || "Commercial Fitout"}</span>
+                                      <span className="text-slate-500 font-medium">
+                                        Project Scope:
+                                      </span>
+                                      <span className="font-semibold text-slate-800 text-right">
+                                        {item.projectScope ||
+                                          "Commercial Fitout"}
+                                      </span>
                                     </div>
                                     <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">Linked Invoice:</span>
-                                      <span className="font-mono text-teal-800 font-bold text-right">#{item.invoiceReference}</span>
+                                      <span className="text-slate-500 font-medium">
+                                        Linked Invoice:
+                                      </span>
+                                      <span className="font-mono text-teal-800 font-bold text-right">
+                                        #{item.invoiceReference}
+                                      </span>
                                     </div>
                                     <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">Return Date:</span>
-                                      <span className="font-mono text-slate-700 text-right">{new Date(item.returnDate).toLocaleDateString("en-GB")}</span>
+                                      <span className="text-slate-500 font-medium">
+                                        Return Date:
+                                      </span>
+                                      <span className="font-mono text-slate-700 text-right">
+                                        {new Date(
+                                          item.returnDate,
+                                        ).toLocaleDateString("en-GB")}
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
@@ -908,24 +926,34 @@ export default function SalesReturnsPage() {
                                   </div>
                                   <div className="space-y-1.5 text-xs">
                                     <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">Type:</span>
-                                      <span className="font-bold text-slate-800 text-right">Sales Credit Note</span>
+                                      <span className="text-slate-500 font-medium">
+                                        Type:
+                                      </span>
+                                      <span className="font-bold text-slate-800 text-right">
+                                        Sales Credit Note
+                                      </span>
                                     </div>
                                     <div>
-                                      <span className="text-slate-500 font-medium block">Double-Entry Posting:</span>
+                                      <span className="text-slate-500 font-medium block">
+                                        Double-Entry Posting:
+                                      </span>
                                       <span className="font-mono text-[11px] text-slate-700 block mt-0.5">
-                                        Dr. Service Income (4000) • Dr. VAT Output (2210) • Cr. AR (1200)
+                                        Dr. Service Income (4000) • Dr. VAT
+                                        Output (2210) • Cr. AR (1200)
                                       </span>
                                     </div>
                                     <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">Status:</span>
-                                      <span className="font-bold text-emerald-800 text-right">Automated GL Reversal</span>
+                                      <span className="text-slate-500 font-medium">
+                                        Status:
+                                      </span>
+                                      <span className="font-bold text-emerald-800 text-right">
+                                        Automated GL Reversal
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
                               </div>
 
-                              {/* Reason QA Callout Box */}
                               <div className="p-3.5 bg-amber-50/80 rounded-xl border border-amber-200/90 space-y-1">
                                 <span className="text-[10.5px] font-bold uppercase tracking-wider text-amber-900 block">
                                   Credit Adjustment Reason / Client Return Note
@@ -947,7 +975,6 @@ export default function SalesReturnsPage() {
         </div>
       </div>
 
-      {/* Modal for Creating Sales Return */}
       <Modal
         isOpen={isCreateOpen}
         onClose={handleCloseCreate}
@@ -1021,7 +1048,7 @@ export default function SalesReturnsPage() {
             <Button
               variant="primary"
               type="submit"
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Submit Sales Return
             </Button>
@@ -1029,7 +1056,6 @@ export default function SalesReturnsPage() {
         </form>
       </Modal>
 
-      {/* Off-screen Isolated Container for direct useReactToPrint */}
       <div
         style={{
           position: "fixed",
@@ -1048,4 +1074,3 @@ export default function SalesReturnsPage() {
     </div>
   );
 }
-

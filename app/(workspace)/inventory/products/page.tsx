@@ -435,7 +435,8 @@ export default function ProductsPage() {
             Products &amp; Materials
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage product inventory, material specifications, SKU codes, and stock reorder levels.
+            Manage product inventory, material specifications, SKU codes, and
+            stock reorder levels.
           </p>
         </div>
 
@@ -446,7 +447,7 @@ export default function ProductsPage() {
               size="sm"
               onClick={handleOpenCreate}
               icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
             >
               Add Product / SKU
             </Button>
@@ -454,7 +455,6 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* 4 Summary KPI Cards */}
       <ReportKpiGrid cols={3}>
         <ReportKpiCard
           title="1. Total Unique SKUs"
@@ -491,7 +491,6 @@ export default function ProductsPage() {
         />
       </ReportKpiGrid>
 
-      {/* Print-Only Compact Summary Strip */}
       <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
         <div>
           <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">

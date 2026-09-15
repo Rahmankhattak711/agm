@@ -71,7 +71,10 @@ export const AccountsReceivableReport: React.FC = () => {
   ];
 
   return (
-    <div ref={printRef} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+    <div
+      ref={printRef}
+      className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none"
+    >
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -156,7 +159,6 @@ export const AccountsReceivableReport: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {}
                     <ReportKpiGrid cols={3}>
                       <ReportKpiCard
                         title="Total Outstanding"
@@ -164,7 +166,9 @@ export const AccountsReceivableReport: React.FC = () => {
                         value={formatNumber(receivables?.totalReceivables || 0)}
                         accentColor="rose"
                         valueColor="text-rose-700"
-                        icon={<ReceiptIcon size={14} className="text-rose-600" />}
+                        icon={
+                          <ReceiptIcon size={14} className="text-rose-600" />
+                        }
                       />
 
                       <ReportKpiCard
@@ -173,7 +177,9 @@ export const AccountsReceivableReport: React.FC = () => {
                         value={formatNumber(aging.current)}
                         accentColor="emerald"
                         valueColor="text-emerald-800"
-                        icon={<span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />}
+                        icon={
+                          <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+                        }
                       />
 
                       <ReportKpiCard
@@ -182,7 +188,9 @@ export const AccountsReceivableReport: React.FC = () => {
                         value={formatNumber(aging.days30)}
                         accentColor="blue"
                         valueColor="text-blue-800"
-                        icon={<span className="h-2 w-2 rounded-full bg-blue-500 inline-block" />}
+                        icon={
+                          <span className="h-2 w-2 rounded-full bg-blue-500 inline-block" />
+                        }
                       />
 
                       <ReportKpiCard
@@ -191,7 +199,9 @@ export const AccountsReceivableReport: React.FC = () => {
                         value={formatNumber(aging.days60)}
                         accentColor="amber"
                         valueColor="text-amber-700"
-                        icon={<span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />}
+                        icon={
+                          <span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />
+                        }
                       />
 
                       <ReportKpiCard
@@ -200,27 +210,44 @@ export const AccountsReceivableReport: React.FC = () => {
                         value={formatNumber(aging.days90Plus)}
                         accentColor="rose"
                         valueColor="text-rose-700"
-                        icon={<span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse inline-block" />}
+                        icon={
+                          <span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse inline-block" />
+                        }
                       />
                     </ReportKpiGrid>
 
-                    {/* Compact Printable Receivables Summary Strip */}
                     <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">Current (0-30d)</span>
-                        <span className="font-mono font-black text-emerald-800">{formatCurrency(aging.current)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          Current (0-30d)
+                        </span>
+                        <span className="font-mono font-black text-emerald-800">
+                          {formatCurrency(aging.current)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">31-60 Days</span>
-                        <span className="font-mono font-black text-blue-800">{formatCurrency(aging.days30)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          31-60 Days
+                        </span>
+                        <span className="font-mono font-black text-blue-800">
+                          {formatCurrency(aging.days30)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">61-90 Days</span>
-                        <span className="font-mono font-black text-amber-700">{formatCurrency(aging.days60)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          61-90 Days
+                        </span>
+                        <span className="font-mono font-black text-amber-700">
+                          {formatCurrency(aging.days60)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">90+ Days Critical</span>
-                        <span className="font-mono font-black text-rose-700">{formatCurrency(aging.days90Plus)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          90+ Days Critical
+                        </span>
+                        <span className="font-mono font-black text-rose-700">
+                          {formatCurrency(aging.days90Plus)}
+                        </span>
                       </div>
                     </div>
 

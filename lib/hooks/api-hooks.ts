@@ -109,6 +109,8 @@ export interface FixedAsset {
     | "LEASEHOLD_IMPROVEMENT";
   purchaseDate: string;
   cost: string | number;
+  purchasePrice?: string | number;
+  accumulatedDepreciation?: string | number;
   salvageValue: string | number;
   depreciationRate: string | number;
   registrationNumber?: string | null;
@@ -1707,7 +1709,8 @@ export function useBalanceSheet(params?: { endDate?: string }) {
   const qs = params?.endDate ? `?endDate=${params.endDate}` : "";
   return useQuery<BalanceSheetReport>({
     queryKey: ["reports", "balance-sheet", params],
-    queryFn: () => fetchJson<BalanceSheetReport>(`/api/reports/balance-sheet${qs}`),
+    queryFn: () =>
+      fetchJson<BalanceSheetReport>(`/api/reports/balance-sheet${qs}`),
   });
 }
 

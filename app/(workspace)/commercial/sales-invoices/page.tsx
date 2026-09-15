@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState, Fragment } from "react";
+import { useForm } from "@tanstack/react-form";
 import {
   Button,
   Table,
@@ -14,6 +15,12 @@ import {
   Input,
   Select,
   Textarea,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+  FormSubmit,
+  DashboardCard,
+  DashboardCardGrid,
 } from "@/components/ui";
 import {
   ChevronDownIcon,
@@ -76,33 +83,88 @@ export default function SalesInvoicesPage() {
     null,
   );
 
-  const [invoiceNumber, setInvoiceNumber] = useState("");
-  const [customerId, setCustomerId] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [customerTrn, setCustomerTrn] = useState("");
-  const [projectScope, setProjectScope] = useState("");
-  const [invoiceDate, setInvoiceDate] = useState(
-    new Date().toISOString().slice(0, 10),
-  );
-  const [dueDate, setDueDate] = useState(
-    new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-  );
-  const [items, setItems] = useState([
-    {
-      productId: "",
-      description: "Scope item / billing milestone",
-      quantity: 1,
-      unitPrice: 0,
-      unit: "SQM",
-    },
-  ]);
-  const [notes, setNotes] = useState("");
-  const [terms, setTerms] = useState("");
-  const [autoPost, setAutoPost] = useState(true);
+  const [createInvoiceError, setCreateInvoiceError] = useState("");
+  const [paymentError, setPaymentError] = useState("");
 
-  const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("BANK_TRANSFER");
-  const [paymentRef, setPaymentRef] = useState("");
+  const createInvoiceForm = useForm({
+    defaultValues: {
+      invoiceNumber: "",
+      customerId: "",
+      customerName: "",
+      customerTrn: "",
+      projectScope: "",
+      invoiceDate: new Date().toISOString().slice(0, 10),
+      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10),
+      items: [
+        {
+          productId: "",
+          description: "Scope item / billing milestone",
+          quantity: 1,
+          unitPrice: 0,
+          unit: "SQM",
+        },
+      ],
+      notes: "",
+      terms: "",
+      autoPost: true,
+    },
+    onSubmit: async ({ value }) => {
+      setCreateInvoiceError("");
+      try {
+        await createInvoiceMutation.mutateAsync({
+          invoiceNumber: value.invoiceNumber || undefined,
+          customerId: value.customerId || undefined,
+          customerName: value.customerName || "Valued Customer",
+          customerTrn: value.customerTrn || undefined,
+          projectScope: value.projectScope,
+          invoiceDate: value.invoiceDate,
+          dueDate: value.dueDate,
+          items: value.items,
+          notes: value.notes || undefined,
+          terms: value.terms || undefined,
+          autoPost: value.autoPost,
+        });
+        setIsCreateOpen(false);
+        createInvoiceForm.reset();
+      } catch (err: any) {
+        setCreateInvoiceError(err.message || "Error creating invoice");
+      }
+    },
+  });
+
+  const paymentForm = useForm({
+    defaultValues: {
+      amount: "",
+      paymentMethod: "BANK_TRANSFER",
+      referenceNumber: "",
+    },
+    onSubmit: async ({ value }) => {
+      if (!paymentModalInv) return;
+      setPaymentError("");
+      const amt = parseFloat(value.amount);
+      if (isNaN(amt) || amt <= 0) {
+        setPaymentError("Invalid payment amount.");
+        return;
+      }
+
+      try {
+        await paymentMutation.mutateAsync({
+          salesInvoiceId: paymentModalInv.id,
+          customerId: paymentModalInv.customerId,
+          customerName: paymentModalInv.customerName,
+          amount: amt,
+          paymentMethod: value.paymentMethod as any,
+          referenceNumber: value.referenceNumber || undefined,
+        });
+        setPaymentModalInv(null);
+        paymentForm.reset();
+      } catch (err: any) {
+        setPaymentError(err.message || "Error recording payment");
+      }
+    },
+  });
 
   const formatNumber = (val: number | string | undefined) => {
     const num = Number(val || 0);
@@ -113,8 +175,9 @@ export default function SalesInvoicesPage() {
   };
 
   const addItem = () => {
-    setItems([
-      ...items,
+    const current = createInvoiceForm.getFieldValue("items");
+    createInvoiceForm.setFieldValue("items", [
+      ...current,
       {
         productId: "",
         description: "",
@@ -126,61 +189,44 @@ export default function SalesInvoicesPage() {
   };
 
   const removeItem = (idx: number) => {
-    if (items.length <= 1) return;
-    setItems(items.filter((_, i) => i !== idx));
+    const current = createInvoiceForm.getFieldValue("items");
+    if (current.length <= 1) return;
+    createInvoiceForm.setFieldValue(
+      "items",
+      current.filter((_, i) => i !== idx),
+    );
   };
 
   const updateItem = (idx: number, field: string, value: any) => {
-    const next = [...items];
-    (next[idx] as any)[field] = value;
-    setItems(next);
+    const current = [...createInvoiceForm.getFieldValue("items")];
+    (current[idx] as any)[field] = value;
+    createInvoiceForm.setFieldValue("items", current);
   };
 
-  const formSubtotal = items.reduce(
-    (s, i) =>
-      s +
-      (parseFloat(String(i.quantity)) || 0) *
-        (parseFloat(String(i.unitPrice)) || 0),
-    0,
-  );
-  const formVat = formSubtotal * 0.05;
-  const formTotal = formSubtotal + formVat;
+  const handleOpenCreate = () => {
+    setCreateInvoiceError("");
+    createInvoiceForm.reset();
+    setIsCreateOpen(true);
+  };
 
-  const handleCreateInvoice = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await createInvoiceMutation.mutateAsync({
-        invoiceNumber: invoiceNumber || undefined,
-        customerId: customerId || undefined,
-        customerName: customerName || "Valued Customer",
-        customerTrn: customerTrn || undefined,
-        projectScope,
-        invoiceDate,
-        dueDate,
-        items,
-        notes: notes || undefined,
-        terms: terms || undefined,
-        autoPost,
-      });
-      setIsCreateOpen(false);
-      setCustomerName("");
-      setCustomerId("");
-      setCustomerTrn("");
-      setProjectScope("");
-      setNotes("");
-      setTerms("");
-      setItems([
-        {
-          productId: "",
-          description: "Scope item / billing milestone",
-          quantity: 1,
-          unitPrice: 0,
-          unit: "SQM",
-        },
-      ]);
-    } catch (err: any) {
-      alert(`Error creating invoice: ${err.message}`);
-    }
+  const handleCloseCreate = () => {
+    createInvoiceForm.reset();
+    setIsCreateOpen(false);
+  };
+
+  const handleOpenPayment = (inv: SalesInvoice) => {
+    setPaymentError("");
+    paymentForm.reset({
+      amount: String(inv.remainingBalance || ""),
+      paymentMethod: "BANK_TRANSFER",
+      referenceNumber: "",
+    });
+    setPaymentModalInv(inv);
+  };
+
+  const handleClosePayment = () => {
+    paymentForm.reset();
+    setPaymentModalInv(null);
   };
 
   const handlePostInvoice = async (id: string) => {
@@ -189,28 +235,6 @@ export default function SalesInvoicesPage() {
       alert("Sales invoice posted to General Ledger successfully!");
     } catch (err: any) {
       alert(`Error posting invoice: ${err.message}`);
-    }
-  };
-
-  const handleRecordPayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!paymentModalInv) return;
-
-    try {
-      await paymentMutation.mutateAsync({
-        salesInvoiceId: paymentModalInv.id,
-        customerId: paymentModalInv.customerId,
-        customerName: paymentModalInv.customerName,
-        amount: parseFloat(paymentAmount),
-        paymentMethod,
-        referenceNumber: paymentRef,
-      });
-      setPaymentModalInv(null);
-      setPaymentAmount("");
-      setPaymentRef("");
-      alert("Payment recorded and posted to General Ledger!");
-    } catch (err: any) {
-      alert(`Error recording payment: ${err.message}`);
     }
   };
 
@@ -252,16 +276,15 @@ export default function SalesInvoicesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Dashboard View (Hidden when printing single selected invoice) */}
       <div className={`space-y-6 ${selectedInvoice ? "print:hidden" : ""}`}>
-        {/* Simple Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
           <div>
             <h1 className="text-xl font-bold text-slate-900 tracking-tight">
               Sales Invoices
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
-              Issue tax-compliant sales invoices, calculate 5% output VAT, and track customer receivables.
+              Issue tax-compliant sales invoices, calculate 5% output VAT, and
+              track customer receivables.
             </p>
           </div>
 
@@ -269,113 +292,50 @@ export default function SalesInvoicesPage() {
             <Button
               variant="primary"
               size="sm"
-              onClick={() => setIsCreateOpen(true)}
+              onClick={handleOpenCreate}
               icon={<PlusIcon size={14} strokeWidth={2.5} />}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial"
             >
               Create Sales Invoice
             </Button>
           </div>
         </div>
 
-        {/* 4 Summary KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-          {/* 1. Total Invoiced */}
-          <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-            <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                1. Total Invoiced (Incl. VAT)
+        <DashboardCardGrid cols={4}>
+          <DashboardCard
+            title="Total Invoiced (Incl. VAT)"
+            value={`AED ${formatNumber(totalBilled)}`}
+            subtitle="Gross sales billings"
+            variant="default"
+          />
+          <DashboardCard
+            title="Outstanding Receivables"
+            value={`AED ${formatNumber(totalOutstanding)}`}
+            subtitle="Open client balances"
+            variant={totalOutstanding > 0 ? "danger" : "default"}
+          />
+          <DashboardCard
+            title="Settled Receipts"
+            value={`AED ${formatNumber(totalSettled)}`}
+            subtitle="Collected payments"
+            variant="default"
+          />
+          <DashboardCard
+            title="Output VAT (5%)"
+            value={`AED ${formatNumber(totalVatOutput)}`}
+            subtitle="FTA Form 201 Tax Due"
+            badge={
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200">
+                Box 1
               </span>
-              <span className="text-xs text-slate-500 mt-0.5 block truncate">
-                Gross sales billings
-              </span>
-            </div>
-            <div className="pt-2">
-              <span className="text-xs font-semibold text-slate-400 font-sans mr-1">
-                AED
-              </span>
-              <span className="text-xl font-black text-slate-900 font-mono">
-                {formatNumber(totalBilled)}
-              </span>
-            </div>
-          </div>
+            }
+            variant="default"
+          />
+        </DashboardCardGrid>
 
-          {/* 2. Outstanding Receivables */}
-          <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-            <div className="absolute inset-x-0 top-0 h-[2.5px] bg-rose-500" />
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                2. Outstanding Accounts Receivable
-              </span>
-              <span className="text-xs text-slate-500 mt-0.5 block truncate">
-                Open client balances
-              </span>
-            </div>
-            <div className="pt-2">
-              <span className="text-xs font-semibold text-rose-500 font-sans mr-1">
-                AED
-              </span>
-              <span className="text-xl font-black text-rose-700 font-mono">
-                {formatNumber(totalOutstanding)}
-              </span>
-            </div>
-          </div>
-
-          {/* 3. Settled Collections */}
-          <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-            <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                3. Settled Receipts
-              </span>
-              <span className="text-xs text-slate-500 mt-0.5 block truncate">
-                Collected payments
-              </span>
-            </div>
-            <div className="pt-2">
-              <span className="text-xs font-semibold text-emerald-600 font-sans mr-1">
-                AED
-              </span>
-              <span className="text-xl font-black text-emerald-800 font-mono">
-                {formatNumber(totalSettled)}
-              </span>
-            </div>
-          </div>
-
-          {/* 4. Output VAT 5% */}
-          <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-            <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  4. Output VAT (5%)
-                </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-50 text-purple-800 border border-purple-200">
-                  Box 1
-                </span>
-              </div>
-              <span className="text-xs text-slate-500 mt-0.5 block truncate">
-                FTA Form 201 Tax Due
-              </span>
-            </div>
-            <div className="pt-2">
-              <span className="text-xs font-semibold text-purple-600 font-sans mr-1">
-                AED
-              </span>
-              <span className="text-xl font-black text-purple-800 font-mono">
-                {formatNumber(totalVatOutput)}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Filter & Table Card */}
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 print:p-0 print:border-none print:shadow-none min-w-0 max-w-full">
-          {/* Search & Filter Strip */}
           <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              {/* Status Quick Pills */}
               <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
                 {[
                   { id: "ALL", label: "All Invoices" },
@@ -599,28 +559,26 @@ export default function SalesInvoicesPage() {
                                       handlePostInvoice(inv.id);
                                     }}
                                     icon={<FileCheck2Icon size={12} />}
-                                    className="text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer"
+                                    className="text-[10px] font-bold bg-agm-green text-white hover:bg-agm-green-2 cursor-pointer"
                                   >
                                     Post to GL
                                   </Button>
                                 )}
-                                {inv.status !== "DRAFT" && inv.status !== "PAID" && (
-                                  <Button
-                                    variant="dark"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setPaymentModalInv(inv);
-                                      setPaymentAmount(
-                                        String(inv.remainingBalance),
-                                      );
-                                    }}
-                                    icon={<CreditCardIcon size={12} />}
-                                    className="text-[10px] font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer"
-                                  >
-                                    Receive
-                                  </Button>
-                                )}
+                                {inv.status !== "DRAFT" &&
+                                  inv.status !== "PAID" && (
+                                    <Button
+                                      variant="dark"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenPayment(inv);
+                                      }}
+                                      icon={<CreditCardIcon size={12} />}
+                                      className="text-[10px] font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer"
+                                    >
+                                      Receive
+                                    </Button>
+                                  )}
                                 <Button
                                   type="button"
                                   variant="ghost"
@@ -655,7 +613,6 @@ export default function SalesInvoicesPage() {
                             </TableCell>
                           </TableRow>
 
-                          {/* Accordion QA-Style Expandable Details */}
                           {isExpanded && (
                             <TableRow className="hover:bg-transparent bg-slate-50/70">
                               <TableCell
@@ -663,7 +620,6 @@ export default function SalesInvoicesPage() {
                                 className="p-0 border-b-2 border-emerald-600/40"
                               >
                                 <div className="px-5 py-4 space-y-4 border-l-4 border-l-emerald-600 bg-gradient-to-b from-white to-slate-50/40 shadow-inner">
-                                  {/* Detail Header Ribbon */}
                                   <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
                                     <div className="flex items-center gap-2.5">
                                       <span className="px-2.5 py-1 rounded-lg bg-emerald-800 text-white font-bold text-xs shadow-2xs">
@@ -709,7 +665,7 @@ export default function SalesInvoicesPage() {
                                             handlePostInvoice(inv.id);
                                           }}
                                           icon={<FileCheck2Icon size={12} />}
-                                          className="text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer shadow-2xs"
+                                          className="text-xs font-bold bg-agm-green text-white hover:bg-agm-green-2 cursor-pointer shadow-2xs"
                                         >
                                           Post to GL
                                         </Button>
@@ -721,10 +677,7 @@ export default function SalesInvoicesPage() {
                                             size="sm"
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              setPaymentModalInv(inv);
-                                              setPaymentAmount(
-                                                String(inv.remainingBalance),
-                                              );
+                                              handleOpenPayment(inv);
                                             }}
                                             icon={<CreditCardIcon size={12} />}
                                             className="text-xs font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer shadow-2xs"
@@ -747,7 +700,6 @@ export default function SalesInvoicesPage() {
                                     </div>
                                   </div>
 
-                                  {/* Scope of Work Breakdown Table */}
                                   <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
                                     <div className="bg-emerald-800 text-white px-3.5 py-2 text-xs font-bold uppercase tracking-wider flex items-center justify-between">
                                       <div className="flex items-center gap-1.5">
@@ -832,12 +784,12 @@ export default function SalesInvoicesPage() {
                                                               );
                                                             }
                                                             return (
-                                                                <div
-                                                                  key={pIdx}
-                                                                  className="leading-relaxed"
-                                                                >
-                                                                  {pt}
-                                                                </div>
+                                                              <div
+                                                                key={pIdx}
+                                                                className="leading-relaxed"
+                                                              >
+                                                                {pt}
+                                                              </div>
                                                             );
                                                           },
                                                         )}
@@ -876,7 +828,6 @@ export default function SalesInvoicesPage() {
                                     </table>
                                   </div>
 
-                                  {/* Financial & Audit Summary Footer */}
                                   <div className="flex flex-wrap items-start justify-between gap-4 pt-1">
                                     <div className="text-xs text-slate-600 max-w-md space-y-1.5">
                                       <div className="flex items-center gap-2">
@@ -980,106 +931,105 @@ export default function SalesInvoicesPage() {
           )}
         </div>
 
-        {/* Fixed Print Footer for Statement Printing */}
         <div className="print-footer-bottom fixed-print-footer hidden print:block">
           <QuotationFooter />
         </div>
       </div>
 
-      {/* Modal for Creating Sales Invoice */}
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
-          onClose={() => setIsCreateOpen(false)}
+          onClose={handleCloseCreate}
           title="Create Commercial Sales Invoice"
           maxWidth="lg"
         >
-          <form onSubmit={handleCreateInvoice} className="space-y-4 text-xs">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              createInvoiceForm.handleSubmit();
+            }}
+            className="space-y-4 text-xs"
+          >
+            {createInvoiceError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs">
+                {createInvoiceError}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Select Customer *
-                </label>
-                <Select
-                  containerClassName="w-full"
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold cursor-pointer shadow-2xs"
-                  value={customerId}
-                  onChange={(e) => {
-                    setCustomerId(e.target.value);
-                    const c = customers.find(
-                      (cust) => cust.id === e.target.value,
-                    );
-                    if (c) {
-                      setCustomerName(c.name);
-                      setCustomerTrn(c.trn || "");
-                    }
-                  }}
-                >
-                  <option value="">Select registered customer...</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.customerCode})
-                    </option>
-                  ))}
-                </Select>
-              </div>
+              <createInvoiceForm.Field name="customerId">
+                {(field) => (
+                  <FormSelect
+                    field={field}
+                    label="Select Customer *"
+                    onChange={(e) => {
+                      const c = customers.find(
+                        (cust) => cust.id === e.target.value,
+                      );
+                      if (c) {
+                        createInvoiceForm.setFieldValue("customerName", c.name);
+                        createInvoiceForm.setFieldValue(
+                          "customerTrn",
+                          c.trn || "",
+                        );
+                      }
+                    }}
+                  >
+                    <option value="">Select registered customer...</option>
+                    {customers.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.customerCode})
+                      </option>
+                    ))}
+                  </FormSelect>
+                )}
+              </createInvoiceForm.Field>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Customer / Entity Name (Override)
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Customer Name"
-                  containerClassName="w-full"
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  required
-                />
-              </div>
+              <createInvoiceForm.Field name="customerName">
+                {(field) => (
+                  <FormInput
+                    field={field}
+                    label="Customer / Entity Name (Override) *"
+                    placeholder="Customer Name"
+                    required
+                  />
+                )}
+              </createInvoiceForm.Field>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Customer TRN (UAE VAT)
-                </label>
-                <Input
-                  type="text"
-                  placeholder="100XXXXXXXXX003"
-                  containerClassName="w-full"
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
-                  value={customerTrn}
-                  onChange={(e) => setCustomerTrn(e.target.value)}
-                />
-              </div>
+              <createInvoiceForm.Field name="customerTrn">
+                {(field) => (
+                  <FormInput
+                    field={field}
+                    label="Customer TRN (UAE VAT)"
+                    placeholder="100XXXXXXXXX003"
+                    className="font-mono"
+                  />
+                )}
+              </createInvoiceForm.Field>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Invoice Number (Optional)
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Auto-generated if blank (e.g. INV-1001)"
-                  containerClassName="w-full"
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
-                  value={invoiceNumber}
-                  onChange={(e) => setInvoiceNumber(e.target.value)}
-                />
-              </div>
+              <createInvoiceForm.Field name="invoiceNumber">
+                {(field) => (
+                  <FormInput
+                    field={field}
+                    label="Invoice Number (Optional)"
+                    placeholder="Auto-generated if blank (e.g. INV-1001)"
+                    className="font-mono"
+                  />
+                )}
+              </createInvoiceForm.Field>
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Project Scope / Milestones
-              </label>
-              <Input
-                type="text"
-                placeholder="e.g. Commercial Fitout - Phase 1 Completion"
-                containerClassName="w-full"
-                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs"
-                value={projectScope}
-                onChange={(e) => setProjectScope(e.target.value)}
-              />
+              <createInvoiceForm.Field name="projectScope">
+                {(field) => (
+                  <FormInput
+                    field={field}
+                    label="Project Scope / Milestones"
+                    placeholder="e.g. Commercial Fitout - Phase 1 Completion"
+                  />
+                )}
+              </createInvoiceForm.Field>
             </div>
 
             <div className="space-y-2 pt-2 border-t border-slate-100">
@@ -1099,163 +1049,202 @@ export default function SalesInvoicesPage() {
                 </Button>
               </div>
 
-              <div className="space-y-2 max-h-56 overflow-y-auto">
-                {items.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="grid grid-cols-12 gap-2 items-start bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
-                  >
-                    <div className="col-span-6">
-                      <Textarea
-                        rows={2}
-                        placeholder="Description / scope points (press Enter for new points)..."
-                        containerClassName="w-full"
-                        className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 resize-y min-h-[36px]"
-                        value={item.description}
-                        onChange={(e) =>
-                          updateItem(idx, "description", e.target.value)
-                        }
-                        required
-                      />
+              <createInvoiceForm.Field name="items">
+                {(itemsField) => {
+                  const itemsList = itemsField.state.value || [];
+                  return (
+                    <div className="space-y-2 max-h-56 overflow-y-auto">
+                      {itemsList.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="grid grid-cols-12 gap-2 items-start bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
+                        >
+                          <div className="col-span-6">
+                            <Textarea
+                              rows={2}
+                              placeholder="Description / scope points (press Enter for new points)..."
+                              className="resize-y min-h-[36px]"
+                              value={item.description}
+                              onChange={(e) =>
+                                updateItem(idx, "description", e.target.value)
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <Input
+                              type="number"
+                              min="1"
+                              placeholder="Qty"
+                              className="font-mono"
+                              value={item.quantity}
+                              onChange={(e) =>
+                                updateItem(
+                                  idx,
+                                  "quantity",
+                                  parseFloat(e.target.value) || 1,
+                                )
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="col-span-3">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="Unit Price"
+                              className="font-mono font-bold"
+                              value={item.unitPrice || ""}
+                              onChange={(e) =>
+                                updateItem(
+                                  idx,
+                                  "unitPrice",
+                                  parseFloat(e.target.value) || 0,
+                                )
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="col-span-1 text-center">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(idx)}
+                              className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                            >
+                              <TrashIcon size={13} />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="col-span-2">
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder="Qty"
-                        containerClassName="w-full"
-                        className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          updateItem(idx, "quantity", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="col-span-3">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="Unit Price"
-                        containerClassName="w-full"
-                        className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold"
-                        value={item.unitPrice || ""}
-                        onChange={(e) =>
-                          updateItem(idx, "unitPrice", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="col-span-1 text-center">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeItem(idx)}
-                        className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
-                      >
-                        <TrashIcon size={13} />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  );
+                }}
+              </createInvoiceForm.Field>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Terms &amp; Conditions (Optional)
-                </label>
-                <Textarea
-                  rows={2}
-                  placeholder="Standard 20 AGM Fitout clauses apply if left blank, or enter custom terms..."
-                  containerClassName="w-full"
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs resize-none text-xs"
-                  value={terms}
-                  onChange={(e) => setTerms(e.target.value)}
-                />
-              </div>
+              <createInvoiceForm.Field name="terms">
+                {(field) => (
+                  <FormTextarea
+                    field={field}
+                    label="Terms & Conditions (Optional)"
+                    rows={2}
+                    placeholder="Standard 20 AGM Fitout clauses apply if left blank, or enter custom terms..."
+                    className="resize-none"
+                  />
+                )}
+              </createInvoiceForm.Field>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Notes &amp; Special Remarks (Optional)
-                </label>
-                <Textarea
-                  rows={2}
-                  placeholder="Additional notes for the client..."
-                  containerClassName="w-full"
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 shadow-2xs resize-none text-xs"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                />
-              </div>
+              <createInvoiceForm.Field name="notes">
+                {(field) => (
+                  <FormTextarea
+                    field={field}
+                    label="Notes & Special Remarks (Optional)"
+                    rows={2}
+                    placeholder="Additional notes for the client..."
+                    className="resize-none"
+                  />
+                )}
+              </createInvoiceForm.Field>
             </div>
 
-            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono text-xs text-right space-y-1">
-              <div className="flex justify-between text-slate-600">
-                <span>Subtotal (Excl. VAT):</span>
-                <span>AED {formSubtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-slate-600">
-                <span>5% Output VAT:</span>
-                <span>AED {formVat.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between font-black text-slate-900 text-sm border-t border-slate-200 pt-1">
-                <span>Total Invoice Due:</span>
-                <span className="text-emerald-900">
-                  AED {formTotal.toFixed(2)}
-                </span>
-              </div>
-            </div>
+            <createInvoiceForm.Subscribe
+              selector={(state) => state.values.items}
+            >
+              {(itemsList) => {
+                const sub = (itemsList || []).reduce(
+                  (s, i) =>
+                    s +
+                    (parseFloat(String(i.quantity)) || 0) *
+                      (parseFloat(String(i.unitPrice)) || 0),
+                  0,
+                );
+                const vat = sub * 0.05;
+                const tot = sub + vat;
+                return (
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-mono text-xs text-right space-y-1">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Subtotal (Excl. VAT):</span>
+                      <span>AED {sub.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span>5% Output VAT:</span>
+                      <span>AED {vat.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-black text-slate-900 text-sm border-t border-slate-200 pt-1">
+                      <span>Total Invoice Due:</span>
+                      <span className="text-emerald-900">
+                        AED {tot.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }}
+            </createInvoiceForm.Subscribe>
 
-            <div className="flex items-center gap-2 pt-2">
-              <Input
-                type="checkbox"
-                id="autoPost"
-                checked={autoPost}
-                onChange={(e) => setAutoPost(e.target.checked)}
-                containerClassName="w-auto shrink-0"
-                className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-              />
-              <label
-                htmlFor="autoPost"
-                className="font-semibold text-slate-700 cursor-pointer"
-              >
-                Auto-post to General Ledger &amp; update Accounts Receivable
-              </label>
-            </div>
+            <createInvoiceForm.Field name="autoPost">
+              {(field) => (
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="autoPost"
+                    checked={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                  />
+                  <label
+                    htmlFor="autoPost"
+                    className="font-semibold text-slate-700 cursor-pointer"
+                  >
+                    Auto-post to General Ledger &amp; update Accounts Receivable
+                  </label>
+                </div>
+              )}
+            </createInvoiceForm.Field>
 
             <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => setIsCreateOpen(false)}
+                onClick={handleCloseCreate}
                 className="cursor-pointer"
               >
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                type="submit"
-                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              <FormSubmit
+                form={createInvoiceForm}
+                className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
               >
                 Save &amp; Issue Sales Invoice
-              </Button>
+              </FormSubmit>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* Customer Payment Receipt Modal */}
       {paymentModalInv && (
         <Modal
           isOpen={!!paymentModalInv}
-          onClose={() => setPaymentModalInv(null)}
+          onClose={handleClosePayment}
           title={`Record Customer Payment: ${paymentModalInv.invoiceNumber}`}
           maxWidth="md"
         >
-          <form onSubmit={handleRecordPayment} className="space-y-4 text-xs">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              paymentForm.handleSubmit();
+            }}
+            className="space-y-4 text-xs"
+          >
+            {paymentError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs">
+                {paymentError}
+              </div>
+            )}
+
             <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 space-y-1">
               <p className="font-bold text-emerald-950">
                 Customer: {paymentModalInv.customerName}
@@ -1269,79 +1258,66 @@ export default function SalesInvoicesPage() {
               </p>
             </div>
 
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Payment Amount (AED) *
-              </label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="Amount"
-                containerClassName="w-full"
-                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono font-bold shadow-2xs"
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                required
-              />
-            </div>
+            <paymentForm.Field name="amount">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Payment Amount (AED) *"
+                  type="number"
+                  step="0.01"
+                  placeholder="Amount"
+                  className="font-mono font-bold"
+                  required
+                />
+              )}
+            </paymentForm.Field>
 
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Receipt Account / Method *
-              </label>
-              <Select
-                containerClassName="w-full"
-                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-semibold shadow-2xs cursor-pointer"
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              >
-                <option value="BANK_TRANSFER">
-                  Bank Transfer (RAK Bank A/C 1020)
-                </option>
-                <option value="CHEQUE">Corporate Cheque</option>
-                <option value="CASH">
-                  Petty Cash / Cash Receipt (A/C 1010)
-                </option>
-                <option value="CARD">Debit / Credit Card</option>
-              </Select>
-            </div>
+            <paymentForm.Field name="paymentMethod">
+              {(field) => (
+                <FormSelect field={field} label="Receipt Account / Method *">
+                  <option value="BANK_TRANSFER">
+                    Bank Transfer (RAK Bank A/C 1020)
+                  </option>
+                  <option value="CHEQUE">Corporate Cheque</option>
+                  <option value="CASH">
+                    Petty Cash / Cash Receipt (A/C 1010)
+                  </option>
+                  <option value="CARD">Debit / Credit Card</option>
+                </FormSelect>
+              )}
+            </paymentForm.Field>
 
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Reference / Cheque Number
-              </label>
-              <Input
-                type="text"
-                placeholder="e.g. TR-9283749 or CHQ-00128"
-                containerClassName="w-full"
-                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-emerald-500 font-mono shadow-2xs"
-                value={paymentRef}
-                onChange={(e) => setPaymentRef(e.target.value)}
-              />
-            </div>
+            <paymentForm.Field name="referenceNumber">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Reference / Cheque Number"
+                  placeholder="e.g. TR-9283749 or CHQ-00128"
+                  className="font-mono"
+                />
+              )}
+            </paymentForm.Field>
 
             <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => setPaymentModalInv(null)}
+                onClick={handleClosePayment}
                 className="cursor-pointer"
               >
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                type="submit"
-                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              <FormSubmit
+                form={paymentForm}
+                className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
               >
                 Post Payment to Ledger
-              </Button>
+              </FormSubmit>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* Official Tax Invoice Print Document (Hidden on screen, rendered directly in print) */}
       {selectedInvoice && (
         <div
           id="printable-voucher"
@@ -1359,7 +1335,6 @@ export default function SalesInvoicesPage() {
             <tfoot className="print-page-footer-group">
               <tr>
                 <td className="p-0 border-none align-bottom">
-                  {/* Invisible spacer so body rows don't overlap the fixed bottom footer */}
                   <div
                     className="w-full opacity-0 pointer-events-none select-none"
                     style={{ minHeight: "175px" }}
@@ -1373,7 +1348,6 @@ export default function SalesInvoicesPage() {
             </tfoot>
 
             <tbody className="print-page-body-group">
-              {/* 1. Title Bar */}
               <tr>
                 <td className="p-0 border-none align-top">
                   <div className="px-10 py-3.5 print:px-8 print:py-1 w-full border-b border-slate-100 bg-slate-50/50">
@@ -1428,11 +1402,9 @@ export default function SalesInvoicesPage() {
                 </td>
               </tr>
 
-              {/* 2. Client & Project Details Cards */}
               <tr>
                 <td className="p-0 border-none align-top">
                   <div className="grid grid-cols-2 gap-4 print:gap-2 px-10 py-3.5 print:px-8 print:py-1 text-[12px] print:text-[9.5px] print-avoid-break">
-                    {/* Left Card: Client / Bill To */}
                     <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl shadow-2xs">
                       <div className="font-bold mb-2 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-0.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -1468,7 +1440,6 @@ export default function SalesInvoicesPage() {
                       </div>
                     </div>
 
-                    {/* Right Card: Project / Site Details */}
                     <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl shadow-2xs">
                       <div className="font-bold mb-2 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-0.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -1480,7 +1451,8 @@ export default function SalesInvoicesPage() {
                             Project:
                           </span>
                           <span className="font-bold text-slate-900">
-                            {selectedInvoice.projectScope || "Commercial Fitout Contract"}
+                            {selectedInvoice.projectScope ||
+                              "Commercial Fitout Contract"}
                           </span>
                         </div>
 
@@ -1498,7 +1470,8 @@ export default function SalesInvoicesPage() {
                             Reference:
                           </span>
                           <span className="font-mono text-slate-800">
-                            {selectedInvoice.quotationRef || selectedInvoice.invoiceNumber}
+                            {selectedInvoice.quotationRef ||
+                              selectedInvoice.invoiceNumber}
                           </span>
                         </div>
                       </div>
@@ -1507,7 +1480,6 @@ export default function SalesInvoicesPage() {
                 </td>
               </tr>
 
-              {/* 3. Items Table */}
               <tr>
                 <td className="p-0 border-none align-top">
                   <div className="px-10 mt-2 print:px-8 print:mt-1">
@@ -1532,7 +1504,8 @@ export default function SalesInvoicesPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-agm-box-border">
-                        {selectedInvoice.items && selectedInvoice.items.length > 0 ? (
+                        {selectedInvoice.items &&
+                        selectedInvoice.items.length > 0 ? (
                           selectedInvoice.items.map((it: any, idx: number) => (
                             <tr
                               key={it.id || idx}
@@ -1543,7 +1516,9 @@ export default function SalesInvoicesPage() {
                               </td>
                               <td className="py-2.5 px-3 print:py-1.5 print:px-2 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
                                 {(() => {
-                                  const points = parseDescriptionPoints(it.description);
+                                  const points = parseDescriptionPoints(
+                                    it.description,
+                                  );
                                   if (points.length <= 1) {
                                     return (
                                       <div className="leading-snug print:leading-snug text-slate-800 whitespace-pre-line text-left">
@@ -1554,7 +1529,9 @@ export default function SalesInvoicesPage() {
                                   return (
                                     <div className="space-y-1.5 print:space-y-1 text-slate-800 text-left">
                                       {points.map((pt, pIdx) => {
-                                        const match = pt.match(/^(\d+[\.\)]|[•\-*])\s*(.*)$/);
+                                        const match = pt.match(
+                                          /^(\d+[\.\)]|[•\-*])\s*(.*)$/,
+                                        );
                                         if (match) {
                                           const [, bullet, text] = match;
                                           return (
@@ -1565,7 +1542,9 @@ export default function SalesInvoicesPage() {
                                               <span className="font-bold text-slate-900 shrink-0 select-none">
                                                 {bullet}
                                               </span>
-                                              <span className="text-slate-800">{text}</span>
+                                              <span className="text-slate-800">
+                                                {text}
+                                              </span>
                                             </div>
                                           );
                                         }
@@ -1609,12 +1588,10 @@ export default function SalesInvoicesPage() {
                 </td>
               </tr>
 
-              {/* 4. Totals & Banking Table */}
               <tr>
                 <td className="p-0 border-none align-top">
                   <div className="px-10 print:px-8">
                     <div className="flex items-stretch justify-between gap-4 mt-3.5 print:mt-1.5 print-avoid-break">
-                      {/* Left: Banking Details */}
                       <div className="flex-1 border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl text-[11.5px] print:text-[9.5px] flex flex-col justify-center shadow-2xs">
                         <div className="font-bold mb-1.5 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -1654,7 +1631,6 @@ export default function SalesInvoicesPage() {
                         </div>
                       </div>
 
-                      {/* Right: Subtotal, VAT, Gross & Balances */}
                       <div className="w-80 border border-slate-200 print:border-slate-300 bg-white rounded-xl overflow-hidden shadow-2xs text-[12px] print:text-[10px]">
                         <div className="divide-y divide-slate-100 print:divide-slate-200">
                           <div className="flex items-center justify-between px-4 py-2.5 print:py-1 bg-slate-50/40">
@@ -1702,7 +1678,8 @@ export default function SalesInvoicesPage() {
                                   : "text-emerald-700"
                               }`}
                             >
-                              AED {formatNumber(selectedInvoice.remainingBalance)}
+                              AED{" "}
+                              {formatNumber(selectedInvoice.remainingBalance)}
                             </span>
                           </div>
                         </div>
@@ -1712,7 +1689,6 @@ export default function SalesInvoicesPage() {
                 </td>
               </tr>
 
-              {/* 5. Notes & Special Remarks (if available) */}
               {selectedInvoice.notes && (
                 <tr>
                   <td className="p-0 border-none align-top">
@@ -1731,7 +1707,6 @@ export default function SalesInvoicesPage() {
                 </tr>
               )}
 
-              {/* 6. Terms & Conditions */}
               <tr>
                 <td className="p-0 border-none align-top">
                   {selectedInvoice.terms &&
@@ -1753,7 +1728,6 @@ export default function SalesInvoicesPage() {
                 </td>
               </tr>
 
-              {/* 7. Payment Terms */}
               <tr>
                 <td className="p-0 border-none align-top">
                   <QuotationPaymentTerms />
@@ -1762,7 +1736,6 @@ export default function SalesInvoicesPage() {
             </tbody>
           </table>
 
-          {/* Fixed Footer pinned to bottom on every page, including the last page */}
           <div className="print-footer-bottom fixed-print-footer hidden print:block">
             <QuotationFooter />
           </div>

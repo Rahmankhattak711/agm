@@ -174,8 +174,12 @@ export async function GET(req: NextRequest) {
       const sParts = customStart.split("-").map(Number);
       const eParts = customEnd.split("-").map(Number);
       if (sParts.length === 3 && eParts.length === 3) {
-        startDate = new Date(Date.UTC(sParts[0], sParts[1] - 1, sParts[2], 0, 0, 0, 0));
-        endDate = new Date(Date.UTC(eParts[0], eParts[1] - 1, eParts[2], 23, 59, 59, 999));
+        startDate = new Date(
+          Date.UTC(sParts[0], sParts[1] - 1, sParts[2], 0, 0, 0, 0),
+        );
+        endDate = new Date(
+          Date.UTC(eParts[0], eParts[1] - 1, eParts[2], 23, 59, 59, 999),
+        );
       } else {
         startDate = new Date(customStart);
         startDate.setHours(0, 0, 0, 0);

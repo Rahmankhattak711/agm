@@ -54,7 +54,10 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
   });
 
   return (
-    <div ref={printRef} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+    <div
+      ref={printRef}
+      className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none"
+    >
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -106,7 +109,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                   </div>
                 </div>
 
-                {/* Header Toolbar */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 print:hidden">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -192,7 +194,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* 4 Summary Metric Cards */}
                     <ReportKpiGrid cols={3}>
                       <ReportKpiCard
                         title="1. Total Debits"
@@ -240,27 +241,41 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                       />
                     </ReportKpiGrid>
 
-                    {/* Compact Printable General Ledger Summary Strip */}
                     <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Total Debits</span>
-                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalDebit)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          1. Total Debits
+                        </span>
+                        <span className="font-mono font-black text-slate-900">
+                          {formatCurrency(totalDebit)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Total Credits</span>
-                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalCredit)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          2. Total Credits
+                        </span>
+                        <span className="font-mono font-black text-slate-900">
+                          {formatCurrency(totalCredit)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Journal Lines</span>
-                        <span className="font-mono font-black text-slate-900">{lines.length} Postings</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          3. Journal Lines
+                        </span>
+                        <span className="font-mono font-black text-slate-900">
+                          {lines.length} Postings
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Net Balance</span>
-                        <span className="font-mono font-black text-emerald-800">{formatCurrency(netBalance)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          4. Net Balance
+                        </span>
+                        <span className="font-mono font-black text-emerald-800">
+                          {formatCurrency(netBalance)}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Account Identity Strip */}
                     <div className="p-3.5 px-5 rounded-2xl bg-slate-100/90 border border-slate-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200/80 flex items-center justify-center text-indigo-700 shadow-2xs shrink-0">
@@ -295,7 +310,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                       </span>
                     </div>
 
-                    {/* General Ledger Table */}
                     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
                       <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
                         <h4 className="font-black text-xs uppercase tracking-wider text-white">
@@ -388,7 +402,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                             </TableRow>
                           ))}
 
-                          {/* TOTAL ROW */}
                           <TableRow className="bg-slate-900 text-white font-black">
                             <TableCell
                               colSpan={4}

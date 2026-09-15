@@ -104,7 +104,10 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
   });
 
   return (
-    <div ref={printRef} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none">
+    <div
+      ref={printRef}
+      className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:m-0 print:border-none"
+    >
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
           <tr>
@@ -186,7 +189,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <ReportKpiGrid cols={3}>
+                    <ReportKpiGrid cols={4}>
                       <ReportKpiCard
                         title="1. Total Assets"
                         subtitle="Current & Fixed Assets"
@@ -206,14 +209,20 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                         subtitle="Partner Capital & P&L"
                         value={formatNumber(totalEquity)}
                         accentColor="emerald"
-                        valueColor={totalEquity >= 0 ? "text-emerald-800" : "text-rose-700"}
+                        valueColor={
+                          totalEquity >= 0
+                            ? "text-emerald-800"
+                            : "text-rose-700"
+                        }
                       />
                       <ReportKpiCard
                         title="4. Balance Check"
                         subtitle="Assets - (Liabilities + Equity)"
                         value={isBalanced ? "0.00" : formatNumber(balanceCheck)}
                         accentColor={isBalanced ? "emerald" : "amber"}
-                        valueColor={isBalanced ? "text-emerald-800" : "text-amber-800"}
+                        valueColor={
+                          isBalanced ? "text-emerald-800" : "text-amber-800"
+                        }
                         badge={
                           <span
                             className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
@@ -228,23 +237,40 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
                       />
                     </ReportKpiGrid>
 
-                    {/* Compact Printable Balance Sheet Summary Strip */}
                     <div className="hidden print:grid grid-cols-4 gap-2.5 p-3 bg-white rounded-xl border border-slate-200 print-avoid-break mb-3">
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">1. Total Assets</span>
-                        <span className="font-mono font-black text-slate-900">{formatCurrency(totalAssets)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          1. Total Assets
+                        </span>
+                        <span className="font-mono font-black text-slate-900">
+                          {formatCurrency(totalAssets)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">2. Total Liabilities</span>
-                        <span className="font-mono font-black text-amber-800">{formatCurrency(totalLiabilities)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          2. Total Liabilities
+                        </span>
+                        <span className="font-mono font-black text-amber-800">
+                          {formatCurrency(totalLiabilities)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">3. Total Equity</span>
-                        <span className="font-mono font-black text-emerald-800">{formatCurrency(totalEquity)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          3. Total Equity
+                        </span>
+                        <span className="font-mono font-black text-emerald-800">
+                          {formatCurrency(totalEquity)}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">4. Balance Status</span>
-                        <span className="font-mono font-black text-emerald-800">{isBalanced ? "Balanced (0.00)" : formatCurrency(balanceCheck)}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          4. Balance Status
+                        </span>
+                        <span className="font-mono font-black text-emerald-800">
+                          {isBalanced
+                            ? "Balanced (0.00)"
+                            : formatCurrency(balanceCheck)}
+                        </span>
                       </div>
                     </div>
 

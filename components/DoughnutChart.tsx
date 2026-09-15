@@ -63,9 +63,9 @@ export default function DoughnutChart({
           display: false,
         },
         tooltip: {
-          backgroundColor: "#0f172a",
-          titleColor: "#f8fafc",
-          bodyColor: "#38bdf8",
+          backgroundColor: "#263b4d",
+          titleColor: "#ffffff",
+          bodyColor: "#e8f0e8",
           padding: 10,
           cornerRadius: 10,
           callbacks: {
@@ -84,10 +84,10 @@ export default function DoughnutChart({
       {(title || subtitle) && (
         <div>
           {title && (
-            <h3 className="font-bold text-sm text-slate-900">{title}</h3>
+            <h3 className="font-bold text-sm text-agm-text">{title}</h3>
           )}
           {subtitle && (
-            <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
+            <p className="text-xs text-agm-subtle mt-0.5">{subtitle}</p>
           )}
         </div>
       )}
@@ -99,14 +99,14 @@ export default function DoughnutChart({
         <Doughnut data={chartData} options={options} />
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-3 pt-2 border-t border-slate-100 text-xs">
+      <div className="flex flex-wrap items-center justify-center gap-3 pt-2 border-t border-agm-box-border text-xs">
         {data.map((item, i) => (
           <div key={i} className="flex items-center gap-1.5">
             <span
               className="w-2.5 h-2.5 rounded-full flex-shrink-0"
               style={{ backgroundColor: item.color }}
             />
-            <span className="text-slate-500 font-medium">{item.label}</span>
+            <span className="text-agm-muted font-medium">{item.label}</span>
           </div>
         ))}
       </div>

@@ -15,13 +15,16 @@ type BalanceItem = {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const endDateStr = searchParams.get("endDate") || searchParams.get("asOfDate");
+    const endDateStr =
+      searchParams.get("endDate") || searchParams.get("asOfDate");
 
     const whereCondition: any = {};
     if (endDateStr) {
       const eParts = endDateStr.split("-").map(Number);
       if (eParts.length === 3) {
-        const endDate = new Date(Date.UTC(eParts[0], eParts[1] - 1, eParts[2], 23, 59, 59, 999));
+        const endDate = new Date(
+          Date.UTC(eParts[0], eParts[1] - 1, eParts[2], 23, 59, 59, 999),
+        );
         whereCondition.journalEntry = { entryDate: { lte: endDate } };
       }
     }

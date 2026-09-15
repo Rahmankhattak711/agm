@@ -1,0 +1,217 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useForm } from "@tanstack/react-form";
+import { Modal, Button, FormInput, FormSubmit } from "@/components/ui";
+import { useCreateCustomer } from "@/lib/hooks/api-hooks";
+
+const EMPTY_FORM = {
+  customerCode: "",
+  name: "",
+  companyName: "",
+  trn: "",
+  contactPerson: "",
+  phone: "",
+  email: "",
+  address: "",
+  creditLimit: "",
+};
+
+export interface CustomerCreateModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+}
+
+export function CustomerCreateModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: CustomerCreateModalProps) {
+  const [formError, setFormError] = useState("");
+  const createCustomerMutation = useCreateCustomer();
+
+  const form = useForm({
+    defaultValues: { ...EMPTY_FORM },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        await createCustomerMutation.mutateAsync({
+          customerCode: value.customerCode.trim() || undefined,
+          name: value.name.trim(),
+          companyName: value.companyName.trim() || undefined,
+          trn: value.trn.trim() || undefined,
+          contactPerson: value.contactPerson.trim() || undefined,
+          phone: value.phone.trim() || undefined,
+          email: value.email.trim() || undefined,
+          address: value.address.trim() || undefined,
+          creditLimit: parseFloat(value.creditLimit) || 0,
+        });
+        form.reset();
+        onClose();
+        if (onSuccess) onSuccess();
+      } catch (err: any) {
+        setFormError(err.message || "Failed to save customer record");
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormError("");
+      form.reset();
+    }
+  }, [isOpen]);
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add New Customer Profile"
+      maxWidth="lg"
+    >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          form.handleSubmit();
+        }}
+        className="space-y-3.5 text-xs"
+      >
+        {formError && (
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs">
+            {formError}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <form.Field name="customerCode">
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Customer Code"
+                placeholder="Auto-generated if blank (e.g. CUST-001)"
+                className="font-mono"
+              />
+            )}
+          </form.Field>
+
+          <form.Field
+            name="name"
+            validators={{
+              onChange: ({ value }) =>
+                !value.trim() ? "Customer name is required" : undefined,
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Customer Name / Entity *"
+                required
+                placeholder="Full Legal / Trading Name"
+              />
+            )}
+          </form.Field>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <form.Field name="companyName">
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Company / Organization Name"
+                placeholder="Company LLC / Corporation"
+              />
+            )}
+          </form.Field>
+
+          <form.Field name="trn">
+            {(field) => (
+              <FormInput
+                field={field}
+                label="UAE VAT TRN (15 Digits)"
+                placeholder="100XXXXXXXXX003"
+                className="font-mono"
+              />
+            )}
+          </form.Field>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <form.Field name="contactPerson">
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Contact Person"
+                placeholder="Managing Director / PM"
+              />
+            )}
+          </form.Field>
+
+          <form.Field name="phone">
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Phone / Mobile"
+                placeholder="+971 50 XXXXXXX"
+              />
+            )}
+          </form.Field>
+
+          <form.Field name="email">
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Email Address"
+                type="email"
+                placeholder="accounts@client.com"
+              />
+            )}
+          </form.Field>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <form.Field name="address">
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Address / Site Location (UAE)"
+                placeholder="Sheikh Zayed Rd, Dubai, UAE"
+              />
+            )}
+          </form.Field>
+
+          <form.Field name="creditLimit">
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Credit Limit (AED)"
+                type="number"
+                step="0.01"
+                placeholder="50000.00"
+                className="font-mono"
+              />
+            )}
+          </form.Field>
+        </div>
+
+        <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
+          <Button
+            variant="outline"
+            type="button"
+            onClick={onClose}
+            className="cursor-pointer"
+          >
+            Cancel
+          </Button>
+          <FormSubmit
+            form={form}
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
+          >
+            Save Customer Record
+          </FormSubmit>
+        </div>
+      </form>
+    </Modal>
+  );
+}

@@ -213,7 +213,9 @@ export const Modal: React.FC<ModalProps> = ({
           className={`w-full ${widthClass[maxWidth]} max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:w-full print:max-w-full print:p-0`}
         >
           <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50/50 print:hidden">
-            <h3 className="font-bold text-sm text-slate-900 truncate pr-2">{title}</h3>
+            <h3 className="font-bold text-sm text-slate-900 truncate pr-2">
+              {title}
+            </h3>
             <button
               type="button"
               onClick={onClose}

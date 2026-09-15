@@ -16,7 +16,12 @@ import {
   TableCell,
   TableEmpty,
   TableLoading,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+  FormSubmit,
 } from "@/components/ui";
+import { useForm } from "@tanstack/react-form";
 import {
   useSupplierPayments,
   useCreateSupplierPayment,
@@ -60,39 +65,41 @@ export default function SupplierPaymentsPage() {
   const [selectedPayment, setSelectedPayment] =
     useState<SupplierPayment | null>(null);
 
-  const [form, setForm] = useState<FormState>({ ...EMPTY_FORM });
-  const setField = useCallback(
-    <K extends keyof FormState>(k: K, v: FormState[K]) =>
-      setForm((p) => ({ ...p, [k]: v })),
-    [],
-  );
+  const [formError, setFormError] = useState("");
+
+  const form = useForm({
+    defaultValues: { ...EMPTY_FORM },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        await createPaymentMutation.mutateAsync({
+          supplierId: value.supplierId || undefined,
+          supplierName: value.supplierName || "Vendor",
+          supplierBillId: value.supplierBillId || undefined,
+          paymentDate: value.paymentDate,
+          amount: parseFloat(value.amount),
+          paymentMethod: value.paymentMethod,
+          referenceNumber: value.referenceNumber,
+          notes: value.notes,
+        });
+        setIsCreateOpen(false);
+        form.reset();
+      } catch (err: any) {
+        setFormError(err.message || "Failed to record supplier payment");
+      }
+    },
+  });
+
+  const handleOpenCreate = useCallback(() => {
+    setFormError("");
+    form.reset();
+    setIsCreateOpen(true);
+  }, [form]);
 
   const handleCloseCreate = useCallback(() => {
     setIsCreateOpen(false);
-    setForm({ ...EMPTY_FORM });
-  }, []);
-
-  const handleCreatePayment = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      try {
-        await createPaymentMutation.mutateAsync({
-          supplierId: form.supplierId || undefined,
-          supplierName: form.supplierName || "Vendor",
-          supplierBillId: form.supplierBillId || undefined,
-          paymentDate: form.paymentDate,
-          amount: parseFloat(form.amount),
-          paymentMethod: form.paymentMethod,
-          referenceNumber: form.referenceNumber,
-          notes: form.notes,
-        });
-        handleCloseCreate();
-      } catch (err: any) {
-        alert(`Error recording supplier payment: ${err.message}`);
-      }
-    },
-    [createPaymentMutation, form, handleCloseCreate],
-  );
+    form.reset();
+  }, [form]);
 
   const filteredPayments = useMemo(() => {
     const q = search.toLowerCase();
@@ -139,7 +146,8 @@ export default function SupplierPaymentsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            Disburse payments to vendors, settle open purchase bills, and track bank disbursements.
+            Disburse payments to vendors, settle open purchase bills, and track
+            bank disbursements.
           </p>
         </div>
 
@@ -147,7 +155,7 @@ export default function SupplierPaymentsPage() {
           <Button
             variant="dark"
             size="sm"
-            onClick={() => setIsCreateOpen(true)}
+            onClick={handleOpenCreate}
             icon={<Plus size={14} />}
             className="text-xs font-bold bg-slate-900 text-white hover:bg-slate-800"
           >
@@ -327,99 +335,142 @@ export default function SupplierPaymentsPage() {
           title="Disburse Supplier Payment"
           maxWidth="lg"
         >
-          <form onSubmit={handleCreatePayment} className="space-y-4 text-xs">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Select
-                label="Supplier / Vendor"
-                value={form.supplierId}
-                onChange={(e) => {
-                  setField("supplierId", e.target.value);
-                  const s = suppliers.find((sup) => sup.id === e.target.value);
-                  if (s) setField("supplierName", s.name);
-                }}
-              >
-                <option value="">Select supplier...</option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} ({s.trn ? `TRN: ${s.trn}` : "Vendor"})
-                  </option>
-                ))}
-              </Select>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+            className="space-y-4 text-xs"
+          >
+            {formError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs">
+                {formError}
+              </div>
+            )}
 
-              <Select
-                label="Apply to Supplier Bill (Optional)"
-                value={form.supplierBillId}
-                onChange={(e) => {
-                  setField("supplierBillId", e.target.value);
-                  const b = bills.find((bill) => bill.id === e.target.value);
-                  if (b) {
-                    setField("amount", String(b.remainingBalance));
-                    setField("supplierName", b.supplierName);
-                    if (b.supplierId) setField("supplierId", b.supplierId);
-                  }
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <form.Field name="supplierId">
+                {(field) => (
+                  <FormSelect
+                    field={field}
+                    label="Supplier / Vendor"
+                    onChange={(e) => {
+                      const sid = e.target.value;
+                      field.handleChange(sid);
+                      const s = suppliers.find((sup) => sup.id === sid);
+                      if (s) form.setFieldValue("supplierName", s.name);
+                    }}
+                  >
+                    <option value="">Select supplier...</option>
+                    {suppliers.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} ({s.trn ? `TRN: ${s.trn}` : "Vendor"})
+                      </option>
+                    ))}
+                  </FormSelect>
+                )}
+              </form.Field>
+
+              <form.Field name="supplierBillId">
+                {(field) => (
+                  <FormSelect
+                    field={field}
+                    label="Apply to Supplier Bill (Optional)"
+                    onChange={(e) => {
+                      const bid = e.target.value;
+                      field.handleChange(bid);
+                      const b = bills.find((bill) => bill.id === bid);
+                      if (b) {
+                        form.setFieldValue(
+                          "amount",
+                          String(b.remainingBalance),
+                        );
+                        form.setFieldValue("supplierName", b.supplierName);
+                        if (b.supplierId)
+                          form.setFieldValue("supplierId", b.supplierId);
+                      }
+                    }}
+                  >
+                    <option value="">No Bill (General Disbursal)</option>
+                    {bills
+                      .filter((b) => Number(b.remainingBalance) > 0)
+                      .map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.billNumber} - {b.supplierName} (Due: AED{" "}
+                          {Number(b.remainingBalance).toFixed(2)})
+                        </option>
+                      ))}
+                  </FormSelect>
+                )}
+              </form.Field>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <form.Field
+                name="amount"
+                validators={{
+                  onChange: ({ value }) =>
+                    !value || parseFloat(value) <= 0
+                      ? "Valid payment amount is required"
+                      : undefined,
                 }}
               >
-                <option value="">No Bill (General Disbursal)</option>
-                {bills
-                  .filter((b) => Number(b.remainingBalance) > 0)
-                  .map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.billNumber} - {b.supplierName} (Due: AED{" "}
-                      {Number(b.remainingBalance).toFixed(2)})
+                {(field) => (
+                  <FormInput
+                    field={field}
+                    label="Payment Amount (AED)"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    required
+                  />
+                )}
+              </form.Field>
+
+              <form.Field name="paymentMethod">
+                {(field) => (
+                  <FormSelect field={field} label="Payment Method">
+                    <option value="BANK_TRANSFER">
+                      Bank Transfer (RAK Bank)
                     </option>
-                  ))}
-              </Select>
+                    <option value="CHEQUE">Corporate Cheque</option>
+                    <option value="CASH">Petty Cash / Cash</option>
+                    <option value="CREDIT_CARD">Corporate Card</option>
+                  </FormSelect>
+                )}
+              </form.Field>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Input
-                label="Payment Amount (AED)"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={form.amount}
-                onChange={(e) => setField("amount", e.target.value)}
-                required
-              />
+              <form.Field name="paymentDate">
+                {(field) => (
+                  <FormInput field={field} label="Payment Date" type="date" />
+                )}
+              </form.Field>
 
-              <Select
-                label="Payment Method"
-                value={form.paymentMethod}
-                onChange={(e) =>
-                  setField("paymentMethod", e.target.value as any)
-                }
-              >
-                <option value="BANK_TRANSFER">Bank Transfer (RAK Bank)</option>
-                <option value="CHEQUE">Corporate Cheque</option>
-                <option value="CASH">Petty Cash / Cash</option>
-                <option value="CREDIT_CARD">Corporate Card</option>
-              </Select>
+              <form.Field name="referenceNumber">
+                {(field) => (
+                  <FormInput
+                    field={field}
+                    label="Cheque / Transaction Ref #"
+                    type="text"
+                    placeholder="e.g. CHQ-9921 or TXN-4421"
+                  />
+                )}
+              </form.Field>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Input
-                label="Payment Date"
-                type="date"
-                value={form.paymentDate}
-                onChange={(e) => setField("paymentDate", e.target.value)}
-              />
-
-              <Input
-                label="Cheque / Transaction Ref #"
-                type="text"
-                placeholder="e.g. CHQ-9921 or TXN-4421"
-                value={form.referenceNumber}
-                onChange={(e) => setField("referenceNumber", e.target.value)}
-              />
-            </div>
-
-            <Textarea
-              label="Disbursal Notes"
-              rows={2}
-              placeholder="Payment description and allocation details..."
-              value={form.notes}
-              onChange={(e) => setField("notes", e.target.value)}
-            />
+            <form.Field name="notes">
+              {(field) => (
+                <FormTextarea
+                  field={field}
+                  label="Disbursal Notes"
+                  rows={2}
+                  placeholder="Payment description and allocation details..."
+                />
+              )}
+            </form.Field>
 
             <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
               <Button
@@ -430,17 +481,13 @@ export default function SupplierPaymentsPage() {
               >
                 Cancel
               </Button>
-              <Button
-                variant="dark"
+              <FormSubmit
+                form={form}
                 size="sm"
-                type="submit"
-                disabled={createPaymentMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
               >
-                {createPaymentMutation.isPending
-                  ? "Posting..."
-                  : "Disburse & Post"}
-              </Button>
+                Disburse &amp; Post
+              </FormSubmit>
             </div>
           </form>
         </Modal>

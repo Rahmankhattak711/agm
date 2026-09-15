@@ -11,7 +11,15 @@ import {
   useJournalEntries,
   useUpdateJournalEntry,
 } from "@/lib/hooks/api-hooks";
-import { Button, Input, Modal, Select, Textarea } from "@/components/ui";
+import {
+  Button,
+  Input,
+  Modal,
+  Select,
+  Textarea,
+  DashboardCard,
+  DashboardCardGrid,
+} from "@/components/ui";
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -292,14 +300,14 @@ export default function JournalEntriesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Journal Entries
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Record double-entry transactions, make ledger adjustments, and track financial movements.
+            Record double-entry transactions, make ledger adjustments, and track
+            financial movements.
           </p>
         </div>
 
@@ -309,106 +317,51 @@ export default function JournalEntriesPage() {
             variant="primary"
             size="sm"
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             New Journal Entry
           </Button>
         </div>
       </div>
 
-      {/* 4 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Total Entries */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Total Journal Vouchers
+      <DashboardCardGrid cols={4}>
+        <DashboardCard
+          title="Total Journal Vouchers"
+          value={journalEntries?.length || 0}
+          subtitle="All ledger adjustments"
+          variant="default"
+        />
+        <DashboardCard
+          title="Posted Entries"
+          value={journalEntries?.filter((j) => j.isPosted).length || 0}
+          subtitle="Active in General Ledger"
+          variant="success"
+        />
+        <DashboardCard
+          title="Draft Entries"
+          value={journalEntries?.filter((j) => !j.isPosted).length || 0}
+          subtitle="Pending posting approval"
+          variant={
+            (journalEntries?.filter((j) => !j.isPosted).length || 0) > 0
+              ? "warning"
+              : "default"
+          }
+        />
+        <DashboardCard
+          title="Audit Integrity"
+          value="100% Balanced"
+          subtitle="Double-entry equality"
+          badge={
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200">
+              GAAP
             </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              All ledger adjustments
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-slate-900 font-mono">
-              {journalEntries?.length || 0}
-            </span>
-            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
-              Vouchers
-            </span>
-          </div>
-        </div>
+          }
+          variant="default"
+        />
+      </DashboardCardGrid>
 
-        {/* 2. Posted Entries */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Posted Entries
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Active in General Ledger
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-emerald-800 font-mono">
-              {journalEntries?.filter((j) => j.isPosted).length || 0}
-            </span>
-            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
-              Posted
-            </span>
-          </div>
-        </div>
-
-        {/* 3. Draft Entries */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-amber-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Draft Entries
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Pending posting approval
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-amber-700 font-mono">
-              {journalEntries?.filter((j) => !j.isPosted).length || 0}
-            </span>
-            <span className="text-xs font-bold text-amber-700 font-sans ml-1.5">
-              Drafts
-            </span>
-          </div>
-        </div>
-
-        {/* 4. Audit Integrity */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                4. Audit Integrity
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
-                GAAP
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Double-entry equality
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xl font-black text-teal-900 font-sans">
-              100% Balanced
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Filter Toolbar */}
       <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          {/* Status Quick Pills */}
           <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
             {[
               { id: "ALL", label: "All Entries" },
@@ -452,7 +405,6 @@ export default function JournalEntriesPage() {
         </div>
       </div>
 
-      {/* Journal Entries List */}
       <div className="space-y-3">
         {isLoading ? (
           <div className="py-16 text-center text-xs text-slate-400 bg-white rounded-2xl border border-slate-200 animate-pulse space-y-2">
@@ -698,7 +650,6 @@ export default function JournalEntriesPage() {
         )}
       </div>
 
-      {/* Modal for Creating / Editing Journal Entry */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -865,7 +816,7 @@ export default function JournalEntriesPage() {
                       variant="primary"
                       onClick={addLine}
                       icon={<PlusIcon size={13} strokeWidth={2.2} />}
-                      className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+                      className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
                     >
                       Add Line
                     </Button>
@@ -998,7 +949,8 @@ export default function JournalEntriesPage() {
                             >
                               <option value="">Non-VAT (0%)</option>
                               <option value="VAT_5">VAT (5%)</option>
-                            </Select>  </div>
+                            </Select>{" "}
+                          </div>
 
                           <div
                             className={`w-24 sm:w-28 px-2 py-1.5 text-xs rounded-lg border font-mono font-bold text-right truncate ${
@@ -1070,7 +1022,7 @@ export default function JournalEntriesPage() {
                 createJournalEntryMutation.isPending ||
                 updateJournalEntryMutation.isPending
               }
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               {editingId ? "Update Entry" : "Post Entry"}
             </Button>

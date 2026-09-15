@@ -22,6 +22,8 @@ import {
   TableCell,
   TableLoading,
   Input,
+  DashboardCard,
+  DashboardCardGrid,
 } from "@/components/ui";
 import {
   EyeIcon,
@@ -185,14 +187,14 @@ export default function CommercialQuotationsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Quotations
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Create commercial proposals, generate itemized BOQs, and convert accepted quotes into sales orders.
+            Create commercial proposals, generate itemized BOQs, and convert
+            accepted quotes into sales orders.
           </p>
         </div>
 
@@ -228,92 +230,32 @@ export default function CommercialQuotationsPage() {
         </div>
       </div>
 
-      {/* 4 Elevated Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
-        {/* 1. Total Quoted Pipeline */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Total Proposal Pipeline
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Cumulative quotation value
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-xs font-semibold text-sky-500 font-sans mr-1">
-              AED
-            </span>
-            <span className="text-xl font-black text-slate-900 font-mono">
-              {formatNumber(totalQuotedVolume)}
-            </span>
-          </div>
-        </div>
-
-        {/* 2. Total Proposals Issued */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Total Proposals Issued
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              All commercial bids
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-slate-900 font-mono">
-              {quotationsList.length}
-            </span>
-            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
-              Proposals
-            </span>
-          </div>
-        </div>
-
-        {/* 3. Accepted Proposals */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. Won &amp; Accepted Deals
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Converted proposals
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-emerald-800 font-mono">
-              {acceptedCount}
-            </span>
-            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
-              Won
-            </span>
-          </div>
-        </div>
-
-        {/* 4. Active In-Review / Sent */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              4. Active Negotiations
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Sent to clients for approval
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-purple-800 font-mono">
-              {sentCount}
-            </span>
-            <span className="text-xs font-bold text-purple-700 font-sans ml-1.5">
-              In Review
-            </span>
-          </div>
-        </div>
-      </div>
+      <DashboardCardGrid cols={4} className="print:hidden">
+        <DashboardCard
+          title="Total Proposal Pipeline"
+          value={`AED ${formatNumber(totalQuotedVolume)}`}
+          subtitle="Cumulative quotation value"
+          variant="default"
+        />
+        <DashboardCard
+          title="Total Proposals Issued"
+          value={quotationsList.length}
+          subtitle={`${quotationsList.length} commercial proposals`}
+          variant="default"
+        />
+        <DashboardCard
+          title="Won & Accepted Deals"
+          value={acceptedCount}
+          subtitle="Converted proposals"
+          variant="success"
+        />
+        <DashboardCard
+          title="Active Negotiations"
+          value={sentCount}
+          subtitle="Sent to clients for review"
+          variant="warning"
+        />
+      </DashboardCardGrid>
 
       {activeView === "EDITOR" ? (
         <div className="overflow-visible">
@@ -325,10 +267,8 @@ export default function CommercialQuotationsPage() {
         </div>
       ) : (
         <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-          {/* Search & Filter Strip */}
           <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              {/* Status Quick Pills */}
               <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
                 {[
                   { id: "ALL", label: "All Quotations" },
@@ -514,7 +454,7 @@ export default function CommercialQuotationsPage() {
                               onClick={() => handleConvert(q.id)}
                               disabled={convertingId === q.id}
                               icon={<ShoppingCartIcon size={12} />}
-                              className="text-[10px] font-bold bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer"
+                              className="text-[10px] font-bold bg-agm-green hover:bg-agm-green-2 text-white cursor-pointer"
                             >
                               Convert to SO
                             </Button>
