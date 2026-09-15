@@ -22,11 +22,11 @@ import {
   TableCell,
 } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
+import { AgingBucketCard, AgingBucket } from "../components";
 import {
-  AgingBucketCard,
-  AgingBucket,
-} from "@/components/reports/AgingBucketCard";
-import { ReportKpiCard, ReportKpiGrid } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
+  ReportKpiCard,
+  ReportKpiGrid,
+} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 import { Building2, FileText, Mail, Phone, Clock } from "lucide-react";
 
 export default function SupplierReportsPage() {
@@ -362,119 +362,128 @@ export default function SupplierReportsPage() {
   return (
     <>
       <div className="space-y-6 print:hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Supplier &amp; Vendor Payable Reports
-            </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">
-              Accounts Payable Directory
-            </span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                Supplier &amp; Vendor Payable Reports
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">
+                Accounts Payable Directory
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              AGM FITOUT TECHNICAL SERVICES LLC — Vendor accounts payable
+              ledgers, procurement history, payment terms, and outstanding
+              liability balances.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            AGM FITOUT TECHNICAL SERVICES LLC — Vendor accounts payable ledgers,
-            procurement history, payment terms, and outstanding liability
-            balances.
-          </p>
+
+          <Button
+            variant="primary"
+            onClick={() => window.print()}
+            icon={<PrintIcon className="w-4 h-4" strokeWidth={2.2} />}
+          >
+            Print Report
+          </Button>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={() => window.print()}
-          icon={<PrintIcon className="w-4 h-4" strokeWidth={2.2} />}
-        >
-          Print Report
-        </Button>
-      </div>
-
-      <ReportKpiGrid cols={3}>
-        <ReportKpiCard
-          title="Total Active Suppliers"
-          subtitle="Registered materials & fitout vendors"
-          value={totalSuppliersCount}
-          currency={false}
-          accentColor="sky"
-        />
-
-        <ReportKpiCard
-          title="Open Accounts Payable (A/P)"
-          subtitle="Pending supplier payment liabilities"
-          value={Number(totalOutstandingAP).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          accentColor="amber"
-          valueColor="text-amber-700"
-        />
-
-        <ReportKpiCard
-          title="Total Procurement Spend"
-          subtitle="Cumulative vendor invoice volume"
-          value={Number(totalProcurementBilled).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          accentColor="slate"
-        />
-
-        <ReportKpiCard
-          title="Disbursed Settlements"
-          subtitle="Realized vendor payments"
-          value={Number(totalDisbursed).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          accentColor="emerald"
-          valueColor="text-emerald-800"
-        />
-      </ReportKpiGrid>
-
-      <AgingBucketCard
-        title="Accounts Payable (A/P) Aging Schedule"
-        subtitle="Chronological breakdown of open vendor liabilities based on supplier bill dates"
-        buckets={apAgingBuckets}
-        totalOverdue={totalOutstandingAP}
-      />
-
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="w-full sm:w-80">
-            <Input
-              placeholder="Search supplier, code, contact, TRN..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              leftIcon={
-                <SearchIcon
-                  className="w-4 h-4 text-slate-400"
-                  strokeWidth={2}
-                />
-              }
-            />
-          </div>
-
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            <Select
-              value={balanceFilter}
-              onChange={(e) => setBalanceFilter(e.target.value)}
-              containerClassName="w-full sm:w-48"
-            >
-              <option value="ALL">All Payable Statuses</option>
-              <option value="HAS_BALANCE">Has Outstanding A/P</option>
-              <option value="HIGH_BALANCE">
-                High Balance (&gt; 10,000 AED)
-              </option>
-              <option value="SETTLED">Fully Settled (0.00 AED)</option>
-            </Select>
-          </div>
-        </div>
-
-        {error ? (
-          <div className="py-8 text-center text-xs text-red-500">
-            Error loading suppliers: {(error as any).message}
-          </div>
-        ) : (
-          <DataTable
-            columns={columns}
-            data={filteredSuppliers}
-            isLoading={isLoading}
-            emptyTitle="No supplier records found"
-            emptyMessage="No supplier accounts match your search or filter criteria."
+        <ReportKpiGrid cols={3}>
+          <ReportKpiCard
+            title="Total Active Suppliers"
+            subtitle="Registered materials & fitout vendors"
+            value={totalSuppliersCount}
+            currency={false}
+            accentColor="sky"
           />
-        )}
+
+          <ReportKpiCard
+            title="Open Accounts Payable (A/P)"
+            subtitle="Pending supplier payment liabilities"
+            value={Number(totalOutstandingAP).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            accentColor="amber"
+            valueColor="text-amber-700"
+          />
+
+          <ReportKpiCard
+            title="Total Procurement Spend"
+            subtitle="Cumulative vendor invoice volume"
+            value={Number(totalProcurementBilled).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            accentColor="slate"
+          />
+
+          <ReportKpiCard
+            title="Disbursed Settlements"
+            subtitle="Realized vendor payments"
+            value={Number(totalDisbursed).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            accentColor="emerald"
+            valueColor="text-emerald-800"
+          />
+        </ReportKpiGrid>
+
+        <AgingBucketCard
+          title="Accounts Payable (A/P) Aging Schedule"
+          subtitle="Chronological breakdown of open vendor liabilities based on supplier bill dates"
+          buckets={apAgingBuckets}
+          totalOverdue={totalOutstandingAP}
+        />
+
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+            <div className="w-full sm:w-80">
+              <Input
+                placeholder="Search supplier, code, contact, TRN..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                leftIcon={
+                  <SearchIcon
+                    className="w-4 h-4 text-slate-400"
+                    strokeWidth={2}
+                  />
+                }
+              />
+            </div>
+
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <Select
+                value={balanceFilter}
+                onChange={(e) => setBalanceFilter(e.target.value)}
+                containerClassName="w-full sm:w-48"
+              >
+                <option value="ALL">All Payable Statuses</option>
+                <option value="HAS_BALANCE">Has Outstanding A/P</option>
+                <option value="HIGH_BALANCE">
+                  High Balance (&gt; 10,000 AED)
+                </option>
+                <option value="SETTLED">Fully Settled (0.00 AED)</option>
+              </Select>
+            </div>
+          </div>
+
+          {error ? (
+            <div className="py-8 text-center text-xs text-red-500">
+              Error loading suppliers: {(error as any).message}
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={filteredSuppliers}
+              isLoading={isLoading}
+              emptyTitle="No supplier records found"
+              emptyMessage="No supplier accounts match your search or filter criteria."
+            />
+          )}
+        </div>
       </div>
-    </div>
 
       {selectedSupplierId && activeSupplier && (
         <Modal
@@ -611,7 +620,6 @@ export default function SupplierReportsPage() {
         </Modal>
       )}
 
-      {/* Direct A4 Printable Document with exact Quotation styling & margins */}
       <div
         id="suppliers-print-area"
         className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full"

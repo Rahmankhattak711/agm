@@ -20,7 +20,8 @@ export default function VatReportsPage() {
             <span className="font-mono font-bold text-slate-700">
               104094432200003
             </span>{" "}
-            • Standard Tax Rate: 5% • Review taxable supplies, input/output VAT, and FTA Form 201 returns.
+            • Standard Tax Rate: 5% • Review taxable supplies, input/output VAT,
+            and FTA Form 201 returns.
           </p>
         </div>
 

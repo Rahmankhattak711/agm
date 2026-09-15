@@ -27,11 +27,11 @@ import {
   TableRow,
 } from "@/components/ui";
 import { QuotationFooter, QuotationHeader } from "@/components/quotation";
+import { ChartBarItem, ReportSummaryChart } from "../components";
 import {
-  ChartBarItem,
-  ReportSummaryChart,
-} from "@/components/reports/ReportSummaryChart";
-import { ReportKpiCard, ReportKpiGrid } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
+  ReportKpiCard,
+  ReportKpiGrid,
+} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 
 function parseDescriptionPoints(desc: string): string[] {
   if (!desc) return [];
@@ -288,7 +288,10 @@ export default function PurchaseReportsPage() {
               onClick={() => setSelectedBill(row.original)}
               className="font-mono font-bold text-blue-950 hover:underline cursor-pointer flex items-center gap-1.5"
             >
-              <FileSpreadsheetIcon size={14} className="text-teal-700 shrink-0" />
+              <FileSpreadsheetIcon
+                size={14}
+                className="text-teal-700 shrink-0"
+              />
               {row.original.billNumber}
             </span>
           </div>
@@ -407,209 +410,204 @@ export default function PurchaseReportsPage() {
   return (
     <>
       <div className="space-y-6 print:hidden">
-      {/* Simple Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Purchase Reports
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Monitor procurement expenditure, supplier bills, payment disbursements, and outstanding payables.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+              Purchase Reports
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Monitor procurement expenditure, supplier bills, payment
+              disbursements, and outstanding payables.
+            </p>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+            icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
+          >
+            Print Statement
+          </Button>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => window.print()}
-          className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-          icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
-        >
-          Print Statement
-        </Button>
-      </div>
-
-      {/* 5 Summary KPI Cards */}
-      <ReportKpiGrid cols={3}>
-        <ReportKpiCard
-          title="1. Procurement Spend"
-          subtitle={`${nonCancelledBills.length} supplier bills`}
-          value={formatNumber(totalProcurementSpend)}
-          accentColor="sky"
-        />
-
-        <ReportKpiCard
-          title="2. Settled Disbursals"
-          subtitle="Cleared payments"
-          value={formatNumber(totalDisbursed)}
-          accentColor="emerald"
-          valueColor="text-emerald-800"
-        />
-
-        <ReportKpiCard
-          title="3. Open Accounts Payable"
-          subtitle="Pending liabilities"
-          value={formatNumber(totalOutstandingAP)}
-          accentColor="amber"
-          valueColor="text-amber-700"
-        />
-
-        <ReportKpiCard
-          title="4. 5% Input VAT (Recoverable)"
-          subtitle="FTA Form 201 Box 9"
-          value={formatNumber(totalInputVat)}
-          accentColor="blue"
-          valueColor="text-blue-700"
-        />
-
-        <ReportKpiCard
-          title="5. Settlement Ratio"
-          subtitle="AP clearing efficiency"
-          value={`${settlementRatio.toFixed(1)}%`}
-          currency={false}
-          accentColor="indigo"
-          badge={
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
-              Disbursed
-            </span>
-          }
-        />
-      </ReportKpiGrid>
-
-      {/* Chart: Top Suppliers by Spend */}
-      {topSuppliersChartData.length > 0 && (
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
-          <ReportSummaryChart
-            title="Procurement &amp; Disbursal Breakdown by Top Suppliers"
-            subtitle="Comparison of total bills received versus settlements cleared per vendor account"
-            data={topSuppliersChartData}
-            primaryLegend="Total Billed"
-            secondaryLegend="Disbursed Settlements"
+        <ReportKpiGrid cols={3}>
+          <ReportKpiCard
+            title="1. Procurement Spend"
+            subtitle={`${nonCancelledBills.length} supplier bills`}
+            value={formatNumber(totalProcurementSpend)}
+            accentColor="sky"
           />
-        </div>
-      )}
 
-      {/* Main Filter & Table Card */}
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Date Filter & Search Strip */}
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1">
-              {periodTabs.map((tab) => {
-                const isActive = periodFilter === tab.key;
-                return (
-                  <Button
-                    key={tab.key}
-                    type="button"
-                    size="sm"
-                    variant={isActive ? "outline" : "ghost"}
-                    onClick={() => setPeriodFilter(tab.key)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer h-auto ${
-                      isActive
-                        ? "!bg-white !text-teal-900 shadow-xs border border-slate-200/90 hover:!bg-white"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
-                    }`}
-                  >
-                    {tab.label}
-                  </Button>
-                );
-              })}
-            </div>
+          <ReportKpiCard
+            title="2. Settled Disbursals"
+            subtitle="Cleared payments"
+            value={formatNumber(totalDisbursed)}
+            accentColor="emerald"
+            valueColor="text-emerald-800"
+          />
 
-            {periodFilter === "CUSTOM" && (
-              <div className="flex items-center gap-2 text-xs">
-                <Input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  containerClassName="w-36"
-                />
-                <span className="text-slate-400 font-bold">to</span>
-                <Input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  containerClassName="w-36"
-                />
-              </div>
-            )}
-          </div>
+          <ReportKpiCard
+            title="3. Open Accounts Payable"
+            subtitle="Pending liabilities"
+            value={formatNumber(totalOutstandingAP)}
+            accentColor="amber"
+            valueColor="text-amber-700"
+          />
 
-          <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-1 border-t border-slate-200/60">
-            <div className="w-full lg:w-80">
-              <Input
-                type="text"
-                placeholder="Search bill number, vendor, TRN..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                leftIcon={<SearchIcon className="w-4 h-4 text-slate-400" />}
-                containerClassName="w-full"
-              />
-            </div>
+          <ReportKpiCard
+            title="4. 5% Input VAT (Recoverable)"
+            subtitle="FTA Form 201 Box 9"
+            value={formatNumber(totalInputVat)}
+            accentColor="blue"
+            valueColor="text-blue-700"
+          />
 
-            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-              <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                containerClassName="w-full sm:w-40"
-              >
-                <option value="ALL">All Statuses</option>
-                <option value="PAID">Paid</option>
-                <option value="POSTED">Posted to GL</option>
-                <option value="PARTIALLY_PAID">Partially Paid</option>
-                <option value="DRAFT">Draft</option>
-                <option value="CANCELLED">Cancelled</option>
-              </Select>
-
-              <Select
-                value={supplierFilter}
-                onChange={(e) => setSupplierFilter(e.target.value)}
-                containerClassName="w-full sm:w-52"
-              >
-                <option value="">All Suppliers</option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </div>
-        </div>
-
-        {error ? (
-          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
-            Error loading supplier bills: {(error as any).message}
-          </div>
-        ) : isLoading ? (
-          <div className="py-16 text-center text-xs text-slate-400 animate-pulse space-y-2">
-            <div className="w-8 h-8 rounded-full border-2 border-teal-500 border-t-transparent animate-spin mx-auto" />
-            <p>Calculating Procurement &amp; Vendor Bill Schedules...</p>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-none print:!bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
-                Supplier Procurement Bills &amp; Liabilities Register
-              </h4>
-              <span className="text-[11px] font-mono text-teal-300 print:text-teal-800 font-bold">
-                {filteredBills.length} Matching Records
+          <ReportKpiCard
+            title="5. Settlement Ratio"
+            subtitle="AP clearing efficiency"
+            value={`${settlementRatio.toFixed(1)}%`}
+            currency={false}
+            accentColor="indigo"
+            badge={
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
+                Disbursed
               </span>
-            </div>
+            }
+          />
+        </ReportKpiGrid>
 
-            <DataTable
-              columns={columns}
-              data={filteredBills}
-              isLoading={false}
-              emptyTitle="No supplier bills found"
-              emptyMessage="No procurement bills match your search or filter criteria."
+        {topSuppliersChartData.length > 0 && (
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+            <ReportSummaryChart
+              title="Procurement &amp; Disbursal Breakdown by Top Suppliers"
+              subtitle="Comparison of total bills received versus settlements cleared per vendor account"
+              data={topSuppliersChartData}
+              primaryLegend="Total Billed"
+              secondaryLegend="Disbursed Settlements"
             />
           </div>
         )}
-      </div>
-    </div>
 
-      {/* Bill Detail Audit Modal */}
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+          <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1">
+                {periodTabs.map((tab) => {
+                  const isActive = periodFilter === tab.key;
+                  return (
+                    <Button
+                      key={tab.key}
+                      type="button"
+                      size="sm"
+                      variant={isActive ? "outline" : "ghost"}
+                      onClick={() => setPeriodFilter(tab.key)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer h-auto ${
+                        isActive
+                          ? "!bg-white !text-teal-900 shadow-xs border border-slate-200/90 hover:!bg-white"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                      }`}
+                    >
+                      {tab.label}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              {periodFilter === "CUSTOM" && (
+                <div className="flex items-center gap-2 text-xs">
+                  <Input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    containerClassName="w-36"
+                  />
+                  <span className="text-slate-400 font-bold">to</span>
+                  <Input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    containerClassName="w-36"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-1 border-t border-slate-200/60">
+              <div className="w-full lg:w-80">
+                <Input
+                  type="text"
+                  placeholder="Search bill number, vendor, TRN..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  leftIcon={<SearchIcon className="w-4 h-4 text-slate-400" />}
+                  containerClassName="w-full"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+                <Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  containerClassName="w-full sm:w-40"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="PAID">Paid</option>
+                  <option value="POSTED">Posted to GL</option>
+                  <option value="PARTIALLY_PAID">Partially Paid</option>
+                  <option value="DRAFT">Draft</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </Select>
+
+                <Select
+                  value={supplierFilter}
+                  onChange={(e) => setSupplierFilter(e.target.value)}
+                  containerClassName="w-full sm:w-52"
+                >
+                  <option value="">All Suppliers</option>
+                  {suppliers.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {error ? (
+            <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
+              Error loading supplier bills: {(error as any).message}
+            </div>
+          ) : isLoading ? (
+            <div className="py-16 text-center text-xs text-slate-400 animate-pulse space-y-2">
+              <div className="w-8 h-8 rounded-full border-2 border-teal-500 border-t-transparent animate-spin mx-auto" />
+              <p>Calculating Procurement &amp; Vendor Bill Schedules...</p>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+              <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-none print:!bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
+                <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
+                  Supplier Procurement Bills &amp; Liabilities Register
+                </h4>
+                <span className="text-[11px] font-mono text-teal-300 print:text-teal-800 font-bold">
+                  {filteredBills.length} Matching Records
+                </span>
+              </div>
+
+              <DataTable
+                columns={columns}
+                data={filteredBills}
+                isLoading={false}
+                emptyTitle="No supplier bills found"
+                emptyMessage="No procurement bills match your search or filter criteria."
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
       {selectedBill && (
         <Modal
           isOpen={Boolean(selectedBill)}
@@ -764,7 +762,6 @@ export default function PurchaseReportsPage() {
         </Modal>
       )}
 
-      {/* Direct A4 Printable Document with exact Quotation styling & margins */}
       <div
         id="purchases-print-area"
         className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full"

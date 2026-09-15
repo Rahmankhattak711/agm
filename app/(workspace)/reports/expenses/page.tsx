@@ -2,12 +2,15 @@
 
 import { EyeIcon, PrintIcon, SearchIcon } from "@/components/icons";
 import { QuotationFooter, QuotationHeader } from "@/components/quotation";
-import { ReportDateFilter } from "@/components/reports/ReportDateFilter";
 import {
+  ReportDateFilter,
   ChartBarItem,
   ReportSummaryChart,
-} from "@/components/reports/ReportSummaryChart";
-import { ReportKpiCard, ReportKpiGrid } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
+} from "../components";
+import {
+  ReportKpiCard,
+  ReportKpiGrid,
+} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 import {
   Button,
   DataTable,
@@ -245,129 +248,141 @@ export default function ExpenseReportsPage() {
   return (
     <>
       <div className="space-y-6 print:hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight">
-            Operating Expenses & Overhead Report
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Audit direct corporate expenditures, VAT recoverable, and
-            departmental cost allocations.
-          </p>
-        </div>
-
-        <Button
-          variant="outline"
-          onClick={() => window.print()}
-          icon={<PrintIcon className="w-4 h-4" />}
-          className="font-bold"
-        >
-          Print Report Statement
-        </Button>
-      </div>
-
-      <ReportKpiGrid cols={3}>
-        <ReportKpiCard
-          title="Total Expenditure"
-          subtitle={`${metrics.count} total expense items`}
-          value={metrics.totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          accentColor="sky"
-        />
-
-        <ReportKpiCard
-          title="Net Operating Costs"
-          subtitle="Excluding recoverable input VAT"
-          value={metrics.netAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          accentColor="emerald"
-          valueColor="text-emerald-800"
-        />
-
-        <ReportKpiCard
-          title="Recoverable VAT (5%)"
-          subtitle="Claimable on VAT 201 return"
-          value={metrics.totalTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          accentColor="purple"
-          valueColor="text-purple-800"
-        />
-
-        <ReportKpiCard
-          title="Settlement Channels"
-          subtitle={`Card: ${formatCurrency(metrics.cardTotal)} · Cash: ${formatCurrency(metrics.cashTotal)}`}
-          value={metrics.bankTransferTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          accentColor="indigo"
-          badge={
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
-              Bank
-            </span>
-          }
-        />
-      </ReportKpiGrid>
-
-      {categoryBreakdown.length > 0 && (
-        <ReportSummaryChart
-          title="Expense Distribution by Category"
-          subtitle="Top operating expense categories across the selected audit period"
-          data={categoryBreakdown}
-          primaryLegend="Direct Spend"
-        />
-      )}
-
-      <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
-          <div className="w-full lg:w-80">
-            <Input
-              placeholder="Search expense #, category, payee, ref..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              Operating Expenses & Overhead Report
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Audit direct corporate expenditures, VAT recoverable, and
+              departmental cost allocations.
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-            <select
-              className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-            >
-              <option value="ALL">All Categories</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+          <Button
+            variant="outline"
+            onClick={() => window.print()}
+            icon={<PrintIcon className="w-4 h-4" />}
+            className="font-bold"
+          >
+            Print Report Statement
+          </Button>
+        </div>
 
-            <select
-              className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-              value={paymentMethodFilter}
-              onChange={(e) => setPaymentMethodFilter(e.target.value)}
-            >
-              <option value="ALL">All Payment Methods</option>
-              <option value="BANK_TRANSFER">Bank Transfer</option>
-              <option value="CREDIT_CARD">Credit Card</option>
-              <option value="CASH">Cash</option>
-              <option value="CHEQUE">Cheque</option>
-            </select>
+        <ReportKpiGrid cols={3}>
+          <ReportKpiCard
+            title="Total Expenditure"
+            subtitle={`${metrics.count} total expense items`}
+            value={metrics.totalExpenses.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            accentColor="sky"
+          />
 
-            <ReportDateFilter
-              periodFilter={periodFilter}
-              startDate={startDate}
-              endDate={endDate}
-              onPeriodChange={setPeriodFilter}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
-            />
+          <ReportKpiCard
+            title="Net Operating Costs"
+            subtitle="Excluding recoverable input VAT"
+            value={metrics.netAmount.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            accentColor="emerald"
+            valueColor="text-emerald-800"
+          />
+
+          <ReportKpiCard
+            title="Recoverable VAT (5%)"
+            subtitle="Claimable on VAT 201 return"
+            value={metrics.totalTax.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            accentColor="purple"
+            valueColor="text-purple-800"
+          />
+
+          <ReportKpiCard
+            title="Settlement Channels"
+            subtitle={`Card: ${formatCurrency(metrics.cardTotal)} · Cash: ${formatCurrency(metrics.cashTotal)}`}
+            value={metrics.bankTransferTotal.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            accentColor="indigo"
+            badge={
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
+                Bank
+              </span>
+            }
+          />
+        </ReportKpiGrid>
+
+        {categoryBreakdown.length > 0 && (
+          <ReportSummaryChart
+            title="Expense Distribution by Category"
+            subtitle="Top operating expense categories across the selected audit period"
+            data={categoryBreakdown}
+            primaryLegend="Direct Spend"
+          />
+        )}
+
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
+          <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
+            <div className="w-full lg:w-80">
+              <Input
+                placeholder="Search expense #, category, payee, ref..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+              <select
+                className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+              >
+                <option value="ALL">All Categories</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
+                value={paymentMethodFilter}
+                onChange={(e) => setPaymentMethodFilter(e.target.value)}
+              >
+                <option value="ALL">All Payment Methods</option>
+                <option value="BANK_TRANSFER">Bank Transfer</option>
+                <option value="CREDIT_CARD">Credit Card</option>
+                <option value="CASH">Cash</option>
+                <option value="CHEQUE">Cheque</option>
+              </select>
+
+              <ReportDateFilter
+                periodFilter={periodFilter}
+                startDate={startDate}
+                endDate={endDate}
+                onPeriodChange={setPeriodFilter}
+                onStartDateChange={setStartDate}
+                onEndDateChange={setEndDate}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-xs">
-        <DataTable
-          columns={columns}
-          data={filteredExpenses}
-          isLoading={isLoading}
-        />
+        <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-xs">
+          <DataTable
+            columns={columns}
+            data={filteredExpenses}
+            isLoading={isLoading}
+          />
+        </div>
       </div>
-    </div>
 
       <Modal
         isOpen={Boolean(selectedExpense)}
@@ -454,7 +469,6 @@ export default function ExpenseReportsPage() {
         )}
       </Modal>
 
-      {/* Direct A4 Printable Document with exact Quotation styling & margins */}
       <div
         id="expenses-print-area"
         className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full"
