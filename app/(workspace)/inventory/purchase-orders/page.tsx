@@ -51,14 +51,13 @@ import {
 } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 
-// ----------------------------------------------------------------------
-// Official Quotation-Style A4 Print Voucher for Purchase Order
-// ----------------------------------------------------------------------
 interface PurchaseOrderDocumentProps {
   po: PurchaseOrder;
 }
 
-const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({ po }) => {
+const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({
+  po,
+}) => {
   const calculatedSubtotal = (po.items || []).reduce(
     (acc, it) =>
       acc + Number(it.quantityOrdered || 0) * Number(it.unitCost || 0),
@@ -103,7 +102,6 @@ const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({ po }) => 
         </tfoot>
 
         <tbody className="print-page-body-group">
-          {/* Document Title Bar */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="px-10 py-3.5 print:px-8 print:py-2.5 w-full border-b border-slate-100 bg-slate-50/50">
@@ -113,7 +111,8 @@ const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({ po }) => 
                       PURCHASE ORDER
                     </h1>
                     <p className="text-[11px] print:text-[11px] font-semibold text-emerald-700 mt-0.5 print:mt-0">
-                      Official Commercial Procurement &amp; Supply Requisition (UAE Standard 5% VAT)
+                      Official Commercial Procurement &amp; Supply Requisition
+                      (UAE Standard 5% VAT)
                     </p>
                   </div>
 
@@ -159,11 +158,9 @@ const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({ po }) => 
             </td>
           </tr>
 
-          {/* Supplier & Delivery Cards */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="grid grid-cols-2 gap-4 print:gap-3 px-10 py-3.5 print:px-8 print:py-2 text-[12px] print:text-[12px] print-avoid-break">
-                {/* Left Card: Supplier Details */}
                 <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs">
                   <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[11px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -175,7 +172,9 @@ const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({ po }) => 
                         Vendor Name:
                       </span>
                       <span className="font-bold text-slate-900">
-                        {po.supplier?.name || po.shopName || "External Supplier"}
+                        {po.supplier?.name ||
+                          po.shopName ||
+                          "External Supplier"}
                       </span>
                     </div>
 
@@ -212,7 +211,6 @@ const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({ po }) => 
                   </div>
                 </div>
 
-                {/* Right Card: Logistics */}
                 <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs">
                   <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[11px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -251,7 +249,6 @@ const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({ po }) => 
             </td>
           </tr>
 
-          {/* Line Items Table */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="px-10 py-2 print:px-8 print:py-1">
@@ -259,29 +256,43 @@ const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({ po }) => 
                   <thead className="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200">
                     <tr>
                       <th className="py-2 px-3 text-left w-8">#</th>
-                      <th className="py-2 px-3 text-left">Item Description / SKU</th>
+                      <th className="py-2 px-3 text-left">
+                        Item Description / SKU
+                      </th>
                       <th className="py-2 px-3 text-left">Supplier SKU</th>
                       <th className="py-2 px-3 text-center w-16">Unit</th>
                       <th className="py-2 px-3 text-right w-20">Qty</th>
                       <th className="py-2 px-3 text-right w-24">Unit Rate</th>
-                      <th className="py-2 px-3 text-right w-28">Amount (AED)</th>
+                      <th className="py-2 px-3 text-right w-28">
+                        Amount (AED)
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {po.items.map((it, idx) => (
                       <tr key={it.id || idx}>
-                        <td className="py-2 px-3 text-slate-500 font-mono">{idx + 1}</td>
+                        <td className="py-2 px-3 text-slate-500 font-mono">
+                          {idx + 1}
+                        </td>
                         <td className="py-2 px-3">
-                          <div className="font-bold text-slate-900">{it.product?.name || "Material Item"}</div>
-                          <div className="text-[10px] text-slate-500 font-mono">SKU: {it.product?.sku || "-"}</div>
+                          <div className="font-bold text-slate-900">
+                            {it.product?.name || "Material Item"}
+                          </div>
+                          <div className="text-[10px] text-slate-500 font-mono">
+                            SKU: {it.product?.sku || "-"}
+                          </div>
                           {it.itemNotes && (
-                            <div className="text-[10px] text-slate-400 italic">{it.itemNotes}</div>
+                            <div className="text-[10px] text-slate-400 italic">
+                              {it.itemNotes}
+                            </div>
                           )}
                         </td>
                         <td className="py-2 px-3 font-mono text-slate-600 text-[10.5px]">
                           {it.supplierSku || it.product?.supplierSku || "-"}
                         </td>
-                        <td className="py-2 px-3 text-center text-slate-600">{it.product?.unit || "PCS"}</td>
+                        <td className="py-2 px-3 text-center text-slate-600">
+                          {it.product?.unit || "PCS"}
+                        </td>
                         <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
                           {Number(it.quantityOrdered).toLocaleString()}
                         </td>
@@ -299,7 +310,6 @@ const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({ po }) => 
             </td>
           </tr>
 
-          {/* Totals & Notes Section */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="px-10 py-3 print:px-8 print:py-2 print-avoid-break">
@@ -309,28 +319,49 @@ const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({ po }) => 
                       Terms &amp; Delivery Instructions:
                     </div>
                     {po.notes ? (
-                      <p className="whitespace-pre-wrap leading-relaxed text-slate-700">{po.notes}</p>
+                      <p className="whitespace-pre-wrap leading-relaxed text-slate-700">
+                        {po.notes}
+                      </p>
                     ) : (
                       <ol className="list-decimal list-inside space-y-0.5 text-slate-600">
-                        <li>All goods must match specified SKU codes and quality standards.</li>
-                        <li>Original Tax Invoice referencing this Purchase Order must accompany shipment.</li>
-                        <li>Damaged or non-compliant materials will be rejected at supplier cost.</li>
+                        <li>
+                          All goods must match specified SKU codes and quality
+                          standards.
+                        </li>
+                        <li>
+                          Original Tax Invoice referencing this Purchase Order
+                          must accompany shipment.
+                        </li>
+                        <li>
+                          Damaged or non-compliant materials will be rejected at
+                          supplier cost.
+                        </li>
                       </ol>
                     )}
                   </div>
 
                   <div className="w-72 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden text-xs">
                     <div className="flex justify-between px-3.5 py-2 border-b border-slate-200">
-                      <span className="text-slate-600 font-semibold">Subtotal</span>
-                      <span className="font-mono font-bold text-slate-900">AED {calculatedSubtotal.toFixed(2)}</span>
+                      <span className="text-slate-600 font-semibold">
+                        Subtotal
+                      </span>
+                      <span className="font-mono font-bold text-slate-900">
+                        AED {calculatedSubtotal.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between px-3.5 py-2 border-b border-slate-200">
-                      <span className="text-slate-600 font-semibold">UAE VAT (5%)</span>
-                      <span className="font-mono font-bold text-slate-900">AED {vatAmount.toFixed(2)}</span>
+                      <span className="text-slate-600 font-semibold">
+                        UAE VAT (5%)
+                      </span>
+                      <span className="font-mono font-bold text-slate-900">
+                        AED {vatAmount.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between px-3.5 py-2.5 bg-emerald-900 text-white font-bold text-sm">
                       <span>Grand Total (AED)</span>
-                      <span className="font-mono">AED {grandTotal.toFixed(2)}</span>
+                      <span className="font-mono">
+                        AED {grandTotal.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -340,12 +371,10 @@ const PurchaseOrderDocument: React.FC<PurchaseOrderDocumentProps> = ({ po }) => 
         </tbody>
       </table>
 
-      {/* Fixed bottom footer for print */}
       <div className="print-footer-bottom fixed-print-footer hidden print:block">
         <QuotationFooter />
       </div>
 
-      {/* Screen view footer */}
       <div className="px-10 pb-6 print:hidden">
         <QuotationFooter className="mt-6" />
       </div>
@@ -698,18 +727,16 @@ export default function PurchaseOrdersPage() {
     }
   };
 
-
-
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Purchase Orders
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Create supplier purchase orders, track delivery milestones, and manage material procurement.
+            Create supplier purchase orders, track delivery milestones, and
+            manage material procurement.
           </p>
         </div>
 
@@ -719,15 +746,14 @@ export default function PurchaseOrdersPage() {
             size="sm"
             onClick={handleOpenCreate}
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Create Purchase Order
           </Button>
         </div>
       </div>
 
-      {/* 4 Elevated Summary KPI Cards */}
-      <ReportKpiGrid cols={3}>
+      <ReportKpiGrid cols={4}>
         <ReportKpiCard
           title="1. Total Purchase Orders"
           subtitle="All procurement records"
@@ -769,15 +795,12 @@ export default function PurchaseOrdersPage() {
         />
       </ReportKpiGrid>
 
-      {/* Print-Only Compact Summary Strip */}
       <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
         <div>
           <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
             Total Orders
           </span>
-          <span className="font-mono font-bold text-slate-900">
-            {totalPOs}
-          </span>
+          <span className="font-mono font-bold text-slate-900">{totalPOs}</span>
         </div>
         <div>
           <span className="text-[9px] uppercase tracking-wider text-amber-600 font-bold block">
@@ -805,12 +828,9 @@ export default function PurchaseOrdersPage() {
         </div>
       </div>
 
-      {/* Main Filter & Table Card */}
       <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
               {[
                 { id: "ALL", label: "All POs" },
@@ -1072,7 +1092,7 @@ export default function PurchaseOrdersPage() {
                                   variant="primary"
                                   size="sm"
                                   onClick={() => handleOpenReceive(po)}
-                                  className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold cursor-pointer"
+                                  className="bg-agm-green hover:bg-agm-green-2 text-white text-xs font-bold cursor-pointer"
                                 >
                                   Receive
                                 </Button>
@@ -1126,12 +1146,10 @@ export default function PurchaseOrdersPage() {
                           </TableCell>
                         </TableRow>
 
-                        {/* QA-style Accordion Drawer */}
                         {isExpanded && (
                           <TableRow className="bg-slate-50/70 border-b border-emerald-100/60">
                             <TableCell colSpan={8} className="p-0">
                               <div className="overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                {/* Top Banner Ribbon */}
                                 <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white px-5 py-2.5 flex items-center justify-between text-xs font-semibold">
                                   <span className="flex items-center gap-2">
                                     <ShoppingCartIcon
@@ -1146,7 +1164,6 @@ export default function PurchaseOrdersPage() {
                                   </span>
                                 </div>
 
-                                {/* 4 Elevated Summary KPI Cards */}
                                 <div className="p-4 sm:p-5 space-y-4">
                                   <ReportKpiGrid cols={4}>
                                     <ReportKpiCard
@@ -1194,9 +1211,7 @@ export default function PurchaseOrdersPage() {
                                     />
                                   </ReportKpiGrid>
 
-                                  {/* 2 Detail Sections: Left Vendor Info & Right Line Items */}
                                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                    {/* Vendor Profile & Logistics Card */}
                                     <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-2xs space-y-3">
                                       <h5 className="font-bold text-xs uppercase tracking-wider text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2">
                                         <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -1272,7 +1287,6 @@ export default function PurchaseOrdersPage() {
                                       </div>
                                     </div>
 
-                                    {/* Itemized Materials Table Card */}
                                     <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 p-4 shadow-2xs space-y-3">
                                       <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                                         <h5 className="font-bold text-xs uppercase tracking-wider text-slate-800 flex items-center gap-2">
@@ -1365,7 +1379,6 @@ export default function PurchaseOrdersPage() {
                                         </table>
                                       </div>
 
-                                      {/* Quick Totals Strip & Action Footer */}
                                       <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
                                         <div className="flex items-center gap-4 text-xs font-mono">
                                           <span className="text-slate-500">
@@ -1389,7 +1402,7 @@ export default function PurchaseOrdersPage() {
                                             size="sm"
                                             onClick={() => handlePrintPO(po)}
                                             icon={<PrintIcon size={14} />}
-                                            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs cursor-pointer shadow-xs"
+                                            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs cursor-pointer shadow-xs"
                                           >
                                             Print PO Voucher
                                           </Button>
@@ -1454,7 +1467,6 @@ export default function PurchaseOrdersPage() {
         )}
       </div>
 
-      {/* Modal for Creating Purchase Order */}
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
@@ -1800,7 +1812,7 @@ export default function PurchaseOrdersPage() {
             <FormSubmit
               form={poForm}
               loading={createPO.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Save Purchase Order
             </FormSubmit>
@@ -1808,7 +1820,6 @@ export default function PurchaseOrdersPage() {
         </form>
       </Modal>
 
-      {/* Quick Add Product Modal */}
       <Modal
         isOpen={isQuickProductOpen}
         onClose={() => setIsQuickProductOpen(false)}
@@ -1951,7 +1962,7 @@ export default function PurchaseOrdersPage() {
             <FormSubmit
               form={quickProductForm}
               loading={createProduct.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Create &amp; Add to PO
             </FormSubmit>
@@ -1959,7 +1970,6 @@ export default function PurchaseOrdersPage() {
         </form>
       </Modal>
 
-      {/* Receive Shipment Modal */}
       <Modal
         isOpen={!!receiveModalPO}
         onClose={() => setReceiveModalPO(null)}
@@ -2029,7 +2039,7 @@ export default function PurchaseOrdersPage() {
             <FormSubmit
               form={receiveForm}
               loading={updatePO.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Confirm &amp; Update Stock
             </FormSubmit>
@@ -2037,7 +2047,6 @@ export default function PurchaseOrdersPage() {
         </form>
       </Modal>
 
-      {/* PO View Details Modal */}
       <Modal
         isOpen={!!selectedPO}
         onClose={() => setSelectedPO(null)}
@@ -2183,7 +2192,7 @@ export default function PurchaseOrdersPage() {
                 onClick={() => {
                   setPrintModalPO(selectedPO);
                 }}
-                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+                className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
               >
                 Print / Save PDF
               </Button>
@@ -2198,7 +2207,6 @@ export default function PurchaseOrdersPage() {
         po={printModalPO}
       />
 
-      {/* Off-screen Print Container */}
       <div
         style={{
           position: "fixed",

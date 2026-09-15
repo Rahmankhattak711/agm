@@ -251,7 +251,8 @@ export default function SalesVouchersPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Record direct point-of-sale vouchers, counter sales, and immediate inventory deductions.
+            Record direct point-of-sale vouchers, counter sales, and immediate
+            inventory deductions.
           </p>
         </div>
 
@@ -261,14 +262,13 @@ export default function SalesVouchersPage() {
             size="sm"
             onClick={() => setIsCreateOpen(true)}
             icon={<PlusIcon size={14} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Create Sales Voucher
           </Button>
         </div>
       </div>
 
-      {/* 3 Summary KPI Cards */}
       <ReportKpiGrid cols={3}>
         <ReportKpiCard
           title="1. Total Sales Billed (Incl. VAT)"
@@ -300,14 +300,16 @@ export default function SalesVouchersPage() {
         />
       </ReportKpiGrid>
 
-      {/* Print-Only Compact Summary Strip */}
       <div className="hidden print:grid print:grid-cols-3 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
         <div>
           <span className="text-[9px] uppercase tracking-wider text-emerald-700 font-bold block">
             Total Sales Billed
           </span>
           <span className="font-mono font-bold text-emerald-950">
-            AED {totalSalesRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalSalesRevenue.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </span>
         </div>
         <div>
@@ -315,7 +317,10 @@ export default function SalesVouchersPage() {
             VAT 5% Collected
           </span>
           <span className="font-mono font-bold text-blue-950">
-            AED {totalVatCollected.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            AED{" "}
+            {totalVatCollected.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
           </span>
         </div>
         <div>
@@ -643,10 +648,10 @@ export default function SalesVouchersPage() {
                 Cancel
               </Button>
               <Button
-                variant="dark"
+                variant="primary"
                 size="sm"
                 type="submit"
-                className="bg-emerald-700 text-white hover:bg-emerald-800"
+                className="bg-agm-green text-white hover:bg-agm-green-2 font-bold cursor-pointer"
               >
                 Save & Post Sales Voucher
               </Button>

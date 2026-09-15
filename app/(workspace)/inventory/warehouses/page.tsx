@@ -88,7 +88,8 @@ export default function WarehousesPage() {
             Warehouses
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage storage facilities, bin locations, warehouse managers, and stock allocations.
+            Manage storage facilities, bin locations, warehouse managers, and
+            stock allocations.
           </p>
         </div>
 
@@ -98,14 +99,13 @@ export default function WarehousesPage() {
             size="sm"
             onClick={handleOpenCreate}
             icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Add Warehouse
           </Button>
         </div>
       </div>
 
-      {/* 3 Summary KPI Cards */}
       <ReportKpiGrid cols={3}>
         <ReportKpiCard
           title="1. Total Facilities"
@@ -140,7 +140,6 @@ export default function WarehousesPage() {
         />
       </ReportKpiGrid>
 
-      {/* Print-Only Compact Summary Strip */}
       <div className="hidden print:grid print:grid-cols-3 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
         <div>
           <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">

@@ -269,14 +269,14 @@ export default function SuppliersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Suppliers
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage vendor profiles, tax registration numbers (TRN), payment terms, and procurement records.
+            Manage vendor profiles, tax registration numbers (TRN), payment
+            terms, and procurement records.
           </p>
         </div>
 
@@ -286,15 +286,14 @@ export default function SuppliersPage() {
             size="sm"
             onClick={handleOpenCreate}
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Add New Supplier
           </Button>
         </div>
       </div>
 
-      {/* 4 Elevated Summary KPI Cards */}
-      <ReportKpiGrid cols={3}>
+      <ReportKpiGrid cols={4}>
         <ReportKpiCard
           title="1. Total Approved Suppliers"
           subtitle="Active vendor network"
@@ -336,7 +335,6 @@ export default function SuppliersPage() {
         />
       </ReportKpiGrid>
 
-      {/* Print-Only Compact Summary Strip */}
       <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
         <div>
           <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
@@ -366,18 +364,13 @@ export default function SuppliersPage() {
           <span className="text-[9px] uppercase tracking-wider text-teal-600 font-bold block">
             Relations
           </span>
-          <span className="font-mono font-bold text-teal-900">
-            100% Direct
-          </span>
+          <span className="font-mono font-bold text-teal-900">100% Direct</span>
         </div>
       </div>
 
-      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1">
               {[
                 { id: "ALL", label: "All Suppliers" },
@@ -447,7 +440,6 @@ export default function SuppliersPage() {
         )}
       </div>
 
-      {/* Modal for Creating / Editing Supplier */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -572,7 +564,7 @@ export default function SuppliersPage() {
             <FormSubmit
               form={form}
               loading={createSupplier.isPending || updateSupplier.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Save Supplier
             </FormSubmit>

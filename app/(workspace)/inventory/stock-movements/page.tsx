@@ -260,7 +260,8 @@ export default function StockMovementsPage() {
             Stock Movements
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Track inventory adjustments, warehouse transfers, site dispatches, and physical audit logs.
+            Track inventory adjustments, warehouse transfers, site dispatches,
+            and physical audit logs.
           </p>
         </div>
 
@@ -270,14 +271,13 @@ export default function StockMovementsPage() {
             size="sm"
             onClick={handleOpenModal}
             icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Record Stock Movement
           </Button>
         </div>
       </div>
 
-      {/* 3 Summary KPI Cards */}
       <ReportKpiGrid cols={3}>
         <ReportKpiCard
           title="1. Total Transactions"
@@ -307,7 +307,6 @@ export default function StockMovementsPage() {
         />
       </ReportKpiGrid>
 
-      {/* Print-Only Compact Summary Strip */}
       <div className="hidden print:grid print:grid-cols-3 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
         <div>
           <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
