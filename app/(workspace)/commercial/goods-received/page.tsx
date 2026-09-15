@@ -21,7 +21,12 @@ import {
   TableCell,
   TableLoading,
   Modal,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+  FormSubmit,
 } from "@/components/ui";
+import { useForm } from "@tanstack/react-form";
 import {
   useGoodsReceipts,
   useCreateGoodsReceipt,
@@ -44,29 +49,66 @@ export default function GoodsReceivedPage() {
   const [search, setSearch] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedGrn, setSelectedGrn] = useState<GoodsReceipt | null>(null);
+  const [formError, setFormError] = useState("");
 
-  const [grnNumber, setGrnNumber] = useState("");
-  const [purchaseOrderId, setPurchaseOrderId] = useState("");
-  const [supplierId, setSupplierId] = useState("");
-  const [warehouseId, setWarehouseId] = useState("");
-  const [deliveryNoteNumber, setDeliveryNoteNumber] = useState("");
-  const [receiptDate, setReceiptDate] = useState(
-    new Date().toISOString().slice(0, 10),
-  );
-  const [notes, setNotes] = useState("");
-  const [items, setItems] = useState([
-    {
-      productId: "",
-      quantityReceived: 1,
-      quantityAccepted: 1,
-      quantityDamaged: 0,
+  const form = useForm({
+    defaultValues: {
+      grnNumber: "",
+      purchaseOrderId: "",
+      supplierId: "",
+      warehouseId: "",
+      deliveryNoteNumber: "",
+      receiptDate: new Date().toISOString().slice(0, 10),
       notes: "",
+      items: [
+        {
+          productId: "",
+          quantityReceived: 1,
+          quantityAccepted: 1,
+          quantityDamaged: 0,
+          notes: "",
+        },
+      ],
     },
-  ]);
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        await createGrnMutation.mutateAsync({
+          grnNumber: value.grnNumber.trim() || undefined,
+          purchaseOrderId: value.purchaseOrderId || undefined,
+          supplierId: value.supplierId || undefined,
+          warehouseId: value.warehouseId || warehouses[0]?.id,
+          deliveryNoteNumber: value.deliveryNoteNumber.trim() || undefined,
+          receiptDate: value.receiptDate,
+          notes: value.notes.trim() || undefined,
+          items: value.items,
+        });
+        setIsCreateOpen(false);
+        form.reset();
+      } catch (err: any) {
+        setFormError(err.message || "Failed to create goods receipt");
+      }
+    },
+  });
+
+  const handleOpenCreate = () => {
+    setFormError("");
+    form.reset();
+    if (warehouses[0]?.id) {
+      form.setFieldValue("warehouseId", warehouses[0].id);
+    }
+    setIsCreateOpen(true);
+  };
+
+  const handleCloseCreate = () => {
+    setIsCreateOpen(false);
+    form.reset();
+  };
 
   const addItem = () => {
-    setItems([
-      ...items,
+    const current = form.getFieldValue("items");
+    form.setFieldValue("items", [
+      ...current,
       {
         productId: "",
         quantityReceived: 1,
@@ -78,23 +120,28 @@ export default function GoodsReceivedPage() {
   };
 
   const removeItem = (idx: number) => {
-    if (items.length <= 1) return;
-    setItems(items.filter((_, i) => i !== idx));
+    const current = form.getFieldValue("items");
+    if (current.length <= 1) return;
+    form.setFieldValue(
+      "items",
+      current.filter((_, i) => i !== idx),
+    );
   };
 
   const updateItem = (idx: number, field: string, value: any) => {
-    const next = [...items];
-    (next[idx] as any)[field] = value;
-    setItems(next);
+    const current = [...form.getFieldValue("items")];
+    (current[idx] as any)[field] = value;
+    form.setFieldValue("items", current);
   };
 
   const handleSelectPo = (poId: string) => {
-    setPurchaseOrderId(poId);
+    form.setFieldValue("purchaseOrderId", poId);
     const po = purchaseOrders.find((p) => p.id === poId);
     if (po) {
-      if (po.supplierId) setSupplierId(po.supplierId);
+      if (po.supplierId) form.setFieldValue("supplierId", po.supplierId);
       if (po.items && po.items.length > 0) {
-        setItems(
+        form.setFieldValue(
+          "items",
           po.items.map((i) => {
             const rem = Math.max(
               0,
@@ -110,37 +157,6 @@ export default function GoodsReceivedPage() {
           }),
         );
       }
-    }
-  };
-
-  const handleCreateGrn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await createGrnMutation.mutateAsync({
-        grnNumber: grnNumber || undefined,
-        purchaseOrderId: purchaseOrderId || undefined,
-        supplierId: supplierId || undefined,
-        warehouseId: warehouseId || warehouses[0]?.id,
-        deliveryNoteNumber: deliveryNoteNumber || undefined,
-        receiptDate,
-        notes,
-        items,
-      });
-      setIsCreateOpen(false);
-      setDeliveryNoteNumber("");
-      setNotes("");
-      setItems([
-        {
-          productId: "",
-          quantityReceived: 1,
-          quantityAccepted: 1,
-          quantityDamaged: 0,
-          notes: "",
-        },
-      ]);
-      alert("Goods Receipt created and warehouse inventory updated!");
-    } catch (err: any) {
-      alert(`Error creating Goods Receipt: ${err.message}`);
     }
   };
 
@@ -168,7 +184,8 @@ export default function GoodsReceivedPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            Verify warehouse shipments against purchase orders, record received items, and update inventory balances.
+            Verify warehouse shipments against purchase orders, record received
+            items, and update inventory balances.
           </p>
         </div>
 
@@ -176,7 +193,7 @@ export default function GoodsReceivedPage() {
           <Button
             variant="dark"
             size="sm"
-            onClick={() => setIsCreateOpen(true)}
+            onClick={handleOpenCreate}
             icon={<Plus size={14} />}
             className="text-xs font-bold bg-slate-900 text-white hover:bg-slate-800"
           >
@@ -311,178 +328,196 @@ export default function GoodsReceivedPage() {
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
-          onClose={() => setIsCreateOpen(false)}
+          onClose={handleCloseCreate}
           title="Create Goods Received Note (GRN)"
         >
-          <form onSubmit={handleCreateGrn} className="space-y-4 text-xs">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+            className="space-y-4 text-xs"
+          >
+            {formError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs">
+                {formError}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Link Purchase Order (Optional)
-                </label>
-                <select
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-mono"
-                  value={purchaseOrderId}
-                  onChange={(e) => handleSelectPo(e.target.value)}
-                >
-                  <option value="">Direct Receiving (No PO)</option>
-                  {purchaseOrders
-                    .filter(
-                      (p) =>
-                        p.status !== "RECEIVED" && p.status !== "CANCELLED",
-                    )
-                    .map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.poNumber} - {p.supplier?.name} (AED{" "}
-                        {Number(p.totalAmount).toFixed(2)})
+              <form.Field name="purchaseOrderId">
+                {(field) => (
+                  <FormSelect
+                    field={field}
+                    label="Link Purchase Order (Optional)"
+                    className="font-mono"
+                    onChange={(e) => handleSelectPo(e.target.value)}
+                  >
+                    <option value="">Direct Receiving (No PO)</option>
+                    {purchaseOrders
+                      .filter(
+                        (p) =>
+                          p.status !== "RECEIVED" && p.status !== "CANCELLED",
+                      )
+                      .map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.poNumber} - {p.supplier?.name} (AED{" "}
+                          {Number(p.totalAmount).toFixed(2)})
+                        </option>
+                      ))}
+                  </FormSelect>
+                )}
+              </form.Field>
+
+              <form.Field name="warehouseId">
+                {(field) => (
+                  <FormSelect
+                    field={field}
+                    label="Destination Warehouse *"
+                    required
+                  >
+                    {warehouses.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.name} ({w.location || "Warehouse"})
                       </option>
                     ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Destination Warehouse *
-                </label>
-                <select
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-semibold"
-                  value={warehouseId}
-                  onChange={(e) => setWarehouseId(e.target.value)}
-                >
-                  {warehouses.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.name} ({w.location || "Warehouse"})
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  </FormSelect>
+                )}
+              </form.Field>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Supplier / Vendor
-                </label>
-                <select
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-semibold"
-                  value={supplierId}
-                  onChange={(e) => setSupplierId(e.target.value)}
-                >
-                  <option value="">Select supplier...</option>
-                  {suppliers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <form.Field name="supplierId">
+                {(field) => (
+                  <FormSelect field={field} label="Supplier / Vendor">
+                    <option value="">Select supplier...</option>
+                    {suppliers.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </FormSelect>
+                )}
+              </form.Field>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Supplier Delivery Note No (DN)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. DN-92837"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-mono"
-                  value={deliveryNoteNumber}
-                  onChange={(e) => setDeliveryNoteNumber(e.target.value)}
-                />
-              </div>
+              <form.Field name="deliveryNoteNumber">
+                {(field) => (
+                  <FormInput
+                    field={field}
+                    label="Supplier Delivery Note No (DN)"
+                    placeholder="e.g. DN-92837"
+                    className="font-mono"
+                  />
+                )}
+              </form.Field>
             </div>
 
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-800">Received Items</span>
-                <button
-                  type="button"
-                  onClick={addItem}
-                  className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1"
-                >
-                  <Plus size={13} /> Add Line
-                </button>
-              </div>
-
-              <div className="space-y-2 max-h-56 overflow-y-auto">
-                {items.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200/60"
-                  >
-                    <div className="col-span-5">
-                      <select
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500"
-                        value={item.productId}
-                        onChange={(e) =>
-                          updateItem(idx, "productId", e.target.value)
-                        }
-                        required
-                      >
-                        <option value="">Select Product...</option>
-                        {products.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name} ({p.sku})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="col-span-3">
-                      <input
-                        type="number"
-                        min="1"
-                        placeholder="Qty Recv"
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-mono"
-                        value={item.quantityReceived}
-                        onChange={(e) =>
-                          updateItem(idx, "quantityReceived", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="col-span-3">
-                      <input
-                        type="number"
-                        min="0"
-                        placeholder="Qty Accepted"
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-mono font-bold"
-                        value={item.quantityAccepted}
-                        onChange={(e) =>
-                          updateItem(idx, "quantityAccepted", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="col-span-1 text-center">
-                      <button
-                        type="button"
-                        onClick={() => removeItem(idx)}
-                        className="text-slate-400 hover:text-rose-600 p-1"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
+            <form.Field name="items">
+              {(itemsField) => (
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-800">
+                      Received Items
+                    </span>
+                    <button
+                      type="button"
+                      onClick={addItem}
+                      className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus size={13} /> Add Line
+                    </button>
                   </div>
-                ))}
-              </div>
-            </div>
+
+                  <div className="space-y-2 max-h-56 overflow-y-auto">
+                    {itemsField.state.value.map((item: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200/60"
+                      >
+                        <div className="col-span-5">
+                          <select
+                            className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500"
+                            value={item.productId}
+                            onChange={(e) =>
+                              updateItem(idx, "productId", e.target.value)
+                            }
+                            required
+                          >
+                            <option value="">Select Product...</option>
+                            {products.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} ({p.sku})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="col-span-3">
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="Qty Recv"
+                            className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-mono"
+                            value={item.quantityReceived}
+                            onChange={(e) =>
+                              updateItem(
+                                idx,
+                                "quantityReceived",
+                                e.target.value,
+                              )
+                            }
+                            required
+                          />
+                        </div>
+                        <div className="col-span-3">
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="Qty Accepted"
+                            className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-teal-500 font-mono font-bold"
+                            value={item.quantityAccepted}
+                            onChange={(e) =>
+                              updateItem(
+                                idx,
+                                "quantityAccepted",
+                                e.target.value,
+                              )
+                            }
+                            required
+                          />
+                        </div>
+                        <div className="col-span-1 text-center">
+                          <button
+                            type="button"
+                            onClick={() => removeItem(idx)}
+                            className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </form.Field>
 
             <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
               <Button
                 variant="outline"
                 size="sm"
                 type="button"
-                onClick={() => setIsCreateOpen(false)}
+                onClick={handleCloseCreate}
               >
                 Cancel
               </Button>
-              <Button
-                variant="dark"
+              <FormSubmit
+                form={form}
                 size="sm"
-                type="submit"
-                className="bg-teal-700 text-white hover:bg-teal-800"
+                className="bg-teal-700 text-white hover:bg-teal-800 font-bold"
               >
-                Confirm Receipt & Update Stock
-              </Button>
+                Confirm Receipt &amp; Update Stock
+              </FormSubmit>
             </div>
           </form>
         </Modal>

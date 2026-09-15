@@ -20,7 +20,12 @@ import {
   TableCell,
   TableLoading,
   Modal,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+  FormSubmit,
 } from "@/components/ui";
+import { useForm } from "@tanstack/react-form";
 import {
   useDebitNotes,
   useCreateDebitNote,
@@ -39,49 +44,61 @@ export default function DebitNotesPage() {
   const [search, setSearch] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<DebitNote | null>(null);
+  const [formError, setFormError] = useState("");
 
-  const [debitNoteNumber, setDebitNoteNumber] = useState("");
-  const [supplierId, setSupplierId] = useState("");
-  const [supplierName, setSupplierName] = useState("");
-  const [supplierBillId, setSupplierBillId] = useState("");
-  const [returnDate, setReturnDate] = useState(
-    new Date().toISOString().slice(0, 10),
-  );
-  const [reason, setReason] = useState("");
-  const [amount, setAmount] = useState("");
+  const form = useForm({
+    defaultValues: {
+      debitNoteNumber: "",
+      supplierId: "",
+      supplierName: "",
+      supplierBillId: "",
+      returnDate: new Date().toISOString().slice(0, 10),
+      reason: "",
+      amount: "",
+    },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      const netSub = parseFloat(value.amount) || 0;
+      const netVat = netSub * 0.05;
+      const netTot = netSub + netVat;
 
-  const handleCreateDebitNote = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const netSub = parseFloat(amount) || 0;
-    const netVat = netSub * 0.05;
-    const netTot = netSub + netVat;
+      try {
+        await createDebitNoteMutation.mutateAsync({
+          debitNoteNumber: value.debitNoteNumber.trim() || undefined,
+          supplierId: value.supplierId || undefined,
+          supplierName: value.supplierName || "Vendor",
+          supplierBillId: value.supplierBillId || undefined,
+          returnDate: value.returnDate,
+          reason: value.reason.trim(),
+          subtotal: netSub,
+          vatAmount: netVat,
+          totalAmount: netTot,
+          items: [
+            {
+              description: value.reason.trim() || "Returned defective batch",
+              quantity: 1,
+              unitCost: netSub,
+            },
+          ],
+          autoPost: true,
+        });
+        setIsCreateOpen(false);
+        form.reset();
+      } catch (err: any) {
+        setFormError(err.message || "Failed to create debit note");
+      }
+    },
+  });
 
-    try {
-      await createDebitNoteMutation.mutateAsync({
-        debitNoteNumber: debitNoteNumber || undefined,
-        supplierId: supplierId || undefined,
-        supplierName: supplierName || "Vendor",
-        supplierBillId: supplierBillId || undefined,
-        returnDate,
-        reason,
-        subtotal: netSub,
-        vatAmount: netVat,
-        totalAmount: netTot,
-        items: [
-          {
-            description: reason || "Returned defective batch",
-            quantity: 1,
-            unitCost: netSub,
-          },
-        ],
-        autoPost: true,
-      });
-      setIsCreateOpen(false);
-      setAmount("");
-      setReason("");
-    } catch (err: any) {
-      alert(`Error creating debit note: ${err.message}`);
-    }
+  const handleOpenCreate = () => {
+    setFormError("");
+    form.reset();
+    setIsCreateOpen(true);
+  };
+
+  const handleCloseCreate = () => {
+    setIsCreateOpen(false);
+    form.reset();
   };
 
   const filteredNotes = debitNotes.filter((dn) => {
@@ -111,7 +128,8 @@ export default function DebitNotesPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            Issue supplier debit notes, record rejected materials, and reduce accounts payable liabilities.
+            Issue supplier debit notes, record rejected materials, and reduce
+            accounts payable liabilities.
           </p>
         </div>
 
@@ -119,7 +137,7 @@ export default function DebitNotesPage() {
           <Button
             variant="dark"
             size="sm"
-            onClick={() => setIsCreateOpen(true)}
+            onClick={handleOpenCreate}
             icon={<Plus size={14} />}
             className="text-xs font-bold bg-slate-900 text-white hover:bg-slate-800"
           >
@@ -272,107 +290,129 @@ export default function DebitNotesPage() {
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
-          onClose={() => setIsCreateOpen(false)}
+          onClose={handleCloseCreate}
           title="Issue Supplier Debit Note"
         >
-          <form onSubmit={handleCreateDebitNote} className="space-y-4 text-xs">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+            className="space-y-4 text-xs"
+          >
+            {formError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs">
+                {formError}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Supplier / Vendor
-                </label>
-                <select
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-amber-500 font-semibold"
-                  value={supplierId}
-                  onChange={(e) => {
-                    setSupplierId(e.target.value);
-                    const s = suppliers.find(
-                      (sup) => sup.id === e.target.value,
-                    );
-                    if (s) setSupplierName(s.name);
-                  }}
-                >
-                  <option value="">Select supplier...</option>
-                  {suppliers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <form.Field name="supplierId">
+                {(field) => (
+                  <FormSelect
+                    field={field}
+                    label="Supplier / Vendor"
+                    onChange={(e) => {
+                      const sid = e.target.value;
+                      field.handleChange(sid);
+                      const s = suppliers.find((sup) => sup.id === sid);
+                      if (s) form.setFieldValue("supplierName", s.name);
+                    }}
+                  >
+                    <option value="">Select supplier...</option>
+                    {suppliers.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </FormSelect>
+                )}
+              </form.Field>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Linked Supplier Bill (Optional)
-                </label>
-                <select
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-amber-500 font-mono"
-                  value={supplierBillId}
-                  onChange={(e) => {
-                    setSupplierBillId(e.target.value);
-                    const bill = bills.find((b) => b.id === e.target.value);
-                    if (bill) {
-                      setSupplierName(bill.supplierName);
-                      if (bill.supplierId) setSupplierId(bill.supplierId);
-                    }
-                  }}
-                >
-                  <option value="">Direct AP Deduction</option>
-                  {bills.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.billNumber} - {b.supplierName}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <form.Field name="supplierBillId">
+                {(field) => (
+                  <FormSelect
+                    field={field}
+                    label="Linked Supplier Bill (Optional)"
+                    onChange={(e) => {
+                      const bid = e.target.value;
+                      field.handleChange(bid);
+                      const bill = bills.find((b) => b.id === bid);
+                      if (bill) {
+                        form.setFieldValue("supplierName", bill.supplierName);
+                        if (bill.supplierId)
+                          form.setFieldValue("supplierId", bill.supplierId);
+                      }
+                    }}
+                  >
+                    <option value="">Direct AP Deduction</option>
+                    {bills.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.billNumber} - {b.supplierName}
+                      </option>
+                    ))}
+                  </FormSelect>
+                )}
+              </form.Field>
             </div>
 
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Reason for Return / Defect Description
-              </label>
-              <textarea
-                rows={2}
-                placeholder="Defective timber shipment returned, damaged granite slabs..."
-                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-amber-500"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                required
-              />
-            </div>
+            <form.Field
+              name="reason"
+              validators={{
+                onChange: ({ value }) =>
+                  !value.trim() ? "Reason is required" : undefined,
+              }}
+            >
+              {(field) => (
+                <FormTextarea
+                  field={field}
+                  label="Reason for Return / Defect Description"
+                  rows={2}
+                  placeholder="Defective timber shipment returned, damaged granite slabs..."
+                  required
+                />
+              )}
+            </form.Field>
 
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Debit Subtotal Amount (AED Excl. VAT)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-amber-500 font-mono font-bold"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                required
-              />
-            </div>
+            <form.Field
+              name="amount"
+              validators={{
+                onChange: ({ value }) =>
+                  !value || parseFloat(value) <= 0
+                    ? "Valid amount is required"
+                    : undefined,
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Debit Subtotal Amount (AED Excl. VAT)"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  className="font-mono font-bold"
+                  required
+                />
+              )}
+            </form.Field>
 
             <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
               <Button
                 variant="outline"
                 size="sm"
                 type="button"
-                onClick={() => setIsCreateOpen(false)}
+                onClick={handleCloseCreate}
               >
                 Cancel
               </Button>
-              <Button
-                variant="dark"
+              <FormSubmit
+                form={form}
                 size="sm"
-                type="submit"
                 className="bg-amber-700 text-white hover:bg-amber-800"
               >
-                Post Debit Note & Deduct AP
-              </Button>
+                Post Debit Note &amp; Deduct AP
+              </FormSubmit>
             </div>
           </form>
         </Modal>

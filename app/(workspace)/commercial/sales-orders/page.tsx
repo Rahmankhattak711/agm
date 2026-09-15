@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
 import {
   EyeIcon,
   PlusIcon,
@@ -13,6 +14,10 @@ import {
   Input,
   Select,
   Textarea,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+  FormSubmit,
   Table,
   TableHead,
   TableHeaderCell,
@@ -54,25 +59,47 @@ export default function SalesOrdersPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null);
 
-  const [orderNumber, setOrderNumber] = useState("");
-  const [customerId, setCustomerId] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [projectScope, setProjectScope] = useState("");
-  const [deliveryDate, setDeliveryDate] = useState("");
-  const [notes, setNotes] = useState("");
-  const [items, setItems] = useState([
-    {
-      productId: "",
-      description: "Fitout Scope Milestone",
-      quantity: 1,
-      unitPrice: 0,
-      unit: "SQM",
+  const createOrderForm = useForm({
+    defaultValues: {
+      orderNumber: "",
+      customerId: "",
+      customerName: "",
+      projectScope: "",
+      deliveryDate: "",
+      notes: "",
+      items: [
+        {
+          productId: "",
+          description: "Fitout Scope Milestone",
+          quantity: 1,
+          unitPrice: 0,
+          unit: "SQM",
+        },
+      ],
     },
-  ]);
+    onSubmit: async ({ value }) => {
+      try {
+        await createOrderMutation.mutateAsync({
+          orderNumber: value.orderNumber || undefined,
+          customerId: value.customerId || undefined,
+          customerName: value.customerName || "Valued Customer",
+          projectScope: value.projectScope,
+          deliveryDate: value.deliveryDate || undefined,
+          notes: value.notes,
+          items: value.items,
+        });
+        setIsCreateOpen(false);
+        createOrderForm.reset();
+      } catch (err: any) {
+        alert(`Error creating sales order: ${err.message}`);
+      }
+    },
+  });
 
   const addItem = () => {
-    setItems([
-      ...items,
+    const current = createOrderForm.getFieldValue("items");
+    createOrderForm.setFieldValue("items", [
+      ...current,
       {
         productId: "",
         description: "",
@@ -84,55 +111,28 @@ export default function SalesOrdersPage() {
   };
 
   const removeItem = (idx: number) => {
-    if (items.length <= 1) return;
-    setItems(items.filter((_, i) => i !== idx));
+    const current = createOrderForm.getFieldValue("items");
+    if (current.length <= 1) return;
+    createOrderForm.setFieldValue(
+      "items",
+      current.filter((_, i) => i !== idx),
+    );
   };
 
   const updateItem = (idx: number, field: string, value: any) => {
-    const next = [...items];
-    (next[idx] as any)[field] = value;
-    setItems(next);
+    const current = [...createOrderForm.getFieldValue("items")];
+    (current[idx] as any)[field] = value;
+    createOrderForm.setFieldValue("items", current);
   };
 
-  const formSubtotal = items.reduce(
-    (s, i) =>
-      s +
-      (parseFloat(String(i.quantity)) || 0) *
-        (parseFloat(String(i.unitPrice)) || 0),
-    0,
-  );
-  const formVat = formSubtotal * 0.05;
-  const formTotal = formSubtotal + formVat;
+  const handleOpenCreate = () => {
+    createOrderForm.reset();
+    setIsCreateOpen(true);
+  };
 
-  const handleCreateOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await createOrderMutation.mutateAsync({
-        orderNumber: orderNumber || undefined,
-        customerId: customerId || undefined,
-        customerName: customerName || "Valued Customer",
-        projectScope,
-        deliveryDate: deliveryDate || undefined,
-        notes,
-        items,
-      });
-      setIsCreateOpen(false);
-      setCustomerName("");
-      setCustomerId("");
-      setProjectScope("");
-      setNotes("");
-      setItems([
-        {
-          productId: "",
-          description: "Fitout Scope Milestone",
-          quantity: 1,
-          unitPrice: 0,
-          unit: "SQM",
-        },
-      ]);
-    } catch (err: any) {
-      alert(`Error creating sales order: ${err.message}`);
-    }
+  const handleCloseCreate = () => {
+    createOrderForm.reset();
+    setIsCreateOpen(false);
   };
 
   const handleConvertToInvoice = async (soId: string) => {
@@ -174,7 +174,8 @@ export default function SalesOrdersPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            Track confirmed customer orders, delivery timelines, and convert commitments into sales invoices.
+            Track confirmed customer orders, delivery timelines, and convert
+            commitments into sales invoices.
           </p>
         </div>
 
@@ -182,9 +183,9 @@ export default function SalesOrdersPage() {
           <Button
             variant="dark"
             size="sm"
-            onClick={() => setIsCreateOpen(true)}
+            onClick={handleOpenCreate}
             icon={<PlusIcon size={14} />}
-            className="text-xs font-bold bg-slate-900 text-white hover:bg-slate-800"
+            className="text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 cursor-pointer"
           >
             Create Sales Order
           </Button>
@@ -375,46 +376,67 @@ export default function SalesOrdersPage() {
       {isCreateOpen && (
         <Modal
           isOpen={isCreateOpen}
-          onClose={() => setIsCreateOpen(false)}
+          onClose={handleCloseCreate}
           title="Create New Sales Order"
         >
-          <form onSubmit={handleCreateOrder} className="space-y-4 text-xs">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              createOrderForm.handleSubmit();
+            }}
+            className="space-y-4 text-xs"
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Select
-                label="Select Customer"
-                value={customerId}
-                onChange={(e) => {
-                  setCustomerId(e.target.value);
-                  const c = customers.find(
-                    (cust) => cust.id === e.target.value,
-                  );
-                  if (c) setCustomerName(c.name);
-                }}
-              >
-                <option value="">Select registered customer...</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.customerCode})
-                  </option>
-                ))}
-              </Select>
+              <createOrderForm.Field name="customerId">
+                {(field) => (
+                  <FormSelect
+                    field={field}
+                    label="Select Customer"
+                    onChange={(e) => {
+                      const cust = customers.find(
+                        (c) => c.id === e.target.value,
+                      );
+                      if (cust) {
+                        createOrderForm.setFieldValue(
+                          "customerName",
+                          cust.name,
+                        );
+                      }
+                    }}
+                  >
+                    <option value="">Select registered customer...</option>
+                    {customers.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.customerCode})
+                      </option>
+                    ))}
+                  </FormSelect>
+                )}
+              </createOrderForm.Field>
 
-              <Input
-                label="Customer / Entity Name *"
-                placeholder="Customer Name"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                required
-              />
+              <createOrderForm.Field name="customerName">
+                {(field) => (
+                  <FormInput
+                    field={field}
+                    label="Customer / Entity Name *"
+                    placeholder="Customer Name"
+                    required
+                  />
+                )}
+              </createOrderForm.Field>
             </div>
 
             <div>
-              <Input
-                label="Project Scope / Description"
-                placeholder="e.g. Luxury Penthouse Fitout - Full Turnkey"
-                value={projectScope}
-                onChange={(e) => setProjectScope(e.target.value)}
-              />
+              <createOrderForm.Field name="projectScope">
+                {(field) => (
+                  <FormInput
+                    field={field}
+                    label="Project Scope / Description"
+                    placeholder="e.g. Luxury Penthouse Fitout - Full Turnkey"
+                  />
+                )}
+              </createOrderForm.Field>
             </div>
 
             <div className="space-y-2 pt-2 border-t border-slate-100">
@@ -428,105 +450,134 @@ export default function SalesOrdersPage() {
                   size="sm"
                   onClick={addItem}
                   icon={<PlusIcon size={13} />}
-                  className="text-xs font-bold text-blue-700 hover:text-blue-800 flex items-center gap-1"
+                  className="text-xs font-bold text-blue-700 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
                 >
                   Add Line
                 </Button>
               </div>
 
-              <div className="space-y-2 max-h-56 overflow-y-auto">
-                {items.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="grid grid-cols-12 gap-2 items-start bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
-                  >
-                    <div className="col-span-6">
-                      <Textarea
-                        rows={2}
-                        placeholder="Description / scope points (press Enter for new points)..."
-                        className="resize-y min-h-[36px]"
-                        value={item.description}
-                        onChange={(e) =>
-                          updateItem(idx, "description", e.target.value)
-                        }
-                        required
-                      />
+              <createOrderForm.Field name="items">
+                {(itemsField) => {
+                  const itemsList = itemsField.state.value || [];
+                  return (
+                    <div className="space-y-2 max-h-56 overflow-y-auto">
+                      {itemsList.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="grid grid-cols-12 gap-2 items-start bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-2xs"
+                        >
+                          <div className="col-span-6">
+                            <Textarea
+                              rows={2}
+                              placeholder="Description / scope points (press Enter for new points)..."
+                              className="resize-y min-h-[36px]"
+                              value={item.description}
+                              onChange={(e) =>
+                                updateItem(idx, "description", e.target.value)
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <Input
+                              type="number"
+                              min="1"
+                              placeholder="Qty"
+                              className="font-mono"
+                              value={item.quantity}
+                              onChange={(e) =>
+                                updateItem(
+                                  idx,
+                                  "quantity",
+                                  parseFloat(e.target.value) || 1,
+                                )
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="col-span-3">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="Unit Price"
+                              className="font-mono font-bold"
+                              value={item.unitPrice || ""}
+                              onChange={(e) =>
+                                updateItem(
+                                  idx,
+                                  "unitPrice",
+                                  parseFloat(e.target.value) || 0,
+                                )
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="col-span-1 text-center pt-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(idx)}
+                              icon={<TrashIcon size={13} />}
+                              className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="col-span-2">
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder="Qty"
-                        className="font-mono"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          updateItem(idx, "quantity", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="col-span-3">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="Unit Price"
-                        className="font-mono font-bold"
-                        value={item.unitPrice || ""}
-                        onChange={(e) =>
-                          updateItem(idx, "unitPrice", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="col-span-1 text-center pt-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeItem(idx)}
-                        icon={<TrashIcon size={13} />}
-                        className="text-slate-400 hover:text-rose-600 p-1"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  );
+                }}
+              </createOrderForm.Field>
             </div>
 
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-xs text-right space-y-1">
-              <div className="flex justify-between text-slate-600">
-                <span>Subtotal (Excl. VAT):</span>
-                <span>AED {formSubtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-slate-600">
-                <span>5% UAE VAT:</span>
-                <span>AED {formVat.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between font-black text-slate-900 text-sm border-t border-slate-200 pt-1">
-                <span>Total Order Value:</span>
-                <span className="text-blue-800">
-                  AED {formTotal.toFixed(2)}
-                </span>
-              </div>
-            </div>
+            <createOrderForm.Subscribe selector={(state) => state.values.items}>
+              {(itemsList) => {
+                const sub = (itemsList || []).reduce(
+                  (s, i) =>
+                    s +
+                    (parseFloat(String(i.quantity)) || 0) *
+                      (parseFloat(String(i.unitPrice)) || 0),
+                  0,
+                );
+                const vat = sub * 0.05;
+                const tot = sub + vat;
+                return (
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono text-xs text-right space-y-1">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Subtotal (Excl. VAT):</span>
+                      <span>AED {sub.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span>5% UAE VAT:</span>
+                      <span>AED {vat.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-black text-slate-900 text-sm border-t border-slate-200 pt-1">
+                      <span>Total Order Value:</span>
+                      <span className="text-blue-800">
+                        AED {tot.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }}
+            </createOrderForm.Subscribe>
 
             <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
               <Button
                 variant="outline"
                 size="sm"
                 type="button"
-                onClick={() => setIsCreateOpen(false)}
+                onClick={handleCloseCreate}
+                className="cursor-pointer"
               >
                 Cancel
               </Button>
-              <Button
-                variant="dark"
-                size="sm"
-                type="submit"
-                className="bg-blue-700 text-white hover:bg-blue-800"
+              <FormSubmit
+                form={createOrderForm}
+                className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer font-bold"
               >
                 Confirm & Create Sales Order
-              </Button>
+              </FormSubmit>
             </div>
           </form>
         </Modal>
@@ -583,7 +634,9 @@ export default function SalesOrdersPage() {
                     <TableRow key={item.id}>
                       <TableCell className="py-2 px-3 font-medium text-left">
                         {(() => {
-                          const points = parseDescriptionPoints(item.description);
+                          const points = parseDescriptionPoints(
+                            item.description,
+                          );
                           if (points.length <= 1) {
                             return (
                               <div className="leading-snug text-slate-800 whitespace-pre-line text-left">
@@ -594,7 +647,9 @@ export default function SalesOrdersPage() {
                           return (
                             <div className="space-y-1 text-slate-800 text-left">
                               {points.map((pt, pIdx) => {
-                                const match = pt.match(/^(\d+[\.\)]|[•\-*])\s*(.*)$/);
+                                const match = pt.match(
+                                  /^(\d+[\.\)]|[•\-*])\s*(.*)$/,
+                                );
                                 if (match) {
                                   const [, bullet, text] = match;
                                   return (
@@ -605,7 +660,9 @@ export default function SalesOrdersPage() {
                                       <span className="font-bold text-slate-900 shrink-0 select-none">
                                         {bullet}
                                       </span>
-                                      <span className="text-slate-800">{text}</span>
+                                      <span className="text-slate-800">
+                                        {text}
+                                      </span>
                                     </div>
                                   );
                                 }

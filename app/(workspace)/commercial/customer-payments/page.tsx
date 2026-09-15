@@ -16,7 +16,12 @@ import {
   TableCell,
   TableEmpty,
   TableLoading,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+  FormSubmit,
 } from "@/components/ui";
+import { useForm } from "@tanstack/react-form";
 import {
   useCustomerPayments,
   useCreateCustomerPayment,
@@ -140,7 +145,63 @@ export default function CustomerPaymentsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] =
     useState<CustomerPayment | null>(null);
-  const [form, setForm] = useState<PaymentFormState>(EMPTY_FORM);
+  const [formError, setFormError] = useState("");
+
+  const form = useForm({
+    defaultValues: { ...EMPTY_FORM },
+    onSubmit: async ({ value }) => {
+      setFormError("");
+      try {
+        await createPayment.mutateAsync({
+          customerId: value.customerId || undefined,
+          customerName: value.customerName || "Customer",
+          salesInvoiceId: value.salesInvoiceId || undefined,
+          paymentDate: value.paymentDate,
+          amount: parseFloat(value.amount),
+          paymentMethod: value.paymentMethod,
+          referenceNumber: value.referenceNumber,
+          notes: value.notes,
+        });
+        setIsCreateOpen(false);
+        form.reset();
+      } catch (err: any) {
+        setFormError(err.message || "Failed to record customer payment");
+      }
+    },
+  });
+
+  const handleOpenCreate = useCallback(() => {
+    setFormError("");
+    form.reset();
+    setIsCreateOpen(true);
+  }, [form]);
+
+  const handleCloseCreate = useCallback(() => {
+    setIsCreateOpen(false);
+    form.reset();
+  }, [form]);
+
+  const handleCustomerChange = useCallback(
+    (id: string) => {
+      form.setFieldValue("customerId", id);
+      const c = customers.find((cust) => cust.id === id);
+      if (c) form.setFieldValue("customerName", c.name);
+    },
+    [customers, form],
+  );
+
+  const handleInvoiceChange = useCallback(
+    (id: string) => {
+      form.setFieldValue("salesInvoiceId", id);
+      const inv = invoices.find((i) => i.id === id);
+      if (inv) {
+        form.setFieldValue("amount", String(inv.remainingBalance));
+        form.setFieldValue("customerName", inv.customerName);
+        if (inv.customerId) form.setFieldValue("customerId", inv.customerId);
+      }
+    },
+    [invoices, form],
+  );
 
   const filteredPayments = useMemo(() => {
     if (!search.trim()) return payments;
@@ -161,66 +222,6 @@ export default function CustomerPaymentsPage() {
   const openInvoices = useMemo(
     () => invoices.filter((i) => Number(i.remainingBalance) > 0),
     [invoices],
-  );
-
-  const setField = useCallback(
-    <K extends keyof PaymentFormState>(key: K, value: PaymentFormState[K]) =>
-      setForm((prev) => ({ ...prev, [key]: value })),
-    [],
-  );
-
-  const handleOpenCreate = useCallback(() => {
-    setForm(EMPTY_FORM);
-    setIsCreateOpen(true);
-  }, []);
-
-  const handleCloseCreate = useCallback(() => {
-    setIsCreateOpen(false);
-    setForm(EMPTY_FORM);
-  }, []);
-
-  const handleCustomerChange = useCallback(
-    (id: string) => {
-      setField("customerId", id);
-      const c = customers.find((c) => c.id === id);
-      if (c) setField("customerName", c.name);
-    },
-    [customers, setField],
-  );
-
-  const handleInvoiceChange = useCallback(
-    (id: string) => {
-      setField("salesInvoiceId", id);
-      const inv = invoices.find((i) => i.id === id);
-      if (inv) {
-        setField("amount", String(inv.remainingBalance));
-        setField("customerName", inv.customerName);
-        if (inv.customerId) setField("customerId", inv.customerId);
-      }
-    },
-    [invoices, setField],
-  );
-
-  const handleCreatePayment = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      try {
-        await createPayment.mutateAsync({
-          customerId: form.customerId || undefined,
-          customerName: form.customerName || "Customer",
-          salesInvoiceId: form.salesInvoiceId || undefined,
-          paymentDate: form.paymentDate,
-          amount: parseFloat(form.amount),
-          paymentMethod: form.paymentMethod,
-          referenceNumber: form.referenceNumber,
-          notes: form.notes,
-        });
-        handleCloseCreate();
-      } catch (err: any) {
-        alert(`Error recording customer payment: ${err.message}`);
-      }
-    },
-    [createPayment, form, handleCloseCreate],
   );
 
   return (
@@ -253,7 +254,8 @@ export default function CustomerPaymentsPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            Record customer receipts, reconcile outstanding invoice balances, and update accounts receivable.
+            Record customer receipts, reconcile outstanding invoice balances,
+            and update accounts receivable.
           </p>
         </div>
 
@@ -424,88 +426,123 @@ export default function CustomerPaymentsPage() {
         title="Record Customer Payment Receipt"
         maxWidth="lg"
       >
-        <form onSubmit={handleCreatePayment} className="space-y-4 text-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Select
-              label="Customer"
-              value={form.customerId}
-              onChange={(e) => handleCustomerChange(e.target.value)}
-            >
-              <option value="">Select customer...</option>
-              {customers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} (Balance: {formatAed(Number(c.currentBalance))})
-                </option>
-              ))}
-            </Select>
-
-            <Select
-              label="Apply to Sales Invoice (Optional)"
-              value={form.salesInvoiceId}
-              onChange={(e) => handleInvoiceChange(e.target.value)}
-            >
-              <option value="">No Invoice (General Receipt)</option>
-              {openInvoices.map((inv) => (
-                <option key={inv.id} value={inv.id}>
-                  {inv.invoiceNumber} — {inv.customerName} (Due:{" "}
-                  {formatAed(Number(inv.remainingBalance))})
-                </option>
-              ))}
-            </Select>
-          </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-4 text-xs"
+        >
+          {formError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs">
+              {formError}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Payment Amount (AED) *"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
-              value={form.amount}
-              onChange={(e) => setField("amount", e.target.value)}
-              required
-            />
-
-            <Select
-              label="Payment Method"
-              value={form.paymentMethod}
-              onChange={(e) =>
-                setField("paymentMethod", e.target.value as PaymentMethod)
-              }
-            >
-              {(Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[]).map(
-                (m) => (
-                  <option key={m} value={m}>
-                    {PAYMENT_METHOD_LABELS[m]}
-                  </option>
-                ),
+            <form.Field name="customerId">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  label="Customer"
+                  onChange={(e) => handleCustomerChange(e.target.value)}
+                >
+                  <option value="">Select customer...</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} (Balance: {formatAed(Number(c.currentBalance))})
+                    </option>
+                  ))}
+                </FormSelect>
               )}
-            </Select>
+            </form.Field>
+
+            <form.Field name="salesInvoiceId">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  label="Apply to Sales Invoice (Optional)"
+                  onChange={(e) => handleInvoiceChange(e.target.value)}
+                >
+                  <option value="">No Invoice (General Receipt)</option>
+                  {openInvoices.map((inv) => (
+                    <option key={inv.id} value={inv.id}>
+                      {inv.invoiceNumber} — {inv.customerName} (Due:{" "}
+                      {formatAed(Number(inv.remainingBalance))})
+                    </option>
+                  ))}
+                </FormSelect>
+              )}
+            </form.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Payment Date"
-              type="date"
-              value={form.paymentDate}
-              onChange={(e) => setField("paymentDate", e.target.value)}
-            />
+            <form.Field
+              name="amount"
+              validators={{
+                onChange: ({ value }) =>
+                  !value || parseFloat(value) <= 0
+                    ? "Valid payment amount is required"
+                    : undefined,
+              }}
+            >
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Payment Amount (AED) *"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  required
+                />
+              )}
+            </form.Field>
 
-            <Input
-              label="Cheque / Transaction Ref #"
-              placeholder="e.g. TXN-8932 or Cheque #49201"
-              value={form.referenceNumber}
-              onChange={(e) => setField("referenceNumber", e.target.value)}
-            />
+            <form.Field name="paymentMethod">
+              {(field) => (
+                <FormSelect field={field} label="Payment Method">
+                  {(Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[]).map(
+                    (m) => (
+                      <option key={m} value={m}>
+                        {PAYMENT_METHOD_LABELS[m]}
+                      </option>
+                    ),
+                  )}
+                </FormSelect>
+              )}
+            </form.Field>
           </div>
 
-          <Textarea
-            label="Receipt Notes"
-            rows={2}
-            placeholder="Payment allocation details..."
-            value={form.notes}
-            onChange={(e) => setField("notes", e.target.value)}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form.Field name="paymentDate">
+              {(field) => (
+                <FormInput field={field} label="Payment Date" type="date" />
+              )}
+            </form.Field>
+
+            <form.Field name="referenceNumber">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Cheque / Transaction Ref #"
+                  placeholder="e.g. TXN-8932 or Cheque #49201"
+                />
+              )}
+            </form.Field>
+          </div>
+
+          <form.Field name="notes">
+            {(field) => (
+              <FormTextarea
+                field={field}
+                label="Receipt Notes"
+                rows={2}
+                placeholder="Payment allocation details..."
+              />
+            )}
+          </form.Field>
 
           <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
             <Button
@@ -516,15 +553,13 @@ export default function CustomerPaymentsPage() {
             >
               Cancel
             </Button>
-            <Button
-              variant="dark"
+            <FormSubmit
+              form={form}
               size="sm"
-              type="submit"
-              loading={createPayment.isPending}
               className="bg-amber-600 hover:bg-amber-700 text-white font-bold"
             >
               Record &amp; Post Receipt
-            </Button>
+            </FormSubmit>
           </div>
         </form>
       </Modal>

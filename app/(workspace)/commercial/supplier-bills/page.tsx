@@ -27,7 +27,11 @@ import {
   Modal,
   Input,
   Select,
+  FormInput,
+  FormSelect,
+  FormSubmit,
 } from "@/components/ui";
+import { useForm } from "@tanstack/react-form";
 import {
   useSupplierBills,
   useCreateSupplierBill,
@@ -43,14 +47,13 @@ import {
 } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 
-// ----------------------------------------------------------------------
-// Official Quotation-Style A4 Print Voucher for Supplier Bill
-// ----------------------------------------------------------------------
 interface SupplierBillDocumentProps {
   bill: SupplierBill;
 }
 
-const SupplierBillDocument: React.FC<SupplierBillDocumentProps> = ({ bill }) => {
+const SupplierBillDocument: React.FC<SupplierBillDocumentProps> = ({
+  bill,
+}) => {
   const formattedBillDate = bill.billDate
     ? new Date(bill.billDate).toLocaleDateString("en-GB")
     : "-";
@@ -102,7 +105,6 @@ const SupplierBillDocument: React.FC<SupplierBillDocumentProps> = ({ bill }) => 
         </tfoot>
 
         <tbody className="print-page-body-group">
-          {/* Document Title Bar */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="px-10 py-3.5 print:px-8 print:py-2.5 w-full border-b border-slate-100 bg-slate-50/50">
@@ -112,7 +114,8 @@ const SupplierBillDocument: React.FC<SupplierBillDocumentProps> = ({ bill }) => 
                       SUPPLIER BILL / AP VOUCHER
                     </h1>
                     <p className="text-[11px] print:text-[11px] font-semibold text-emerald-700 mt-0.5 print:mt-0">
-                      Official Accounts Payable &amp; Tax Requisition Voucher (UAE FTA 5% VAT)
+                      Official Accounts Payable &amp; Tax Requisition Voucher
+                      (UAE FTA 5% VAT)
                     </p>
                   </div>
 
@@ -158,11 +161,9 @@ const SupplierBillDocument: React.FC<SupplierBillDocumentProps> = ({ bill }) => 
             </td>
           </tr>
 
-          {/* Vendor & Financial Recap Cards */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="grid grid-cols-2 gap-4 print:gap-3 px-10 py-3.5 print:px-8 print:py-2 text-[12px] print:text-[12px] print-avoid-break">
-                {/* Left Card: Supplier Info */}
                 <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs">
                   <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[11px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -209,7 +210,6 @@ const SupplierBillDocument: React.FC<SupplierBillDocumentProps> = ({ bill }) => 
                   </div>
                 </div>
 
-                {/* Right Card: Financial Recap */}
                 <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs flex flex-col justify-between">
                   <div>
                     <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[11px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
@@ -263,7 +263,6 @@ const SupplierBillDocument: React.FC<SupplierBillDocumentProps> = ({ bill }) => 
             </td>
           </tr>
 
-          {/* Items Table */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="px-10 py-2 print:px-8 print:py-1">
@@ -343,12 +342,10 @@ const SupplierBillDocument: React.FC<SupplierBillDocumentProps> = ({ bill }) => 
             </td>
           </tr>
 
-          {/* GL Accounting & Totals */}
           <tr>
             <td className="p-0 border-none align-top">
               <div className="px-10 print:px-8">
                 <div className="flex items-stretch justify-between gap-4 mt-3.5 print:mt-2 print-avoid-break">
-                  {/* Left: GL Memo */}
                   <div className="flex-1 border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2 rounded-xl text-[11px] print:text-[10px] flex flex-col justify-center shadow-2xs">
                     <div className="font-bold mb-1 text-slate-900 uppercase text-[10.5px] print:text-[10px] tracking-wider text-agm-green flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
@@ -360,13 +357,12 @@ const SupplierBillDocument: React.FC<SupplierBillDocumentProps> = ({ bill }) => 
                         <strong>{bill.supplierName}</strong>.
                       </div>
                       <div className="text-[10.5px] text-slate-600 font-mono">
-                        Double-Entry Impact: Dr. Direct Cost / Inventory (5000) •
-                        Dr. Input VAT (2220) • Cr. Accounts Payable (2000)
+                        Double-Entry Impact: Dr. Direct Cost / Inventory (5000)
+                        • Dr. Input VAT (2220) • Cr. Accounts Payable (2000)
                       </div>
                     </div>
                   </div>
 
-                  {/* Right: Subtotal, VAT, Total */}
                   <div className="w-80 border border-slate-200 print:border-slate-300 bg-white rounded-xl overflow-hidden shadow-2xs text-[12px] print:text-[11px]">
                     <div className="divide-y divide-slate-100 print:divide-slate-200">
                       <div className="flex items-center justify-between px-4 py-2 bg-slate-50/40">
@@ -402,12 +398,10 @@ const SupplierBillDocument: React.FC<SupplierBillDocumentProps> = ({ bill }) => 
         </tbody>
       </table>
 
-      {/* Fixed Footer pinned to the bottom of every page in print */}
       <div className="print-footer-bottom fixed-print-footer hidden print:block">
         <QuotationFooter />
       </div>
 
-      {/* On-Screen / Print Preview Footer */}
       <div className="px-10 pb-6 print:hidden">
         <QuotationFooter className="mt-6" />
       </div>
@@ -428,11 +422,11 @@ export default function SupplierBillsPage() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedBill, setSelectedBill] = useState<SupplierBill | null>(null);
-  const [paymentModalBill, setPaymentModalBill] =
-    useState<SupplierBill | null>(null);
+  const [paymentModalBill, setPaymentModalBill] = useState<SupplierBill | null>(
+    null,
+  );
   const [expandedBillId, setExpandedBillId] = useState<string | null>(null);
 
-  // Direct A4 Print State
   const [billToPrint, setBillToPrint] = useState<SupplierBill | null>(null);
   const printDocumentRef = useRef<HTMLDivElement>(null);
 
@@ -450,30 +444,112 @@ export default function SupplierBillsPage() {
     }, 80);
   };
 
-  const [billNumber, setBillNumber] = useState("");
-  const [supplierId, setSupplierId] = useState("");
-  const [supplierName, setSupplierName] = useState("");
-  const [supplierTrn, setSupplierTrn] = useState("");
-  const [billDate, setBillDate] = useState(
-    new Date().toISOString().slice(0, 10),
-  );
-  const [dueDate, setDueDate] = useState(
-    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-  );
-  const [items, setItems] = useState([
-    {
-      productId: "",
-      description: "Direct materials / site supply",
-      quantity: 1,
-      unitCost: 0,
-      unit: "PCS",
-    },
-  ]);
-  const [autoPost, setAutoPost] = useState(true);
+  const [createBillError, setCreateBillError] = useState("");
+  const [disbursalError, setDisbursalError] = useState("");
 
-  const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("BANK_TRANSFER");
-  const [paymentRef, setPaymentRef] = useState("");
+  const createBillForm = useForm({
+    defaultValues: {
+      billNumber: "",
+      supplierId: "",
+      supplierName: "",
+      supplierTrn: "",
+      billDate: new Date().toISOString().slice(0, 10),
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10),
+      items: [
+        {
+          productId: "",
+          description: "Direct materials / site supply",
+          quantity: 1,
+          unitCost: 0,
+          unit: "PCS",
+        },
+      ],
+      autoPost: true,
+    },
+    onSubmit: async ({ value }) => {
+      if (!value.supplierName.trim()) {
+        setCreateBillError("Please select or enter a supplier.");
+        return;
+      }
+      setCreateBillError("");
+      try {
+        await createBillMutation.mutateAsync({
+          billNumber: value.billNumber.trim() || undefined,
+          supplierId: value.supplierId || undefined,
+          supplierName: value.supplierName.trim(),
+          supplierTrn: value.supplierTrn.trim() || undefined,
+          billDate: value.billDate,
+          dueDate: value.dueDate,
+          items: value.items,
+          autoPost: value.autoPost,
+        });
+        setIsCreateOpen(false);
+        createBillForm.reset();
+      } catch (err: any) {
+        setCreateBillError(err.message || "Failed to create supplier bill");
+      }
+    },
+  });
+
+  const paymentForm = useForm({
+    defaultValues: {
+      amount: "",
+      paymentMethod: "BANK_TRANSFER",
+      referenceNumber: "",
+    },
+    onSubmit: async ({ value }) => {
+      if (!paymentModalBill) return;
+      setDisbursalError("");
+      const amt = parseFloat(value.amount);
+      if (isNaN(amt) || amt <= 0) {
+        setDisbursalError("Invalid payment amount.");
+        return;
+      }
+      try {
+        await paymentMutation.mutateAsync({
+          supplierId: paymentModalBill.supplierId || undefined,
+          supplierName: paymentModalBill.supplierName,
+          supplierBillId: paymentModalBill.id,
+          amount: amt,
+          paymentDate: new Date().toISOString().slice(0, 10),
+          paymentMethod: value.paymentMethod as any,
+          referenceNumber: value.referenceNumber.trim() || undefined,
+        });
+        setPaymentModalBill(null);
+        paymentForm.reset();
+      } catch (err: any) {
+        setDisbursalError(err.message || "Failed to record payment");
+      }
+    },
+  });
+
+  const handleOpenCreate = () => {
+    setCreateBillError("");
+    createBillForm.reset();
+    setIsCreateOpen(true);
+  };
+
+  const handleCloseCreate = () => {
+    setIsCreateOpen(false);
+    createBillForm.reset();
+  };
+
+  const handleOpenPayment = (bill: SupplierBill) => {
+    setDisbursalError("");
+    paymentForm.reset({
+      amount: String(bill.remainingBalance || ""),
+      paymentMethod: "BANK_TRANSFER",
+      referenceNumber: "",
+    });
+    setPaymentModalBill(bill);
+  };
+
+  const handleClosePayment = () => {
+    setPaymentModalBill(null);
+    paymentForm.reset();
+  };
 
   const formatNumber = (val: number | string | undefined) => {
     const num = Number(val || 0);
@@ -484,8 +560,9 @@ export default function SupplierBillsPage() {
   };
 
   const addItem = () => {
-    setItems([
-      ...items,
+    const current = createBillForm.getFieldValue("items");
+    createBillForm.setFieldValue("items", [
+      ...current,
       {
         productId: "",
         description: "",
@@ -497,72 +574,33 @@ export default function SupplierBillsPage() {
   };
 
   const removeItem = (idx: number) => {
-    setItems(items.filter((_, i) => i !== idx));
+    const current = createBillForm.getFieldValue("items");
+    createBillForm.setFieldValue(
+      "items",
+      current.filter((_, i) => i !== idx),
+    );
   };
 
   const updateItem = (idx: number, field: string, value: any) => {
-    const next = [...items];
-    next[idx] = { ...next[idx], [field]: value };
+    const current = [...createBillForm.getFieldValue("items")];
+    current[idx] = { ...current[idx], [field]: value };
     if (field === "productId") {
       const prod = products.find((p) => p.id === value);
       if (prod) {
-        next[idx].description = prod.name;
-        next[idx].unitCost = Number(prod.costPrice || 0);
-        next[idx].unit = prod.unit || "PCS";
+        current[idx].description = prod.name;
+        current[idx].unitCost = Number(prod.costPrice || 0);
+        current[idx].unit = prod.unit || "PCS";
       }
     }
-    setItems(next);
+    createBillForm.setFieldValue("items", current);
   };
 
   const handleSupplierSelect = (id: string) => {
-    setSupplierId(id);
+    createBillForm.setFieldValue("supplierId", id);
     const sup = suppliers.find((s) => s.id === id);
     if (sup) {
-      setSupplierName(sup.name);
-      setSupplierTrn(sup.trn || "");
-    }
-  };
-
-  const subtotal = items.reduce(
-    (acc, it) => acc + Number(it.quantity || 0) * Number(it.unitCost || 0),
-    0,
-  );
-  const vatAmount = subtotal * 0.05;
-  const grandTotal = subtotal + vatAmount;
-
-  const handleCreateBill = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!supplierName) {
-      alert("Please select or enter a supplier.");
-      return;
-    }
-    try {
-      await createBillMutation.mutateAsync({
-        billNumber: billNumber || undefined,
-        supplierId: supplierId || undefined,
-        supplierName,
-        supplierTrn: supplierTrn || undefined,
-        billDate,
-        dueDate,
-        items,
-        autoPost,
-      });
-      setIsCreateOpen(false);
-      setBillNumber("");
-      setSupplierId("");
-      setSupplierName("");
-      setSupplierTrn("");
-      setItems([
-        {
-          productId: "",
-          description: "Direct materials / site supply",
-          quantity: 1,
-          unitCost: 0,
-          unit: "PCS",
-        },
-      ]);
-    } catch (err: any) {
-      alert(`Error creating supplier bill: ${err.message}`);
+      createBillForm.setFieldValue("supplierName", sup.name);
+      createBillForm.setFieldValue("supplierTrn", sup.trn || "");
     }
   };
 
@@ -571,32 +609,6 @@ export default function SupplierBillsPage() {
       await postBillMutation.mutateAsync(id);
     } catch (err: any) {
       alert(`Error posting bill: ${err.message}`);
-    }
-  };
-
-  const handleCreatePayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!paymentModalBill) return;
-    const amt = parseFloat(paymentAmount);
-    if (isNaN(amt) || amt <= 0) {
-      alert("Invalid payment amount.");
-      return;
-    }
-    try {
-      await paymentMutation.mutateAsync({
-        supplierId: paymentModalBill.supplierId || undefined,
-        supplierName: paymentModalBill.supplierName,
-        supplierBillId: paymentModalBill.id,
-        amount: amt,
-        paymentDate: new Date().toISOString().slice(0, 10),
-        paymentMethod,
-        referenceNumber: paymentRef || undefined,
-      });
-      setPaymentModalBill(null);
-      setPaymentAmount("");
-      setPaymentRef("");
-    } catch (err: any) {
-      alert(`Error recording payment: ${err.message}`);
     }
   };
 
@@ -632,14 +644,14 @@ export default function SupplierBillsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Supplier Bills
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Log vendor invoices, claim 5% input tax, track settlement disbursements, and post to General Ledger.
+            Log vendor invoices, claim 5% input tax, track settlement
+            disbursements, and post to General Ledger.
           </p>
         </div>
 
@@ -647,16 +659,15 @@ export default function SupplierBillsPage() {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => setIsCreateOpen(true)}
+            onClick={handleOpenCreate}
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Record Supplier Bill
           </Button>
         </div>
       </div>
 
-      {/* 4 Summary KPI Cards */}
       <ReportKpiGrid cols={4}>
         <ReportKpiCard
           title="1. Gross Vendor Payables"
@@ -692,12 +703,9 @@ export default function SupplierBillsPage() {
         />
       </ReportKpiGrid>
 
-      {/* Main Filter & Table Card */}
       <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
               {[
                 { id: "ALL", label: "All Bills" },
@@ -929,7 +937,7 @@ export default function SupplierBillsPage() {
                                     handlePostBill(b.id);
                                   }}
                                   icon={<FileCheck2Icon size={12} />}
-                                  className="text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 cursor-pointer"
+                                  className="text-[10px] font-bold bg-agm-green text-white hover:bg-agm-green-2 cursor-pointer"
                                 >
                                   Post
                                 </Button>
@@ -940,8 +948,7 @@ export default function SupplierBillsPage() {
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setPaymentModalBill(b);
-                                    setPaymentAmount(String(b.remainingBalance));
+                                    handleOpenPayment(b);
                                   }}
                                   icon={<BanknoteIcon size={12} />}
                                   className="text-[10px] font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer"
@@ -953,9 +960,7 @@ export default function SupplierBillsPage() {
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setExpandedBillId(
-                                    isExpanded ? null : b.id,
-                                  );
+                                  setExpandedBillId(isExpanded ? null : b.id);
                                 }}
                                 className={`p-1.5 rounded-lg transition cursor-pointer ${
                                   isExpanded
@@ -981,7 +986,6 @@ export default function SupplierBillsPage() {
                           </TableCell>
                         </TableRow>
 
-                        {/* QA-Style Accordion Expanded Drawer */}
                         {isExpanded && (
                           <TableRow className="hover:bg-transparent bg-slate-50/70">
                             <TableCell
@@ -989,7 +993,6 @@ export default function SupplierBillsPage() {
                               className="p-0 border-b-2 border-emerald-600/40"
                             >
                               <div className="px-6 py-5 space-y-4 border-l-4 border-l-emerald-600 bg-gradient-to-b from-white via-slate-50/40 to-slate-100/40 shadow-inner">
-                                {/* QA Header Ribbon */}
                                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
                                   <div className="flex flex-wrap items-center gap-2.5">
                                     <span className="px-2.5 py-1 rounded-lg bg-teal-900 text-teal-200 font-mono font-bold text-xs shadow-2xs">
@@ -1046,7 +1049,6 @@ export default function SupplierBillsPage() {
                                   </div>
                                 </div>
 
-                                {/* 4 Metric Summary Cards */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                   <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-0.5 shadow-2xs">
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
@@ -1082,8 +1084,7 @@ export default function SupplierBillsPage() {
                                       AED{" "}
                                       {formatNumber(
                                         b.vatAmount ||
-                                          b.totalAmount -
-                                            b.totalAmount / 1.05,
+                                          b.totalAmount - b.totalAmount / 1.05,
                                       )}
                                     </span>
                                     <span className="text-[10px] text-purple-600 block">
@@ -1097,9 +1098,9 @@ export default function SupplierBillsPage() {
                                     </span>
                                     <span className="text-xs font-bold text-slate-900 block font-mono">
                                       {b.dueDate
-                                        ? new Date(b.dueDate).toLocaleDateString(
-                                            "en-GB",
-                                          )
+                                        ? new Date(
+                                            b.dueDate,
+                                          ).toLocaleDateString("en-GB")
                                         : "Immediate"}
                                     </span>
                                     <span className="text-[10px] text-slate-500 block">
@@ -1113,9 +1114,7 @@ export default function SupplierBillsPage() {
                                   </div>
                                 </div>
 
-                                {/* 2-Column QA Details Section */}
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                  {/* Left: Supplier & Terms Details */}
                                   <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs space-y-2.5">
                                     <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                                       <span className="font-bold text-xs uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
@@ -1198,7 +1197,6 @@ export default function SupplierBillsPage() {
                                     </div>
                                   </div>
 
-                                  {/* Right: Items / GL Accounting Breakdown */}
                                   <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs space-y-2.5 flex flex-col justify-between">
                                     <div>
                                       <div className="flex items-center justify-between border-b border-slate-100 pb-2">
@@ -1300,71 +1298,101 @@ export default function SupplierBillsPage() {
         )}
       </div>
 
-      {/* Modal for Creating Supplier Bill */}
       <Modal
         isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
+        onClose={handleCloseCreate}
         title="Record Supplier Bill (Accounts Payable)"
         maxWidth="2xl"
       >
-        <form onSubmit={handleCreateBill} className="space-y-4 text-xs">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            createBillForm.handleSubmit();
+          }}
+          className="space-y-4 text-xs"
+        >
+          {createBillError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs">
+              {createBillError}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Bill / Invoice Number"
-              placeholder="Auto-generated if empty (e.g. BILL-2026-001)"
-              value={billNumber}
-              onChange={(e) => setBillNumber(e.target.value)}
-              className="font-mono"
-            />
-            <Select
-              label="Select Existing Supplier"
-              value={supplierId}
-              onChange={(e) => handleSupplierSelect(e.target.value)}
-            >
-              <option value="">-- Choose Vendor or Enter New --</option>
-              {suppliers.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} {s.trn ? `(TRN: ${s.trn})` : ""}
-                </option>
-              ))}
-            </Select>
+            <createBillForm.Field name="billNumber">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Bill / Invoice Number"
+                  placeholder="Auto-generated if empty (e.g. BILL-2026-001)"
+                  className="font-mono"
+                />
+              )}
+            </createBillForm.Field>
+            <createBillForm.Field name="supplierId">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  label="Select Existing Supplier"
+                  onChange={(e) => handleSupplierSelect(e.target.value)}
+                >
+                  <option value="">-- Choose Vendor or Enter New --</option>
+                  {suppliers.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} {s.trn ? `(TRN: ${s.trn})` : ""}
+                    </option>
+                  ))}
+                </FormSelect>
+              )}
+            </createBillForm.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Supplier / Vendor Name *"
-              placeholder="Vendor legal name"
-              value={supplierName}
-              onChange={(e) => setSupplierName(e.target.value)}
-              required
-            />
-            <Input
-              label="Supplier VAT TRN"
-              placeholder="100XXXXXXXXX003 (15 digits)"
-              value={supplierTrn}
-              onChange={(e) => setSupplierTrn(e.target.value)}
-              className="font-mono"
-            />
+            <createBillForm.Field name="supplierName">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Supplier / Vendor Name *"
+                  placeholder="Vendor legal name"
+                  required
+                />
+              )}
+            </createBillForm.Field>
+            <createBillForm.Field name="supplierTrn">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Supplier VAT TRN"
+                  placeholder="100XXXXXXXXX003 (15 digits)"
+                  className="font-mono"
+                />
+              )}
+            </createBillForm.Field>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Bill Date *"
-              type="date"
-              value={billDate}
-              onChange={(e) => setBillDate(e.target.value)}
-              required
-            />
-            <Input
-              label="Due Date *"
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              required
-            />
+            <createBillForm.Field name="billDate">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Bill Date *"
+                  type="date"
+                  required
+                />
+              )}
+            </createBillForm.Field>
+            <createBillForm.Field name="dueDate">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Due Date *"
+                  type="date"
+                  required
+                />
+              )}
+            </createBillForm.Field>
           </div>
 
-          {/* Line items */}
           <div className="space-y-2 pt-2 border-t border-slate-100">
             <div className="flex items-center justify-between">
               <span className="font-bold text-slate-800">
@@ -1382,98 +1410,125 @@ export default function SupplierBillsPage() {
               </Button>
             </div>
 
-            <div className="space-y-2 max-h-48 overflow-y-auto p-1">
-              {items.map((it, idx) => (
-                <div
-                  key={idx}
-                  className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200"
-                >
-                  <div className="col-span-5">
-                    <Input
-                      placeholder="Item description"
-                      value={it.description}
-                      onChange={(e) =>
-                        updateItem(idx, "description", e.target.value)
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Input
-                      type="number"
-                      placeholder="Qty"
-                      min="1"
-                      value={it.quantity}
-                      onChange={(e) =>
-                        updateItem(
-                          idx,
-                          "quantity",
-                          parseFloat(e.target.value) || 1,
-                        )
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Unit Cost"
-                      value={it.unitCost}
-                      onChange={(e) =>
-                        updateItem(
-                          idx,
-                          "unitCost",
-                          parseFloat(e.target.value) || 0,
-                        )
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2 text-right font-mono font-bold text-slate-800">
-                    AED {formatNumber(it.quantity * it.unitCost)}
-                  </div>
-                  <div className="col-span-1 text-center">
-                    {items.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeItem(idx)}
-                        className="text-rose-500 hover:text-rose-700 cursor-pointer p-1"
+            <createBillForm.Field name="items">
+              {(itemsField) => {
+                const itemsList = itemsField.state.value || [];
+                return (
+                  <div className="space-y-2 max-h-48 overflow-y-auto p-1">
+                    {itemsList.map((it, idx) => (
+                      <div
+                        key={idx}
+                        className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200"
                       >
-                        <TrashIcon size={13} />
-                      </button>
-                    )}
+                        <div className="col-span-5">
+                          <Input
+                            placeholder="Item description"
+                            value={it.description}
+                            onChange={(e) =>
+                              updateItem(idx, "description", e.target.value)
+                            }
+                            required
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <Input
+                            type="number"
+                            placeholder="Qty"
+                            min="1"
+                            value={it.quantity}
+                            onChange={(e) =>
+                              updateItem(
+                                idx,
+                                "quantity",
+                                parseFloat(e.target.value) || 1,
+                              )
+                            }
+                            required
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="Unit Cost"
+                            value={it.unitCost}
+                            onChange={(e) =>
+                              updateItem(
+                                idx,
+                                "unitCost",
+                                parseFloat(e.target.value) || 0,
+                              )
+                            }
+                            required
+                          />
+                        </div>
+                        <div className="col-span-2 text-right font-mono font-bold text-slate-800">
+                          AED{" "}
+                          {formatNumber(
+                            Number(it.quantity || 0) * Number(it.unitCost || 0),
+                          )}
+                        </div>
+                        <div className="col-span-1 text-center">
+                          {itemsList.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeItem(idx)}
+                              className="text-rose-500 hover:text-rose-700 cursor-pointer p-1"
+                            >
+                              <TrashIcon size={13} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
-            </div>
+                );
+              }}
+            </createBillForm.Field>
 
-            <div className="flex justify-end pt-2 text-right font-mono space-y-1">
-              <div className="w-64 bg-slate-100 p-3 rounded-xl border border-slate-200 space-y-1">
-                <div className="flex justify-between text-slate-600">
-                  <span>Subtotal:</span>
-                  <span>AED {formatNumber(subtotal)}</span>
-                </div>
-                <div className="flex justify-between text-purple-700 font-medium">
-                  <span>Input VAT (5%):</span>
-                  <span>AED {formatNumber(vatAmount)}</span>
-                </div>
-                <div className="flex justify-between text-slate-900 font-bold text-sm border-t border-slate-200 pt-1">
-                  <span>Total Payable:</span>
-                  <span>AED {formatNumber(grandTotal)}</span>
-                </div>
-              </div>
-            </div>
+            <createBillForm.Subscribe selector={(state) => state.values.items}>
+              {(itemsList) => {
+                const sub = (itemsList || []).reduce(
+                  (acc, it) =>
+                    acc + Number(it.quantity || 0) * Number(it.unitCost || 0),
+                  0,
+                );
+                const vat = sub * 0.05;
+                const tot = sub + vat;
+                return (
+                  <div className="flex justify-end pt-2 text-right font-mono space-y-1">
+                    <div className="w-64 bg-slate-100 p-3 rounded-xl border border-slate-200 space-y-1">
+                      <div className="flex justify-between text-slate-600">
+                        <span>Subtotal:</span>
+                        <span>AED {formatNumber(sub)}</span>
+                      </div>
+                      <div className="flex justify-between text-purple-700 font-medium">
+                        <span>Input VAT (5%):</span>
+                        <span>AED {formatNumber(vat)}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-900 font-bold text-sm border-t border-slate-200 pt-1">
+                        <span>Total Payable:</span>
+                        <span>AED {formatNumber(tot)}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }}
+            </createBillForm.Subscribe>
           </div>
 
           <div className="flex items-center gap-2 pt-2">
-            <input
-              type="checkbox"
-              id="autoPost"
-              checked={autoPost}
-              onChange={(e) => setAutoPost(e.target.checked)}
-              className="rounded text-emerald-600 focus:ring-emerald-500"
-            />
+            <createBillForm.Field name="autoPost">
+              {(field) => (
+                <input
+                  type="checkbox"
+                  id="autoPost"
+                  checked={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.checked)}
+                  className="rounded text-emerald-600 focus:ring-emerald-500"
+                />
+              )}
+            </createBillForm.Field>
             <label htmlFor="autoPost" className="text-slate-700 font-medium">
               Post to General Ledger automatically upon creation
             </label>
@@ -1483,24 +1538,21 @@ export default function SupplierBillsPage() {
             <Button
               variant="outline"
               type="button"
-              onClick={() => setIsCreateOpen(false)}
+              onClick={handleCloseCreate}
               className="cursor-pointer"
             >
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              disabled={createBillMutation.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+            <FormSubmit
+              form={createBillForm}
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
-              {createBillMutation.isPending ? "Recording..." : "Save Bill Voucher"}
-            </Button>
+              Save Bill Voucher
+            </FormSubmit>
           </div>
         </form>
       </Modal>
 
-      {/* View Bill Details Modal */}
       {selectedBill && (
         <Modal
           isOpen={!!selectedBill}
@@ -1562,7 +1614,7 @@ export default function SupplierBillsPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody className="divide-y divide-slate-100">
-                  {(!selectedBill.items || selectedBill.items.length === 0) ? (
+                  {!selectedBill.items || selectedBill.items.length === 0 ? (
                     <TableRow>
                       <TableCell className="py-2 px-3">
                         Direct procurement
@@ -1647,15 +1699,27 @@ export default function SupplierBillsPage() {
         </Modal>
       )}
 
-      {/* Disbursal Payment Modal */}
       {paymentModalBill && (
         <Modal
           isOpen={!!paymentModalBill}
-          onClose={() => setPaymentModalBill(null)}
+          onClose={handleClosePayment}
           title={`Disburse Payment — ${paymentModalBill.billNumber}`}
           maxWidth="md"
         >
-          <form onSubmit={handleCreatePayment} className="space-y-3.5 text-xs">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              paymentForm.handleSubmit();
+            }}
+            className="space-y-3.5 text-xs"
+          >
+            {disbursalError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs">
+                {disbursalError}
+              </div>
+            )}
+
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
               <p className="text-slate-500 font-medium">Vendor / Payee</p>
               <p className="font-bold text-slate-900 text-sm">
@@ -1667,60 +1731,65 @@ export default function SupplierBillsPage() {
               </p>
             </div>
 
-            <Input
-              label="Payment Amount (AED) *"
-              type="number"
-              step="0.01"
-              max={paymentModalBill.remainingBalance}
-              min="0.01"
-              value={paymentAmount}
-              onChange={(e) => setPaymentAmount(e.target.value)}
-              required
-              className="font-mono font-bold"
-            />
+            <paymentForm.Field name="amount">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Payment Amount (AED) *"
+                  type="number"
+                  step="0.01"
+                  max={paymentModalBill.remainingBalance}
+                  min="0.01"
+                  required
+                  className="font-mono font-bold"
+                />
+              )}
+            </paymentForm.Field>
 
-            <Select
-              label="Disbursal Method *"
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            >
-              <option value="BANK_TRANSFER">Corporate Bank Transfer (WPS)</option>
-              <option value="CHEQUE">Corporate Cheque</option>
-              <option value="CASH">Petty Cash</option>
-              <option value="CREDIT_CARD">Corporate Card</option>
-            </Select>
+            <paymentForm.Field name="paymentMethod">
+              {(field) => (
+                <FormSelect field={field} label="Disbursal Method *">
+                  <option value="BANK_TRANSFER">
+                    Corporate Bank Transfer (WPS)
+                  </option>
+                  <option value="CHEQUE">Corporate Cheque</option>
+                  <option value="CASH">Petty Cash</option>
+                  <option value="CREDIT_CARD">Corporate Card</option>
+                </FormSelect>
+              )}
+            </paymentForm.Field>
 
-            <Input
-              label="Reference / Cheque / Txn Number"
-              placeholder="Txn reference / Cheque number"
-              value={paymentRef}
-              onChange={(e) => setPaymentRef(e.target.value)}
-              className="font-mono"
-            />
+            <paymentForm.Field name="referenceNumber">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  label="Reference / Cheque / Txn Number"
+                  placeholder="Txn reference / Cheque number"
+                  className="font-mono"
+                />
+              )}
+            </paymentForm.Field>
 
             <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => setPaymentModalBill(null)}
+                onClick={handleClosePayment}
                 className="cursor-pointer"
               >
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                type="submit"
-                disabled={paymentMutation.isPending}
+              <FormSubmit
+                form={paymentForm}
                 className="bg-teal-800 hover:bg-teal-900 text-white font-bold cursor-pointer"
               >
-                {paymentMutation.isPending ? "Processing..." : "Confirm Disbursal"}
-              </Button>
+                Confirm Disbursal
+              </FormSubmit>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* Off-screen Isolated Container for direct useReactToPrint */}
       <div
         style={{
           position: "fixed",
