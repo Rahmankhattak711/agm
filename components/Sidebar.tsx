@@ -180,6 +180,12 @@ const navGroups: NavGroup[] = [
     label: "Operations",
     items: [
       {
+        id: "operations-dashboard",
+        label: "Operations Overview",
+        icon: <DashboardIcon />,
+        href: "/operations/dashboard",
+      },
+      {
         id: "hr-group",
         label: "Human Resources",
         icon: <EmployeesIcon />,
@@ -330,7 +336,6 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile Drawer Backdrop Overlay */}
       <div
         className={`fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300 md:hidden ${
           mobileOpen
@@ -344,17 +349,21 @@ export default function Sidebar({
       <aside
         className={`
           flex flex-col h-screen overflow-hidden border-r border-white/10
-          bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)]
+          bg-[radial-gradient(ellipse_at_top,_#2d4b63,_#1f3445_45%,_#172836_100%)]
           shadow-[6px_0_30px_rgba(15,23,42,0.18)] transition-all duration-300
           fixed inset-y-0 left-0 z-50 md:static md:sticky md:top-0 md:z-40 md:flex-shrink-0
           ${mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
         `}
         style={{
-          width: isMobile ? 260 : (effectiveCollapsed ? 74 : 240),
+          width: isMobile ? 260 : effectiveCollapsed ? 74 : 240,
         }}
       >
-        <div className="pointer-events-none absolute inset-y-0 right-[-90px] w-[260px] opacity-20">
-          <svg aria-hidden="true" viewBox="0 0 240 720" className="h-full w-full">
+        <div className="pointer-events-none absolute -top-4 right-[-30px] w-[220px] h-[340px] opacity-15 overflow-hidden">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 240 720"
+            className="h-full w-full"
+          >
             <path
               d="M14 312V124L125 16l108 108v224M52 260V145L164 34v202"
               fill="none"
@@ -364,9 +373,9 @@ export default function Sidebar({
           </svg>
         </div>
 
-        <div className="relative z-10 flex items-center gap-2 border-b border-white/8 px-3 min-h-[72px]">
+        <div className="relative z-10 flex items-center justify-between border-b border-white/8 px-3 min-h-[72px]">
           {!effectiveCollapsed ? (
-            <div className="w-full flex items-center">
+            <div className="flex items-center">
               <AgmLogo size="sm" collapsed={false} theme="dark" />
             </div>
           ) : (
@@ -379,7 +388,7 @@ export default function Sidebar({
             id="sidebar-toggle"
             type="button"
             onClick={() => setCollapsed((c) => !c)}
-            className="ml-auto hidden md:flex h-7 w-7 p-0 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/60 transition-all hover:bg-white/10 hover:text-white cursor-pointer"
+            className="ml-auto hidden md:flex h-7 w-7 p-0 shrink-0 items-center justify-center rounded-lg border border-white/12 bg-white/8 text-white/70 hover:bg-white/15 hover:text-white transition-all cursor-pointer shadow-xs"
             title={effectiveCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <ChevronsLeftIcon
@@ -393,7 +402,7 @@ export default function Sidebar({
             <button
               type="button"
               onClick={onCloseMobile}
-              className="md:hidden ml-auto flex h-8 w-8 p-0 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white cursor-pointer"
+              className="md:hidden ml-auto flex h-8 w-8 p-0 shrink-0 items-center justify-center rounded-lg border border-white/12 bg-white/8 text-white/70 hover:bg-white/15 hover:text-white cursor-pointer"
               aria-label="Close menu"
             >
               <CloseIcon size={16} />
@@ -405,7 +414,7 @@ export default function Sidebar({
           {navGroups.map((group) => (
             <div key={group.label} className="mb-3">
               {!effectiveCollapsed && (
-                <p className="px-2.5 pb-1.5 pt-1 text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/35">
+                <p className="px-3 pb-1.5 pt-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#8fb0c4]/75">
                   {group.label}
                 </p>
               )}
@@ -417,11 +426,14 @@ export default function Sidebar({
                 );
                 const isExpanded = Boolean(expandedGroups[item.id]);
 
-                const isDirectActive = item.href ? pathname === item.href : false;
+                const isDirectActive = item.href
+                  ? pathname === item.href
+                  : false;
                 const isChildActive = hasChildren
                   ? item.children!.some(
                       (c) =>
-                        pathname === c.href || pathname.startsWith(`${c.href}/`),
+                        pathname === c.href ||
+                        pathname.startsWith(`${c.href}/`),
                     )
                   : false;
 
@@ -441,30 +453,44 @@ export default function Sidebar({
                         }
                       }}
                       title={effectiveCollapsed ? item.label : undefined}
-                      className={`group relative flex w-full items-center rounded-[12px] border-none text-left transition-all duration-200 cursor-pointer ${
-                        effectiveCollapsed ? "justify-center" : "justify-start"
+                      className={`group relative flex w-full items-center rounded-xl transition-all duration-200 cursor-pointer ${
+                        effectiveCollapsed
+                          ? "justify-center px-0 py-2.5"
+                          : "justify-start px-3 py-2.5"
                       } ${
-                        active && (!hasChildren || effectiveCollapsed)
-                          ? "bg-gradient-to-r from-white/16 to-white/6 text-white shadow-[inset_0_0_0_1px_rgba(233,242,234,0.16)]"
-                          : active && hasChildren
-                            ? "text-white font-bold bg-white/6"
-                            : "text-white/65 hover:bg-white/6 hover:text-white"
+                        isDirectActive
+                          ? "bg-white/[0.12] border border-white/15 backdrop-blur-xs text-white shadow-[0_2px_12px_rgba(0,0,0,0.14)]"
+                          : isChildActive
+                            ? "bg-white/[0.08] border border-white/10 text-white"
+                            : "border border-transparent text-slate-200/90 hover:text-white hover:bg-white/[0.07]"
                       }`}
-                      style={{ padding: effectiveCollapsed ? "10px 0" : "7px 10px" }}
                     >
-                      {active && (!hasChildren || effectiveCollapsed) && (
-                        <span className="absolute left-0 top-1/2 h-[18px] w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-[#dff7e6] to-[#9ec7a7]" />
+                      {isDirectActive && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3.5px] h-[22px] bg-[#4ade80] rounded-r-full shadow-[0_0_10px_rgba(74,222,128,0.7)]" />
+                      )}
+                      {isChildActive && !isDirectActive && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[16px] bg-[#4ade80]/60 rounded-r-full" />
                       )}
 
-                      <span className="flex shrink-0 items-center justify-center w-5 text-center">
+                      <span
+                        className={`flex shrink-0 items-center justify-center w-5 text-center transition-colors ${
+                          isDirectActive || isChildActive
+                            ? "text-white"
+                            : "text-slate-300 group-hover:text-white"
+                        }`}
+                      >
                         {item.icon}
                       </span>
 
                       {!effectiveCollapsed && (
-                        <div className="flex items-center justify-between flex-1 ml-2.5 min-w-0">
+                        <div className="flex items-center justify-between flex-1 ml-3 min-w-0">
                           <span
-                            className={`overflow-hidden text-ellipsis whitespace-nowrap text-[12.5px] ${
-                              active ? "font-bold text-white" : "font-medium"
+                            className={`overflow-hidden text-ellipsis whitespace-nowrap text-[13px] tracking-tight ${
+                              isDirectActive
+                                ? "font-bold text-white"
+                                : isChildActive
+                                  ? "font-semibold text-white"
+                                  : "font-medium text-slate-200/90 group-hover:text-white"
                             }`}
                           >
                             {item.label}
@@ -473,12 +499,14 @@ export default function Sidebar({
                           {hasChildren && (
                             <span
                               onClick={(e) => toggleGroup(item.id, e)}
-                              className="p-1 rounded-md hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                              className="p-1 rounded-md hover:bg-white/10 text-white/50 hover:text-white transition-colors ml-1"
                             >
                               <ChevronDownIcon
-                                size={12}
+                                size={13}
                                 className={`transition-transform duration-200 ${
-                                  isExpanded ? "rotate-0" : "-rotate-90"
+                                  isExpanded
+                                    ? "rotate-0 text-white"
+                                    : "-rotate-90 text-slate-400 group-hover:text-white"
                                 }`}
                               />
                             </span>
@@ -488,7 +516,7 @@ export default function Sidebar({
                     </div>
 
                     {hasChildren && isExpanded && !effectiveCollapsed && (
-                      <div className="ml-6 pl-2 mt-0.5 border-l border-white/10 space-y-0.5">
+                      <div className="ml-5 pl-3.5 my-1.5 space-y-1 border-l border-white/15">
                         {item.children!.map((child) => {
                           const childActive =
                             pathname === child.href ||
@@ -498,13 +526,16 @@ export default function Sidebar({
                               key={child.id}
                               type="button"
                               onClick={() => handleNavigateHref(child.href)}
-                              className={`flex items-center w-full px-2.5 py-1.5 rounded-lg text-[11.5px] text-left transition-all cursor-pointer ${
+                              className={`flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-[12px] text-left transition-all cursor-pointer ${
                                 childActive
-                                  ? "font-bold text-white bg-white/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]"
-                                  : "font-medium text-white/65 hover:text-white hover:bg-white/10"
+                                  ? "font-semibold text-white bg-white/[0.14] border border-white/15 shadow-xs"
+                                  : "font-medium text-slate-200/85 hover:text-white hover:bg-white/[0.07]"
                               }`}
                             >
                               <span className="truncate">{child.label}</span>
+                              {childActive && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#4ade80] shadow-[0_0_6px_#4ade80] shrink-0 ml-1.5" />
+                              )}
                             </button>
                           );
                         })}
@@ -521,15 +552,15 @@ export default function Sidebar({
 
         <div className="relative z-10 p-2.5">
           {!effectiveCollapsed ? (
-            <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/6 p-2.5 backdrop-blur-sm">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#59a06d] to-[#214d39] text-[11px] font-black text-white shadow-[0_4px_12px_rgba(28,82,58,0.3)]">
+            <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/[0.06] hover:bg-white/[0.09] p-2.5 backdrop-blur-sm transition-all">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#4ade80] to-[#166534] text-[11px] font-black text-white shadow-[0_2px_8px_rgba(22,101,52,0.4)]">
                 {initials}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="overflow-hidden text-ellipsis whitespace-nowrap text-xs font-bold text-white leading-snug">
                   {user?.fullName || "Admin User"}
                 </p>
-                <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[10px] text-white/35 leading-relaxed">
+                <p className="overflow-hidden text-ellipsis whitespace-nowrap text-[10px] text-white/45 leading-relaxed">
                   {user?.role?.replace("_", " ") || "User"} ·{" "}
                   {user?.email || "admin@agm.ae"}
                 </p>
@@ -539,7 +570,7 @@ export default function Sidebar({
                 type="button"
                 onClick={logout}
                 title="Sign out"
-                className="flex h-7 w-7 p-0 shrink-0 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/8 text-red-200 transition-all hover:bg-red-500/15 hover:text-red-100 cursor-pointer"
+                className="flex h-7 w-7 p-0 shrink-0 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 transition-all hover:bg-red-500/20 hover:text-red-100 cursor-pointer"
               >
                 <LogoutIcon className="h-[13px] w-[13px]" strokeWidth={2} />
               </button>
@@ -550,7 +581,7 @@ export default function Sidebar({
                 type="button"
                 onClick={logout}
                 title={`${user?.fullName || "Admin"} — Sign out`}
-                className="flex h-9 w-9 p-0 items-center justify-center rounded-[10px] border border-white/10 bg-gradient-to-br from-[#59a06d] to-[#214d39] text-[11px] font-black text-white shadow-[0_4px_12px_rgba(28,82,58,0.3)] cursor-pointer"
+                className="flex h-9 w-9 p-0 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-[#4ade80] to-[#166534] text-[11px] font-black text-white shadow-[0_2px_8px_rgba(22,101,52,0.4)] cursor-pointer"
               >
                 {initials}
               </button>

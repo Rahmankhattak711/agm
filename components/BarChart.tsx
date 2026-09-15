@@ -175,7 +175,6 @@ export default function BarChart({
         </div>
       )}
 
-      {/* Chart Canvas */}
       <div
         className="w-full relative bg-slate-50/40 rounded-xl p-2 border border-slate-100/90 overflow-hidden"
         style={{ height }}
@@ -183,7 +182,6 @@ export default function BarChart({
         <Bar data={chartData} options={options} />
       </div>
 
-      {/* Clean Bottom Breakdown Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
         {data.map((item, i) => (
           <div

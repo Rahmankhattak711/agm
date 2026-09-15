@@ -19,6 +19,8 @@ import {
   FormInput,
   FormSelect,
   FormSubmit,
+  DashboardCard,
+  DashboardCardGrid,
 } from "@/components/ui";
 import {
   EditIcon,
@@ -370,14 +372,14 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Simple Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Users &amp; Access Management
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage system user accounts, role-based access permissions, and security credentials.
+            Manage system user accounts, role-based access permissions, and
+            security credentials.
           </p>
         </div>
 
@@ -388,7 +390,7 @@ export default function UsersPage() {
               size="sm"
               onClick={handleOpenCreateModal}
               icon={<PlusIcon size={14} strokeWidth={2.5} />}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
             >
               Add New User
             </Button>
@@ -396,104 +398,41 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* 4 Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4">
-        {/* 1. Total Users */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-sky-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              1. Total System Users
+      <DashboardCardGrid cols={4}>
+        <DashboardCard
+          title="Total System Users"
+          value={stats?.total ?? users.length}
+          subtitle="Registered ERP accounts"
+          variant="default"
+        />
+        <DashboardCard
+          title="Active Accounts"
+          value={activeCount}
+          subtitle="Operational logins"
+          variant="success"
+        />
+        <DashboardCard
+          title="System Admins"
+          value={superAdminCount}
+          subtitle="Privileged security roles"
+          variant="default"
+        />
+        <DashboardCard
+          title="Specialist Roles"
+          value={staffCount}
+          subtitle="Accountant, HR & Inventory"
+          badge={
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200">
+              RBAC
             </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Registered ERP accounts
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-slate-900 font-mono">
-              {stats?.total ?? users.length}
-            </span>
-            <span className="text-xs font-bold text-slate-500 font-sans ml-1.5">
-              Users
-            </span>
-          </div>
-        </div>
+          }
+          variant="default"
+        />
+      </DashboardCardGrid>
 
-        {/* 2. Active Accounts */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-emerald-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              2. Active Accounts
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Operational logins
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-emerald-800 font-mono">
-              {activeCount}
-            </span>
-            <span className="text-xs font-bold text-emerald-700 font-sans ml-1.5">
-              Active
-            </span>
-          </div>
-        </div>
-
-        {/* 3. Super Admins & Admins */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-purple-500" />
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              3. System Admins
-            </span>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Privileged security roles
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-purple-800 font-mono">
-              {superAdminCount}
-            </span>
-            <span className="text-xs font-bold text-purple-700 font-sans ml-1.5">
-              Admins
-            </span>
-          </div>
-        </div>
-
-        {/* 4. Operations & Finance Managers */}
-        <div className="relative overflow-hidden p-4.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-2">
-          <div className="absolute inset-x-0 top-0 h-[2.5px] bg-teal-500" />
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                4. Specialist Roles
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
-                RBAC
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 mt-0.5 block truncate">
-              Accountant, HR &amp; Inventory
-            </span>
-          </div>
-          <div className="pt-2">
-            <span className="text-2xl font-black text-teal-900 font-mono">
-              {staffCount}
-            </span>
-            <span className="text-xs font-bold text-teal-700 font-sans ml-1.5">
-              Managers
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Filter & Table Card */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        {/* Search & Filter Strip */}
         <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Status Quick Pills */}
             <div className="flex flex-wrap items-center gap-1">
               {[{ value: "ALL", label: "All Users" }, ...ROLES].map((tab) => {
                 const isActive = roleFilter === tab.value;
@@ -557,7 +496,6 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* Modal for Creating User */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -665,7 +603,7 @@ export default function UsersPage() {
             <FormSubmit
               form={createForm}
               loading={createUserMutation.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Create Account
             </FormSubmit>
@@ -673,7 +611,6 @@ export default function UsersPage() {
         </form>
       </Modal>
 
-      {/* Modal for Editing User */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => {
@@ -793,7 +730,7 @@ export default function UsersPage() {
             <FormSubmit
               form={editForm}
               loading={updateUserMutation.isPending}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer"
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
               Save User Changes
             </FormSubmit>

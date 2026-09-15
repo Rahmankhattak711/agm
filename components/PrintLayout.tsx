@@ -32,7 +32,7 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({
         </div>
 
         <div className="text-right text-[11px] leading-4 text-slate-800 max-w-[440px]">
-          <div className="font-black text-[14px] text-[#28633a] tracking-tight mb-0.5">
+          <div className="font-black text-[14px] text-agm-green tracking-tight mb-0.5">
             A G M FITOUT TECHNICAL SERVICES L.L.C
           </div>
           <div>
@@ -82,9 +82,18 @@ export const PrintFooter: React.FC = () => {
           preserveAspectRatio="none"
           className="w-full h-full block"
         >
-          <polygon points="0,0 150,0 90,100 0,100" fill="#22222e" />
-          <polygon points="166,0 850,0 790,100 106,100" fill="#28633a" />
-          <polygon points="866,0 1000,0 1000,100 806,100" fill="#22222e" />
+          <polygon
+            points="0,0 150,0 90,100 0,100"
+            fill="var(--agm-charcoal, #22222e)"
+          />
+          <polygon
+            points="166,0 850,0 790,100 106,100"
+            fill="var(--agm-green, #28633a)"
+          />
+          <polygon
+            points="866,0 1000,0 1000,100 806,100"
+            fill="var(--agm-charcoal, #22222e)"
+          />
         </svg>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-[10px] font-semibold leading-3 text-center px-4">
