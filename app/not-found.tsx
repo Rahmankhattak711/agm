@@ -54,12 +54,20 @@ const cardVariants: Variants = {
 
 const leftVariants: Variants = {
   hidden: { opacity: 0, x: -30 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut", delay: 0.05 } },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.5, ease: "easeOut", delay: 0.05 },
+  },
 };
 
 const rightVariants: Variants = {
   hidden: { opacity: 0, x: 30 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut", delay: 0.15 } },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.5, ease: "easeOut", delay: 0.15 },
+  },
 };
 
 const staggerContainer: Variants = {
@@ -74,17 +82,29 @@ const moduleVariants: Variants = {
 
 const headingVariants: Variants = {
   hidden: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut", delay: 0.25 } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut", delay: 0.25 },
+  },
 };
 
 const descVariants: Variants = {
   hidden: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut", delay: 0.35 } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut", delay: 0.35 },
+  },
 };
 
 const btnVariants: Variants = {
   hidden: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut", delay: 0.45 } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut", delay: 0.45 },
+  },
 };
 
 export default function NotFound() {
@@ -97,7 +117,6 @@ export default function NotFound() {
         animate="visible"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2">
-
           <motion.div
             className="p-10 sm:p-12 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-agm-border"
             variants={leftVariants}
@@ -113,7 +132,11 @@ export default function NotFound() {
                     "0 4px 24px rgba(40,99,58,0.1)",
                   ],
                 }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
                 404
               </motion.div>
@@ -143,7 +166,9 @@ export default function NotFound() {
                       <p className="text-[11px] font-bold text-agm-text group-hover:text-agm-green transition-colors duration-200 leading-tight">
                         {m.label}
                       </p>
-                      <p className="text-[10px] text-agm-subtle leading-tight">{m.sub}</p>
+                      <p className="text-[10px] text-agm-subtle leading-tight">
+                        {m.sub}
+                      </p>
                     </div>
                   </Link>
                 </motion.div>
@@ -160,40 +185,155 @@ export default function NotFound() {
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             >
-              <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                width="180"
+                height="180"
+                viewBox="0 0 180 180"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <motion.circle
-                  cx="90" cy="90" r="70"
-                  fill="#e8f0e8" stroke="#dbe2db" strokeWidth="1.5"
+                  cx="90"
+                  cy="90"
+                  r="70"
+                  fill="#e8f0e8"
+                  stroke="#dbe2db"
+                  strokeWidth="1.5"
                   strokeDasharray="6 4"
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  transition={{
+                    duration: 20,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
                   style={{ transformOrigin: "90px 90px" }}
                 />
-                <circle cx="90" cy="90" r="48" fill="white" stroke="#dbe2db" strokeWidth="1.5" />
-                <circle cx="90" cy="90" r="36" fill="#e8f0e8" stroke="#28633a" strokeWidth="2" opacity="0.4" />
+                <circle
+                  cx="90"
+                  cy="90"
+                  r="48"
+                  fill="white"
+                  stroke="#dbe2db"
+                  strokeWidth="1.5"
+                />
+                <circle
+                  cx="90"
+                  cy="90"
+                  r="36"
+                  fill="#e8f0e8"
+                  stroke="#28633a"
+                  strokeWidth="2"
+                  opacity="0.4"
+                />
                 <circle cx="90" cy="90" r="4" fill="#28633a" />
 
                 <motion.g
                   style={{ transformOrigin: "90px 90px" }}
                   animate={{ rotate: [0, 12, -8, 6, -4, 2, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    repeatDelay: 1,
+                  }}
                 >
-                  <path d="M90 54 L97 86 L90 90 L83 86 Z" fill="#28633a" opacity="0.85" />
-                  <path d="M90 126 L83 94 L90 90 L97 94 Z" fill="#e8f0e8" stroke="#dbe2db" strokeWidth="1" />
-                  <path d="M54 90 L86 83 L90 90 L86 97 Z" fill="#28633a" opacity="0.5" />
-                  <path d="M126 90 L94 97 L90 90 L94 83 Z" fill="#e8f0e8" stroke="#dbe2db" strokeWidth="1" />
+                  <path
+                    d="M90 54 L97 86 L90 90 L83 86 Z"
+                    fill="#28633a"
+                    opacity="0.85"
+                  />
+                  <path
+                    d="M90 126 L83 94 L90 90 L97 94 Z"
+                    fill="#e8f0e8"
+                    stroke="#dbe2db"
+                    strokeWidth="1"
+                  />
+                  <path
+                    d="M54 90 L86 83 L90 90 L86 97 Z"
+                    fill="#28633a"
+                    opacity="0.5"
+                  />
+                  <path
+                    d="M126 90 L94 97 L90 90 L94 83 Z"
+                    fill="#e8f0e8"
+                    stroke="#dbe2db"
+                    strokeWidth="1"
+                  />
                 </motion.g>
 
-                <line x1="90" y1="42" x2="90" y2="50" stroke="#28633a" strokeWidth="2" strokeLinecap="round" />
-                <line x1="90" y1="130" x2="90" y2="138" stroke="#28633a" strokeWidth="2" strokeLinecap="round" />
-                <line x1="42" y1="90" x2="50" y2="90" stroke="#28633a" strokeWidth="2" strokeLinecap="round" />
-                <line x1="130" y1="90" x2="138" y2="90" stroke="#28633a" strokeWidth="2" strokeLinecap="round" />
+                <line
+                  x1="90"
+                  y1="42"
+                  x2="90"
+                  y2="50"
+                  stroke="#28633a"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <line
+                  x1="90"
+                  y1="130"
+                  x2="90"
+                  y2="138"
+                  stroke="#28633a"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <line
+                  x1="42"
+                  y1="90"
+                  x2="50"
+                  y2="90"
+                  stroke="#28633a"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <line
+                  x1="130"
+                  y1="90"
+                  x2="138"
+                  y2="90"
+                  stroke="#28633a"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
 
-                <circle cx="143" cy="48" r="13" fill="#f8f7f2" stroke="#dbe2db" strokeWidth="1.5" />
-                <path d="M143 43v5M143 53v1" stroke="#344b60" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="38" cy="135" r="9" fill="#f8f7f2" stroke="#dbe2db" strokeWidth="1.5" />
-                <path d="M35 132h6M38 129v6" stroke="#344b60" strokeWidth="1.5" strokeLinecap="round" />
-                <circle cx="148" cy="138" r="7" fill="#e8f0e8" stroke="#dbe2db" strokeWidth="1.5" />
+                <circle
+                  cx="143"
+                  cy="48"
+                  r="13"
+                  fill="#f8f7f2"
+                  stroke="#dbe2db"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M143 43v5M143 53v1"
+                  stroke="#344b60"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx="38"
+                  cy="135"
+                  r="9"
+                  fill="#f8f7f2"
+                  stroke="#dbe2db"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M35 132h6M38 129v6"
+                  stroke="#344b60"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx="148"
+                  cy="138"
+                  r="7"
+                  fill="#e8f0e8"
+                  stroke="#dbe2db"
+                  strokeWidth="1.5"
+                />
               </svg>
             </motion.div>
 
@@ -202,8 +342,7 @@ export default function NotFound() {
               variants={headingVariants}
             >
               This route isn&apos;t{" "}
-              <span className="text-agm-green">mapping</span>{" "}
-              to our system.
+              <span className="text-agm-green">mapping</span> to our system.
             </motion.h1>
 
             <motion.p
@@ -218,7 +357,10 @@ export default function NotFound() {
               className="flex flex-col sm:flex-row gap-3"
               variants={btnVariants}
             >
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
                 <Link href="/dashboard">
                   <Button
                     variant="primary"
@@ -231,7 +373,10 @@ export default function NotFound() {
                 </Link>
               </motion.div>
 
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
                 <Button
                   variant="outline"
                   size="md"
@@ -243,7 +388,6 @@ export default function NotFound() {
               </motion.div>
             </motion.div>
           </motion.div>
-
         </div>
       </motion.div>
     </main>
