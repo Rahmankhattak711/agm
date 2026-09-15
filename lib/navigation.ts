@@ -49,6 +49,7 @@ export const SECTION_PATHS: Record<string, string> = {
   "report-expenses": "/reports/expenses",
   "report-management": "/reports/management",
 
+  "operations-dashboard": "/operations/dashboard",
   employees: "/operations/employees",
   attendance: "/operations/attendance",
   leaves: "/operations/leaves",
@@ -64,89 +65,91 @@ export interface PageMeta {
 }
 
 export const PAGE_META: Record<string, PageMeta> = {
-  "/dashboard": { eyebrow: "Overview", title: "Executive Dashboard" },
+  "/dashboard": {
+    eyebrow: "Overview",
+    title: "Executive Dashboard",
+  },
 
   "/commercial/quotations": {
     eyebrow: "Commercial",
-    title: "Quotations & Project Proposals",
+    title: "Quotations",
   },
   "/commercial/sales-orders": {
     eyebrow: "Commercial",
-    title: "Sales Orders & Contracts",
+    title: "Sales Orders",
   },
   "/commercial/sales-invoices": {
     eyebrow: "Commercial",
-    title: "Sales Invoices (AR Billing)",
+    title: "Sales Invoices",
   },
   "/commercial/customer-payments": {
     eyebrow: "Commercial",
-    title: "Customer Payments & Receipts",
+    title: "Customer Payments",
   },
   "/commercial/credit-notes": {
     eyebrow: "Commercial",
-    title: "Sales Returns / Credit Notes",
+    title: "Credit Notes",
   },
-
   "/commercial/purchase-requests": {
     eyebrow: "Commercial",
-    title: "Purchase Requests (Requisitions)",
+    title: "Purchase Requests",
   },
   "/commercial/purchase-orders": {
     eyebrow: "Commercial",
-    title: "Purchase Orders (PO)",
+    title: "Purchase Orders",
   },
   "/commercial/goods-received": {
     eyebrow: "Commercial",
-    title: "Goods Received Notes (GRN)",
+    title: "Goods Received",
   },
   "/commercial/supplier-bills": {
     eyebrow: "Commercial",
-    title: "Supplier Bills (AP Invoices)",
+    title: "Supplier Bills",
   },
   "/commercial/supplier-payments": {
     eyebrow: "Commercial",
-    title: "Supplier Payments (Disbursals)",
+    title: "Supplier Payments",
   },
   "/commercial/debit-notes": {
     eyebrow: "Commercial",
-    title: "Purchase Returns / Debit Notes",
+    title: "Debit Notes",
   },
-
   "/commercial/customers": {
     eyebrow: "Master Data",
-    title: "Customers Directory & Statements",
+    title: "Customers",
   },
+
   "/inventory/products": {
     eyebrow: "Inventory",
-    title: "Products & Stock Management",
+    title: "Products",
   },
   "/inventory/stock-movements": {
     eyebrow: "Inventory",
-    title: "Inventory Stock Movements",
+    title: "Stock Movements",
   },
   "/inventory/purchase-orders": {
     eyebrow: "Inventory",
-    title: "Procurement & Purchase Orders",
+    title: "Purchase Orders",
   },
   "/inventory/purchase-returns": {
     eyebrow: "Inventory",
-    title: "Purchase Returns & Debit Vouchers",
+    title: "Purchase Returns",
   },
   "/inventory/sales-vouchers": {
     eyebrow: "Inventory",
-    title: "Commercial Sales Vouchers",
+    title: "Sales Vouchers",
   },
   "/inventory/sales-returns": {
     eyebrow: "Inventory",
-    title: "Sales Returns & Credit Vouchers",
+    title: "Sales Returns",
   },
   "/inventory/suppliers": {
     eyebrow: "Inventory",
-    title: "Suppliers & Vendor Management",
+    title: "Suppliers",
   },
   "/inventory/warehouses": {
     eyebrow: "Inventory",
-    title: "Warehouses & Storage Facilities",
+    title: "Warehouses",
   },
 
   "/finance/accounts": {
@@ -155,45 +158,53 @@ export const PAGE_META: Record<string, PageMeta> = {
   },
   "/finance/journal-entries": {
     eyebrow: "Finance & Accounts",
-    title: "General Journal Entries",
+    title: "Journal Entries",
   },
   "/finance/expenses": {
     eyebrow: "Finance & Accounts",
-    title: "Operating Expenses & Direct Claims",
+    title: "Expenses",
   },
   "/finance/quotations": {
     eyebrow: "Commercial & Finance",
-    title: "Commercial Quotations & Estimates",
+    title: "Quotations",
   },
   "/finance/reports": {
     eyebrow: "Financial Reports",
-    title: "Financial Statements & Analytics",
+    title: "Financial Reports",
   },
 
+  "/operations": {
+    eyebrow: "Operations",
+    title: "Operations Dashboard",
+  },
+  "/operations/dashboard": {
+    eyebrow: "Operations",
+    title: "Operations Dashboard",
+  },
   "/operations/employees": {
     eyebrow: "HR & Operations",
-    title: "Employee Directory & Profiles",
+    title: "Employees",
   },
   "/operations/attendance": {
     eyebrow: "HR & Operations",
-    title: "Daily Attendance & Timesheets",
+    title: "Attendance",
   },
   "/operations/leaves": {
     eyebrow: "HR & Operations",
-    title: "Leave Management & Balances",
+    title: "Leave Management",
   },
   "/operations/bonuses": {
     eyebrow: "HR & Operations",
-    title: "Bonuses & Performance Incentives",
+    title: "Bonuses",
   },
   "/operations/fixed-assets": {
     eyebrow: "Operations",
-    title: "Fixed Assets & Depreciation",
+    title: "Fixed Assets",
   },
 
   "/administration/users": {
     eyebrow: "Administration",
-    title: "User & Role Management",
+    title: "Users & Roles",
   },
 };
 
