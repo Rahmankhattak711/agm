@@ -1,5 +1,44 @@
 [
   {
+    "id": "ra-1789585977239",
+    "refNumber": "QR: Q-7239.R1",
+    "date": "17/09/2026",
+    "status": "DRAFT",
+    "customerName": "",
+    "projectName": "",
+    "phoneNumber": "+971 ",
+    "projectLocation": "Dubai, UAE",
+    "startDate": "17/09/2026",
+    "duration": "15 to 20 working days",
+    "workingHours": "Mon to Sat (08:00 - 05:00)",
+    "projectManager": {
+      "name": "Muhamed Assem",
+      "description": "The Site Manager shall be responsible for the over-all direction, coordination and control of all site activities and all construction works."
+    },
+    "constructionManager": {
+      "name": "Bilal Barah",
+      "description": "The Construction Manager shall report to Site Manager, developing and arranging the site construction team to the site necessary to manage and supervise the construction work including HSE and quality control, overall implementation and monitoring of all the activities for the successful completion of construction works."
+    },
+    "purpose": "This risk assessment gives guidelines contained herein to ensure that the job execution complies with the requirement of the specification and the authorities concerned and serves the intended purpose to satisfactory level.",
+    "scope": "Covers the nature and sequence of activities for interior renovation and construction works as itemized in the risk register below.",
+    "items": [
+      {
+        "id": "risk-1789585977239-1",
+        "activity": "1. Preparing the site: covering doors, door frames, floor protection, etc.",
+        "riskDescription": "No Risk",
+        "impact": "None",
+        "mitigation": "Standard site prep and floor protection procedures."
+      }
+    ],
+    "updatedAt": "2026-09-16T19:13:01.876Z",
+    "createdAt": "2026-09-16T19:13:01.876Z",
+    "createdBy": {
+      "id": "42ff6c81-aed1-4198-a7ca-da159f817dc8",
+      "fullName": "Zaac Khan",
+      "email": "zaackhan@gmail.com"
+    }
+  },
+  {
     "id": "ra-01200-r2",
     "refNumber": "QR: Q-01200.R2",
     "date": "10/09/2026",

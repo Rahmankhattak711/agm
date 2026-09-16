@@ -116,8 +116,65 @@ textarea {
   header,
   nav,
   button,
-  .print\:hidden {
+  .print\:hidden,
+  [class*="print:hidden"] {
     display: none !important;
+    visibility: hidden !important;
+  }
+
+  .print\:block,
+  [class*="print:block"] {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  .print\:inline,
+  [class*="print:inline"] {
+    display: inline !important;
+    visibility: visible !important;
+  }
+
+  .print\:inline-block,
+  [class*="print:inline-block"] {
+    display: inline-block !important;
+    visibility: visible !important;
+  }
+
+  .print\:flex,
+  [class*="print:flex"] {
+    display: flex !important;
+    visibility: visible !important;
+  }
+
+  .print\:grid,
+  [class*="print:grid"] {
+    display: grid !important;
+    visibility: visible !important;
+  }
+
+  .print\:table,
+  [class*="print:table"] {
+    display: table !important;
+  }
+
+  .print\:table-row,
+  [class*="print:table-row"] {
+    display: table-row !important;
+  }
+
+  .print\:table-cell,
+  [class*="print:table-cell"] {
+    display: table-cell !important;
+  }
+
+  .print\:table-header-group,
+  [class*="print:table-header-group"] {
+    display: table-header-group !important;
+  }
+
+  .print\:table-footer-group,
+  [class*="print:table-footer-group"] {
+    display: table-footer-group !important;
   }
 
   #printable-voucher,
@@ -142,11 +199,41 @@ textarea {
   }
 
   #printable-voucher input,
-  #printable-voucher textarea {
-    color: #0f172a !important;
-    opacity: 1 !important;
+  #printable-voucher textarea,
+  #printable-voucher select,
+  .print-page-table input,
+  .print-page-table textarea,
+  .print-page-table select,
+  input,
+  textarea,
+  select {
+    border: none !important;
+    border-width: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    color: #000000 !important;
+    font-size: inherit !important;
+    font-family: inherit !important;
+    line-height: inherit !important;
+    resize: none !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+  }
+
+  #printable-voucher .border-agm-box-border,
+  #printable-voucher [class*="rounded-"],
+  #printable-voucher div:has(> input),
+  #printable-voucher div:has(> textarea),
+  #printable-voucher div:has(> select) {
+    box-shadow: none !important;
+    border-color: transparent !important;
   }
 
   .print-page-table {
@@ -169,7 +256,6 @@ textarea {
   .print-page-table > tfoot,
   tfoot.print-page-footer-group {
     display: table-footer-group !important;
-    height: auto !important;
     width: 100% !important;
   }
 
@@ -177,7 +263,6 @@ textarea {
   tfoot.print-page-footer-group > tr,
   .print-page-table > tfoot > tr > td,
   tfoot.print-page-footer-group > tr > td {
-    height: auto !important;
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
