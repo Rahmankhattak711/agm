@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -24,7 +25,7 @@
 @theme inline {
   --color-background: var(--agm-bg);
   --color-foreground: var(--agm-text);
-  --font-inter: var(--font-inter);
+  --font-inter: "Inter", system-ui, -apple-system, sans-serif;
 
   --color-agm-navy: var(--agm-navy);
   --color-agm-navy-2: var(--agm-navy-2);
@@ -47,11 +48,11 @@
 }
 
 * {
-  font-family: "Inter", var(--font-inter), sans-serif;
+  font-family: "Inter", var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
-  font-family: "Inter", var(--font-inter), sans-serif;
+  font-family: "Inter", var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: var(--agm-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -82,6 +83,33 @@ textarea {
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  }
+
+  html,
+  body,
+  div,
+  span,
+  table,
+  th,
+  td,
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  input,
+  textarea,
+  select,
+  #printable-voucher {
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  }
+
+  .font-mono,
+  [class*="font-mono"] {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
   }
 
   html,
@@ -317,9 +345,10 @@ textarea {
   }
 
   .quotation-footer {
-    width: 98% !important;
-    max-width: 98% !important;
-    margin: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
     overflow: visible !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
@@ -349,7 +378,8 @@ textarea {
     z-index: 9999 !important;
     display: block !important;
     background: transparent !important;
-    padding: 0 4mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
     box-sizing: border-box !important;
     pointer-events: none !important;
   }

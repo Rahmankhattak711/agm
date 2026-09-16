@@ -5,3 +5,4 @@ export * from "./DataTable";
 export * from "./Skeleton";
 export * from "./form";
 export * from "./DashboardCard";
+export * from "./DateRangePicker";
