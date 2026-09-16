@@ -1874,6 +1874,78 @@ export function useConvertQuotationToSalesInvoice() {
   });
 }
 
+export type AgreementRecord = {
+  id: string;
+  title: string;
+  refNumber: string;
+  date: string;
+  status?: "DRAFT" | "ACTIVE" | "COMPLETED";
+  copiesCount: number;
+  contractor: any;
+  client: any;
+  property: string;
+  project: string;
+  contractValueNum: number;
+  contractValueText: string;
+  quotationRef: string;
+  clientMaterials: any[];
+  clauses: any[];
+  paymentMilestones: any[];
+  contractorSignatory: any;
+  clientSignatory: any;
+  createdBy?: { id?: string; fullName?: string; email?: string };
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export function useAgreements(params?: { search?: string; status?: string }) {
+  const q = new URLSearchParams();
+  if (params?.search) q.append("search", params.search);
+  if (params?.status) q.append("status", params.status);
+  const qStr = q.toString() ? `?${q.toString()}` : "";
+
+  return useQuery<AgreementRecord[]>({
+    queryKey: ["agreements", params],
+    queryFn: () => fetchJson<AgreementRecord[]>(`/api/commercial/agreements${qStr}`),
+  });
+}
+
+export function useAgreement(id?: string | null) {
+  return useQuery<AgreementRecord>({
+    queryKey: ["agreement", id],
+    queryFn: () => fetchJson<AgreementRecord>(`/api/commercial/agreements/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useSaveAgreement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<AgreementRecord>) =>
+      fetchJson<AgreementRecord>("/api/commercial/agreements", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["agreements"] });
+    },
+  });
+}
+
+export function useDeleteAgreement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ ok: boolean }>(`/api/commercial/agreements/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["agreements"] });
+    },
+  });
+}
+
+
 export interface Customer {
   id: string;
   customerCode: string;
