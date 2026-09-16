@@ -33,10 +33,10 @@ const VARIANT_STYLES: Record<
   }
 > = {
   default: {
-    container: "bg-white border-agm-box-border hover:border-agm-green/30",
-    title: "text-agm-muted",
-    value: "text-agm-text",
-    subtitle: "text-agm-muted",
+    container: "bg-white border-slate-200/80 hover:border-slate-300",
+    title: "text-slate-500",
+    value: "text-slate-900",
+    subtitle: "text-slate-400",
   },
   danger: {
     container: "bg-[#fef2f2] border-[#fecaca] hover:border-red-300",
@@ -45,23 +45,22 @@ const VARIANT_STYLES: Record<
     subtitle: "text-[#b91c1c]",
   },
   warning: {
-    container: "bg-[#fffbeb] border-[#fef3c7] hover:border-amber-300",
+    container: "bg-[#fef9ee] border-[#fde68a]/70 hover:border-amber-300",
     title: "text-[#92400e]",
     value: "text-[#78350f]",
     subtitle: "text-[#b45309]",
   },
   success: {
-    container:
-      "bg-agm-green-soft/50 border-agm-box-border hover:border-agm-green/40",
-    title: "text-agm-green",
-    value: "text-agm-green-dark",
-    subtitle: "text-agm-green",
+    container: "bg-[#edf8f1] border-[#c8e6d0] hover:border-emerald-300",
+    title: "text-[#2d6a4f]",
+    value: "text-[#1b4332]",
+    subtitle: "text-[#40916c]",
   },
   neutral: {
-    container: "bg-white border-agm-box-border hover:border-agm-muted/30",
-    title: "text-agm-muted",
-    value: "text-agm-text",
-    subtitle: "text-agm-muted",
+    container: "bg-white border-slate-200/80 hover:border-slate-300",
+    title: "text-slate-500",
+    value: "text-slate-900",
+    subtitle: "text-slate-400",
   },
 };
 
@@ -90,13 +89,13 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
     <div
       id={id}
       onClick={onClick}
-      className={`p-5 border rounded-[14px] flex flex-col justify-between space-y-2 transition-all duration-200 shadow-2xs ${styles.container} ${
+      className={`p-4 sm:p-5 border rounded-2xl flex flex-col justify-between space-y-2 transition-all duration-200 shadow-2xs ${styles.container} ${
         onClick ? "cursor-pointer hover:shadow-xs" : ""
       } ${className}`}
     >
       <div className="flex items-start justify-between gap-2">
         <span
-          className={`text-[13px] font-normal leading-tight truncate ${styles.title}`}
+          className={`text-xs sm:text-[13px] font-medium leading-tight truncate ${styles.title}`}
         >
           {title}
         </span>
@@ -107,13 +106,13 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
       <div className="flex items-baseline flex-wrap gap-1.5 pt-0.5">
         {showCurrency && (
           <span
-            className={`text-xs font-semibold uppercase tracking-wider ${styles.title}`}
+            className={`text-xs font-bold uppercase tracking-wider ${styles.title}`}
           >
             {showCurrency}
           </span>
         )}
         <span
-          className={`text-[26px] font-medium tracking-tight font-sans leading-none ${styles.value}`}
+          className={`text-2xl sm:text-[28px] font-bold tracking-tight font-sans leading-none ${styles.value}`}
         >
           {displayValue}
         </span>
@@ -122,7 +121,7 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
       {(subtitle || trend) && (
         <div className="flex items-center justify-between text-xs font-normal pt-0.5 min-h-[16px]">
           {subtitle && (
-            <span className={`truncate ${styles.subtitle}`}>{subtitle}</span>
+            <span className={`truncate text-xs ${styles.subtitle}`}>{subtitle}</span>
           )}
           {trend && (
             <span
