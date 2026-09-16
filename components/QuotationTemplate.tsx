@@ -322,7 +322,7 @@ export default function QuotationTemplate({
     setQuotationTerms(DEFAULT_TERMS_AND_CONDITIONS);
     setDiscount(0);
     setVatPct(5);
-    setStatus("ACCEPTED");
+    setStatus("DRAFT");
   };
 
   const handleDeleteQuotation = async (id: string, e: React.MouseEvent) => {
@@ -399,6 +399,7 @@ export default function QuotationTemplate({
             onChange={(e) => setStatus(e.target.value as any)}
             className="appearance-none bg-slate-50 hover:bg-slate-100/80 border border-slate-200/90 rounded-2xl pl-3.5 pr-8 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer transition-all shadow-2xs"
           >
+            <option value="DRAFT">Status: DRAFT</option>
             <option value="ACCEPTED">Status: ACCEPTED</option>
             <option value="REJECTED">Status: REJECTED</option>
           </select>
