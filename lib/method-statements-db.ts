@@ -1,41 +1,77 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import {
   MethodStatementDocumentData,
   SAMPLE_METHOD_STATEMENT,
 } from "@/components/documents/method-statement-constants";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const METHOD_FILE = path.join(DATA_DIR, "method-statements.json");
+declare global {
+  // eslint-disable-next-line no-var
+  var __agm_method_cache: MethodStatementDocumentData[] | undefined;
+}
 
-function ensureStorage(): void {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(METHOD_FILE)) {
-    const initial = [
-      {
-        ...SAMPLE_METHOD_STATEMENT,
-        id: "ms-01200-r2",
-        status: "COMPLETED",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ];
-    fs.writeFileSync(METHOD_FILE, JSON.stringify(initial, null, 2), "utf-8");
+const LOCAL_DATA_DIR = path.join(process.cwd(), "data");
+const TMP_DATA_DIR = path.join(os.tmpdir(), "agm_data");
+
+function getStoragePath(): string {
+  try {
+    if (!fs.existsSync(LOCAL_DATA_DIR)) {
+      fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
+    }
+    return path.join(LOCAL_DATA_DIR, "method-statements.json");
+  } catch {
+    try {
+      if (!fs.existsSync(TMP_DATA_DIR)) {
+        fs.mkdirSync(TMP_DATA_DIR, { recursive: true });
+      }
+      return path.join(TMP_DATA_DIR, "method-statements.json");
+    } catch {
+      return path.join(os.tmpdir(), "method-statements.json");
+    }
   }
 }
 
+function getInitialMethodStatements(): MethodStatementDocumentData[] {
+  return [
+    {
+      ...SAMPLE_METHOD_STATEMENT,
+      id: "ms-01147-r3",
+      status: "COMPLETED",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
+}
+
 export function getAllMethodStatements(): MethodStatementDocumentData[] {
-  try {
-    ensureStorage();
-    const raw = fs.readFileSync(METHOD_FILE, "utf-8");
-    const list = JSON.parse(raw);
-    return Array.isArray(list) ? list : [];
-  } catch (err) {
-    console.error("Error reading method statements storage:", err);
-    return [];
+  if (global.__agm_method_cache && global.__agm_method_cache.length > 0) {
+    return global.__agm_method_cache;
   }
+
+  try {
+    const filePath = getStoragePath();
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, "utf-8");
+      const list = JSON.parse(raw);
+      if (Array.isArray(list) && list.length > 0) {
+        global.__agm_method_cache = list;
+        return list;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not read method statements from filesystem, using initial preset:", err);
+  }
+
+  const initial = getInitialMethodStatements();
+  global.__agm_method_cache = initial;
+  try {
+    const filePath = getStoragePath();
+    fs.writeFileSync(filePath, JSON.stringify(initial, null, 2), "utf-8");
+  } catch {
+    // Read-only filesystem fallback
+  }
+  return initial;
 }
 
 export function getMethodStatementById(id: string): MethodStatementDocumentData | null {
@@ -47,8 +83,7 @@ export function saveMethodStatement(
   data: Partial<MethodStatementDocumentData> & { refNumber: string },
   authUser?: { id: string; fullName: string; email: string } | null,
 ): MethodStatementDocumentData {
-  ensureStorage();
-  const all = getAllMethodStatements();
+  const all = [...getAllMethodStatements()];
   const now = new Date().toISOString();
 
   let targetId = data.id;
@@ -89,17 +124,32 @@ export function saveMethodStatement(
     all.unshift(mergedRecord);
   }
 
-  fs.writeFileSync(METHOD_FILE, JSON.stringify(all, null, 2), "utf-8");
+  global.__agm_method_cache = all;
+
+  try {
+    const filePath = getStoragePath();
+    fs.writeFileSync(filePath, JSON.stringify(all, null, 2), "utf-8");
+  } catch (err) {
+    console.warn("Could not persist method statement to disk (running in read-only environment), cached in memory:", err);
+  }
+
   return mergedRecord;
 }
 
 export function deleteMethodStatement(id: string): boolean {
-  ensureStorage();
   const all = getAllMethodStatements();
   const filtered = all.filter((a) => a.id !== id);
   if (filtered.length === all.length) {
     return false;
   }
-  fs.writeFileSync(METHOD_FILE, JSON.stringify(filtered, null, 2), "utf-8");
+  global.__agm_method_cache = filtered;
+
+  try {
+    const filePath = getStoragePath();
+    fs.writeFileSync(filePath, JSON.stringify(filtered, null, 2), "utf-8");
+  } catch (err) {
+    console.warn("Could not persist deleted method statement to disk, updated in memory:", err);
+  }
+
   return true;
 }

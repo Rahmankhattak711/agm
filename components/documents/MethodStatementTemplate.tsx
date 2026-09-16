@@ -278,21 +278,6 @@ export default function MethodStatementTemplate({
 
           <Button
             type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditing(!isEditing)}
-            className={`text-xs flex items-center gap-1.5 cursor-pointer ${
-              isEditing
-                ? "bg-agm-green-soft text-agm-green border-agm-green/30 font-semibold"
-                : "border-agm-box-border text-agm-text hover:bg-agm-box-bg"
-            }`}
-          >
-            <EditIcon className="w-3 h-3" />
-            <span>{isEditing ? "Editing: ON" : "Edit Details"}</span>
-          </Button>
-
-          <Button
-            type="button"
             variant="primary"
             size="sm"
             disabled={saveMutation.isPending}
@@ -357,16 +342,17 @@ export default function MethodStatementTemplate({
               </tr>
             </thead>
 
-            <tfoot className="print-page-footer-group hidden print:table-footer-group">
+            <tfoot className="print-page-footer-group">
               <tr>
-                <td
-                  className="p-0 border-none print:border-none"
-                  style={{ minHeight: "185px", height: "185px" }}
-                >
+                <td className="p-0 border-none align-bottom">
                   <div
-                    style={{ height: "185px", width: "100%" }}
-                    className="invisible pointer-events-none"
-                  />
+                    className="w-full opacity-0 pointer-events-none select-none"
+                    style={{ minHeight: "185px" }}
+                    aria-hidden="true"
+                  >
+                    <QuotationFooter />
+                    <div style={{ height: "45px", minHeight: "45px" }} />
+                  </div>
                 </td>
               </tr>
             </tfoot>
@@ -374,14 +360,14 @@ export default function MethodStatementTemplate({
             <tbody>
               <tr>
                 <td className="p-0 border-none align-top">
-                  <div className="w-full px-10 py-6 text-agm-text text-xs sm:text-[13px] print:px-8 print:py-2 space-y-4">
+                  <div className="w-full px-10 py-6 text-agm-text text-xs sm:text-[13px] print:px-8 print:py-2 space-y-4 print:space-y-3">
                     {/* Header Banner */}
                     <div className="bg-[#d7eedc] text-agm-green border border-agm-green/20 text-center py-2 px-4 font-bold text-sm sm:text-base tracking-wider uppercase shadow-2xs">
                       METHOD STATEMENT
                     </div>
 
                     {/* Metadata 2-column Grid */}
-                    <div className="border border-slate-200 overflow-hidden text-xs sm:text-[13px]">
+                    <div className="border border-slate-200 overflow-hidden text-xs sm:text-[13px] break-inside-avoid print:break-inside-avoid">
                       <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200">
                         {/* Left Column */}
                         <div className="divide-y divide-slate-200">
@@ -390,7 +376,7 @@ export default function MethodStatementTemplate({
                               Document No.
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.refNumber}
                                   onChange={(e) =>
@@ -398,11 +384,10 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="font-semibold text-slate-900">
-                                  {data.refNumber}
-                                </span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline font-semibold text-slate-900">
+                                {data.refNumber}
+                              </span>
                             </div>
                           </div>
 
@@ -411,7 +396,7 @@ export default function MethodStatementTemplate({
                               Customer Name
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.customerName}
                                   onChange={(e) =>
@@ -419,11 +404,10 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="font-medium text-slate-800">
-                                  {data.customerName}
-                                </span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline font-medium text-slate-800">
+                                {data.customerName}
+                              </span>
                             </div>
                           </div>
 
@@ -432,7 +416,7 @@ export default function MethodStatementTemplate({
                               Customer Phone
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.phoneNumber}
                                   onChange={(e) =>
@@ -440,9 +424,8 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="text-slate-800">{data.phoneNumber}</span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline text-slate-800">{data.phoneNumber}</span>
                             </div>
                           </div>
 
@@ -451,7 +434,7 @@ export default function MethodStatementTemplate({
                               Location
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.projectLocation}
                                   onChange={(e) =>
@@ -459,9 +442,8 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="text-slate-800">{data.projectLocation}</span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline text-slate-800">{data.projectLocation}</span>
                             </div>
                           </div>
 
@@ -470,7 +452,7 @@ export default function MethodStatementTemplate({
                               Starting Date
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.startDate}
                                   onChange={(e) =>
@@ -478,9 +460,8 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="text-slate-800">{data.startDate}</span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline text-slate-800">{data.startDate}</span>
                             </div>
                           </div>
 
@@ -489,7 +470,7 @@ export default function MethodStatementTemplate({
                               Working Hours
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.workingHours}
                                   onChange={(e) =>
@@ -497,9 +478,8 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="text-slate-800">{data.workingHours}</span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline text-slate-800">{data.workingHours}</span>
                             </div>
                           </div>
                         </div>
@@ -511,7 +491,7 @@ export default function MethodStatementTemplate({
                               Date
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.date}
                                   onChange={(e) =>
@@ -519,9 +499,8 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="font-medium text-slate-800">{data.date}</span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline font-medium text-slate-800">{data.date}</span>
                             </div>
                           </div>
 
@@ -530,7 +509,7 @@ export default function MethodStatementTemplate({
                               Project / Unit
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.projectName}
                                   onChange={(e) =>
@@ -538,11 +517,10 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="font-semibold text-slate-900">
-                                  {data.projectName}
-                                </span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline font-semibold text-slate-900">
+                                {data.projectName}
+                              </span>
                             </div>
                           </div>
 
@@ -551,7 +529,7 @@ export default function MethodStatementTemplate({
                               Customer Email
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.customerEmail}
                                   onChange={(e) =>
@@ -559,9 +537,8 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="text-slate-800">{data.customerEmail}</span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline text-slate-800">{data.customerEmail}</span>
                             </div>
                           </div>
 
@@ -570,7 +547,7 @@ export default function MethodStatementTemplate({
                               Work Type
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.workType}
                                   onChange={(e) =>
@@ -578,9 +555,8 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="font-medium text-slate-900">{data.workType}</span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline font-medium text-slate-900">{data.workType}</span>
                             </div>
                           </div>
 
@@ -589,7 +565,7 @@ export default function MethodStatementTemplate({
                               Duration
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.duration}
                                   onChange={(e) =>
@@ -597,9 +573,8 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="text-slate-800">{data.duration}</span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline text-slate-800">{data.duration}</span>
                             </div>
                           </div>
 
@@ -608,7 +583,7 @@ export default function MethodStatementTemplate({
                               Project Manager
                             </span>
                             <div className="col-span-2">
-                              {isEditing ? (
+                              <div className="print:hidden">
                                 <Input
                                   value={data.projectManager?.name}
                                   onChange={(e) =>
@@ -622,11 +597,10 @@ export default function MethodStatementTemplate({
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
-                              ) : (
-                                <span className="font-semibold text-slate-900">
-                                  {data.projectManager?.name}
-                                </span>
-                              )}
+                              </div>
+                              <span className="hidden print:inline font-semibold text-slate-900">
+                                {data.projectManager?.name}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -634,7 +608,7 @@ export default function MethodStatementTemplate({
                     </div>
 
                     {/* Roles & Responsibilities */}
-                    <div className="space-y-3 pt-1">
+                    <div className="space-y-3 pt-1 break-inside-avoid print:break-inside-avoid">
                       <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
                         ROLES & RESPONSIBILITIES
                       </div>
@@ -646,7 +620,7 @@ export default function MethodStatementTemplate({
                             <span className="font-bold text-slate-900 text-xs sm:text-[13px] min-w-[130px]">
                               Project Manager:
                             </span>
-                            {isEditing ? (
+                            <div className="flex-1 print:hidden">
                               <Input
                                 value={data.projectManager?.name}
                                 onChange={(e) =>
@@ -658,15 +632,14 @@ export default function MethodStatementTemplate({
                                     },
                                   })
                                 }
-                                className="h-7 text-xs flex-1"
+                                className="h-7 text-xs w-full"
                               />
-                            ) : (
-                              <span className="font-semibold text-slate-900">
-                                {data.projectManager?.name}
-                              </span>
-                            )}
+                            </div>
+                            <span className="hidden print:inline font-semibold text-slate-900">
+                              {data.projectManager?.name}
+                            </span>
                           </div>
-                          {isEditing ? (
+                          <div className="print:hidden">
                             <Textarea
                               value={data.projectManager?.description}
                               onChange={(e) =>
@@ -680,11 +653,10 @@ export default function MethodStatementTemplate({
                               }
                               className="text-xs min-h-[44px]"
                             />
-                          ) : (
-                            <p className="text-xs text-slate-600 leading-relaxed">
-                              {data.projectManager?.description}
-                            </p>
-                          )}
+                          </div>
+                          <p className="hidden print:block text-xs text-slate-600 leading-relaxed pt-0.5">
+                            {data.projectManager?.description}
+                          </p>
                         </div>
 
                         {/* Construction Manager */}
@@ -693,7 +665,7 @@ export default function MethodStatementTemplate({
                             <span className="font-bold text-slate-900 text-xs sm:text-[13px] min-w-[150px]">
                               Construction Manager:
                             </span>
-                            {isEditing ? (
+                            <div className="flex-1 print:hidden">
                               <Input
                                 value={data.constructionManager?.name}
                                 onChange={(e) =>
@@ -705,15 +677,14 @@ export default function MethodStatementTemplate({
                                     },
                                   })
                                 }
-                                className="h-7 text-xs flex-1"
+                                className="h-7 text-xs w-full"
                               />
-                            ) : (
-                              <span className="font-semibold text-slate-900">
-                                {data.constructionManager?.name}
-                              </span>
-                            )}
+                            </div>
+                            <span className="hidden print:inline font-semibold text-slate-900">
+                              {data.constructionManager?.name}
+                            </span>
                           </div>
-                          {isEditing ? (
+                          <div className="print:hidden">
                             <Textarea
                               value={data.constructionManager?.description}
                               onChange={(e) =>
@@ -727,22 +698,21 @@ export default function MethodStatementTemplate({
                               }
                               className="text-xs min-h-[55px]"
                             />
-                          ) : (
-                            <p className="text-xs text-slate-600 leading-relaxed">
-                              {data.constructionManager?.description}
-                            </p>
-                          )}
+                          </div>
+                          <p className="hidden print:block text-xs text-slate-600 leading-relaxed pt-0.5">
+                            {data.constructionManager?.description}
+                          </p>
                         </div>
                       </div>
                     </div>
 
                     {/* INTRODUCTION */}
-                    <div className="space-y-1.5 pt-1">
+                    <div className="space-y-1.5 pt-1 break-inside-avoid print:break-inside-avoid">
                       <div className="font-bold text-slate-900 text-xs sm:text-[13px] tracking-wide uppercase">
                         INTRODUCTION
                       </div>
                       <div className="border border-slate-200 p-2.5 bg-slate-50/40">
-                        {isEditing ? (
+                        <div className="print:hidden">
                           <Textarea
                             value={data.introduction}
                             onChange={(e) =>
@@ -750,21 +720,20 @@ export default function MethodStatementTemplate({
                             }
                             className="text-xs min-h-[44px] bg-white"
                           />
-                        ) : (
-                          <p className="text-xs text-slate-700 leading-relaxed">
-                            {data.introduction}
-                          </p>
-                        )}
+                        </div>
+                        <p className="hidden print:block text-xs text-slate-700 leading-relaxed">
+                          {data.introduction}
+                        </p>
                       </div>
                     </div>
 
                     {/* PURPOSE */}
-                    <div className="space-y-1.5 pt-1">
+                    <div className="space-y-1.5 pt-1 break-inside-avoid print:break-inside-avoid">
                       <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
                         PURPOSE
                       </div>
                       <div className="border border-slate-200 p-2.5 bg-white">
-                        {isEditing ? (
+                        <div className="print:hidden">
                           <Textarea
                             value={data.purpose}
                             onChange={(e) =>
@@ -772,22 +741,21 @@ export default function MethodStatementTemplate({
                             }
                             className="text-xs min-h-[44px]"
                           />
-                        ) : (
-                          <p className="text-xs text-slate-700 leading-relaxed">
-                            {data.purpose}
-                          </p>
-                        )}
+                        </div>
+                        <p className="hidden print:block text-xs text-slate-700 leading-relaxed">
+                          {data.purpose}
+                        </p>
                       </div>
                     </div>
 
                     {/* SCOPE OF WORK */}
-                    <div className="space-y-2 pt-1">
+                    <div className="space-y-2 pt-1 break-inside-avoid print:break-inside-avoid">
                       <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
                         SCOPE OF WORK
                       </div>
 
                       <div className="p-1">
-                        {isEditing ? (
+                        <div className="print:hidden">
                           <Input
                             value={data.scopeOverview}
                             onChange={(e) =>
@@ -795,11 +763,10 @@ export default function MethodStatementTemplate({
                             }
                             className="text-xs bg-white mb-2"
                           />
-                        ) : (
-                          <p className="text-xs text-slate-700 leading-relaxed mb-2">
-                            {data.scopeOverview}
-                          </p>
-                        )}
+                        </div>
+                        <p className="hidden print:block text-xs text-slate-700 leading-relaxed mb-2">
+                          {data.scopeOverview}
+                        </p>
                       </div>
 
                       {/* Scope Steps Table */}
@@ -833,7 +800,7 @@ export default function MethodStatementTemplate({
                                 </td>
 
                                 <td className="p-2.5 border border-slate-200 align-top text-slate-800 leading-relaxed">
-                                  {isEditing ? (
+                                  <div className="print:hidden">
                                     <Textarea
                                       value={item.description}
                                       onChange={(e) => {
@@ -844,9 +811,10 @@ export default function MethodStatementTemplate({
                                       }}
                                       className="text-xs min-h-[44px] bg-white"
                                     />
-                                  ) : (
-                                    item.description
-                                  )}
+                                  </div>
+                                  <div className="hidden print:block text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                    {item.description}
+                                  </div>
                                 </td>
 
                                 {isEditing && (

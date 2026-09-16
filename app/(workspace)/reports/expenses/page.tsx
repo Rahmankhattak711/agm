@@ -470,14 +470,14 @@ export default function ExpenseReportsPage() {
       </Modal>
 
       <div
-        id="expenses-print-area"
-        className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full"
+        id="printable-voucher"
+        className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full text-agm-text"
       >
         <table className="print-page-table w-full border-collapse">
           <thead className="print-page-header-group">
             <tr>
               <th className="p-0 font-normal text-left border-none">
-                <QuotationHeader />
+                <QuotationHeader className="!px-0 !pt-0 !pb-4 !border-b-0" />
               </th>
             </tr>
           </thead>
@@ -500,104 +500,99 @@ export default function ExpenseReportsPage() {
           <tbody className="print-page-body-group">
             <tr>
               <td className="p-0 border-none align-top">
-                <div className="px-8 py-3 space-y-4">
-                  <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-2 print-avoid-break">
-                    <div>
-                      <span className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase block">
-                        Operating Expenditure Report
-                      </span>
-                      <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                        EXPENSES &amp; OVERHEAD SUMMARY
-                      </h3>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-slate-700 font-mono font-bold text-xs">
-                        {filteredExpenses.length} Records
-                      </p>
-                      <p className="text-slate-400 text-[10px]">
-                        Generated:{" "}
-                        {new Date().toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </p>
-                    </div>
+                <div className="space-y-0">
+                  {/* 1. Tax Registration Subheader */}
+                  <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
+                    <span>Corporate Tax Registration No: 104094432200001</span>
+                    <span>VAT Registration No:104094432200003</span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3 p-4 bg-white rounded-xl border border-slate-200 print-avoid-break">
+                  {/* 2. Theme Title Banner */}
+                  <div
+                    className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
+                    style={{
+                      WebkitPrintColorAdjust: "exact",
+                      printColorAdjust: "exact",
+                    }}
+                  >
+                    AGM FITOUT TECHNICAL SERVICES LLC - OPERATING EXPENSES STATEMENT
+                  </div>
+
+                  {/* 3. Statement KPI Summary Cards */}
+                  <div className="grid grid-cols-3 gap-3 p-4 bg-agm-box-bg rounded-xl border border-agm-box-border my-4 print-avoid-break">
                     <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                      <span className="text-agm-muted block text-[10px] uppercase font-bold">
                         Total Expenses
                       </span>
-                      <span className="font-black text-slate-900 font-mono">
+                      <span className="font-black text-agm-text font-mono">
                         {formatCurrency(metrics.totalExpenses)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                      <span className="text-agm-muted block text-[10px] uppercase font-bold">
                         Net Costs
                       </span>
-                      <span className="font-bold text-slate-900 font-mono">
+                      <span className="font-bold text-agm-text font-mono">
                         {formatCurrency(metrics.netAmount)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-bold">
+                      <span className="text-agm-muted block text-[10px] uppercase font-bold">
                         Input VAT
                       </span>
-                      <span className="font-bold text-slate-900 font-mono">
+                      <span className="font-bold text-blue-700 font-mono">
                         {formatCurrency(metrics.totalTax)}
                       </span>
                     </div>
                   </div>
 
+                  {/* 4. Table */}
                   <div className="space-y-2">
-                    <h4 className="font-bold text-slate-900 text-xs">
+                    <h4 className="font-bold text-agm-text text-xs">
                       Expense Records ({filteredExpenses.length} entries)
                     </h4>
-                    <div className="rounded-xl border border-slate-200 overflow-hidden">
-                      <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-50 border-b border-slate-200">
+                    <div className="rounded-xl border border-agm-box-border overflow-hidden">
+                      <table className="w-full text-left text-xs text-agm-text">
+                        <thead className="bg-agm-box-bg border-b border-agm-box-border">
                           <tr>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase">
                               Voucher #
                             </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase">
                               Date
                             </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase">
                               Category &amp; Payee
                             </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase">
                               Method
                             </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase text-right">
                               Amount
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 font-mono">
+                        <tbody className="divide-y divide-agm-box-border font-mono">
                           {filteredExpenses.map((e) => (
                             <tr key={e.id}>
-                              <td className="py-2 px-3 font-bold text-slate-900">
+                              <td className="py-2 px-3 font-bold text-agm-text">
                                 {e.expenseNumber}
                               </td>
-                              <td className="py-2 px-3 text-slate-600">
+                              <td className="py-2 px-3 text-agm-muted">
                                 {new Date(e.expenseDate).toLocaleDateString(
                                   "en-GB",
                                 )}
                               </td>
                               <td className="py-2 px-3 font-sans">
-                                <span className="font-bold">{e.category}</span>
+                                <span className="font-bold text-agm-text">{e.category}</span>
                                 {e.payee ? ` - ${e.payee}` : ""}
                               </td>
-                              <td className="py-2 px-3 font-sans">
+                              <td className="py-2 px-3 font-sans text-agm-text">
                                 {e.paymentMethod.replace("_", " ")}
                               </td>
                               <td
                                 align="right"
-                                className="py-2 px-3 font-mono font-bold text-slate-900"
+                                className="py-2 px-3 font-mono font-bold text-agm-text"
                               >
                                 {formatCurrency(e.totalAmount)}
                               </td>
@@ -613,7 +608,8 @@ export default function ExpenseReportsPage() {
           </tbody>
         </table>
 
-        <div className="fixed-print-footer hidden print:block">
+        {/* Fixed Print Footer across every single printed page */}
+        <div className="print-footer-bottom fixed-print-footer hidden print:block">
           <QuotationFooter />
         </div>
       </div>

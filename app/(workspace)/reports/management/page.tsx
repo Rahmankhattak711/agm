@@ -140,7 +140,7 @@ export default function ManagementReportsPage() {
           </Button>
         </div>
 
-        <ReportKpiGrid cols={3}>
+        <ReportKpiGrid cols={4}>
           <ReportKpiCard
             title="1. Total Billed Revenue"
             subtitle="Gross commercial turnover"
@@ -407,14 +407,14 @@ export default function ManagementReportsPage() {
       </div>
 
       <div
-        id="management-print-area"
-        className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full"
+        id="printable-voucher"
+        className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full text-agm-text"
       >
         <table className="print-page-table w-full border-collapse">
           <thead className="print-page-header-group">
             <tr>
               <th className="p-0 font-normal text-left border-none">
-                <QuotationHeader />
+                <QuotationHeader className="!px-0 !pt-0 !pb-4 !border-b-0" />
               </th>
             </tr>
           </thead>
@@ -437,105 +437,100 @@ export default function ManagementReportsPage() {
           <tbody className="print-page-body-group">
             <tr>
               <td className="p-0 border-none align-top">
-                <div className="px-8 py-3 space-y-4">
-                  <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-2 print-avoid-break">
-                    <div>
-                      <span className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase block">
-                        Executive Performance Statement
-                      </span>
-                      <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                        MANAGEMENT &amp; BOARD REPORT
-                      </h3>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-slate-700 font-mono font-bold text-xs">
-                        Statutory Executive Audit
-                      </p>
-                      <p className="text-slate-400 text-[10px]">
-                        Generated:{" "}
-                        {new Date().toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </p>
-                    </div>
+                <div className="space-y-0">
+                  {/* 1. Tax Registration Subheader */}
+                  <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
+                    <span>Corporate Tax Registration No: 104094432200001</span>
+                    <span>VAT Registration No:104094432200003</span>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-3 p-4 bg-white rounded-xl border border-slate-200 print-avoid-break">
+                  {/* 2. Theme Title Banner */}
+                  <div
+                    className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
+                    style={{
+                      WebkitPrintColorAdjust: "exact",
+                      printColorAdjust: "exact",
+                    }}
+                  >
+                    AGM FITOUT TECHNICAL SERVICES LLC - MANAGEMENT &amp; BOARD STATEMENT
+                  </div>
+
+                  {/* 3. Statement KPI Summary Cards */}
+                  <div className="grid grid-cols-4 gap-3 p-4 bg-agm-box-bg rounded-xl border border-agm-box-border my-4 print-avoid-break">
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
                         Billed Revenue
                       </span>
-                      <span className="font-mono font-black text-slate-900">
+                      <span className="font-mono font-black text-agm-text">
                         {formatCurrency(totalRevenue)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
                         Net Profit
                       </span>
-                      <span className="font-mono font-black text-emerald-800">
+                      <span className="font-mono font-black text-emerald-700">
                         {formatCurrency(netProfit)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
                         Working Capital
                       </span>
-                      <span className="font-mono font-black text-blue-900">
+                      <span className="font-mono font-black text-blue-800">
                         {formatCurrency(workingCapital)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
                         Liquidity Ratio
                       </span>
-                      <span className="font-mono font-black text-slate-900">
+                      <span className="font-mono font-black text-agm-text">
                         {currentRatio.toFixed(2)}x
                       </span>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* 4. Details Tables */}
+                  <div className="grid grid-cols-2 gap-4 print-avoid-break">
                     <div className="space-y-2">
-                      <h4 className="font-bold text-slate-900 text-xs">
+                      <h4 className="font-bold text-agm-text text-xs">
                         Income &amp; Margin
                       </h4>
-                      <div className="rounded-xl border border-slate-200 p-4 space-y-2 font-mono">
+                      <div className="rounded-xl border border-agm-box-border p-4 space-y-2 font-mono bg-agm-card text-xs">
                         <div className="flex justify-between">
-                          <span className="text-slate-500 font-sans">
+                          <span className="text-agm-muted font-sans">
                             Gross Revenue:
                           </span>
-                          <span className="font-bold">
+                          <span className="font-bold text-agm-text">
                             {formatCurrency(totalRevenue)}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-500 font-sans">
+                          <span className="text-agm-muted font-sans">
                             Direct Costs:
                           </span>
-                          <span className="text-rose-700">
+                          <span className="text-rose-600">
                             -{formatCurrency(directExpenses)}
                           </span>
                         </div>
-                        <div className="flex justify-between border-t border-slate-100 pt-1.5">
-                          <span className="text-emerald-800 font-bold font-sans">
+                        <div className="flex justify-between border-t border-agm-box-border pt-1.5">
+                          <span className="text-agm-green-dark font-bold font-sans">
                             Gross Profit:
                           </span>
-                          <span className="font-bold text-emerald-800">
+                          <span className="font-bold text-emerald-700">
                             {formatCurrency(grossProfit)}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-500 font-sans">
+                          <span className="text-agm-muted font-sans">
                             Operating Overheads:
                           </span>
-                          <span>-{formatCurrency(operatingExpenses)}</span>
+                          <span className="text-rose-600">-{formatCurrency(operatingExpenses)}</span>
                         </div>
-                        <div className="flex justify-between border-t border-slate-200 pt-1.5 font-black">
-                          <span className="font-sans">Net Profit:</span>
-                          <span className="text-emerald-800">
+                        <div className="flex justify-between border-t border-agm-box-border pt-1.5 font-black bg-agm-box-bg/50 px-2 py-1 rounded">
+                          <span className="font-sans text-agm-text">Net Profit:</span>
+                          <span className="text-emerald-700 font-mono font-bold">
                             {formatCurrency(netProfit)}
                           </span>
                         </div>
@@ -543,25 +538,25 @@ export default function ManagementReportsPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <h4 className="font-bold text-slate-900 text-xs">
+                      <h4 className="font-bold text-agm-text text-xs">
                         Balance Sheet Summary
                       </h4>
-                      <div className="rounded-xl border border-slate-200 p-4 space-y-2 font-mono">
+                      <div className="rounded-xl border border-agm-box-border p-4 space-y-2 font-mono bg-agm-card text-xs">
                         <div className="flex justify-between">
-                          <span className="text-slate-500 font-sans">
+                          <span className="text-agm-muted font-sans">
                             Current Assets:
                           </span>
-                          <span className="font-bold">
+                          <span className="font-bold text-agm-text">
                             {formatCurrency(currentAssets)}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-500 font-sans">
+                          <span className="text-agm-muted font-sans">
                             Fixed Assets:
                           </span>
-                          <span>{formatCurrency(fixedAssets)}</span>
+                          <span className="text-agm-text">{formatCurrency(fixedAssets)}</span>
                         </div>
-                        <div className="flex justify-between border-t border-slate-100 pt-1.5">
+                        <div className="flex justify-between border-t border-agm-box-border pt-1.5">
                           <span className="font-sans text-blue-900 font-bold">
                             Total Assets:
                           </span>
@@ -570,16 +565,16 @@ export default function ManagementReportsPage() {
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-500 font-sans">
+                          <span className="text-agm-muted font-sans">
                             Current Liabilities:
                           </span>
                           <span className="text-amber-700">
                             {formatCurrency(currentLiabilities)}
                           </span>
                         </div>
-                        <div className="flex justify-between border-t border-slate-200 pt-1.5 font-black">
-                          <span className="font-sans">Total Equity:</span>
-                          <span className="text-emerald-800">
+                        <div className="flex justify-between border-t border-agm-box-border pt-1.5 font-black bg-agm-box-bg/50 px-2 py-1 rounded">
+                          <span className="font-sans text-agm-text">Total Equity:</span>
+                          <span className="text-emerald-700 font-mono font-bold">
                             {formatCurrency(totalEquity)}
                           </span>
                         </div>
@@ -592,7 +587,8 @@ export default function ManagementReportsPage() {
           </tbody>
         </table>
 
-        <div className="fixed-print-footer hidden print:block">
+        {/* Fixed Print Footer across every single printed page */}
+        <div className="print-footer-bottom fixed-print-footer hidden print:block">
           <QuotationFooter />
         </div>
       </div>

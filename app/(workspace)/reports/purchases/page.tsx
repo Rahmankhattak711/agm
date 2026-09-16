@@ -16,6 +16,7 @@ import {
 import {
   Button,
   DataTable,
+  DateRangePicker,
   Input,
   Modal,
   Select,
@@ -432,7 +433,7 @@ export default function PurchaseReportsPage() {
           </Button>
         </div>
 
-        <ReportKpiGrid cols={3}>
+        <ReportKpiGrid cols={4}>
           <ReportKpiCard
             title="1. Procurement Spend"
             subtitle={`${nonCancelledBills.length} supplier bills`}
@@ -502,7 +503,13 @@ export default function PurchaseReportsPage() {
                       type="button"
                       size="sm"
                       variant={isActive ? "outline" : "ghost"}
-                      onClick={() => setPeriodFilter(tab.key)}
+                      onClick={() => {
+                        setPeriodFilter(tab.key);
+                        if (tab.key !== "CUSTOM") {
+                          setStartDate("");
+                          setEndDate("");
+                        }
+                      }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer h-auto ${
                         isActive
                           ? "!bg-white !text-teal-900 shadow-xs border border-slate-200/90 hover:!bg-white"
@@ -516,21 +523,16 @@ export default function PurchaseReportsPage() {
               </div>
 
               {periodFilter === "CUSTOM" && (
-                <div className="flex items-center gap-2 text-xs">
-                  <Input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    containerClassName="w-36"
-                  />
-                  <span className="text-slate-400 font-bold">to</span>
-                  <Input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    containerClassName="w-36"
-                  />
-                </div>
+                <DateRangePicker
+                  startDate={startDate}
+                  endDate={endDate}
+                  placeholder="Select Date Range"
+                  align="right"
+                  onChange={({ startDate: s, endDate: e }) => {
+                    setStartDate(s);
+                    setEndDate(e);
+                  }}
+                />
               )}
             </div>
 
@@ -763,14 +765,14 @@ export default function PurchaseReportsPage() {
       )}
 
       <div
-        id="purchases-print-area"
-        className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full"
+        id="printable-voucher"
+        className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full text-agm-text"
       >
         <table className="print-page-table w-full border-collapse">
           <thead className="print-page-header-group">
             <tr>
               <th className="p-0 font-normal text-left border-none">
-                <QuotationHeader />
+                <QuotationHeader className="!px-0 !pt-0 !pb-4 !border-b-0" />
               </th>
             </tr>
           </thead>
@@ -793,50 +795,44 @@ export default function PurchaseReportsPage() {
           <tbody className="print-page-body-group">
             <tr>
               <td className="p-0 border-none align-top">
-                <div className="px-8 py-3 space-y-4">
-                  <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-2 print-avoid-break">
-                    <div>
-                      <span className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase block">
-                        Accounts Payable Report
-                      </span>
-                      <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                        PROCUREMENT &amp; VENDOR BILLS
-                      </h3>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-slate-700 font-mono font-bold text-xs">
-                        {filteredBills.length} Bills
-                      </p>
-                      <p className="text-slate-400 text-[10px]">
-                        Generated:{" "}
-                        {new Date().toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </p>
-                    </div>
+                <div className="space-y-0">
+                  {/* 1. Tax Registration Subheader */}
+                  <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
+                    <span>Corporate Tax Registration No: 104094432200001</span>
+                    <span>VAT Registration No:104094432200003</span>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-3 p-4 bg-white rounded-xl border border-slate-200 print-avoid-break">
+                  {/* 2. Theme Title Banner */}
+                  <div
+                    className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
+                    style={{
+                      WebkitPrintColorAdjust: "exact",
+                      printColorAdjust: "exact",
+                    }}
+                  >
+                    AGM FITOUT TECHNICAL SERVICES LLC - PROCUREMENT &amp; VENDOR BILLS STATEMENT
+                  </div>
+
+                  {/* 3. Statement KPI Summary Cards */}
+                  <div className="grid grid-cols-4 gap-3 p-4 bg-agm-box-bg rounded-xl border border-agm-box-border my-4 print-avoid-break">
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
                         Total Spend
                       </span>
-                      <span className="font-mono font-black text-slate-900">
+                      <span className="font-mono font-black text-agm-text">
                         {formatCurrency(totalProcurementSpend)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
                         Settled
                       </span>
-                      <span className="font-mono font-black text-emerald-800">
+                      <span className="font-mono font-black text-emerald-700">
                         {formatCurrency(totalDisbursed)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
                         Outstanding A/P
                       </span>
                       <span className="font-mono font-black text-amber-700">
@@ -844,7 +840,7 @@ export default function PurchaseReportsPage() {
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
                         Input VAT (5%)
                       </span>
                       <span className="font-mono font-black text-blue-700">
@@ -853,51 +849,51 @@ export default function PurchaseReportsPage() {
                     </div>
                   </div>
 
+                  {/* 4. Table */}
                   <div className="space-y-2">
-                    <h4 className="font-bold text-slate-900 text-xs">
-                      Procurement Bills Breakdown ({filteredBills.length}{" "}
-                      records)
+                    <h4 className="font-bold text-agm-text text-xs">
+                      Procurement Bills Breakdown ({filteredBills.length} records)
                     </h4>
-                    <div className="rounded-xl border border-slate-200 overflow-hidden">
-                      <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-50 border-b border-slate-200">
+                    <div className="rounded-xl border border-agm-box-border overflow-hidden">
+                      <table className="w-full text-left text-xs text-agm-text">
+                        <thead className="bg-agm-box-bg border-b border-agm-box-border">
                           <tr>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase">
                               Bill No
                             </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase">
                               Supplier
                             </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase">
                               Date
                             </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase text-right">
                               Net (AED)
                             </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase text-right">
                               VAT (AED)
                             </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase text-right">
                               Total (AED)
                             </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-right">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase text-right">
                               Balance Due
                             </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-slate-600 uppercase text-center">
+                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase text-center">
                               Status
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 font-mono">
+                        <tbody className="divide-y divide-agm-box-border font-mono">
                           {filteredBills.map((b) => (
                             <tr key={b.id}>
-                              <td className="py-2 px-3 font-bold text-slate-900">
+                              <td className="py-2 px-3 font-bold text-agm-text">
                                 {b.billNumber}
                               </td>
-                              <td className="py-2 px-3 font-sans font-medium text-slate-800">
+                              <td className="py-2 px-3 font-sans font-medium text-agm-text">
                                 {b.supplierName}
                               </td>
-                              <td className="py-2 px-3 text-slate-600">
+                              <td className="py-2 px-3 text-agm-muted">
                                 {b.billDate
                                   ? new Date(b.billDate)
                                       .toISOString()
@@ -910,7 +906,7 @@ export default function PurchaseReportsPage() {
                               <td className="py-2 px-3 text-right text-blue-700">
                                 {Number(b.vatAmount).toFixed(2)}
                               </td>
-                              <td className="py-2 px-3 text-right font-bold text-slate-900">
+                              <td className="py-2 px-3 text-right font-bold text-agm-text">
                                 {Number(b.totalAmount).toFixed(2)}
                               </td>
                               <td className="py-2 px-3 text-right font-bold text-amber-700">
@@ -931,7 +927,8 @@ export default function PurchaseReportsPage() {
           </tbody>
         </table>
 
-        <div className="fixed-print-footer hidden print:block">
+        {/* Fixed Print Footer across every single printed page */}
+        <div className="print-footer-bottom fixed-print-footer hidden print:block">
           <QuotationFooter />
         </div>
       </div>

@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  getMethodStatementById,
-  deleteMethodStatement,
-} from "@/lib/method-statements-db";
+import prisma from "@/lib/prisma";
 
 export async function GET(
   request: Request,
@@ -10,7 +7,19 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const item = getMethodStatementById(id);
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+    const item = await (prisma as any).methodStatement.findFirst({
+      where: isUuid
+        ? { OR: [{ id }, { refNumber: id }] }
+        : { refNumber: id },
+      include: {
+        createdBy: {
+          select: { id: true, fullName: true, email: true },
+        },
+      },
+    });
+
     if (!item) {
       return NextResponse.json(
         { error: "Method statement not found" },
@@ -32,13 +41,25 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const ok = deleteMethodStatement(id);
-    if (!ok) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+    const existing = await (prisma as any).methodStatement.findFirst({
+      where: isUuid
+        ? { OR: [{ id }, { refNumber: id }] }
+        : { refNumber: id },
+    });
+
+    if (!existing) {
       return NextResponse.json(
         { error: "Method statement not found" },
         { status: 404 },
       );
     }
+
+    await (prisma as any).methodStatement.delete({
+      where: { id: existing.id },
+    });
+
     return NextResponse.json({ ok: true });
   } catch (error: any) {
     return NextResponse.json(

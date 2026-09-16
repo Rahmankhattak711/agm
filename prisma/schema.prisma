@@ -52,6 +52,10 @@ model User {
   supplierPayments SupplierPayment[]
   debitNotes       DebitNote[]
 
+  commercialAgreements CommercialAgreement[]
+  riskAssessments      RiskAssessment[]
+  methodStatements     MethodStatement[]
+
   @@map("users")
 }
 
@@ -1313,4 +1317,87 @@ model DebitNoteItem {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("debit_note_items")
+}
+
+model CommercialAgreement {
+  id                  String   @id @default(uuid()) @db.Uuid
+  refNumber           String   @unique @map("ref_number")
+  title               String   @default("AGM FITOUT AGREEMENT")
+  date                String   @default("")
+  status              String   @default("DRAFT")
+  contractor          Json
+  client              Json
+  property            Json
+  project             Json
+  contractValue       Json     @map("contract_value")
+  clauses             Json
+  paymentMilestones   Json     @map("payment_milestones")
+  clientMaterials     Json     @map("client_materials")
+  contractorSignatory Json?    @map("contractor_signatory")
+  clientSignatory     Json?    @map("client_signatory")
+
+  createdById String? @map("created_by_id") @db.Uuid
+  createdBy   User?   @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("commercial_agreements")
+}
+
+model RiskAssessment {
+  id                  String   @id @default(uuid()) @db.Uuid
+  refNumber           String   @unique @map("ref_number")
+  date                String   @default("")
+  status              String   @default("DRAFT")
+  customerName        String   @default("") @map("customer_name")
+  projectName         String   @default("") @map("project_name")
+  phoneNumber         String   @default("") @map("phone_number")
+  projectLocation     String   @default("") @map("project_location")
+  startDate           String   @default("") @map("start_date")
+  duration            String   @default("")
+  workingHours        String   @default("") @map("working_hours")
+  projectManager      Json     @map("project_manager")
+  constructionManager Json     @map("construction_manager")
+  purpose             String   @default("") @db.Text
+  scope               String   @default("") @db.Text
+  items               Json
+
+  createdById String? @map("created_by_id") @db.Uuid
+  createdBy   User?   @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("risk_assessments")
+}
+
+model MethodStatement {
+  id                  String   @id @default(uuid()) @db.Uuid
+  refNumber           String   @unique @map("ref_number")
+  date                String   @default("")
+  status              String   @default("DRAFT")
+  customerName        String   @default("") @map("customer_name")
+  projectName         String   @default("") @map("project_name")
+  phoneNumber         String   @default("") @map("phone_number")
+  customerEmail       String   @default("") @map("customer_email")
+  projectLocation     String   @default("") @map("project_location")
+  workType            String   @default("") @map("work_type")
+  startDate           String   @default("") @map("start_date")
+  duration            String   @default("")
+  workingHours        String   @default("") @map("working_hours")
+  projectManager      Json     @map("project_manager")
+  constructionManager Json     @map("construction_manager")
+  introduction        String   @default("") @db.Text
+  purpose             String   @default("") @db.Text
+  scopeOverview       String   @default("") @map("scope_overview") @db.Text
+  items               Json
+
+  createdById String? @map("created_by_id") @db.Uuid
+  createdBy   User?   @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("method_statements")
 }

@@ -265,7 +265,7 @@ export const DEFAULT_AGREEMENT_CLAUSES: AgreementClause[] = [
 
 export const SAMPLE_RENOVATION_AGREEMENT: AgreementDocumentData = {
   id: "agm-agr-01147-r3",
-  title: "AGREEMENT",
+  title: "AGM FITOUT AGREEMENT",
   refNumber: "Q-01147 R3 - Dubai Marina Sulafa tower 1102",
   date: "14/02/2026",
   copiesCount: 2,
