@@ -185,6 +185,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({
             startDate={customDate}
             endDate={customDate}
             placeholder="As of Date"
+            align="right"
             onChange={({ endDate }) => {
               if (endDate) {
                 setCustomDate(endDate);

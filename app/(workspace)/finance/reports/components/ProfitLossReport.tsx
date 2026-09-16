@@ -168,6 +168,7 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
             startDate={customStart}
             endDate={customEnd}
             placeholder="Custom Date Range"
+            align="right"
             onChange={({ startDate, endDate }) => {
               setCustomStart(startDate);
               setCustomEnd(endDate);
