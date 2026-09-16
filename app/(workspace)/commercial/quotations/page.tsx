@@ -171,8 +171,8 @@ export default function CommercialQuotationsPage() {
 
   const totalQuotedVolume = useMemo(
     () =>
-      filteredQuotations.reduce((s, q) => s + Number(q.totalAmount || 0), 0),
-    [filteredQuotations],
+      quotationsList.reduce((s, q) => s + Number(q.totalAmount || 0), 0),
+    [quotationsList],
   );
 
   const acceptedCount = useMemo(
@@ -180,8 +180,8 @@ export default function CommercialQuotationsPage() {
     [quotationsList],
   );
 
-  const sentCount = useMemo(
-    () => quotationsList.filter((q) => q.status === "SENT").length,
+  const rejectedCount = useMemo(
+    () => quotationsList.filter((q) => q.status === "REJECTED").length,
     [quotationsList],
   );
 
@@ -244,15 +244,15 @@ export default function CommercialQuotationsPage() {
           variant="default"
         />
         <DashboardCard
-          title="Won & Accepted Deals"
+          title="Accepted Deals"
           value={acceptedCount}
           subtitle="Converted proposals"
           variant="success"
         />
         <DashboardCard
-          title="Active Negotiations"
-          value={sentCount}
-          subtitle="Sent to clients for review"
+          title="Rejected Deals"
+          value={rejectedCount}
+          subtitle="Declined proposals"
           variant="warning"
         />
       </DashboardCardGrid>
@@ -273,8 +273,7 @@ export default function CommercialQuotationsPage() {
                 {[
                   { id: "ALL", label: "All Quotations" },
                   { id: "ACCEPTED", label: "Accepted Deals" },
-                  { id: "SENT", label: "Sent / In-Review" },
-                  { id: "DRAFT", label: "Drafts" },
+                  { id: "REJECTED", label: "Rejected Deals" },
                 ].map((tab) => {
                   const isActive = statusFilter === tab.id;
                   return (
