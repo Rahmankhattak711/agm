@@ -19,7 +19,11 @@ export function LineChartIcon({
       {...props}
     >
       <rect x="2" y="2" width="16" height="16" rx="2" />
-      <path d="M4 14l4-4 3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M4 14l4-4 3 3 5-6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

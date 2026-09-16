@@ -16,6 +16,7 @@ import {
   DashboardIcon,
   EmployeesIcon,
   ExpensesIcon,
+  FileCheckIcon,
   FixedAssetsIcon,
   JournalEntriesIcon,
   LeavesIcon,
@@ -225,6 +226,29 @@ const navGroups: NavGroup[] = [
             href: "/operations/fixed-assets",
           },
         ],
+      },
+    ],
+  },
+  {
+    label: "Company Documents",
+    items: [
+      {
+        id: "company-agreements",
+        label: "Company Agreements",
+        icon: <FileCheckIcon />,
+        href: "/commercial/agreements",
+      },
+      {
+        id: "risk-assessments",
+        label: "Risk Assessments",
+        icon: <FileCheckIcon />,
+        href: "/commercial/risk-assessments",
+      },
+      {
+        id: "method-statements",
+        label: "Method Statements",
+        icon: <FileCheckIcon />,
+        href: "/commercial/method-statements",
       },
     ],
   },

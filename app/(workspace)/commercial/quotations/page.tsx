@@ -171,8 +171,8 @@ export default function CommercialQuotationsPage() {
 
   const totalQuotedVolume = useMemo(
     () =>
-      filteredQuotations.reduce((s, q) => s + Number(q.totalAmount || 0), 0),
-    [filteredQuotations],
+      quotationsList.reduce((s, q) => s + Number(q.totalAmount || 0), 0),
+    [quotationsList],
   );
 
   const acceptedCount = useMemo(
@@ -180,8 +180,8 @@ export default function CommercialQuotationsPage() {
     [quotationsList],
   );
 
-  const sentCount = useMemo(
-    () => quotationsList.filter((q) => q.status === "SENT").length,
+  const rejectedCount = useMemo(
+    () => quotationsList.filter((q) => q.status === "REJECTED").length,
     [quotationsList],
   );
 
@@ -244,15 +244,15 @@ export default function CommercialQuotationsPage() {
           variant="default"
         />
         <DashboardCard
-          title="Won & Accepted Deals"
+          title="Accepted Deals"
           value={acceptedCount}
           subtitle="Converted proposals"
           variant="success"
         />
         <DashboardCard
-          title="Active Negotiations"
-          value={sentCount}
-          subtitle="Sent to clients for review"
+          title="Rejected Deals"
+          value={rejectedCount}
+          subtitle="Declined proposals"
           variant="warning"
         />
       </DashboardCardGrid>
@@ -273,7 +273,7 @@ export default function CommercialQuotationsPage() {
                 {[
                   { id: "ALL", label: "All Quotations" },
                   { id: "ACCEPTED", label: "Accepted Deals" },
-                  { id: "SENT", label: "Sent / In-Review" },
+                  { id: "REJECTED", label: "Rejected Deals" },
                   { id: "DRAFT", label: "Drafts" },
                 ].map((tab) => {
                   const isActive = statusFilter === tab.id;
@@ -404,16 +404,20 @@ export default function CommercialQuotationsPage() {
                             className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                               q.status === "ACCEPTED"
                                 ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                : q.status === "SENT"
-                                  ? "bg-sky-50 text-sky-800 border-sky-200"
-                                  : "bg-slate-100 text-slate-700 border-slate-200"
+                                : q.status === "REJECTED"
+                                  ? "bg-rose-50 text-rose-800 border-rose-200"
+                                  : q.status === "SENT"
+                                    ? "bg-sky-50 text-sky-800 border-sky-200"
+                                    : "bg-slate-100 text-slate-700 border-slate-200"
                             }`}
                           >
                             {q.status === "ACCEPTED"
                               ? "Accepted"
-                              : q.status === "SENT"
-                                ? "Sent"
-                                : "Draft"}
+                              : q.status === "REJECTED"
+                                ? "Rejected"
+                                : q.status === "SENT"
+                                  ? "Sent"
+                                  : "Draft"}
                           </span>
                         </TableCell>
                         <TableCell className="py-3 px-3 text-center">

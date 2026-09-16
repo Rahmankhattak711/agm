@@ -1,31 +1,25 @@
 "use client";
 
-import { Button } from "@/components/ui";
 import {
   QuotationRecord,
-  useAccounts,
-  useCreateJournalEntry,
   useDeleteQuotation,
   useQuotations,
   useSaveQuotation,
 } from "@/lib/hooks/api-hooks";
 import {
-  ArrowRightLeft,
   Check,
+  ChevronDown,
   FileCheck,
   FileText,
   FolderOpen,
   Plus,
   Printer,
-  RotateCcw,
   Save,
-  Zap,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import {
   DEFAULT_PAYMENT_TERMS,
   DEFAULT_TERMS_AND_CONDITIONS,
-  formatCurrency,
   ItemKey,
   MetaKey,
   QuotationDetailsCards,
@@ -58,22 +52,18 @@ export default function QuotationTemplate({
 }: QuotationTemplateProps) {
   const [selectedQuotationId, setSelectedQuotationId] = useState<string>("");
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string>("");
-  const [ledgerPostedMsg, setLedgerPostedMsg] = useState<string>("");
-  const [isPostingLedger, setIsPostingLedger] = useState<boolean>(false);
   const [docType, setDocType] = useState<"QUOTATION" | "TAX_INVOICE">(
     "QUOTATION",
   );
-  const [status, setStatus] = useState<
-    "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "EXPIRED"
-  >("DRAFT");
+  const [status, setStatus] = useState<"ACCEPTED" | "REJECTED" | "DRAFT">(
+    "ACCEPTED",
+  );
   const [isSavedDrawerOpen, setIsSavedDrawerOpen] = useState<boolean>(false);
 
   const { data: savedQuotations = [], isLoading: isLoadingSaved } =
     useQuotations();
-  const { data: accountsList = [] } = useAccounts();
   const saveQuotationMutation = useSaveQuotation();
   const deleteQuotationMutation = useDeleteQuotation();
-  const createJournalEntryMutation = useCreateJournalEntry();
 
   const [meta, setMeta] = useState<QuotationMeta>({
     quotationNo: initialMeta?.quotationNo || "AGM-QTN-2026-01217",
@@ -194,31 +184,6 @@ export default function QuotationTemplate({
       its.length > 1 ? its.filter((it) => it.id !== id) : its,
     );
 
-  const loadSamplePdfPreset = () => {
-    setMeta({
-      quotationNo: "Q-01217",
-      date: "06/08/2026",
-      validUntil: "16/08/2026",
-      customer: "Brian Berthelsen",
-      attention: "",
-      address: "Dubai, UAE",
-      trn: "",
-      mobile: "+971 56 545 3103",
-      project: "Proposed G+1 Townhouses",
-      location: "Al Furjan, Dubai - UAE",
-      reference: "",
-      preparedBy: "assem@agmfitout.com",
-      contact: "+971 48 749839 / +971 50 3407300",
-    });
-    setItems(SAMPLE_SCOPE_ITEMS);
-    setPaymentTerms(DEFAULT_PAYMENT_TERMS);
-    setQuotationTerms(DEFAULT_TERMS_AND_CONDITIONS);
-    setVatPct(5);
-    setDiscount(0);
-    setSaveSuccessMsg("Loaded Quotation Scope Sample!");
-    setTimeout(() => setSaveSuccessMsg(""), 3000);
-  };
-
   const calculateRowTotal = (it: QuotationItem): number => {
     if (
       it.isFree ||
@@ -289,7 +254,7 @@ export default function QuotationTemplate({
 
   const handleLoadQuotation = (q: QuotationRecord) => {
     setSelectedQuotationId(q.id);
-    setStatus(q.status);
+    setStatus(q.status as any);
     setVatPct(Number(q.vatPct || 5));
     setDiscount(Number(q.discount || 0));
     setMeta({
@@ -322,118 +287,6 @@ export default function QuotationTemplate({
       );
     }
     setIsSavedDrawerOpen(false);
-  };
-
-  const handleConvertToInvoice = () => {
-    setDocType("TAX_INVOICE");
-    setStatus("ACCEPTED");
-    if (meta.quotationNo.startsWith("AGM-QTN-")) {
-      const invNo = meta.quotationNo.replace("AGM-QTN-", "AGM-INV-");
-      setMeta((prev) => ({
-        ...prev,
-        quotationNo: invNo,
-        reference: prev.reference || prev.quotationNo,
-      }));
-    } else if (!meta.quotationNo.startsWith("AGM-INV-")) {
-      const invNo = `AGM-INV-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`;
-      setMeta((prev) => ({
-        ...prev,
-        quotationNo: invNo,
-        reference: prev.reference || prev.quotationNo,
-      }));
-    }
-    setSaveSuccessMsg("Converted to Official UAE Tax Invoice!");
-    setTimeout(() => setSaveSuccessMsg(""), 4000);
-  };
-
-  const handlePostInvoiceToLedger = async () => {
-    if (items.length === 0 || subtotal <= 0) {
-      alert("Please add at least one line item with a rate before posting.");
-      return;
-    }
-    if (
-      !confirm(
-        `Post this Tax Invoice (${meta.quotationNo}) to the General Ledger?\n\n` +
-          `• Debit Accounts Receivable: AED ${formatCurrency(total)}\n` +
-          `• Credit Fitout Revenue: AED ${formatCurrency(afterDiscount)}\n` +
-          `• Credit UAE VAT Output (${vatRate}%): AED ${formatCurrency(vatAmt)}\n\n` +
-          `This will record turnover in Profit & Loss and update the VAT Return!`,
-      )
-    ) {
-      return;
-    }
-
-    setIsPostingLedger(true);
-    try {
-      const arAccount =
-        accountsList.find((a) => a.accountCode === "1200") ||
-        accountsList.find(
-          (a) =>
-            a.type === "ASSET" &&
-            a.accountName.toLowerCase().includes("receivable"),
-        ) ||
-        accountsList.find((a) => a.accountCode === "1020") ||
-        accountsList[0];
-      const revAccount =
-        accountsList.find((a) => a.accountCode === "4000") ||
-        accountsList.find((a) => a.type === "REVENUE") ||
-        accountsList[1];
-      const vatOutAccount =
-        accountsList.find((a) => a.accountCode === "2210") ||
-        accountsList.find((a) =>
-          a.accountName.toLowerCase().includes("vat output"),
-        ) ||
-        accountsList[2];
-
-      if (!arAccount || !revAccount || !vatOutAccount) {
-        alert(
-          "Chart of accounts not found for AR (1200), Revenue (4000), or VAT Output (2210).",
-        );
-        setIsPostingLedger(false);
-        return;
-      }
-
-      const entryNumber = `JE-INV-${Date.now().toString().slice(-6)}`;
-      const payload = {
-        entryNumber,
-        entryDate: new Date().toISOString(),
-        description: `Tax Invoice ${meta.quotationNo} - ${meta.customer || "Client"} (${meta.project || "Fitout Project"})`,
-        reference: meta.quotationNo,
-        createdBy: "system",
-        lines: [
-          {
-            accountId: arAccount.id,
-            debit: total,
-            credit: 0,
-          },
-          {
-            accountId: revAccount.id,
-            debit: 0,
-            credit: afterDiscount,
-          },
-          {
-            accountId: vatOutAccount.id,
-            debit: 0,
-            credit: vatAmt,
-            vatType: "OUTPUT" as const,
-            taxableAmount: afterDiscount,
-            vatAmount: vatAmt,
-          },
-        ],
-      };
-
-      await createJournalEntryMutation.mutateAsync(payload);
-      setLedgerPostedMsg(
-        `Posted to General Ledger as ${entryNumber}! P&L & VAT updated.`,
-      );
-      setTimeout(() => setLedgerPostedMsg(""), 6000);
-    } catch (err: any) {
-      alert(
-        "Error posting invoice to ledger: " + (err.message || "Unknown error"),
-      );
-    } finally {
-      setIsPostingLedger(false);
-    }
   };
 
   const handleNewQuotation = () => {
@@ -494,150 +347,101 @@ export default function QuotationTemplate({
           : "min-h-screen print:bg-white print:py-0 print:px-0"
       }
     >
-      <div className="max-w-full mx-auto mb-4 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3 print:hidden">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200">
-            <Button
-              type="button"
-              variant={docType === "QUOTATION" ? "outline" : "ghost"}
-              size="sm"
-              onClick={() => setDocType("QUOTATION")}
-              icon={<FileText size={13} />}
-              className={
-                docType === "QUOTATION"
-                  ? "bg-white text-slate-900 shadow-xs"
-                  : "text-slate-500"
-              }
-            >
-              Quotation
-            </Button>
-            <Button
-              type="button"
-              variant={docType === "TAX_INVOICE" ? "dark" : "ghost"}
-              size="sm"
-              onClick={() => setDocType("TAX_INVOICE")}
-              icon={<FileCheck size={13} />}
-              className={
-                docType === "TAX_INVOICE"
-                  ? "bg-slate-900 text-white shadow-xs"
-                  : "text-slate-500"
-              }
-            >
-              Tax Invoice
-            </Button>
-          </div>
-
-          <Button
+      <div className="max-w-full mx-auto mb-4 bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 print:hidden">
+        <div className="inline-flex items-center p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80">
+          <button
             type="button"
-            variant="secondary"
-            size="sm"
-            onClick={handleNewQuotation}
-            icon={<Plus size={14} />}
+            onClick={() => setDocType("QUOTATION")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+              docType === "QUOTATION"
+                ? "bg-white text-slate-800 shadow-xs"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
           >
-            New Blank
-          </Button>
-
-          <Button
+            <FileText className="w-3.5 h-3.5 text-slate-600" />
+            <span>Quotation</span>
+          </button>
+          <button
             type="button"
-            variant="secondary"
-            size="sm"
-            onClick={loadSamplePdfPreset}
-            icon={<RotateCcw size={13} />}
-            className="bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border-emerald-200"
-            title="Load sample scope of work and details"
+            onClick={() => setDocType("TAX_INVOICE")}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+              docType === "TAX_INVOICE"
+                ? "bg-white text-slate-800 shadow-xs"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
           >
-            Load Sample Scope
-          </Button>
-
-          <Button
-            type="button"
-            variant="dark"
-            size="sm"
-            onClick={() => setIsSavedDrawerOpen(true)}
-            icon={<FolderOpen size={14} />}
-          >
-            Saved DB ({savedQuotations.length})
-          </Button>
-
-          {docType === "QUOTATION" ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={handleConvertToInvoice}
-              icon={<ArrowRightLeft size={14} />}
-              className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
-              title="Convert this quotation directly into an official UAE Tax Invoice"
-            >
-              Convert to Invoice
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              size="sm"
-              onClick={handlePostInvoiceToLedger}
-              loading={isPostingLedger}
-              icon={<Zap size={14} className="text-amber-300" />}
-              className="bg-purple-600 hover:bg-purple-500 text-white border-none shadow-xs"
-              title="Post this Invoice directly to General Ledger, updating Turnover and VAT Return"
-            >
-              Post to Accounting (GL)
-            </Button>
-          )}
-
-          {selectedQuotationId && (
-            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold">
-              Loaded: {meta.quotationNo}
-            </span>
-          )}
+            <FileCheck className="w-3.5 h-3.5 text-slate-600" />
+            <span>Tax Invoice</span>
+          </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          {saveSuccessMsg && (
-            <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 animate-fade-in">
-              <Check size={14} /> {saveSuccessMsg}
-            </span>
-          )}
+        <button
+          type="button"
+          onClick={handleNewQuotation}
+          className="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/90 rounded-2xl px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+        >
+          <Plus className="w-3.5 h-3.5 text-slate-600" />
+          <span>New Blank</span>
+        </button>
 
-          {ledgerPostedMsg && (
-            <span className="text-xs font-bold text-purple-700 flex items-center gap-1 animate-fade-in bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-200">
-              <Check size={14} /> {ledgerPostedMsg}
-            </span>
-          )}
+        <button
+          type="button"
+          onClick={() => setIsSavedDrawerOpen(true)}
+          className="bg-[#243746] hover:bg-[#1a2935] text-white rounded-2xl px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+        >
+          <FolderOpen className="w-3.5 h-3.5" />
+          <span>Saved DB ({savedQuotations.length})</span>
+        </button>
 
+        <div className="relative inline-flex items-center">
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as any)}
-            className="text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-700 outline-none"
+            className="appearance-none bg-slate-50 hover:bg-slate-100/80 border border-slate-200/90 rounded-2xl pl-3.5 pr-8 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer transition-all shadow-2xs"
           >
             <option value="DRAFT">Status: DRAFT</option>
-            <option value="SENT">Status: SENT</option>
             <option value="ACCEPTED">Status: ACCEPTED</option>
             <option value="REJECTED">Status: REJECTED</option>
-            <option value="EXPIRED">Status: EXPIRED</option>
           </select>
-
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={handleSaveToDb}
-            loading={saveQuotationMutation.isPending}
-            icon={<Save size={14} />}
-          >
-            {selectedQuotationId ? "Update in DB" : "Save to DB"}
-          </Button>
-
-          <Button
-            type="button"
-            variant="dark"
-            size="sm"
-            onClick={() => window.print()}
-            icon={<Printer size={14} />}
-          >
-            Print / PDF
-          </Button>
+          <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 pointer-events-none" />
         </div>
+
+        <button
+          type="button"
+          onClick={handleSaveToDb}
+          disabled={saveQuotationMutation.isPending}
+          className="bg-[#1b5e3a] hover:bg-[#154b2e] disabled:opacity-70 text-white rounded-2xl px-4 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+        >
+          <Save className="w-3.5 h-3.5" />
+          <span>
+            {saveQuotationMutation.isPending
+              ? "Saving..."
+              : selectedQuotationId
+                ? "Update in DB"
+                : "Save to DB"}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="bg-[#243746] hover:bg-[#1a2935] text-white rounded-2xl px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+        >
+          <Printer className="w-3.5 h-3.5" />
+          <span>Print / PDF</span>
+        </button>
+
+        {selectedQuotationId && (
+          <span className="px-2.5 py-1 rounded-full bg-agm-green-2 text-white border border-agm-green text-[11px] font-bold">
+            Loaded: {meta.quotationNo}
+          </span>
+        )}
+
+        {saveSuccessMsg && (
+          <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 animate-fade-in">
+            <Check size={14} /> {saveSuccessMsg}
+          </span>
+        )}
       </div>
 
       <QuotationSavedModal
