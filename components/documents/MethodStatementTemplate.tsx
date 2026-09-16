@@ -1,0 +1,926 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Button, Input, Textarea } from "@/components/ui";
+import {
+  FileCheckIcon,
+  PrintIcon,
+  RefreshIcon,
+  EditIcon,
+} from "@/components/icons";
+import {
+  FolderOpen,
+  Save,
+  Plus,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  Loader2,
+  Check,
+  FileText,
+} from "lucide-react";
+import QuotationHeader from "@/components/quotation/QuotationHeader";
+import QuotationFooter from "@/components/quotation/QuotationFooter";
+import {
+  MethodStatementDocumentData,
+  MethodStatementScopeItem,
+  SAMPLE_METHOD_STATEMENT,
+  DEFAULT_METHOD_STATEMENT_ITEMS,
+} from "./method-statement-constants";
+import {
+  useMethodStatements,
+  useSaveMethodStatement,
+  useDeleteMethodStatement,
+  MethodStatementRecord,
+} from "@/lib/hooks/api-hooks";
+import { MethodStatementSavedModal } from "./MethodStatementSavedModal";
+
+interface MethodStatementTemplateProps {
+  initialData?: MethodStatementDocumentData;
+  onSave?: (data: MethodStatementDocumentData) => void;
+  readOnly?: boolean;
+}
+
+export default function MethodStatementTemplate({
+  initialData,
+  onSave,
+  readOnly = false,
+}: MethodStatementTemplateProps) {
+  const [data, setData] = useState<MethodStatementDocumentData>(
+    initialData || SAMPLE_METHOD_STATEMENT,
+  );
+  const [isEditing, setIsEditing] = useState<boolean>(!readOnly);
+  const [saveSuccess, setSaveSuccess] = useState<string>("");
+  const [isSavedModalOpen, setIsSavedModalOpen] = useState<boolean>(false);
+  const [status, setStatus] = useState<"DRAFT" | "ACTIVE" | "COMPLETED">(
+    (data.status as any) || "COMPLETED",
+  );
+
+  const { data: savedRecords = [], isLoading: isLoadingSaved } =
+    useMethodStatements();
+  const saveMutation = useSaveMethodStatement();
+  const deleteMutation = useDeleteMethodStatement();
+
+  useEffect(() => {
+    if (initialData) {
+      setData(initialData);
+      setStatus(initialData.status || "COMPLETED");
+    }
+  }, [initialData]);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleNewBlank = () => {
+    const freshYear = new Date().getFullYear();
+    const freshSeq = Date.now().toString().slice(-4);
+    const newDoc: MethodStatementDocumentData = {
+      id: `ms-${Date.now()}`,
+      refNumber: `QR: Q-${freshSeq}.R1`,
+      date: new Date().toLocaleDateString("en-GB"),
+      status: "DRAFT",
+      customerName: "",
+      projectName: "",
+      phoneNumber: "+971 ",
+      customerEmail: "N/A",
+      projectLocation: "Dubai, UAE",
+      workType: "General Renovation & Fitout Work",
+      startDate: new Date().toLocaleDateString("en-GB"),
+      duration: "15 to 20 working days",
+      workingHours: "Mon to Sat 8 to 5",
+      projectManager: {
+        name: "Mr. MD Assem",
+        description:
+          "The Site Manager shall be responsible for the over-all direction, coordination and control of all site activities and all construction works.",
+      },
+      constructionManager: {
+        name: "Mr. Bilal Barah",
+        description:
+          "The Construction Manager shall report to Site Manager, developing and arranging the site construction team to the site necessary to manage and supervise the construction works including HSE and quality control, overall implementation and monitoring of all the activities for the successful completion of construction works.",
+      },
+      introduction:
+        "This method statement details the method of performing the various activities involved in the course of works for renovation work.",
+      purpose:
+        "This method statement gives guidelines contained herein so as to ensure that the job execution complies with the requirement of the specification and the authorities concerned and serves the intended purpose to satisfactory level.",
+      scopeOverview:
+        "This method statement covers the nature and type of work for renovation works includes.",
+      items: [
+        {
+          id: `ms-item-${Date.now()}-1`,
+          number: 1,
+          description:
+            "Careful removal and disposal of existing structures and preparation of site work.",
+        },
+      ],
+    };
+
+    setData(newDoc);
+    setStatus("DRAFT");
+    setIsEditing(true);
+    setSaveSuccess("Initialized blank Method Statement template!");
+    setTimeout(() => setSaveSuccess(""), 3000);
+  };
+
+  const handleSaveToDb = async () => {
+    try {
+      const payload: MethodStatementRecord = {
+        ...data,
+        status: status,
+      };
+
+      const result = await saveMutation.mutateAsync(payload);
+      setData((prev) => ({
+        ...prev,
+        id: result.id,
+        status: result.status,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        createdBy: result.createdBy,
+      }));
+
+      if (onSave) {
+        onSave(result);
+      }
+
+      setSaveSuccess(`Successfully saved ${result.refNumber} to database!`);
+      setTimeout(() => setSaveSuccess(""), 4000);
+    } catch (err: any) {
+      alert("Failed to save method statement: " + (err.message || "Unknown error"));
+    }
+  };
+
+  const handleLoadRecord = (record: MethodStatementRecord) => {
+    setData(record);
+    setStatus(record.status || "COMPLETED");
+    setIsSavedModalOpen(false);
+    setSaveSuccess(`Loaded ${record.refNumber} (${record.customerName || "Customer"})`);
+    setTimeout(() => setSaveSuccess(""), 3000);
+  };
+
+  const handleDeleteRecord = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to permanently delete this Method Statement from the database?")) {
+      return;
+    }
+    try {
+      await deleteMutation.mutateAsync(id);
+      if (data.id === id) {
+        handleNewBlank();
+      }
+    } catch (err: any) {
+      alert("Error deleting record: " + (err.message || "Unknown error"));
+    }
+  };
+
+  const loadSamplePreset = () => {
+    setData(SAMPLE_METHOD_STATEMENT);
+    setStatus("COMPLETED");
+    setSaveSuccess("Loaded Matthysen Studio Method Statement Preset!");
+    setTimeout(() => setSaveSuccess(""), 3000);
+  };
+
+  const handleAddItem = () => {
+    const nextNum = (data.items?.length || 0) + 1;
+    const newItem: MethodStatementScopeItem = {
+      id: `ms-item-${Date.now()}`,
+      number: nextNum,
+      description: "Scope step description and execution procedure.",
+    };
+    setData((prev) => ({
+      ...prev,
+      items: [...(prev.items || []), newItem],
+    }));
+  };
+
+  const handleRemoveItem = (idx: number) => {
+    setData((prev) => {
+      const remaining = (prev.items || []).filter((_, i) => i !== idx);
+      const renumbered = remaining.map((it, i) => ({
+        ...it,
+        number: i + 1,
+      }));
+      return {
+        ...prev,
+        items: renumbered,
+      };
+    });
+  };
+
+  const handleMoveItem = (idx: number, direction: "up" | "down") => {
+    const items = [...(data.items || [])];
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= items.length) return;
+    const temp = items[idx];
+    items[idx] = items[targetIdx];
+    items[targetIdx] = temp;
+    const renumbered = items.map((it, i) => ({
+      ...it,
+      number: i + 1,
+    }));
+    setData((prev) => ({ ...prev, items: renumbered }));
+  };
+
+  return (
+    <div className="w-full space-y-4">
+      {/* Top Action Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border border-agm-box-border rounded-xl shadow-xs print:hidden">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-slate-800">
+            Method Statement
+          </span>
+          {data.refNumber && (
+            <span className="text-xs font-mono font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+              {data.refNumber}
+            </span>
+          )}
+        </div>
+
+        {saveSuccess && (
+          <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 animate-in fade-in">
+            <Check size={14} className="text-emerald-600 font-bold" />
+            <span>{saveSuccess}</span>
+          </div>
+        )}
+
+        <div className="flex items-center flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleNewBlank}
+            className="text-xs flex items-center gap-1.5 border-agm-box-border text-agm-text hover:bg-agm-box-bg cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Blank</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsSavedModalOpen(true)}
+            className="text-xs flex items-center gap-1.5 border-agm-box-border text-agm-text hover:bg-agm-box-bg cursor-pointer"
+          >
+            <FolderOpen className="w-3.5 h-3.5 text-amber-600" />
+            <span>Saved DB ({savedRecords.length})</span>
+          </Button>
+
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value as any)}
+            className="text-xs py-1 px-2.5 bg-slate-50 border border-agm-box-border rounded-lg font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-agm-green cursor-pointer"
+          >
+            <option value="DRAFT">DRAFT</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="COMPLETED">COMPLETED</option>
+          </select>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(!isEditing)}
+            className={`text-xs flex items-center gap-1.5 cursor-pointer ${
+              isEditing
+                ? "bg-agm-green-soft text-agm-green border-agm-green/30 font-semibold"
+                : "border-agm-box-border text-agm-text hover:bg-agm-box-bg"
+            }`}
+          >
+            <EditIcon className="w-3 h-3" />
+            <span>{isEditing ? "Editing: ON" : "Edit Details"}</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            disabled={saveMutation.isPending}
+            onClick={handleSaveToDb}
+            className="text-xs flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
+          >
+            {saveMutation.isPending ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Save className="w-3.5 h-3.5" />
+            )}
+            <span>{saveMutation.isPending ? "Saving..." : "Save to DB"}</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={loadSamplePreset}
+            className="text-xs flex items-center gap-1.5 border-agm-box-border text-agm-text hover:bg-agm-box-bg cursor-pointer"
+            title="Reset to Matthysen Studio Preset"
+          >
+            <RefreshIcon className="w-3 h-3" />
+            <span>Reset</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={handlePrint}
+            className="text-xs flex items-center gap-1.5 bg-agm-green hover:bg-agm-green-2 text-white shadow-xs cursor-pointer"
+          >
+            <PrintIcon className="w-3.5 h-3.5" />
+            <span>Print</span>
+          </Button>
+        </div>
+      </div>
+
+      <MethodStatementSavedModal
+        isOpen={isSavedModalOpen}
+        onClose={() => setIsSavedModalOpen(false)}
+        savedRecords={savedRecords}
+        isLoadingSaved={isLoadingSaved}
+        onLoadRecord={handleLoadRecord}
+        onDeleteRecord={handleDeleteRecord}
+        onNewBlank={handleNewBlank}
+      />
+
+      {/* Printable Document Container */}
+      <div className="overflow-x-auto min-w-0 max-w-full custom-scrollbar print:overflow-visible w-full flex justify-center">
+        <div
+          className="mx-auto bg-white shadow-lg print:shadow-none max-w-full min-w-full rounded-xl print:rounded-none overflow-visible print:overflow-visible"
+          id="printable-voucher"
+        >
+          <table className="print-page-table w-full border-collapse">
+            <thead className="print-page-header-group">
+              <tr>
+                <th className="p-0 font-normal text-left border-none">
+                  <QuotationHeader />
+                </th>
+              </tr>
+            </thead>
+
+            <tfoot className="print-page-footer-group hidden print:table-footer-group">
+              <tr>
+                <td
+                  className="p-0 border-none print:border-none"
+                  style={{ minHeight: "185px", height: "185px" }}
+                >
+                  <div
+                    style={{ height: "185px", width: "100%" }}
+                    className="invisible pointer-events-none"
+                  />
+                </td>
+              </tr>
+            </tfoot>
+
+            <tbody>
+              <tr>
+                <td className="p-0 border-none align-top">
+                  <div className="w-full px-10 py-6 text-agm-text text-xs sm:text-[13px] print:px-8 print:py-2 space-y-4">
+                    {/* Header Banner */}
+                    <div className="bg-[#d7eedc] text-agm-green border border-agm-green/20 text-center py-2 px-4 font-bold text-sm sm:text-base tracking-wider uppercase shadow-2xs">
+                      METHOD STATEMENT
+                    </div>
+
+                    {/* Metadata 2-column Grid */}
+                    <div className="border border-slate-200 overflow-hidden text-xs sm:text-[13px]">
+                      <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+                        {/* Left Column */}
+                        <div className="divide-y divide-slate-200">
+                          <div className="grid grid-cols-3 p-2 bg-slate-50/60 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Document No.
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.refNumber}
+                                  onChange={(e) =>
+                                    setData({ ...data, refNumber: e.target.value })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="font-semibold text-slate-900">
+                                  {data.refNumber}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 p-2 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Customer Name
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.customerName}
+                                  onChange={(e) =>
+                                    setData({ ...data, customerName: e.target.value })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="font-medium text-slate-800">
+                                  {data.customerName}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 p-2 bg-slate-50/60 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Customer Phone
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.phoneNumber}
+                                  onChange={(e) =>
+                                    setData({ ...data, phoneNumber: e.target.value })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="text-slate-800">{data.phoneNumber}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 p-2 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Location
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.projectLocation}
+                                  onChange={(e) =>
+                                    setData({ ...data, projectLocation: e.target.value })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="text-slate-800">{data.projectLocation}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 p-2 bg-slate-50/60 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Starting Date
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.startDate}
+                                  onChange={(e) =>
+                                    setData({ ...data, startDate: e.target.value })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="text-slate-800">{data.startDate}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 p-2 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Working Hours
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.workingHours}
+                                  onChange={(e) =>
+                                    setData({ ...data, workingHours: e.target.value })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="text-slate-800">{data.workingHours}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Column */}
+                        <div className="divide-y divide-slate-200">
+                          <div className="grid grid-cols-3 p-2 bg-slate-50/60 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Date
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.date}
+                                  onChange={(e) =>
+                                    setData({ ...data, date: e.target.value })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="font-medium text-slate-800">{data.date}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 p-2 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Project / Unit
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.projectName}
+                                  onChange={(e) =>
+                                    setData({ ...data, projectName: e.target.value })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="font-semibold text-slate-900">
+                                  {data.projectName}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 p-2 bg-slate-50/60 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Customer Email
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.customerEmail}
+                                  onChange={(e) =>
+                                    setData({ ...data, customerEmail: e.target.value })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="text-slate-800">{data.customerEmail}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 p-2 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Work Type
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.workType}
+                                  onChange={(e) =>
+                                    setData({ ...data, workType: e.target.value })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="font-medium text-slate-900">{data.workType}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 p-2 bg-slate-50/60 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Duration
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.duration}
+                                  onChange={(e) =>
+                                    setData({ ...data, duration: e.target.value })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="text-slate-800">{data.duration}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 p-2 items-center">
+                            <span className="font-bold text-slate-900 col-span-1">
+                              Project Manager
+                            </span>
+                            <div className="col-span-2">
+                              {isEditing ? (
+                                <Input
+                                  value={data.projectManager?.name}
+                                  onChange={(e) =>
+                                    setData({
+                                      ...data,
+                                      projectManager: {
+                                        ...data.projectManager,
+                                        name: e.target.value,
+                                      },
+                                    })
+                                  }
+                                  className="h-7 text-xs bg-white"
+                                />
+                              ) : (
+                                <span className="font-semibold text-slate-900">
+                                  {data.projectManager?.name}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Roles & Responsibilities */}
+                    <div className="space-y-3 pt-1">
+                      <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
+                        ROLES & RESPONSIBILITIES
+                      </div>
+
+                      <div className="border border-slate-200 rounded-sm overflow-hidden p-3 bg-white space-y-3">
+                        {/* Project Manager */}
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 text-xs sm:text-[13px] min-w-[130px]">
+                              Project Manager:
+                            </span>
+                            {isEditing ? (
+                              <Input
+                                value={data.projectManager?.name}
+                                onChange={(e) =>
+                                  setData({
+                                    ...data,
+                                    projectManager: {
+                                      ...data.projectManager,
+                                      name: e.target.value,
+                                    },
+                                  })
+                                }
+                                className="h-7 text-xs flex-1"
+                              />
+                            ) : (
+                              <span className="font-semibold text-slate-900">
+                                {data.projectManager?.name}
+                              </span>
+                            )}
+                          </div>
+                          {isEditing ? (
+                            <Textarea
+                              value={data.projectManager?.description}
+                              onChange={(e) =>
+                                setData({
+                                  ...data,
+                                  projectManager: {
+                                    ...data.projectManager,
+                                    description: e.target.value,
+                                  },
+                                })
+                              }
+                              className="text-xs min-h-[44px]"
+                            />
+                          ) : (
+                            <p className="text-xs text-slate-600 leading-relaxed">
+                              {data.projectManager?.description}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Construction Manager */}
+                        <div className="space-y-1 pt-2 border-t border-slate-100">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 text-xs sm:text-[13px] min-w-[150px]">
+                              Construction Manager:
+                            </span>
+                            {isEditing ? (
+                              <Input
+                                value={data.constructionManager?.name}
+                                onChange={(e) =>
+                                  setData({
+                                    ...data,
+                                    constructionManager: {
+                                      ...data.constructionManager,
+                                      name: e.target.value,
+                                    },
+                                  })
+                                }
+                                className="h-7 text-xs flex-1"
+                              />
+                            ) : (
+                              <span className="font-semibold text-slate-900">
+                                {data.constructionManager?.name}
+                              </span>
+                            )}
+                          </div>
+                          {isEditing ? (
+                            <Textarea
+                              value={data.constructionManager?.description}
+                              onChange={(e) =>
+                                setData({
+                                  ...data,
+                                  constructionManager: {
+                                    ...data.constructionManager,
+                                    description: e.target.value,
+                                  },
+                                })
+                              }
+                              className="text-xs min-h-[55px]"
+                            />
+                          ) : (
+                            <p className="text-xs text-slate-600 leading-relaxed">
+                              {data.constructionManager?.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* INTRODUCTION */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="font-bold text-slate-900 text-xs sm:text-[13px] tracking-wide uppercase">
+                        INTRODUCTION
+                      </div>
+                      <div className="border border-slate-200 p-2.5 bg-slate-50/40">
+                        {isEditing ? (
+                          <Textarea
+                            value={data.introduction}
+                            onChange={(e) =>
+                              setData({ ...data, introduction: e.target.value })
+                            }
+                            className="text-xs min-h-[44px] bg-white"
+                          />
+                        ) : (
+                          <p className="text-xs text-slate-700 leading-relaxed">
+                            {data.introduction}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* PURPOSE */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
+                        PURPOSE
+                      </div>
+                      <div className="border border-slate-200 p-2.5 bg-white">
+                        {isEditing ? (
+                          <Textarea
+                            value={data.purpose}
+                            onChange={(e) =>
+                              setData({ ...data, purpose: e.target.value })
+                            }
+                            className="text-xs min-h-[44px]"
+                          />
+                        ) : (
+                          <p className="text-xs text-slate-700 leading-relaxed">
+                            {data.purpose}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* SCOPE OF WORK */}
+                    <div className="space-y-2 pt-1">
+                      <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
+                        SCOPE OF WORK
+                      </div>
+
+                      <div className="p-1">
+                        {isEditing ? (
+                          <Input
+                            value={data.scopeOverview}
+                            onChange={(e) =>
+                              setData({ ...data, scopeOverview: e.target.value })
+                            }
+                            className="text-xs bg-white mb-2"
+                          />
+                        ) : (
+                          <p className="text-xs text-slate-700 leading-relaxed mb-2">
+                            {data.scopeOverview}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Scope Steps Table */}
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse border border-slate-300 text-xs sm:text-[13px]">
+                          <thead>
+                            <tr className="bg-slate-100 text-slate-900 font-bold">
+                              <th className="p-2.5 border border-slate-300 text-center w-[70px]">
+                                No.
+                              </th>
+                              <th className="p-2.5 border border-slate-300 text-left">
+                                Description
+                              </th>
+                              {isEditing && (
+                                <th className="p-2.5 border border-slate-300 text-center w-[50px] print:hidden">
+                                  Act
+                                </th>
+                              )}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200">
+                            {data.items?.map((item, idx) => (
+                              <tr
+                                key={item.id || idx}
+                                className={`break-inside-avoid page-break-inside-avoid print:break-inside-avoid ${
+                                  idx % 2 === 1 ? "bg-slate-50/40" : "bg-white"
+                                } hover:bg-slate-50 transition-colors`}
+                              >
+                                <td className="p-2.5 border border-slate-200 align-top text-center font-bold text-slate-900">
+                                  {item.number || idx + 1}
+                                </td>
+
+                                <td className="p-2.5 border border-slate-200 align-top text-slate-800 leading-relaxed">
+                                  {isEditing ? (
+                                    <Textarea
+                                      value={item.description}
+                                      onChange={(e) => {
+                                        const updated = [...data.items];
+                                        updated[idx].description =
+                                          e.target.value;
+                                        setData({ ...data, items: updated });
+                                      }}
+                                      className="text-xs min-h-[44px] bg-white"
+                                    />
+                                  ) : (
+                                    item.description
+                                  )}
+                                </td>
+
+                                {isEditing && (
+                                  <td className="p-1 border border-slate-200 align-top text-center print:hidden">
+                                    <div className="flex flex-col items-center gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleMoveItem(idx, "up")}
+                                        disabled={idx === 0}
+                                        className="p-0.5 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                                        title="Move Up"
+                                      >
+                                        <ChevronUp size={13} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          handleMoveItem(idx, "down")
+                                        }
+                                        disabled={idx === data.items.length - 1}
+                                        className="p-0.5 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                                        title="Move Down"
+                                      >
+                                        <ChevronDown size={13} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveItem(idx)}
+                                        className="p-0.5 text-rose-500 hover:text-rose-700"
+                                        title="Remove Step"
+                                      >
+                                        <Trash2 size={13} />
+                                      </button>
+                                    </div>
+                                  </td>
+                                )}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {isEditing && (
+                        <div className="pt-1 print:hidden">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAddItem}
+                            className="text-xs flex items-center gap-1 text-agm-green border-dashed border-agm-green/50 hover:bg-agm-green-soft"
+                          >
+                            <Plus size={13} />
+                            <span>Add Scope Step</span>
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Fixed footer for Print */}
+          <div className="print-footer-bottom fixed-print-footer hidden print:block">
+            <QuotationFooter />
+          </div>
+
+          {/* Screen-only footer */}
+          <div className="w-full px-10 pb-6 print:hidden">
+            <QuotationFooter className="mt-6" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

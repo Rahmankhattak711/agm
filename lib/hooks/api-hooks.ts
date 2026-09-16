@@ -1945,6 +1945,174 @@ export function useDeleteAgreement() {
   });
 }
 
+export type RiskAssessmentRecord = {
+  id: string;
+  refNumber: string;
+  date: string;
+  status: "DRAFT" | "ACTIVE" | "COMPLETED";
+  customerName: string;
+  projectName: string;
+  phoneNumber: string;
+  projectLocation: string;
+  startDate: string;
+  duration: string;
+  workingHours: string;
+  projectManager: {
+    name: string;
+    description: string;
+  };
+  constructionManager: {
+    name: string;
+    description: string;
+  };
+  purpose: string;
+  scope: string;
+  items: Array<{
+    id: string;
+    activity: string;
+    riskDescription: string;
+    impact: string;
+    mitigation: string;
+  }>;
+  createdBy?: { id?: string; fullName?: string; email?: string };
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export function useRiskAssessments(params?: { search?: string; status?: string }) {
+  const q = new URLSearchParams();
+  if (params?.search) q.append("search", params.search);
+  if (params?.status) q.append("status", params.status);
+  const qStr = q.toString() ? `?${q.toString()}` : "";
+
+  return useQuery<RiskAssessmentRecord[]>({
+    queryKey: ["risk-assessments", params],
+    queryFn: () =>
+      fetchJson<RiskAssessmentRecord[]>(`/api/commercial/risk-assessments${qStr}`),
+  });
+}
+
+export function useRiskAssessment(id?: string | null) {
+  return useQuery<RiskAssessmentRecord>({
+    queryKey: ["risk-assessment", id],
+    queryFn: () =>
+      fetchJson<RiskAssessmentRecord>(`/api/commercial/risk-assessments/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useSaveRiskAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<RiskAssessmentRecord>) =>
+      fetchJson<RiskAssessmentRecord>("/api/commercial/risk-assessments", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["risk-assessments"] });
+    },
+  });
+}
+
+export function useDeleteRiskAssessment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ ok: boolean }>(`/api/commercial/risk-assessments/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["risk-assessments"] });
+    },
+  });
+}
+
+export type MethodStatementRecord = {
+  id: string;
+  refNumber: string;
+  date: string;
+  status: "DRAFT" | "ACTIVE" | "COMPLETED";
+  customerName: string;
+  projectName: string;
+  phoneNumber: string;
+  customerEmail: string;
+  projectLocation: string;
+  workType: string;
+  startDate: string;
+  duration: string;
+  workingHours: string;
+  projectManager: {
+    name: string;
+    description: string;
+  };
+  constructionManager: {
+    name: string;
+    description: string;
+  };
+  introduction: string;
+  purpose: string;
+  scopeOverview: string;
+  items: Array<{
+    id: string;
+    number: number;
+    description: string;
+  }>;
+  createdBy?: { id?: string; fullName?: string; email?: string };
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export function useMethodStatements(params?: { search?: string; status?: string }) {
+  const q = new URLSearchParams();
+  if (params?.search) q.append("search", params.search);
+  if (params?.status) q.append("status", params.status);
+  const qStr = q.toString() ? `?${q.toString()}` : "";
+
+  return useQuery<MethodStatementRecord[]>({
+    queryKey: ["method-statements", params],
+    queryFn: () =>
+      fetchJson<MethodStatementRecord[]>(`/api/commercial/method-statements${qStr}`),
+  });
+}
+
+export function useMethodStatement(id?: string | null) {
+  return useQuery<MethodStatementRecord>({
+    queryKey: ["method-statement", id],
+    queryFn: () =>
+      fetchJson<MethodStatementRecord>(`/api/commercial/method-statements/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useSaveMethodStatement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<MethodStatementRecord>) =>
+      fetchJson<MethodStatementRecord>("/api/commercial/method-statements", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["method-statements"] });
+    },
+  });
+}
+
+export function useDeleteMethodStatement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ ok: boolean }>(`/api/commercial/method-statements/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["method-statements"] });
+    },
+  });
+}
+
+
 
 export interface Customer {
   id: string;

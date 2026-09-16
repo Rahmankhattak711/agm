@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import AgreementTemplate from "@/components/documents/AgreementTemplate";
 import {
   AgreementRecord,
@@ -9,28 +10,17 @@ import {
 } from "@/lib/hooks/api-hooks";
 import {
   Button,
-  Table,
-  TableHead,
-  TableHeaderCell,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableLoading,
+  DataTable,
   Input,
   DashboardCard,
   DashboardCardGrid,
 } from "@/components/ui";
-import {
-  EyeIcon,
-  FileCheckIcon,
-  SearchIcon,
-  PlusIcon,
-} from "@/components/icons";
-import { FileText, FolderOpen, Trash2, Plus, Edit } from "lucide-react";
+import { SearchIcon } from "@/components/icons";
+import { Trash2, Plus } from "lucide-react";
 import { SAMPLE_RENOVATION_AGREEMENT } from "@/components/documents/constants";
 
 export default function AgreementsAndDocumentsPage() {
-  const { data: agreementsList = [], isLoading, error } = useAgreements();
+  const { data: agreementsList = [], isLoading } = useAgreements();
   const deleteAgreementMutation = useDeleteAgreement();
 
   const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("EDITOR");
@@ -125,47 +115,142 @@ export default function AgreementsAndDocumentsPage() {
     }
   };
 
+  const columns: ColumnDef<AgreementRecord>[] = useMemo(
+    () => [
+      {
+        accessorKey: "refNumber",
+        header: "Ref Number",
+        cell: ({ row }) => (
+          <span className="font-mono font-bold text-xs text-slate-900">
+            {row.original.refNumber}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "client.name",
+        header: "Client",
+        cell: ({ row }) => (
+          <span className="font-semibold text-slate-800 text-xs">
+            {row.original.client?.name || "—"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "project",
+        header: "Project & Property",
+        cell: ({ row }) => (
+          <div className="text-xs">
+            <div className="font-medium text-slate-800">
+              {row.original.project || "—"}
+            </div>
+            <div className="text-[11px] text-slate-400">
+              {row.original.property || "—"}
+            </div>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "date",
+        header: "Date",
+        cell: ({ row }) => (
+          <span className="text-xs text-slate-600">
+            {row.original.date || "—"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "contractValueNum",
+        header: "Contract Value",
+        cell: ({ row }) => (
+          <span className="font-semibold text-slate-900 text-xs">
+            AED {formatNumber(row.original.contractValueNum)}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => (
+          <span
+            className={`text-[10px] font-bold px-2 py-0.5 rounded border inline-block ${getStatusBadgeClass(
+              row.original.status,
+            )}`}
+          >
+            {row.original.status || "DRAFT"}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+          <div
+            className="flex items-center justify-end gap-1.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => handleOpenInEditor(row.original)}
+              className="text-xs text-slate-700 hover:bg-slate-100 px-2.5 py-1"
+            >
+              Edit
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              onClick={(e) => handleDelete(row.original.id, e)}
+              className="text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 border-rose-200 px-2 py-1"
+              title="Delete"
+            >
+              <Trash2 size={12} />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [],
+  );
+
   return (
-    <div className="w-full pb-10 space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+    <div className="w-full space-y-6">
+      {/* Simplified Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-agm-box-border pb-4 print:hidden">
         <div>
-          <h1 className="text-lg sm:text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-            Agreements & Contracts
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+            Company Agreements
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Create, customize clauses, save to database, and print legally
-            binding renovation agreements.
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Manage, edit, and print company agreement documents.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-2xs">
-            <Button
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button
               type="button"
-              variant="ghost"
-              size="sm"
               onClick={() => setActiveView("EDITOR")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 activeView === "EDITOR"
-                  ? "bg-white text-slate-900 shadow-xs text-emerald-800"
+                  ? "bg-white text-agm-green shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Agreement Editor
-            </Button>
-            <Button
+              Editor
+            </button>
+            <button
               type="button"
-              variant="ghost"
-              size="sm"
               onClick={() => setActiveView("LIST")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 activeView === "LIST"
-                  ? "bg-white text-slate-900 shadow-xs text-emerald-800"
+                  ? "bg-white text-agm-green shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Saved Agreements ({agreementsList.length})
-            </Button>
+              Saved ({agreementsList.length})
+            </button>
           </div>
 
           {activeView === "LIST" && (
@@ -174,7 +259,7 @@ export default function AgreementsAndDocumentsPage() {
               variant="primary"
               size="sm"
               onClick={handleCreateNew}
-              className="bg-agm-green hover:bg-agm-green-2 text-white text-xs font-bold flex items-center gap-1.5"
+              className="text-xs bg-agm-green hover:bg-agm-green-2 text-white flex items-center gap-1.5"
             >
               <Plus size={14} />
               <span>New Agreement</span>
@@ -183,206 +268,83 @@ export default function AgreementsAndDocumentsPage() {
         </div>
       </div>
 
-      <DashboardCardGrid cols={4} className="print:hidden">
-        <DashboardCard
-          title="Total Contract Pipeline"
-          value={`AED ${formatNumber(totalContractVolume)}`}
-          subtitle="Cumulative agreement value"
-          variant="default"
-        />
-        <DashboardCard
-          title="Total Agreements Stored"
-          value={agreementsList.length}
-          subtitle={`${agreementsList.length} legal contracts`}
-          variant="default"
-        />
-        <DashboardCard
-          title="Active Contracts"
-          value={activeCount}
-          subtitle="Work in progress contracts"
-          variant="success"
-        />
-        <DashboardCard
-          title="Completed Contracts"
-          value={completedCount}
-          subtitle="Finished and executed"
-          variant="default"
-        />
-      </DashboardCardGrid>
+      {activeView === "LIST" ? (
+        <div className="space-y-6">
+          {/* Simplified KPI Cards without icons */}
+          <DashboardCardGrid cols={4}>
+            <DashboardCard
+              title="Total Agreements"
+              value={agreementsList.length}
+              subtitle={`${agreementsList.length} documents`}
+            />
+            <DashboardCard
+              title="Total Volume"
+              value={`AED ${formatNumber(totalContractVolume)}`}
+              subtitle="All contracts"
+              variant="success"
+            />
+            <DashboardCard
+              title="Active"
+              value={activeCount}
+              subtitle="In-progress"
+              variant="default"
+            />
+            <DashboardCard
+              title="Drafts"
+              value={draftCount}
+              subtitle="In preparation"
+              variant="default"
+            />
+          </DashboardCardGrid>
 
-      {activeView === "EDITOR" ? (
-        <div className="overflow-visible">
-          <AgreementTemplate
-            initialData={selectedAgreement || SAMPLE_RENOVATION_AGREEMENT}
+          {/* Search and Filters */}
+          <div className="bg-white p-3.5 rounded-xl border border-agm-box-border shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+            <div className="relative w-full md:w-96">
+              <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Input
+                placeholder="Search by ref number, client name, project, or property..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 text-xs"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <span className="text-xs text-slate-500 font-medium">Status:</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="text-xs py-1.5 px-3 bg-slate-50 border border-agm-box-border rounded-lg font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-agm-green"
+              >
+                <option value="ALL">All Statuses ({agreementsList.length})</option>
+                <option value="COMPLETED">Completed ({completedCount})</option>
+                <option value="ACTIVE">Active ({activeCount})</option>
+                <option value="DRAFT">Draft ({draftCount})</option>
+              </select>
+            </div>
+          </div>
+
+          {/* TanStack DataTable */}
+          <DataTable
+            columns={columns}
+            data={filteredAgreements}
+            isLoading={isLoading}
+            onRowClick={(row) => handleOpenInEditor(row)}
+            emptyTitle="No agreements found"
+            emptyMessage={
+              search
+                ? "No agreements matched your search criteria."
+                : "No agreements in database. Click 'New Agreement' to create one."
+            }
           />
         </div>
       ) : (
-        <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-          <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
-                {[
-                  { id: "ALL", label: "All Agreements" },
-                  { id: "ACTIVE", label: "Active" },
-                  { id: "COMPLETED", label: "Completed" },
-                  { id: "DRAFT", label: "Drafts" },
-                ].map((tab) => {
-                  const isActive = statusFilter === tab.id;
-                  return (
-                    <Button
-                      key={tab.id}
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setStatusFilter(tab.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        isActive
-                          ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                          : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                      }`}
-                    >
-                      {tab.label}
-                    </Button>
-                  );
-                })}
-              </div>
-
-              <span className="text-[11px] font-bold text-slate-500 font-mono">
-                {filteredAgreements.length} Agreements Listed
-              </span>
-            </div>
-
-            <div className="relative">
-              <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search agreements by reference number, client name, project, or property location..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-white rounded-xl border border-slate-200/80 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-agm-green/20 focus:border-agm-green shadow-2xs"
-              />
-            </div>
-          </div>
-
-          <div className="overflow-x-auto rounded-xl border border-slate-200/80">
-            <Table>
-              <TableHead>
-                <TableRow className="bg-slate-50 border-b border-slate-200 text-slate-700">
-                  <TableHeaderCell className="py-3 px-3.5 font-bold text-xs">
-                    Ref Number
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3.5 font-bold text-xs">
-                    Client Details
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3.5 font-bold text-xs">
-                    Project & Property
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3.5 font-bold text-xs text-right">
-                    Contract Value (AED)
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3.5 font-bold text-xs text-center">
-                    Status
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3.5 font-bold text-xs text-center">
-                    Date
-                  </TableHeaderCell>
-                  <TableHeaderCell className="py-3 px-3.5 font-bold text-xs text-right">
-                    Actions
-                  </TableHeaderCell>
-                </TableRow>
-              </TableHead>
-
-              <TableBody>
-                {isLoading ? (
-                  <TableLoading colSpan={7} />
-                ) : filteredAgreements.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="py-12 text-center text-xs text-slate-500"
-                    >
-                      {search
-                        ? "No agreements found matching your search."
-                        : "No saved agreements found in the database. Click 'New Agreement' or use the editor to create one."}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredAgreements.map((agr) => (
-                    <TableRow
-                      key={agr.id}
-                      className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
-                      onClick={() => handleOpenInEditor(agr)}
-                    >
-                      <TableCell className="py-3 px-3.5 font-mono font-bold text-xs text-slate-900">
-                        {agr.refNumber}
-                      </TableCell>
-
-                      <TableCell className="py-3 px-3.5">
-                        <div className="font-semibold text-xs text-slate-900">
-                          {agr.client?.name || "N/A"}
-                        </div>
-                        <div className="text-[11px] text-slate-400">
-                          {agr.client?.phone || agr.client?.email || "No contact"}
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="py-3 px-3.5">
-                        <div className="font-medium text-xs text-slate-800 line-clamp-1">
-                          {agr.project || "Fitout Works"}
-                        </div>
-                        <div className="text-[11px] text-slate-400 line-clamp-1">
-                          {agr.property || "Dubai, UAE"}
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="py-3 px-3.5 text-right font-mono font-bold text-xs text-slate-900">
-                        AED {formatNumber(agr.contractValueNum)}
-                      </TableCell>
-
-                      <TableCell className="py-3 px-3.5 text-center">
-                        <span
-                          className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold border ${getStatusBadgeClass(
-                            agr.status,
-                          )}`}
-                        >
-                          {agr.status || "DRAFT"}
-                        </span>
-                      </TableCell>
-
-                      <TableCell className="py-3 px-3.5 text-center text-xs text-slate-500 font-mono">
-                        {agr.date || "N/A"}
-                      </TableCell>
-
-                      <TableCell className="py-3 px-3.5 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenInEditor(agr)}
-                            className="text-xs px-2 py-1 text-slate-700 hover:text-agm-green border-slate-200"
-                            title="Open in Editor"
-                          >
-                            <Edit size={12} className="mr-1" /> Edit
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="danger"
-                            size="sm"
-                            onClick={(e) => handleDelete(agr.id, e)}
-                            className="text-xs px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 border-rose-200"
-                            title="Delete"
-                          >
-                            <Trash2 size={12} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+        <div>
+          <AgreementTemplate
+            key={selectedAgreement ? selectedAgreement.id : "new"}
+            initialData={selectedAgreement || SAMPLE_RENOVATION_AGREEMENT}
+            onSave={(saved) => setSelectedAgreement(saved)}
+          />
         </div>
       )}
     </div>

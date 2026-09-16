@@ -238,6 +238,18 @@ const navGroups: NavGroup[] = [
         icon: <FileCheckIcon />,
         href: "/commercial/agreements",
       },
+      {
+        id: "risk-assessments",
+        label: "Risk Assessments",
+        icon: <FileCheckIcon />,
+        href: "/commercial/risk-assessments",
+      },
+      {
+        id: "method-statements",
+        label: "Method Statements",
+        icon: <FileCheckIcon />,
+        href: "/commercial/method-statements",
+      },
     ],
   },
   {

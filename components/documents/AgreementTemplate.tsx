@@ -439,19 +439,16 @@ export default function AgreementTemplate({
 
   return (
     <div className="w-full flex flex-col items-center space-y-4">
-      <div className="print:hidden w-full flex flex-wrap items-center justify-between gap-3 p-2.5 px-4 bg-white border border-agm-box-border rounded-xl shadow-xs">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-agm-green text-white flex items-center justify-center font-bold text-xs shadow-xs">
-            <FileCheckIcon className="w-4 h-4" />
-          </div>
-          <div>
-            <h2 className="text-xs font-bold text-agm-text">
-              AGM Fitout Agreement
-            </h2>
-            <p className="text-[11px] text-agm-muted font-mono">
+      <div className="print:hidden w-full flex flex-wrap items-center justify-between gap-3 p-3 bg-white border border-agm-box-border rounded-xl shadow-xs">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-slate-800">
+            Company Agreement
+          </span>
+          {data.refNumber && (
+            <span className="text-xs font-mono font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
               {data.refNumber}
-            </p>
-          </div>
+            </span>
+          )}
         </div>
 
         {saveSuccess && (
