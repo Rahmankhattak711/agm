@@ -23,6 +23,9 @@ export const SECTION_PATHS: Record<string, string> = {
   "commercial-supplier-bills": "/commercial/supplier-bills",
   "commercial-supplier-payments": "/commercial/supplier-payments",
   "commercial-debit-notes": "/commercial/debit-notes",
+  "commercial-agreements": "/commercial/agreements",
+  agreements: "/commercial/agreements",
+  "company-agreements": "/commercial/agreements",
 
   accounts: "/finance/accounts",
   journals: "/finance/journal-entries",
@@ -113,6 +116,10 @@ export const PAGE_META: Record<string, PageMeta> = {
   "/commercial/debit-notes": {
     eyebrow: "Commercial",
     title: "Debit Notes",
+  },
+  "/commercial/agreements": {
+    eyebrow: "Company",
+    title: "Agreements & Documents",
   },
   "/commercial/customers": {
     eyebrow: "Master Data",
