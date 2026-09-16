@@ -288,7 +288,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className={`absolute z-50 mt-2 bg-white rounded-2xl border border-slate-200 shadow-xl p-4 w-[340px] sm:w-[460px] ${
+            className={`absolute z-50 mt-2 bg-white rounded-2xl border border-slate-200 shadow-xl p-4 w-[330px] sm:w-[440px] max-w-[calc(100vw-2rem)] ${
               align === "right" ? "right-0" : "left-0"
             }`}
           >
