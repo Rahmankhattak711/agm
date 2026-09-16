@@ -172,8 +172,8 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                       AGM FITOUT TECHNICAL SERVICES LLC - EXECUTIVE FINANCIAL SUMMARY
                     </div>
 
-                    {/* 3. Statement KPI Summary Cards */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 print-avoid-break">
+                    {/* 3. Statement KPI Summary Cards (Hidden in print) */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 print-avoid-break print:hidden">
                       <div className="p-3.5 bg-agm-box-bg rounded-xl border border-agm-box-border">
                         <span className="text-[10px] font-bold text-agm-muted uppercase tracking-wider block">
                           Total Revenue
