@@ -230,33 +230,6 @@ export default function CommercialQuotationsPage() {
         </div>
       </div>
 
-      <DashboardCardGrid cols={4} className="print:hidden">
-        <DashboardCard
-          title="Total Proposal Pipeline"
-          value={`AED ${formatNumber(totalQuotedVolume)}`}
-          subtitle="Cumulative quotation value"
-          variant="default"
-        />
-        <DashboardCard
-          title="Total Proposals Issued"
-          value={quotationsList.length}
-          subtitle={`${quotationsList.length} commercial proposals`}
-          variant="default"
-        />
-        <DashboardCard
-          title="Accepted Deals"
-          value={acceptedCount}
-          subtitle="Converted proposals"
-          variant="success"
-        />
-        <DashboardCard
-          title="Rejected Deals"
-          value={rejectedCount}
-          subtitle="Declined proposals"
-          variant="warning"
-        />
-      </DashboardCardGrid>
-
       {activeView === "EDITOR" ? (
         <div className="overflow-visible">
           <QuotationTemplate
@@ -266,7 +239,35 @@ export default function CommercialQuotationsPage() {
           />
         </div>
       ) : (
-        <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+        <div className="space-y-6 print:hidden">
+          <DashboardCardGrid cols={4} className="print:hidden">
+            <DashboardCard
+              title="Total Proposal Pipeline"
+              value={`AED ${formatNumber(totalQuotedVolume)}`}
+              subtitle="Cumulative quotation value"
+              variant="default"
+            />
+            <DashboardCard
+              title="Total Proposals Issued"
+              value={quotationsList.length}
+              subtitle={`${quotationsList.length} commercial proposals`}
+              variant="default"
+            />
+            <DashboardCard
+              title="Accepted Deals"
+              value={acceptedCount}
+              subtitle="Converted proposals"
+              variant="success"
+            />
+            <DashboardCard
+              title="Rejected Deals"
+              value={rejectedCount}
+              subtitle="Declined proposals"
+              variant="warning"
+            />
+          </DashboardCardGrid>
+
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
           <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
@@ -472,6 +473,7 @@ export default function CommercialQuotationsPage() {
             </div>
           )}
         </div>
+      </div>
       )}
     </div>
   );
