@@ -18,6 +18,7 @@ import {
   ReceiptIcon,
   RotateCcwIcon,
   SearchIcon,
+  ShieldCheckIcon,
   ShoppingCartIcon,
   TruckIcon,
   UserIcon,
@@ -25,7 +26,11 @@ import {
 } from "@/components/icons";
 
 export type ActionCategory =
-  "SALES" | "PURCHASES" | "ACCOUNTING" | "MASTER_DATA";
+  | "SALES"
+  | "PURCHASES"
+  | "COMPANY_DOCS"
+  | "ACCOUNTING"
+  | "MASTER_DATA";
 
 export interface ActionItem {
   id: string;
@@ -63,6 +68,13 @@ export const CATEGORY_META: Record<
     iconBg: "bg-amber-50 text-amber-800 border-amber-200/80",
     hover: "hover:bg-amber-50/40 hover:border-amber-300",
   },
+  COMPANY_DOCS: {
+    title: "Company Documents",
+    accent: "text-teal-800",
+    dot: "bg-teal-600",
+    iconBg: "bg-teal-50 text-teal-800 border-teal-200/80",
+    hover: "hover:bg-teal-50/40 hover:border-teal-300",
+  },
   ACCOUNTING: {
     title: "Accounting & General Ledger",
     accent: "text-agm-navy",
@@ -83,6 +95,7 @@ export const CATEGORY_TABS: { key: "ALL" | ActionCategory; label: string }[] = [
   { key: "ALL", label: "All Actions" },
   { key: "SALES", label: "Sales & Revenue" },
   { key: "PURCHASES", label: "Purchases & Bills" },
+  { key: "COMPANY_DOCS", label: "Company Documents" },
   { key: "ACCOUNTING", label: "Accounting" },
   { key: "MASTER_DATA", label: "Master Data" },
 ];
@@ -133,6 +146,34 @@ export const ACTION_ITEMS: ActionItem[] = [
     href: "/commercial/credit-notes",
     icon: <RotateCcwIcon size={16} className="text-purple-600" />,
     category: "SALES",
+  },
+
+  {
+    id: "create-agreement",
+    label: "Company Agreement",
+    sublabel: "Client & project legal contracts",
+    href: "/commercial/agreements",
+    icon: <FileCheckIcon size={16} className="text-teal-700" />,
+    category: "COMPANY_DOCS",
+    badge: "Legal",
+    badgeColor: "bg-teal-50 text-teal-800 border-teal-200/70",
+    isPopular: true,
+  },
+  {
+    id: "create-risk-assessment",
+    label: "Risk Assessment",
+    sublabel: "Site HSE hazards & risk matrix",
+    href: "/commercial/risk-assessments",
+    icon: <ShieldCheckIcon size={16} className="text-teal-700" />,
+    category: "COMPANY_DOCS",
+  },
+  {
+    id: "create-method-statement",
+    label: "Method Statement",
+    sublabel: "Technical work execution procedure",
+    href: "/commercial/method-statements",
+    icon: <FileTextIcon size={16} className="text-teal-700" />,
+    category: "COMPANY_DOCS",
   },
 
   {
