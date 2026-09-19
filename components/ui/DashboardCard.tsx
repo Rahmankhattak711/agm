@@ -165,7 +165,7 @@ export const DashboardCardGrid: React.FC<DashboardCardGridProps> = ({
   }[cols];
 
   return (
-    <div className={`grid ${colClasses} gap-4 print:grid-cols-4 ${className}`}>
+    <div className={`grid ${colClasses} gap-4 ${className}`}>
       {children}
     </div>
   );

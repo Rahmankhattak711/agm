@@ -34,7 +34,7 @@ export const QuotationHeader: React.FC<QuotationHeaderProps> = ({
           1, Dubai, UAE
         </div>
         <div className="font-medium text-slate-900 mt-0.5">
-          Tel: +971 48 749839 | Mob: +971 50 340 7300 | TRN: 104094432200003
+          Tel: +971 48 749839 | Mob: +971 50 340 7300
         </div>
       </div>
     </div>
