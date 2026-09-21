@@ -239,6 +239,12 @@ const navGroups: NavGroup[] = [
         href: "/commercial/agreements",
       },
       {
+        id: "salary-certificates",
+        label: "Salary Certificates",
+        icon: <FileCheckIcon />,
+        href: "/commercial/salary-certificates",
+      },
+      {
         id: "risk-assessments",
         label: "Risk Assessments",
         icon: <FileCheckIcon />,
@@ -273,6 +279,14 @@ export default function Sidebar({
 }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<
+    Record<string, boolean>
+  >({
+    Finance: true,
+    Operations: true,
+    "Company Documents": true,
+    Administration: true,
+  });
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     {
       "sales-group": true,
@@ -283,6 +297,7 @@ export default function Sidebar({
       "assets-group": false,
     },
   );
+
 
   const pathname = usePathname();
   const router = useRouter();
@@ -321,13 +336,21 @@ export default function Sidebar({
     });
   }, [pathname]);
 
-  const toggleGroup = (groupId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedGroups((prev) => ({
+  const toggleSection = (sectionLabel: string) => {
+    setExpandedSections((prev) => ({
       ...prev,
-      [groupId]: !prev[groupId],
+      [sectionLabel]: !prev[sectionLabel],
     }));
   };
+
+  const toggleAllSections = (expand: boolean) => {
+    const next: Record<string, boolean> = {};
+    navGroups.forEach((g) => {
+      next[g.label] = expand;
+    });
+    setExpandedSections(next);
+  };
+
 
   const handleNavigateHref = (href: string) => {
     router.push(href);
@@ -435,16 +458,32 @@ export default function Sidebar({
         </div>
 
         <nav className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden p-3 custom-scrollbar">
-          {navGroups.map((group) => (
-            <div key={group.label} className="mb-3">
-              {!effectiveCollapsed && (
-                <p className="px-3 pb-1.5 pt-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#8fb0c4]/75">
-                  {group.label}
-                </p>
-              )}
-              {effectiveCollapsed && <div className="h-1.5" />}
+          {navGroups.map((group) => {
+            const isSectionExpanded =
+              expandedSections[group.label] !== false;
 
-              {group.items.map((item) => {
+            return (
+              <div key={group.label} className="mb-3">
+                {!effectiveCollapsed && (
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(group.label)}
+                    className="w-full flex items-center justify-between px-3 pb-1.5 pt-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#8fb0c4]/75 hover:text-white transition-colors cursor-pointer group"
+                  >
+                    <span>{group.label}</span>
+                    <ChevronDownIcon
+                      size={11}
+                      className={`text-[#8fb0c4]/60 group-hover:text-white transition-transform duration-200 ${
+                        isSectionExpanded ? "rotate-0" : "-rotate-90"
+                      }`}
+                    />
+                  </button>
+                )}
+                {effectiveCollapsed && <div className="h-1.5" />}
+
+                {(isSectionExpanded || effectiveCollapsed) &&
+                  group.items.map((item) => {
+
                 const hasChildren = Boolean(
                   item.children && item.children.length > 0,
                 );
@@ -569,8 +608,10 @@ export default function Sidebar({
                 );
               })}
             </div>
-          ))}
-        </nav>
+          );
+        })}
+      </nav>
+
 
         <div className="relative z-10 mx-2.5 h-px bg-white/8" />
 
