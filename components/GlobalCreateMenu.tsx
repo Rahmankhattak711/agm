@@ -160,6 +160,17 @@ export const ACTION_ITEMS: ActionItem[] = [
     isPopular: true,
   },
   {
+    id: "create-salary-certificate",
+    label: "Salary Certificate",
+    sublabel: "Official salary proof & UAE bank letter",
+    href: "/commercial/salary-certificates",
+    icon: <FileTextIcon size={16} className="text-teal-700" />,
+    category: "COMPANY_DOCS",
+    badge: "Official",
+    badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200/70",
+    isPopular: true,
+  },
+  {
     id: "create-risk-assessment",
     label: "Risk Assessment",
     sublabel: "Site HSE hazards & risk matrix",
@@ -175,6 +186,7 @@ export const ACTION_ITEMS: ActionItem[] = [
     icon: <FileTextIcon size={16} className="text-teal-700" />,
     category: "COMPANY_DOCS",
   },
+
 
   {
     id: "create-purchase-request",

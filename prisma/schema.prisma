@@ -55,6 +55,7 @@ model User {
   commercialAgreements CommercialAgreement[]
   riskAssessments      RiskAssessment[]
   methodStatements     MethodStatement[]
+  salaryCertificates   SalaryCertificate[]
 
   @@map("users")
 }
@@ -1401,3 +1402,43 @@ model MethodStatement {
 
   @@map("method_statements")
 }
+
+model SalaryCertificate {
+  id                    String   @id @default(uuid()) @db.Uuid
+  refNumber             String   @unique @map("ref_number")
+  date                  String   @default("")
+  status                String   @default("DRAFT")
+  addressee             String   @default("To Whom It May Concern,")
+  employeePrefix        String   @default("Mr.") @map("employee_prefix")
+  employeeName          String   @default("") @map("employee_name")
+  emiratesId            String   @default("") @map("emirates_id")
+  joiningDate           String   @default("") @map("joining_date")
+  companyName           String   @default("AGM Fitout Technical Services LLC") @map("company_name")
+  position              String   @default("")
+  purposeDisclaimer     String   @default("") @map("purpose_disclaimer") @db.Text
+  monthlySalaryNum      Decimal  @default(0.00) @map("monthly_salary_num") @db.Decimal(15, 2)
+  monthlySalaryText     String   @default("") @map("monthly_salary_text")
+  currency              String   @default("AED")
+  signatoryCompany      String   @default("AGM Fitout Technical Services LLC") @map("signatory_company")
+  signatoryTitle        String   @default("Authorized Signatory,") @map("signatory_title")
+  signatoryName         String   @default("Zeeshan Ahmad") @map("signatory_name")
+  signatoryDesignation  String   @default("Accountant") @map("signatory_designation")
+  showStampAndSignature Boolean  @default(true) @map("show_stamp_and_signature")
+  city                  String   @default("Dubai")
+  poBox                 String   @default("No") @map("po_box")
+  landline              String   @default("New 1143 Business Center LLC")
+  telephone             String   @default("+971 4 280 4184")
+  vatNumber             String   @default("104094432200003") @map("vat_number")
+  footerCompanyName     String   @default("AGM Fitout Technical Services") @map("footer_company_name")
+  registeredAddress     String   @default("") @map("registered_address") @db.Text
+  notes                 String?  @db.Text
+
+  createdById String? @map("created_by_id") @db.Uuid
+  createdBy   User?   @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("salary_certificates")
+}
+

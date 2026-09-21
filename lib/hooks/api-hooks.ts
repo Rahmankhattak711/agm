@@ -2112,8 +2112,92 @@ export function useDeleteMethodStatement() {
   });
 }
 
+export type SalaryCertificateRecord = {
 
+  id: string;
+  refNumber: string;
+  date: string;
+  status: "DRAFT" | "ACTIVE" | "ISSUED" | "COMPLETED";
+  addressee: string;
+  employeePrefix: "Mr." | "Ms." | "Mrs." | "Dr.";
+  employeeName: string;
+  emiratesId: string;
+  joiningDate: string;
+  companyName: string;
+  position: string;
+  purposeDisclaimer: string;
+  monthlySalaryNum: number;
+  monthlySalaryText: string;
+  currency: string;
+  signatoryCompany: string;
+  signatoryTitle: string;
+  signatoryName: string;
+  signatoryDesignation: string;
+  signatorySignatureUrl?: string;
+  companyStampUrl?: string;
+  showStampAndSignature: boolean;
+  city: string;
+  poBox: string;
+  landline: string;
+  telephone: string;
+  vatNumber: string;
+  footerCompanyName: string;
+  registeredAddress: string;
+  employeeId?: string;
+  notes?: string;
+  createdBy?: { id?: string; fullName?: string; email?: string };
+  createdAt?: string;
+  updatedAt?: string;
+};
 
+export function useSalaryCertificates(params?: { search?: string; status?: string }) {
+  const q = new URLSearchParams();
+  if (params?.search) q.append("search", params.search);
+  if (params?.status) q.append("status", params.status);
+  const qStr = q.toString() ? `?${q.toString()}` : "";
+
+  return useQuery<SalaryCertificateRecord[]>({
+    queryKey: ["salary-certificates", params],
+    queryFn: () =>
+      fetchJson<SalaryCertificateRecord[]>(`/api/commercial/salary-certificates${qStr}`),
+  });
+}
+
+export function useSalaryCertificate(id?: string | null) {
+  return useQuery<SalaryCertificateRecord>({
+    queryKey: ["salary-certificate", id],
+    queryFn: () =>
+      fetchJson<SalaryCertificateRecord>(`/api/commercial/salary-certificates/${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useSaveSalaryCertificate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<SalaryCertificateRecord>) =>
+      fetchJson<SalaryCertificateRecord>("/api/commercial/salary-certificates", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["salary-certificates"] });
+    },
+  });
+}
+
+export function useDeleteSalaryCertificate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ ok: boolean }>(`/api/commercial/salary-certificates/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["salary-certificates"] });
+    },
+  });
+}
 export interface Customer {
   id: string;
   customerCode: string;
