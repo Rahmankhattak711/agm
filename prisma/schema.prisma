@@ -1442,3 +1442,41 @@ model SalaryCertificate {
   @@map("salary_certificates")
 }
 
+model CustomLetter {
+  id                    String  @id @default(uuid()) @db.Uuid
+  refNumber             String  @unique @map("ref_number")
+  docTitle              String  @default("OFFICIAL COMPANY LETTER") @map("doc_title")
+  date                  String  @default("")
+  status                String  @default("DRAFT")
+
+  // Addressing
+  addressee             String  @default("To Whom It May Concern,")
+  addresseeSubtitle     String? @map("addressee_subtitle")
+  subject               String  @default("") @db.Text
+  salutation            String  @default("Dear Sir / Madam,")
+
+  // Dynamic content stored as JSON
+  sections              Json    @default("[]")
+
+  // Closing
+  closingText           String? @map("closing_text") @db.Text
+
+  // Signatory
+  signatoryCompany      String  @default("AGM Fitout Technical Services LLC") @map("signatory_company")
+  signatoryTitle        String  @default("Authorized Signatory,") @map("signatory_title")
+  signatoryName         String  @default("Zeeshan Ahmad") @map("signatory_name")
+  signatoryDesignation  String  @default("Authorized Signatory") @map("signatory_designation")
+  showStampAndSignature Boolean @default(true) @map("show_stamp_and_signature")
+  companyStampUrl       String? @map("company_stamp_url") @db.Text
+  signatorySignatureUrl String? @map("signatory_signature_url") @db.Text
+
+  notes       String? @db.Text
+
+  createdById String? @map("created_by_id") @db.Uuid
+  createdBy   User?   @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("custom_letters")
+}
