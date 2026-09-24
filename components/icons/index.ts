@@ -81,3 +81,6 @@ export * from "./XIcon";
 export * from "./GridIcon";
 export * from "./LineChartIcon";
 export * from "./NetworkIcon";
+export * from "./SaveIcon";
+export * from "./FolderOpenIcon";
+export * from "./CustomLetterExtraIcons";
