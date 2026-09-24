@@ -57,7 +57,7 @@ export function CustomerCreateModal({
       setFormError("");
       form.reset();
     }
-  }, [isOpen]);
+  }, [isOpen, form]);
 
   return (
     <Modal

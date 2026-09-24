@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import AgreementTemplate from "@/components/documents/AgreementTemplate";
 import {
@@ -83,34 +83,37 @@ export default function AgreementsAndDocumentsPage() {
     [agreementsList],
   );
 
-  const handleOpenInEditor = (agr: AgreementRecord) => {
+  const handleOpenInEditor = useCallback((agr: AgreementRecord) => {
     setSelectedAgreement(agr);
     setActiveView("EDITOR");
-  };
+  }, []);
 
   const handleCreateNew = () => {
     setSelectedAgreement(null);
     setActiveView("EDITOR");
   };
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this agreement from the database?",
-      )
-    ) {
-      return;
-    }
-    try {
-      await deleteAgreementMutation.mutateAsync(id);
-      if (selectedAgreement?.id === id) {
-        setSelectedAgreement(null);
+  const handleDelete = useCallback(
+    async (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (
+        !window.confirm(
+          "Are you sure you want to delete this agreement from the database?",
+        )
+      ) {
+        return;
       }
-    } catch (err: any) {
-      alert("Error deleting agreement: " + (err.message || "Unknown error"));
-    }
-  };
+      try {
+        await deleteAgreementMutation.mutateAsync(id);
+        if (selectedAgreement?.id === id) {
+          setSelectedAgreement(null);
+        }
+      } catch (err: any) {
+        alert("Error deleting agreement: " + (err.message || "Unknown error"));
+      }
+    },
+    [deleteAgreementMutation, selectedAgreement?.id],
+  );
 
   const getStatusBadge = (status?: string) => {
     if (status === "COMPLETED") {
@@ -238,7 +241,7 @@ export default function AgreementsAndDocumentsPage() {
         ),
       },
     ],
-    [],
+    [handleDelete, handleOpenInEditor],
   );
 
   return (

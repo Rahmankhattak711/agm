@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import SalaryCertificateTemplate from "@/components/documents/SalaryCertificateTemplate";
 import {
@@ -78,37 +78,40 @@ export default function SalaryCertificatesPage() {
     [recordsList],
   );
 
-  const handleOpenInEditor = (record: SalaryCertificateRecord) => {
+  const handleOpenInEditor = useCallback((record: SalaryCertificateRecord) => {
     setSelectedRecord(record);
     setActiveView("EDITOR");
-  };
+  }, []);
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
     setActiveView("EDITOR");
   };
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this salary certificate from the database?",
-      )
-    ) {
-      return;
-    }
-    try {
-      await deleteMutation.mutateAsync(id);
-      if (selectedRecord?.id === id) {
-        setSelectedRecord(null);
+  const handleDelete = useCallback(
+    async (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (
+        !window.confirm(
+          "Are you sure you want to delete this salary certificate from the database?",
+        )
+      ) {
+        return;
       }
-    } catch (err: any) {
-      alert(
-        "Error deleting salary certificate: " +
-          (err.message || "Unknown error"),
-      );
-    }
-  };
+      try {
+        await deleteMutation.mutateAsync(id);
+        if (selectedRecord?.id === id) {
+          setSelectedRecord(null);
+        }
+      } catch (err: any) {
+        alert(
+          "Error deleting salary certificate: " +
+            (err.message || "Unknown error"),
+        );
+      }
+    },
+    [deleteMutation, selectedRecord?.id],
+  );
 
   const getStatusBadge = (status?: string) => {
     const isIssued = status === "ISSUED" || status === "COMPLETED";
@@ -230,7 +233,7 @@ export default function SalaryCertificatesPage() {
         ),
       },
     ],
-    [],
+    [handleDelete, handleOpenInEditor],
   );
 
   return (

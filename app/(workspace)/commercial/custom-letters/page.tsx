@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   CustomLetterTemplate,
@@ -72,34 +72,37 @@ export default function CustomLettersPage() {
     [recordsList],
   );
 
-  const handleOpenInEditor = (record: CustomLetterDocumentData) => {
+  const handleOpenInEditor = useCallback((record: CustomLetterDocumentData) => {
     setSelectedRecord(record);
     setActiveView("EDITOR");
-  };
+  }, []);
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
     setActiveView("EDITOR");
   };
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this custom letter/certificate?",
-      )
-    ) {
-      return;
-    }
-    try {
-      await deleteMutation.mutateAsync(id);
-      if (selectedRecord?.id === id) {
-        setSelectedRecord(null);
+  const handleDelete = useCallback(
+    async (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (
+        !window.confirm(
+          "Are you sure you want to delete this custom letter/certificate?",
+        )
+      ) {
+        return;
       }
-    } catch (err: any) {
-      alert("Error deleting letter: " + (err.message || "Unknown error"));
-    }
-  };
+      try {
+        await deleteMutation.mutateAsync(id);
+        if (selectedRecord?.id === id) {
+          setSelectedRecord(null);
+        }
+      } catch (err: any) {
+        alert("Error deleting letter: " + (err.message || "Unknown error"));
+      }
+    },
+    [deleteMutation, selectedRecord?.id],
+  );
 
   const getStatusBadge = (status?: string) => {
     const isIssued = status === "ISSUED" || status === "COMPLETED";
@@ -220,7 +223,7 @@ export default function CustomLettersPage() {
         ),
       },
     ],
-    [],
+    [handleDelete, handleOpenInEditor],
   );
 
   return (
