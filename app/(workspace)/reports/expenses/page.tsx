@@ -501,13 +501,11 @@ export default function ExpenseReportsPage() {
             <tr>
               <td className="p-0 border-none align-top">
                 <div className="space-y-0">
-                  {/* 1. Tax Registration Subheader */}
                   <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
                     <span>Corporate Tax Registration No: 104094432200001</span>
                     <span>VAT Registration No:104094432200003</span>
                   </div>
 
-                  {/* 2. Theme Title Banner */}
                   <div
                     className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
                     style={{
@@ -515,10 +513,10 @@ export default function ExpenseReportsPage() {
                       printColorAdjust: "exact",
                     }}
                   >
-                    AGM FITOUT TECHNICAL SERVICES LLC - OPERATING EXPENSES STATEMENT
+                    AGM FITOUT TECHNICAL SERVICES LLC - OPERATING EXPENSES
+                    STATEMENT
                   </div>
 
-                  {/* 3. Statement KPI Summary Cards */}
                   <div className="grid grid-cols-3 gap-3 p-4 bg-agm-box-bg rounded-xl border border-agm-box-border my-4 print-avoid-break">
                     <div>
                       <span className="text-agm-muted block text-[10px] uppercase font-bold">
@@ -546,7 +544,6 @@ export default function ExpenseReportsPage() {
                     </div>
                   </div>
 
-                  {/* 4. Table */}
                   <div className="space-y-2">
                     <h4 className="font-bold text-agm-text text-xs">
                       Expense Records ({filteredExpenses.length} entries)
@@ -584,7 +581,9 @@ export default function ExpenseReportsPage() {
                                 )}
                               </td>
                               <td className="py-2 px-3 font-sans">
-                                <span className="font-bold text-agm-text">{e.category}</span>
+                                <span className="font-bold text-agm-text">
+                                  {e.category}
+                                </span>
                                 {e.payee ? ` - ${e.payee}` : ""}
                               </td>
                               <td className="py-2 px-3 font-sans text-agm-text">
@@ -608,7 +607,6 @@ export default function ExpenseReportsPage() {
           </tbody>
         </table>
 
-        {/* Fixed Print Footer across every single printed page */}
         <div className="print-footer-bottom fixed-print-footer hidden print:block">
           <QuotationFooter />
         </div>
