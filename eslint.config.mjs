@@ -8,7 +8,7 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-export default [
+const eslintConfig = [
   ...compat.extends("next/core-web-vitals"),
   {
     ignores: [
@@ -19,4 +19,11 @@ export default [
       "app/generated/**",
     ],
   },
+  {
+    rules: {
+      "@next/next/no-img-element": "off",
+    },
+  },
 ];
+
+export default eslintConfig;
