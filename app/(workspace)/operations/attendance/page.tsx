@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import { useAuth } from "@/context/AuthContext";
@@ -24,7 +24,7 @@ import {
   DashboardCard,
   DashboardCardGrid,
 } from "@/components/ui";
-import { PlusIcon, TrashIcon } from "@/components/icons";
+import { PlusIcon, TrashIcon, EditIcon, CheckCircle2Icon } from "@/components/icons";
 
 export default function AttendancePage() {
   const { canModify } = useAuth();
@@ -35,6 +35,7 @@ export default function AttendancePage() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formError, setFormError] = useState("");
+  const [isSavingAll, setIsSavingAll] = useState(false);
 
   const {
     data: records = [],
@@ -45,29 +46,88 @@ export default function AttendancePage() {
     employeeId: employeeFilter || undefined,
   });
 
-  const { data: employees = [] } = useEmployees({ status: "ACTIVE" });
+  const { data: employees = [], isLoading: isEmployeesLoading } = useEmployees({
+    status: "ACTIVE",
+  });
   const recordAttendance = useRecordAttendance();
   const deleteAttendance = useDeleteAttendance();
 
+  const effectiveRecords = useMemo(() => {
+    const recordMap = new Map<string, DailyAttendance>();
+    for (const r of records) {
+      if (r.employeeId) {
+        recordMap.set(r.employeeId, r);
+      }
+    }
+
+    const targetEmployees = employeeFilter
+      ? employees.filter((e) => e.id === employeeFilter)
+      : employees;
+
+    const result: DailyAttendance[] = [];
+    const processedEmployeeIds = new Set<string>();
+
+    for (const emp of targetEmployees) {
+      processedEmployeeIds.add(emp.id);
+      const existing = recordMap.get(emp.id);
+      if (existing) {
+        result.push(existing);
+      } else {
+        result.push({
+          id: `default-${emp.id}-${selectedDate}`,
+          employeeId: emp.id,
+          employee: {
+            id: emp.id,
+            employeeCode: emp.employeeCode,
+            firstName: emp.firstName,
+            lastName: emp.lastName,
+            department: emp.department,
+            designation: emp.designation,
+          },
+          attendanceDate: selectedDate,
+          checkInTime: `${selectedDate}T08:00:00`,
+          checkOutTime: `${selectedDate}T17:00:00`,
+          status: "PRESENT",
+          workingHours: 8.0,
+          overtimeHours: 0,
+          lateMinutes: 0,
+          location: "Main Office / On-Site",
+          notes: "Present (Always Present)",
+          createdAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    for (const r of records) {
+      if (!processedEmployeeIds.has(r.employeeId)) {
+        if (!employeeFilter || r.employeeId === employeeFilter) {
+          result.push(r);
+        }
+      }
+    }
+
+    return result;
+  }, [records, employees, selectedDate, employeeFilter]);
+
   const filteredRecords = useMemo(() => {
-    return records.filter((r) => {
+    return effectiveRecords.filter((r) => {
       if (statusFilter === "ALL") return true;
       return r.status === statusFilter;
     });
-  }, [records, statusFilter]);
+  }, [effectiveRecords, statusFilter]);
 
   const stats = useMemo(
     () => ({
-      present: records.filter((r) => r.status === "PRESENT").length,
-      late: records.filter((r) => r.status === "LATE").length,
-      absent: records.filter((r) => r.status === "ABSENT").length,
-      onLeave: records.filter((r) => r.status === "ON_LEAVE").length,
-      overtime: records.reduce(
+      present: effectiveRecords.filter((r) => r.status === "PRESENT").length,
+      late: effectiveRecords.filter((r) => r.status === "LATE").length,
+      absent: effectiveRecords.filter((r) => r.status === "ABSENT").length,
+      onLeave: effectiveRecords.filter((r) => r.status === "ON_LEAVE").length,
+      overtime: effectiveRecords.reduce(
         (acc, r) => acc + Number(r.overtimeHours || 0),
         0,
       ),
     }),
-    [records],
+    [effectiveRecords],
   );
 
   const form = useForm({
@@ -116,7 +176,7 @@ export default function AttendancePage() {
     },
   });
 
-  const handleOpenModal = () => {
+  const handleOpenModal = useCallback(() => {
     setFormError("");
     form.reset({
       employeeId: employees[0]?.id || "",
@@ -131,7 +191,77 @@ export default function AttendancePage() {
       notes: "",
     });
     setIsModalOpen(true);
-  };
+  }, [employees, form, selectedDate]);
+
+  const handleEditRecord = useCallback(
+    (rec: DailyAttendance) => {
+      setFormError("");
+      const formatTime = (timeStr?: string | null, fallback = "08:00") => {
+        if (!timeStr) return fallback;
+        try {
+          const d = new Date(timeStr);
+          if (isNaN(d.getTime())) return fallback;
+          return `${String(d.getHours()).padStart(2, "0")}:${String(
+            d.getMinutes(),
+          ).padStart(2, "0")}`;
+        } catch {
+          return fallback;
+        }
+      };
+
+      const dateStr = rec.attendanceDate
+        ? rec.attendanceDate.split("T")[0]
+        : selectedDate;
+
+      form.reset({
+        employeeId: rec.employeeId,
+        attendanceDate: dateStr,
+        checkInTime: formatTime(rec.checkInTime, "08:00"),
+        checkOutTime: formatTime(rec.checkOutTime, "17:00"),
+        status: rec.status,
+        workingHours:
+          rec.workingHours !== undefined && rec.workingHours !== null
+            ? String(rec.workingHours)
+            : "8.0",
+        overtimeHours:
+          rec.overtimeHours !== undefined && rec.overtimeHours !== null
+            ? String(rec.overtimeHours)
+            : "0.0",
+        lateMinutes:
+          rec.lateMinutes !== undefined && rec.lateMinutes !== null
+            ? String(rec.lateMinutes)
+            : "0",
+        location: rec.location || "",
+        notes: rec.notes || "",
+      });
+      setIsModalOpen(true);
+    },
+    [form, selectedDate],
+  );
+
+  const handleMarkAllPresent = useCallback(async () => {
+    if (!employees.length) return;
+    setIsSavingAll(true);
+    try {
+      const payload = employees.map((emp) => ({
+        employeeId: emp.id,
+        attendanceDate: selectedDate,
+        checkInTime: `${selectedDate}T08:00:00`,
+        checkOutTime: `${selectedDate}T17:00:00`,
+        status: "PRESENT",
+        workingHours: 8.0,
+        overtimeHours: 0,
+        lateMinutes: 0,
+        location: "Main Office / On-Site",
+        notes: "Marked present",
+      }));
+      await recordAttendance.mutateAsync(payload);
+    } catch (err: any) {
+      console.error("Failed to mark all present:", err);
+    } finally {
+      setIsSavingAll(false);
+    }
+  }, [employees, selectedDate, recordAttendance]);
 
   const getStatusBadge = (status: AttendanceStatus) => {
     switch (status) {
@@ -274,27 +404,41 @@ export default function AttendancePage() {
         header: () => <div className="text-center">Actions</div>,
         cell: ({ row }) => {
           if (!canModify(row.original.employeeId, ["HR"])) return null;
+          const isPersisted = !row.original.id.startsWith("default-");
           return (
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center gap-1.5">
               <Button
-                variant="danger"
+                variant="outline"
                 size="sm"
-                onClick={async () => {
-                  if (confirm("Delete this attendance entry?")) {
-                    await deleteAttendance.mutateAsync(row.original.id);
-                  }
-                }}
-                icon={<TrashIcon size={13} />}
-                title="Delete Entry"
+                onClick={() => handleEditRecord(row.original)}
+                icon={<EditIcon size={12} />}
+                className="text-xs py-1 px-2.5 h-auto cursor-pointer"
+                title="Edit / Update Attendance"
               >
-                Delete
+                Edit
               </Button>
+              {isPersisted && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={async () => {
+                    if (confirm("Reset attendance entry back to default Present?")) {
+                      await deleteAttendance.mutateAsync(row.original.id);
+                    }
+                  }}
+                  icon={<TrashIcon size={12} />}
+                  className="text-xs py-1 px-2 h-auto cursor-pointer"
+                  title="Reset to Present"
+                >
+                  Reset
+                </Button>
+              )}
             </div>
           );
         },
       },
     ],
-    [canModify, deleteAttendance],
+    [canModify, deleteAttendance, handleEditRecord],
   );
 
   return (
@@ -312,15 +456,28 @@ export default function AttendancePage() {
 
         <div className="flex items-center gap-2">
           {canModify(null, ["HR"]) && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleOpenModal}
-              icon={<PlusIcon size={14} strokeWidth={2.5} />}
-              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
-            >
-              Record Attendance
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleMarkAllPresent}
+                loading={isSavingAll}
+                icon={<CheckCircle2Icon size={14} className="text-emerald-700" />}
+                className="text-xs font-bold border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 text-emerald-800 cursor-pointer"
+                title="Save all active employees as Present in database for this date"
+              >
+                Mark All Present
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleOpenModal}
+                icon={<PlusIcon size={14} strokeWidth={2.5} />}
+                className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
+              >
+                Record Attendance
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -434,7 +591,7 @@ export default function AttendancePage() {
             <DataTable
               columns={columns}
               data={filteredRecords}
-              isLoading={isLoading}
+              isLoading={isLoading || isEmployeesLoading}
               emptyTitle="No attendance records found for this date"
               emptyMessage="Click 'Record Attendance' to add check-in logs."
             />
