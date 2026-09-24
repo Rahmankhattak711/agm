@@ -57,7 +57,10 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/commercial/agreements error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch agreements from database", details: error.message },
+      {
+        error: "Failed to fetch agreements from database",
+        details: error.message,
+      },
       { status: 500 },
     );
   }
@@ -98,7 +101,11 @@ export async function POST(request: Request) {
     };
 
     let saved: any;
-    const isUuid = body.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id);
+    const isUuid =
+      body.id &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        body.id,
+      );
 
     if (isUuid) {
       saved = await (prisma as any).commercialAgreement.upsert({

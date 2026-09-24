@@ -2,10 +2,7 @@
 
 import React, { useState, useMemo, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
-import {
-  PrintIcon,
-  SearchIcon,
-} from "@/components/icons";
+import { PrintIcon, SearchIcon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import {
   TrialBalanceReport as TrialBalanceData,
@@ -80,10 +77,8 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2.5 bg-agm-card rounded-2xl border border-agm-box-border shadow-2xs print:hidden">
         <div className="flex flex-wrap items-center gap-2">
-          {/* Search Input */}
           <div className="relative">
             <SearchIcon
               size={13}
@@ -98,7 +93,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
             />
           </div>
 
-          {/* Type Filter Tabs */}
           <div className="inline-flex items-center p-1 bg-agm-box-bg rounded-xl border border-agm-box-border overflow-x-auto">
             {typeFilterOptions.map((opt) => (
               <button
@@ -134,7 +128,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
           <p>Loading Trial Balance data...</p>
         </div>
       ) : (
-        /* Printable Sheet */
         <div className="flex justify-center w-full">
           <div
             ref={printRef}
@@ -145,7 +138,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
               printColorAdjust: "exact",
             }}
           >
-            {/* Multi-page Print Table Wrapper */}
             <table className="print-page-table w-full border-collapse">
               <thead className="print-page-header-group">
                 <tr>
@@ -174,13 +166,13 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                 <tr>
                   <td className="p-0 border-none align-top">
                     <div className="space-y-0">
-                      {/* 1. Tax Registration Subheader */}
                       <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
-                        <span>Corporate Tax Registration No: 104094432200001</span>
+                        <span>
+                          Corporate Tax Registration No: 104094432200001
+                        </span>
                         <span>VAT Registration No:104094432200003</span>
                       </div>
 
-                      {/* 2. Title Banner */}
                       <div
                         className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
                         style={{
@@ -188,10 +180,10 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                           printColorAdjust: "exact",
                         }}
                       >
-                        AGM FITOUT TECHNICAL SERVICES LLC - TRIAL BALANCE STATEMENT
+                        AGM FITOUT TECHNICAL SERVICES LLC - TRIAL BALANCE
+                        STATEMENT
                       </div>
 
-                      {/* 4. Trial Balance Table */}
                       <table className="w-full border-collapse text-[12px] print:text-[11.5px] text-agm-text">
                         <thead>
                           <tr className="bg-agm-box-bg font-bold text-agm-text border-b border-agm-box-border">
@@ -223,37 +215,41 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                               </td>
                             </tr>
                           ) : (
-                            filteredRows.map((row: TrialBalanceRow, idx: number) => (
-                              <tr
-                                key={row.accountCode || idx}
-                                className="border-b border-agm-box-border/50 hover:bg-agm-box-bg/50"
-                              >
-                                <td className="py-1.5 px-3 font-mono font-medium text-agm-muted">
-                                  {row.accountCode}
-                                </td>
-                                <td className="py-1.5 px-3 font-medium text-agm-text">
-                                  {row.accountName}
-                                </td>
-                                <td className="py-1.5 px-3 text-agm-muted font-medium text-[11px] uppercase">
-                                  {row.type}
-                                </td>
-                                <td className="py-1.5 px-3 text-right font-mono text-agm-text font-semibold">
-                                  {Number(row.debit || 0) > 0
-                                    ? formatNumber(row.debit)
-                                    : "-"}
-                                </td>
-                                <td className="py-1.5 px-3 text-right font-mono text-agm-text font-semibold">
-                                  {Number(row.credit || 0) > 0
-                                    ? formatNumber(row.credit)
-                                    : "-"}
-                                </td>
-                              </tr>
-                            ))
+                            filteredRows.map(
+                              (row: TrialBalanceRow, idx: number) => (
+                                <tr
+                                  key={row.accountCode || idx}
+                                  className="border-b border-agm-box-border/50 hover:bg-agm-box-bg/50"
+                                >
+                                  <td className="py-1.5 px-3 font-mono font-medium text-agm-muted">
+                                    {row.accountCode}
+                                  </td>
+                                  <td className="py-1.5 px-3 font-medium text-agm-text">
+                                    {row.accountName}
+                                  </td>
+                                  <td className="py-1.5 px-3 text-agm-muted font-medium text-[11px] uppercase">
+                                    {row.type}
+                                  </td>
+                                  <td className="py-1.5 px-3 text-right font-mono text-agm-text font-semibold">
+                                    {Number(row.debit || 0) > 0
+                                      ? formatNumber(row.debit)
+                                      : "-"}
+                                  </td>
+                                  <td className="py-1.5 px-3 text-right font-mono text-agm-text font-semibold">
+                                    {Number(row.credit || 0) > 0
+                                      ? formatNumber(row.credit)
+                                      : "-"}
+                                  </td>
+                                </tr>
+                              ),
+                            )
                           )}
 
-                          {/* Total Debits & Credits Row */}
                           <tr className="bg-agm-navy/10 text-agm-navy font-bold border-t border-b border-agm-navy/20">
-                            <td colSpan={3} className="py-2 px-3 font-bold text-agm-navy">
+                            <td
+                              colSpan={3}
+                              className="py-2 px-3 font-bold text-agm-navy"
+                            >
                               Total Debits &amp; Credits
                             </td>
                             <td className="py-2 px-3 text-right font-mono font-bold text-agm-navy">
@@ -264,14 +260,19 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                             </td>
                           </tr>
 
-                          {/* Trial Balance Audit Reconciliation Row */}
                           <tr
                             className={`${
                               isBalanced ? "bg-emerald-700" : "bg-rose-700"
                             } text-white font-bold border-t border-b`}
                           >
-                            <td colSpan={3} className="py-2 px-3 font-bold text-white">
-                              Balance Audit: {isBalanced ? "In Balance (Debit = Credit)" : "Out of Balance"}
+                            <td
+                              colSpan={3}
+                              className="py-2 px-3 font-bold text-white"
+                            >
+                              Balance Audit:{" "}
+                              {isBalanced
+                                ? "In Balance (Debit = Credit)"
+                                : "Out of Balance"}
                             </td>
                             <td
                               colSpan={2}
@@ -283,7 +284,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
                         </tbody>
                       </table>
 
-                      {/* Screen Footer */}
                       <div className="pt-6 print:hidden">
                         <QuotationFooter className="!mt-0 !px-0" />
                       </div>
@@ -293,7 +293,6 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({
               </tbody>
             </table>
 
-            {/* Fixed Print Footer across every single printed page */}
             <div className="print-footer-bottom fixed-print-footer hidden print:block">
               <QuotationFooter />
             </div>

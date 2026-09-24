@@ -26,11 +26,7 @@ import {
 } from "@/components/icons";
 
 export type ActionCategory =
-  | "SALES"
-  | "PURCHASES"
-  | "COMPANY_DOCS"
-  | "ACCOUNTING"
-  | "MASTER_DATA";
+  "SALES" | "PURCHASES" | "COMPANY_DOCS" | "ACCOUNTING" | "MASTER_DATA";
 
 export interface ActionItem {
   id: string;
@@ -157,6 +153,17 @@ export const ACTION_ITEMS: ActionItem[] = [
     category: "COMPANY_DOCS",
     badge: "Legal",
     badgeColor: "bg-teal-50 text-teal-800 border-teal-200/70",
+    isPopular: true,
+  },
+  {
+    id: "create-salary-certificate",
+    label: "Salary Certificate",
+    sublabel: "Official salary proof & UAE bank letter",
+    href: "/commercial/salary-certificates",
+    icon: <FileTextIcon size={16} className="text-teal-700" />,
+    category: "COMPANY_DOCS",
+    badge: "Official",
+    badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200/70",
     isPopular: true,
   },
   {

@@ -7,12 +7,13 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id,
+      );
 
     const item = await (prisma as any).commercialAgreement.findFirst({
-      where: isUuid
-        ? { OR: [{ id }, { refNumber: id }] }
-        : { refNumber: id },
+      where: isUuid ? { OR: [{ id }, { refNumber: id }] } : { refNumber: id },
       include: {
         createdBy: {
           select: { id: true, fullName: true, email: true },
@@ -21,7 +22,10 @@ export async function GET(
     });
 
     if (!item) {
-      return NextResponse.json({ error: "Agreement not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Agreement not found" },
+        { status: 404 },
+      );
     }
 
     return NextResponse.json({
@@ -60,16 +64,20 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id,
+      );
 
     const existing = await (prisma as any).commercialAgreement.findFirst({
-      where: isUuid
-        ? { OR: [{ id }, { refNumber: id }] }
-        : { refNumber: id },
+      where: isUuid ? { OR: [{ id }, { refNumber: id }] } : { refNumber: id },
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Agreement not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Agreement not found" },
+        { status: 404 },
+      );
     }
 
     await (prisma as any).commercialAgreement.delete({

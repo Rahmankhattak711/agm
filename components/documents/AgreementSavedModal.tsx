@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { FolderOpen, Loader2, Trash2, Eye, Plus, Search, CheckCircle2 } from "lucide-react";
+import {
+  FolderOpenIcon,
+  SpinnerIcon,
+  TrashIcon,
+  EyeIcon,
+  PlusIcon,
+  SearchIcon,
+  CheckCircle2Icon,
+} from "@/components/icons";
 import { AgreementRecord } from "@/lib/hooks/api-hooks";
 import { Button, Modal, Input } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
@@ -62,7 +70,7 @@ export const AgreementSavedModal: React.FC<AgreementSavedModalProps> = ({
       <div className="space-y-3 p-1">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
+            <SearchIcon className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search by ref number, client name, or project..."
@@ -80,9 +88,9 @@ export const AgreementSavedModal: React.FC<AgreementSavedModalProps> = ({
                 onNewBlank();
                 onClose();
               }}
-              className="text-xs flex items-center gap-1 border-dashed border-agm-green text-agm-green hover:bg-agm-green-soft"
+              className="text-xs flex items-center gap-1 border-dashed border-agm-green text-agm-green hover:bg-agm-green-soft cursor-pointer"
             >
-              <Plus size={13} />
+              <PlusIcon size={13} />
               <span>New Blank</span>
             </Button>
           )}
@@ -91,18 +99,21 @@ export const AgreementSavedModal: React.FC<AgreementSavedModalProps> = ({
         <div className="max-h-[60vh] overflow-y-auto divide-y divide-slate-100 rounded-lg border border-slate-100">
           {isLoadingSaved ? (
             <div className="py-12 text-center text-xs text-slate-400 flex flex-col items-center gap-2">
-              <Loader2 className="animate-spin text-agm-green" size={24} />
+              <SpinnerIcon className="animate-spin text-agm-green" size={24} />
               Loading database records...
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-500">
               {search
                 ? "No agreements matched your search query."
-                : "No agreements stored in the database yet. Create one and click \"Save to DB\"."}
+                : 'No agreements stored in the database yet. Create one and click "Save to DB".'}
             </div>
           ) : (
             filtered.map((a) => {
-              const hasDeletePermission = canModify(a.createdBy?.id, ["ACCOUNTANT", "ADMIN"]);
+              const hasDeletePermission = canModify(a.createdBy?.id, [
+                "ACCOUNTANT",
+                "ADMIN",
+              ]);
 
               return (
                 <div
@@ -129,7 +140,7 @@ export const AgreementSavedModal: React.FC<AgreementSavedModalProps> = ({
                       )}
                       {!hasDeletePermission && (
                         <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded inline-flex items-center gap-1">
-                          <Eye size={10} /> View Only
+                          <EyeIcon size={10} /> View Only
                         </span>
                       )}
                     </div>
@@ -158,7 +169,7 @@ export const AgreementSavedModal: React.FC<AgreementSavedModalProps> = ({
                       onClick={() => onLoadAgreement(a)}
                       className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200 text-xs"
                     >
-                      <FolderOpen size={12} className="mr-1" /> Load
+                      <FolderOpenIcon size={12} className="mr-1" /> Load
                     </Button>
                     {hasDeletePermission && (
                       <Button
@@ -166,10 +177,10 @@ export const AgreementSavedModal: React.FC<AgreementSavedModalProps> = ({
                         variant="danger"
                         size="sm"
                         onClick={(e) => onDeleteAgreement(a.id, e)}
-                        className="bg-rose-50 text-rose-600 hover:bg-rose-100 border-rose-200 text-xs px-2"
+                        className="bg-rose-50 text-rose-600 hover:bg-rose-100 border-rose-200 text-xs px-2 cursor-pointer"
                         title="Delete Agreement"
                       >
-                        <Trash2 size={13} />
+                        <TrashIcon size={13} />
                       </Button>
                     )}
                   </div>

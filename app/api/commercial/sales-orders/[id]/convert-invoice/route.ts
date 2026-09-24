@@ -43,7 +43,7 @@ export async function POST(
         invoiceNumber,
         customerId: salesOrder.customerId,
         customerName: salesOrder.customerName,
-        customerTrn: salesOrder.customerRel?.trn || null,
+        customerTrn: null,
         salesOrderId: salesOrder.id,
         quotationRef: salesOrder.quotationId || null,
         invoiceDate: new Date(),

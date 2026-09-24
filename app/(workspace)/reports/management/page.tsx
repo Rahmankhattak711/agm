@@ -438,13 +438,11 @@ export default function ManagementReportsPage() {
             <tr>
               <td className="p-0 border-none align-top">
                 <div className="space-y-0">
-                  {/* 1. Tax Registration Subheader */}
                   <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
                     <span>Corporate Tax Registration No: 104094432200001</span>
                     <span>VAT Registration No:104094432200003</span>
                   </div>
 
-                  {/* 2. Theme Title Banner */}
                   <div
                     className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
                     style={{
@@ -452,10 +450,10 @@ export default function ManagementReportsPage() {
                       printColorAdjust: "exact",
                     }}
                   >
-                    AGM FITOUT TECHNICAL SERVICES LLC - MANAGEMENT &amp; BOARD STATEMENT
+                    AGM FITOUT TECHNICAL SERVICES LLC - MANAGEMENT &amp; BOARD
+                    STATEMENT
                   </div>
 
-                  {/* 3. Statement KPI Summary Cards */}
                   <div className="grid grid-cols-4 gap-3 p-4 bg-agm-box-bg rounded-xl border border-agm-box-border my-4 print-avoid-break">
                     <div>
                       <span className="text-[10px] text-agm-muted uppercase font-bold block">
@@ -491,7 +489,6 @@ export default function ManagementReportsPage() {
                     </div>
                   </div>
 
-                  {/* 4. Details Tables */}
                   <div className="grid grid-cols-2 gap-4 print-avoid-break">
                     <div className="space-y-2">
                       <h4 className="font-bold text-agm-text text-xs">
@@ -526,10 +523,14 @@ export default function ManagementReportsPage() {
                           <span className="text-agm-muted font-sans">
                             Operating Overheads:
                           </span>
-                          <span className="text-rose-600">-{formatCurrency(operatingExpenses)}</span>
+                          <span className="text-rose-600">
+                            -{formatCurrency(operatingExpenses)}
+                          </span>
                         </div>
                         <div className="flex justify-between border-t border-agm-box-border pt-1.5 font-black bg-agm-box-bg/50 px-2 py-1 rounded">
-                          <span className="font-sans text-agm-text">Net Profit:</span>
+                          <span className="font-sans text-agm-text">
+                            Net Profit:
+                          </span>
                           <span className="text-emerald-700 font-mono font-bold">
                             {formatCurrency(netProfit)}
                           </span>
@@ -554,7 +555,9 @@ export default function ManagementReportsPage() {
                           <span className="text-agm-muted font-sans">
                             Fixed Assets:
                           </span>
-                          <span className="text-agm-text">{formatCurrency(fixedAssets)}</span>
+                          <span className="text-agm-text">
+                            {formatCurrency(fixedAssets)}
+                          </span>
                         </div>
                         <div className="flex justify-between border-t border-agm-box-border pt-1.5">
                           <span className="font-sans text-blue-900 font-bold">
@@ -573,7 +576,9 @@ export default function ManagementReportsPage() {
                           </span>
                         </div>
                         <div className="flex justify-between border-t border-agm-box-border pt-1.5 font-black bg-agm-box-bg/50 px-2 py-1 rounded">
-                          <span className="font-sans text-agm-text">Total Equity:</span>
+                          <span className="font-sans text-agm-text">
+                            Total Equity:
+                          </span>
                           <span className="text-emerald-700 font-mono font-bold">
                             {formatCurrency(totalEquity)}
                           </span>
@@ -587,7 +592,6 @@ export default function ManagementReportsPage() {
           </tbody>
         </table>
 
-        {/* Fixed Print Footer across every single printed page */}
         <div className="print-footer-bottom fixed-print-footer hidden print:block">
           <QuotationFooter />
         </div>

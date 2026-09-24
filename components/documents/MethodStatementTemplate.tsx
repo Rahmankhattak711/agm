@@ -7,18 +7,17 @@ import {
   PrintIcon,
   RefreshIcon,
   EditIcon,
+  FolderOpenIcon,
+  SaveIcon,
+  PlusIcon,
+  TrashIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  SpinnerIcon,
+  CheckIcon,
+  FileTextIcon,
+  ChevronLeftIcon,
 } from "@/components/icons";
-import {
-  FolderOpen,
-  Save,
-  Plus,
-  Trash2,
-  ChevronUp,
-  ChevronDown,
-  Loader2,
-  Check,
-  FileText,
-} from "lucide-react";
 import QuotationHeader from "@/components/quotation/QuotationHeader";
 import QuotationFooter from "@/components/quotation/QuotationFooter";
 import {
@@ -146,7 +145,9 @@ export default function MethodStatementTemplate({
       setSaveSuccess(`Successfully saved ${result.refNumber} to database!`);
       setTimeout(() => setSaveSuccess(""), 4000);
     } catch (err: any) {
-      alert("Failed to save method statement: " + (err.message || "Unknown error"));
+      alert(
+        "Failed to save method statement: " + (err.message || "Unknown error"),
+      );
     }
   };
 
@@ -154,13 +155,19 @@ export default function MethodStatementTemplate({
     setData(record);
     setStatus(record.status || "COMPLETED");
     setIsSavedModalOpen(false);
-    setSaveSuccess(`Loaded ${record.refNumber} (${record.customerName || "Customer"})`);
+    setSaveSuccess(
+      `Loaded ${record.refNumber} (${record.customerName || "Customer"})`,
+    );
     setTimeout(() => setSaveSuccess(""), 3000);
   };
 
   const handleDeleteRecord = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Are you sure you want to permanently delete this Method Statement from the database?")) {
+    if (
+      !confirm(
+        "Are you sure you want to permanently delete this Method Statement from the database?",
+      )
+    ) {
       return;
     }
     try {
@@ -223,7 +230,6 @@ export default function MethodStatementTemplate({
 
   return (
     <div className="w-full space-y-4">
-      {/* Top Action Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border border-agm-box-border rounded-xl shadow-xs print:hidden">
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-slate-800">
@@ -238,7 +244,7 @@ export default function MethodStatementTemplate({
 
         {saveSuccess && (
           <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 animate-in fade-in">
-            <Check size={14} className="text-emerald-600 font-bold" />
+            <CheckIcon size={14} className="text-emerald-600 font-bold" />
             <span>{saveSuccess}</span>
           </div>
         )}
@@ -251,7 +257,7 @@ export default function MethodStatementTemplate({
             onClick={handleNewBlank}
             className="text-xs flex items-center gap-1.5 border-agm-box-border text-agm-text hover:bg-agm-box-bg cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <PlusIcon size={14} />
             <span>New Blank</span>
           </Button>
 
@@ -262,7 +268,7 @@ export default function MethodStatementTemplate({
             onClick={() => setIsSavedModalOpen(true)}
             className="text-xs flex items-center gap-1.5 border-agm-box-border text-agm-text hover:bg-agm-box-bg cursor-pointer"
           >
-            <FolderOpen className="w-3.5 h-3.5 text-amber-600" />
+            <FolderOpenIcon size={14} className="text-amber-600" />
             <span>Saved DB ({savedRecords.length})</span>
           </Button>
 
@@ -285,9 +291,9 @@ export default function MethodStatementTemplate({
             className="text-xs flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
           >
             {saveMutation.isPending ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <SpinnerIcon size={14} className="animate-spin" />
             ) : (
-              <Save className="w-3.5 h-3.5" />
+              <SaveIcon size={14} />
             )}
             <span>{saveMutation.isPending ? "Saving..." : "Save to DB"}</span>
           </Button>
@@ -327,7 +333,6 @@ export default function MethodStatementTemplate({
         onNewBlank={handleNewBlank}
       />
 
-      {/* Printable Document Container */}
       <div className="overflow-x-auto min-w-0 max-w-full custom-scrollbar print:overflow-visible w-full flex justify-center">
         <div
           className="mx-auto bg-white shadow-lg print:shadow-none max-w-full min-w-full rounded-xl print:rounded-none overflow-visible print:overflow-visible"
@@ -337,7 +342,7 @@ export default function MethodStatementTemplate({
             <thead className="print-page-header-group">
               <tr>
                 <th className="p-0 font-normal text-left border-none">
-                  <QuotationHeader />
+                  <QuotationHeader fullWidthPrint />
                 </th>
               </tr>
             </thead>
@@ -347,11 +352,10 @@ export default function MethodStatementTemplate({
                 <td className="p-0 border-none align-bottom">
                   <div
                     className="w-full opacity-0 pointer-events-none select-none"
-                    style={{ minHeight: "185px" }}
+                    style={{ minHeight: "115px" }}
                     aria-hidden="true"
                   >
                     <QuotationFooter />
-                    <div style={{ height: "45px", minHeight: "45px" }} />
                   </div>
                 </td>
               </tr>
@@ -360,16 +364,13 @@ export default function MethodStatementTemplate({
             <tbody>
               <tr>
                 <td className="p-0 border-none align-top">
-                  <div className="w-full px-10 py-6 text-agm-text text-xs sm:text-[13px] print:px-8 print:py-2 space-y-4 print:space-y-3">
-                    {/* Header Banner */}
-                    <div className="bg-[#d7eedc] text-agm-green border border-agm-green/20 text-center py-2 px-4 font-bold text-sm sm:text-base tracking-wider uppercase shadow-2xs">
+                  <div className="w-full px-10 py-6 text-agm-text text-xs sm:text-[13px] print:px-0 print:py-0 space-y-4 print:space-y-3">
+                    <div className="w-full bg-[#d7eedc] text-agm-green border border-agm-green/20 text-center py-2 px-4 print:py-1.5 print:px-3 font-bold text-sm sm:text-base tracking-wider uppercase shadow-2xs">
                       METHOD STATEMENT
                     </div>
 
-                    {/* Metadata 2-column Grid */}
-                    <div className="border border-slate-200 overflow-hidden text-xs sm:text-[13px] break-inside-avoid print:break-inside-avoid">
-                      <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200">
-                        {/* Left Column */}
+                    <div className="w-full border border-slate-200 print:border-y print:border-x-0 print:border-slate-300 overflow-hidden text-xs sm:text-[13px] break-inside-avoid print:break-inside-avoid">
+                      <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 print:divide-slate-300">
                         <div className="divide-y divide-slate-200">
                           <div className="grid grid-cols-3 p-2 bg-slate-50/60 items-center">
                             <span className="font-bold text-slate-900 col-span-1">
@@ -380,7 +381,10 @@ export default function MethodStatementTemplate({
                                 <Input
                                   value={data.refNumber}
                                   onChange={(e) =>
-                                    setData({ ...data, refNumber: e.target.value })
+                                    setData({
+                                      ...data,
+                                      refNumber: e.target.value,
+                                    })
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
@@ -400,7 +404,10 @@ export default function MethodStatementTemplate({
                                 <Input
                                   value={data.customerName}
                                   onChange={(e) =>
-                                    setData({ ...data, customerName: e.target.value })
+                                    setData({
+                                      ...data,
+                                      customerName: e.target.value,
+                                    })
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
@@ -420,12 +427,17 @@ export default function MethodStatementTemplate({
                                 <Input
                                   value={data.phoneNumber}
                                   onChange={(e) =>
-                                    setData({ ...data, phoneNumber: e.target.value })
+                                    setData({
+                                      ...data,
+                                      phoneNumber: e.target.value,
+                                    })
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
                               </div>
-                              <span className="hidden print:inline text-slate-800">{data.phoneNumber}</span>
+                              <span className="hidden print:inline text-slate-800">
+                                {data.phoneNumber}
+                              </span>
                             </div>
                           </div>
 
@@ -438,12 +450,17 @@ export default function MethodStatementTemplate({
                                 <Input
                                   value={data.projectLocation}
                                   onChange={(e) =>
-                                    setData({ ...data, projectLocation: e.target.value })
+                                    setData({
+                                      ...data,
+                                      projectLocation: e.target.value,
+                                    })
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
                               </div>
-                              <span className="hidden print:inline text-slate-800">{data.projectLocation}</span>
+                              <span className="hidden print:inline text-slate-800">
+                                {data.projectLocation}
+                              </span>
                             </div>
                           </div>
 
@@ -456,12 +473,17 @@ export default function MethodStatementTemplate({
                                 <Input
                                   value={data.startDate}
                                   onChange={(e) =>
-                                    setData({ ...data, startDate: e.target.value })
+                                    setData({
+                                      ...data,
+                                      startDate: e.target.value,
+                                    })
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
                               </div>
-                              <span className="hidden print:inline text-slate-800">{data.startDate}</span>
+                              <span className="hidden print:inline text-slate-800">
+                                {data.startDate}
+                              </span>
                             </div>
                           </div>
 
@@ -474,17 +496,21 @@ export default function MethodStatementTemplate({
                                 <Input
                                   value={data.workingHours}
                                   onChange={(e) =>
-                                    setData({ ...data, workingHours: e.target.value })
+                                    setData({
+                                      ...data,
+                                      workingHours: e.target.value,
+                                    })
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
                               </div>
-                              <span className="hidden print:inline text-slate-800">{data.workingHours}</span>
+                              <span className="hidden print:inline text-slate-800">
+                                {data.workingHours}
+                              </span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Right Column */}
                         <div className="divide-y divide-slate-200">
                           <div className="grid grid-cols-3 p-2 bg-slate-50/60 items-center">
                             <span className="font-bold text-slate-900 col-span-1">
@@ -500,7 +526,9 @@ export default function MethodStatementTemplate({
                                   className="h-7 text-xs bg-white"
                                 />
                               </div>
-                              <span className="hidden print:inline font-medium text-slate-800">{data.date}</span>
+                              <span className="hidden print:inline font-medium text-slate-800">
+                                {data.date}
+                              </span>
                             </div>
                           </div>
 
@@ -513,7 +541,10 @@ export default function MethodStatementTemplate({
                                 <Input
                                   value={data.projectName}
                                   onChange={(e) =>
-                                    setData({ ...data, projectName: e.target.value })
+                                    setData({
+                                      ...data,
+                                      projectName: e.target.value,
+                                    })
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
@@ -533,12 +564,17 @@ export default function MethodStatementTemplate({
                                 <Input
                                   value={data.customerEmail}
                                   onChange={(e) =>
-                                    setData({ ...data, customerEmail: e.target.value })
+                                    setData({
+                                      ...data,
+                                      customerEmail: e.target.value,
+                                    })
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
                               </div>
-                              <span className="hidden print:inline text-slate-800">{data.customerEmail}</span>
+                              <span className="hidden print:inline text-slate-800">
+                                {data.customerEmail}
+                              </span>
                             </div>
                           </div>
 
@@ -551,12 +587,17 @@ export default function MethodStatementTemplate({
                                 <Input
                                   value={data.workType}
                                   onChange={(e) =>
-                                    setData({ ...data, workType: e.target.value })
+                                    setData({
+                                      ...data,
+                                      workType: e.target.value,
+                                    })
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
                               </div>
-                              <span className="hidden print:inline font-medium text-slate-900">{data.workType}</span>
+                              <span className="hidden print:inline font-medium text-slate-900">
+                                {data.workType}
+                              </span>
                             </div>
                           </div>
 
@@ -569,12 +610,17 @@ export default function MethodStatementTemplate({
                                 <Input
                                   value={data.duration}
                                   onChange={(e) =>
-                                    setData({ ...data, duration: e.target.value })
+                                    setData({
+                                      ...data,
+                                      duration: e.target.value,
+                                    })
                                   }
                                   className="h-7 text-xs bg-white"
                                 />
                               </div>
-                              <span className="hidden print:inline text-slate-800">{data.duration}</span>
+                              <span className="hidden print:inline text-slate-800">
+                                {data.duration}
+                              </span>
                             </div>
                           </div>
 
@@ -607,270 +653,284 @@ export default function MethodStatementTemplate({
                       </div>
                     </div>
 
-                    {/* Roles & Responsibilities */}
-                    <div className="space-y-3 pt-1 break-inside-avoid print:break-inside-avoid">
-                      <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
-                        ROLES & RESPONSIBILITIES
-                      </div>
+                    <div className="space-y-4 print:space-y-3 print:px-4">
+                      <div className="space-y-3 pt-1 break-inside-avoid print:break-inside-avoid">
+                        <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
+                          ROLES & RESPONSIBILITIES
+                        </div>
 
-                      <div className="border border-slate-200 rounded-sm overflow-hidden p-3 bg-white space-y-3">
-                        {/* Project Manager */}
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 text-xs sm:text-[13px] min-w-[130px]">
-                              Project Manager:
-                            </span>
-                            <div className="flex-1 print:hidden">
-                              <Input
-                                value={data.projectManager?.name}
+                        <div className="border border-slate-200 rounded-sm overflow-hidden p-3 bg-white space-y-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-slate-900 text-xs sm:text-[13px] min-w-[130px]">
+                                Project Manager:
+                              </span>
+                              <div className="flex-1 print:hidden">
+                                <Input
+                                  value={data.projectManager?.name}
+                                  onChange={(e) =>
+                                    setData({
+                                      ...data,
+                                      projectManager: {
+                                        ...data.projectManager,
+                                        name: e.target.value,
+                                      },
+                                    })
+                                  }
+                                  className="h-7 text-xs w-full"
+                                />
+                              </div>
+                              <span className="hidden print:inline font-semibold text-slate-900">
+                                {data.projectManager?.name}
+                              </span>
+                            </div>
+                            <div className="print:hidden">
+                              <Textarea
+                                value={data.projectManager?.description}
                                 onChange={(e) =>
                                   setData({
                                     ...data,
                                     projectManager: {
                                       ...data.projectManager,
-                                      name: e.target.value,
+                                      description: e.target.value,
                                     },
                                   })
                                 }
-                                className="h-7 text-xs w-full"
+                                className="text-xs min-h-[44px]"
                               />
                             </div>
-                            <span className="hidden print:inline font-semibold text-slate-900">
-                              {data.projectManager?.name}
-                            </span>
+                            <p className="hidden print:block text-xs text-slate-600 leading-relaxed pt-0.5">
+                              {data.projectManager?.description}
+                            </p>
                           </div>
-                          <div className="print:hidden">
-                            <Textarea
-                              value={data.projectManager?.description}
-                              onChange={(e) =>
-                                setData({
-                                  ...data,
-                                  projectManager: {
-                                    ...data.projectManager,
-                                    description: e.target.value,
-                                  },
-                                })
-                              }
-                              className="text-xs min-h-[44px]"
-                            />
-                          </div>
-                          <p className="hidden print:block text-xs text-slate-600 leading-relaxed pt-0.5">
-                            {data.projectManager?.description}
-                          </p>
-                        </div>
 
-                        {/* Construction Manager */}
-                        <div className="space-y-1 pt-2 border-t border-slate-100">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 text-xs sm:text-[13px] min-w-[150px]">
-                              Construction Manager:
-                            </span>
-                            <div className="flex-1 print:hidden">
-                              <Input
-                                value={data.constructionManager?.name}
+                          <div className="space-y-1 pt-2 border-t border-slate-100">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-slate-900 text-xs sm:text-[13px] min-w-[150px]">
+                                Construction Manager:
+                              </span>
+                              <div className="flex-1 print:hidden">
+                                <Input
+                                  value={data.constructionManager?.name}
+                                  onChange={(e) =>
+                                    setData({
+                                      ...data,
+                                      constructionManager: {
+                                        ...data.constructionManager,
+                                        name: e.target.value,
+                                      },
+                                    })
+                                  }
+                                  className="h-7 text-xs w-full"
+                                />
+                              </div>
+                              <span className="hidden print:inline font-semibold text-slate-900">
+                                {data.constructionManager?.name}
+                              </span>
+                            </div>
+                            <div className="print:hidden">
+                              <Textarea
+                                value={data.constructionManager?.description}
                                 onChange={(e) =>
                                   setData({
                                     ...data,
                                     constructionManager: {
                                       ...data.constructionManager,
-                                      name: e.target.value,
+                                      description: e.target.value,
                                     },
                                   })
                                 }
-                                className="h-7 text-xs w-full"
+                                className="text-xs min-h-[55px]"
                               />
                             </div>
-                            <span className="hidden print:inline font-semibold text-slate-900">
-                              {data.constructionManager?.name}
-                            </span>
+                            <p className="hidden print:block text-xs text-slate-600 leading-relaxed pt-0.5">
+                              {data.constructionManager?.description}
+                            </p>
                           </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 pt-1 break-inside-avoid print:break-inside-avoid">
+                        <div className="font-bold text-slate-900 text-xs sm:text-[13px] tracking-wide uppercase">
+                          INTRODUCTION
+                        </div>
+                        <div className="border border-slate-200 p-2.5 bg-slate-50/40">
                           <div className="print:hidden">
                             <Textarea
-                              value={data.constructionManager?.description}
+                              value={data.introduction}
                               onChange={(e) =>
                                 setData({
                                   ...data,
-                                  constructionManager: {
-                                    ...data.constructionManager,
-                                    description: e.target.value,
-                                  },
+                                  introduction: e.target.value,
                                 })
                               }
-                              className="text-xs min-h-[55px]"
+                              className="text-xs min-h-[44px] bg-white"
                             />
                           </div>
-                          <p className="hidden print:block text-xs text-slate-600 leading-relaxed pt-0.5">
-                            {data.constructionManager?.description}
+                          <p className="hidden print:block text-xs text-slate-700 leading-relaxed">
+                            {data.introduction}
                           </p>
                         </div>
                       </div>
-                    </div>
 
-                    {/* INTRODUCTION */}
-                    <div className="space-y-1.5 pt-1 break-inside-avoid print:break-inside-avoid">
-                      <div className="font-bold text-slate-900 text-xs sm:text-[13px] tracking-wide uppercase">
-                        INTRODUCTION
-                      </div>
-                      <div className="border border-slate-200 p-2.5 bg-slate-50/40">
-                        <div className="print:hidden">
-                          <Textarea
-                            value={data.introduction}
-                            onChange={(e) =>
-                              setData({ ...data, introduction: e.target.value })
-                            }
-                            className="text-xs min-h-[44px] bg-white"
-                          />
+                      <div className="space-y-1.5 pt-1 break-inside-avoid print:break-inside-avoid">
+                        <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
+                          PURPOSE
                         </div>
-                        <p className="hidden print:block text-xs text-slate-700 leading-relaxed">
-                          {data.introduction}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* PURPOSE */}
-                    <div className="space-y-1.5 pt-1 break-inside-avoid print:break-inside-avoid">
-                      <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
-                        PURPOSE
-                      </div>
-                      <div className="border border-slate-200 p-2.5 bg-white">
-                        <div className="print:hidden">
-                          <Textarea
-                            value={data.purpose}
-                            onChange={(e) =>
-                              setData({ ...data, purpose: e.target.value })
-                            }
-                            className="text-xs min-h-[44px]"
-                          />
+                        <div className="border border-slate-200 p-2.5 bg-white">
+                          <div className="print:hidden">
+                            <Textarea
+                              value={data.purpose}
+                              onChange={(e) =>
+                                setData({ ...data, purpose: e.target.value })
+                              }
+                              className="text-xs min-h-[44px]"
+                            />
+                          </div>
+                          <p className="hidden print:block text-xs text-slate-700 leading-relaxed">
+                            {data.purpose}
+                          </p>
                         </div>
-                        <p className="hidden print:block text-xs text-slate-700 leading-relaxed">
-                          {data.purpose}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* SCOPE OF WORK */}
-                    <div className="space-y-2 pt-1 break-inside-avoid print:break-inside-avoid">
-                      <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
-                        SCOPE OF WORK
                       </div>
 
-                      <div className="p-1">
-                        <div className="print:hidden">
-                          <Input
-                            value={data.scopeOverview}
-                            onChange={(e) =>
-                              setData({ ...data, scopeOverview: e.target.value })
-                            }
-                            className="text-xs bg-white mb-2"
-                          />
+                      <div className="space-y-2 pt-1 break-inside-avoid print:break-inside-avoid">
+                        <div className="bg-[#f0f7f3] text-agm-green font-bold px-3 py-1.5 text-xs sm:text-[13px] border border-slate-200">
+                          SCOPE OF WORK
                         </div>
-                        <p className="hidden print:block text-xs text-slate-700 leading-relaxed mb-2">
-                          {data.scopeOverview}
-                        </p>
-                      </div>
 
-                      {/* Scope Steps Table */}
-                      <div className="overflow-x-auto">
-                        <table className="w-full border-collapse border border-slate-300 text-xs sm:text-[13px]">
-                          <thead>
-                            <tr className="bg-slate-100 text-slate-900 font-bold">
-                              <th className="p-2.5 border border-slate-300 text-center w-[70px]">
-                                No.
-                              </th>
-                              <th className="p-2.5 border border-slate-300 text-left">
-                                Description
-                              </th>
-                              {isEditing && (
-                                <th className="p-2.5 border border-slate-300 text-center w-[50px] print:hidden">
-                                  Act
+                        <div className="p-1">
+                          <div className="print:hidden">
+                            <Input
+                              value={data.scopeOverview}
+                              onChange={(e) =>
+                                setData({
+                                  ...data,
+                                  scopeOverview: e.target.value,
+                                })
+                              }
+                              className="text-xs bg-white mb-2"
+                            />
+                          </div>
+                          <p className="hidden print:block text-xs text-slate-700 leading-relaxed mb-2">
+                            {data.scopeOverview}
+                          </p>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse border border-slate-300 text-xs sm:text-[13px]">
+                            <thead>
+                              <tr className="bg-slate-100 text-slate-900 font-bold">
+                                <th className="p-2.5 border border-slate-300 text-center w-[70px]">
+                                  No.
                                 </th>
-                              )}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-200">
-                            {data.items?.map((item, idx) => (
-                              <tr
-                                key={item.id || idx}
-                                className={`break-inside-avoid page-break-inside-avoid print:break-inside-avoid ${
-                                  idx % 2 === 1 ? "bg-slate-50/40" : "bg-white"
-                                } hover:bg-slate-50 transition-colors`}
-                              >
-                                <td className="p-2.5 border border-slate-200 align-top text-center font-bold text-slate-900">
-                                  {item.number || idx + 1}
-                                </td>
-
-                                <td className="p-2.5 border border-slate-200 align-top text-slate-800 leading-relaxed">
-                                  <div className="print:hidden">
-                                    <Textarea
-                                      value={item.description}
-                                      onChange={(e) => {
-                                        const updated = [...data.items];
-                                        updated[idx].description =
-                                          e.target.value;
-                                        setData({ ...data, items: updated });
-                                      }}
-                                      className="text-xs min-h-[44px] bg-white"
-                                    />
-                                  </div>
-                                  <div className="hidden print:block text-slate-800 leading-relaxed whitespace-pre-wrap">
-                                    {item.description}
-                                  </div>
-                                </td>
-
+                                <th className="p-2.5 border border-slate-300 text-left">
+                                  Description
+                                </th>
                                 {isEditing && (
-                                  <td className="p-1 border border-slate-200 align-top text-center print:hidden">
-                                    <div className="flex flex-col items-center gap-1">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleMoveItem(idx, "up")}
-                                        disabled={idx === 0}
-                                        className="p-0.5 text-slate-400 hover:text-slate-700 disabled:opacity-30"
-                                        title="Move Up"
-                                      >
-                                        <ChevronUp size={13} />
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          handleMoveItem(idx, "down")
-                                        }
-                                        disabled={idx === data.items.length - 1}
-                                        className="p-0.5 text-slate-400 hover:text-slate-700 disabled:opacity-30"
-                                        title="Move Down"
-                                      >
-                                        <ChevronDown size={13} />
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleRemoveItem(idx)}
-                                        className="p-0.5 text-rose-500 hover:text-rose-700"
-                                        title="Remove Step"
-                                      >
-                                        <Trash2 size={13} />
-                                      </button>
-                                    </div>
-                                  </td>
+                                  <th className="p-2.5 border border-slate-300 text-center w-[50px] print:hidden">
+                                    Act
+                                  </th>
                                 )}
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                              {data.items?.map((item, idx) => (
+                                <tr
+                                  key={item.id || idx}
+                                  className={`break-inside-avoid page-break-inside-avoid print:break-inside-avoid ${
+                                    idx % 2 === 1
+                                      ? "bg-slate-50/40"
+                                      : "bg-white"
+                                  } hover:bg-slate-50 transition-colors`}
+                                >
+                                  <td className="p-2.5 border border-slate-200 align-top text-center font-bold text-slate-900">
+                                    {item.number || idx + 1}
+                                  </td>
+
+                                  <td className="p-2.5 border border-slate-200 align-top text-slate-800 leading-relaxed">
+                                    <div className="print:hidden">
+                                      <Textarea
+                                        value={item.description}
+                                        onChange={(e) => {
+                                          const updated = [...data.items];
+                                          updated[idx].description =
+                                            e.target.value;
+                                          setData({ ...data, items: updated });
+                                        }}
+                                        className="text-xs min-h-[44px] bg-white"
+                                      />
+                                    </div>
+                                    <div className="hidden print:block text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                      {item.description}
+                                    </div>
+                                  </td>
+
+                                  {isEditing && (
+                                    <td className="p-1 border border-slate-200 align-top text-center print:hidden">
+                                      <div className="flex flex-col items-center gap-1">
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            handleMoveItem(idx, "up")
+                                          }
+                                          disabled={idx === 0}
+                                          className="p-0.5 text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
+                                          title="Move Up"
+                                        >
+                                          <ArrowUpIcon size={13} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            handleMoveItem(idx, "down")
+                                          }
+                                          disabled={
+                                            idx === data.items.length - 1
+                                          }
+                                          className="p-0.5 text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
+                                          title="Move Down"
+                                        >
+                                          <ArrowDownIcon size={13} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveItem(idx)}
+                                          className="p-0.5 text-rose-500 hover:text-rose-700 cursor-pointer"
+                                          title="Remove Step"
+                                        >
+                                          <TrashIcon size={13} />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  )}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {isEditing && (
+                          <div className="pt-1 print:hidden">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleAddItem}
+                              className="text-xs flex items-center gap-1 text-agm-green border-dashed border-agm-green/50 hover:bg-agm-green-soft cursor-pointer"
+                            >
+                              <PlusIcon size={13} />
+                              <span>Add Scope Step</span>
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
-                      {isEditing && (
-                        <div className="pt-1 print:hidden">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleAddItem}
-                            className="text-xs flex items-center gap-1 text-agm-green border-dashed border-agm-green/50 hover:bg-agm-green-soft"
-                          >
-                            <Plus size={13} />
-                            <span>Add Scope Step</span>
-                          </Button>
-                        </div>
-                      )}
+                      <div className="pt-3 print:pt-2 text-center border-t border-slate-100 print:border-slate-200">
+                        <p className="text-[11px] print:text-[10px] text-slate-500 font-medium italic">
+                          *** This is an official system-generated document and
+                          does not require a physical signature or stamp. ***
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -878,12 +938,10 @@ export default function MethodStatementTemplate({
             </tbody>
           </table>
 
-          {/* Fixed footer for Print */}
           <div className="print-footer-bottom fixed-print-footer hidden print:block">
             <QuotationFooter />
           </div>
 
-          {/* Screen-only footer */}
           <div className="w-full px-10 pb-6 print:hidden">
             <QuotationFooter className="mt-6" />
           </div>

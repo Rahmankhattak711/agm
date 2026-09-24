@@ -7,7 +7,6 @@ import {
 } from "@/components/documents/risk-assessment-constants";
 
 declare global {
-  // eslint-disable-next-line no-var
   var __agm_risk_cache: RiskAssessmentDocumentData[] | undefined;
 }
 
@@ -60,7 +59,10 @@ export function getAllRiskAssessments(): RiskAssessmentDocumentData[] {
       }
     }
   } catch (err) {
-    console.warn("Could not read risk assessments from filesystem, using initial preset:", err);
+    console.warn(
+      "Could not read risk assessments from filesystem, using initial preset:",
+      err,
+    );
   }
 
   const initial = getInitialRiskAssessments();
@@ -68,13 +70,13 @@ export function getAllRiskAssessments(): RiskAssessmentDocumentData[] {
   try {
     const filePath = getStoragePath();
     fs.writeFileSync(filePath, JSON.stringify(initial, null, 2), "utf-8");
-  } catch {
-    // Read-only filesystem fallback
-  }
+  } catch {}
   return initial;
 }
 
-export function getRiskAssessmentById(id: string): RiskAssessmentDocumentData | null {
+export function getRiskAssessmentById(
+  id: string,
+): RiskAssessmentDocumentData | null {
   const all = getAllRiskAssessments();
   return all.find((a) => a.id === id) || null;
 }
@@ -100,7 +102,10 @@ export function saveRiskAssessment(
     ...(existingIdx >= 0 ? all[existingIdx] : {}),
     ...data,
     id: existingIdx >= 0 ? all[existingIdx].id : targetId,
-    status: (data.status as any) || (existingIdx >= 0 ? all[existingIdx].status : "DRAFT") || "DRAFT",
+    status:
+      (data.status as any) ||
+      (existingIdx >= 0 ? all[existingIdx].status : "DRAFT") ||
+      "DRAFT",
     updatedAt: now,
     createdAt: existingIdx >= 0 ? all[existingIdx].createdAt || now : now,
     createdBy:
@@ -130,7 +135,10 @@ export function saveRiskAssessment(
     const filePath = getStoragePath();
     fs.writeFileSync(filePath, JSON.stringify(all, null, 2), "utf-8");
   } catch (err) {
-    console.warn("Could not persist risk assessment to disk (running in read-only environment), cached in memory:", err);
+    console.warn(
+      "Could not persist risk assessment to disk (running in read-only environment), cached in memory:",
+      err,
+    );
   }
 
   return mergedRecord;
@@ -148,7 +156,10 @@ export function deleteRiskAssessment(id: string): boolean {
     const filePath = getStoragePath();
     fs.writeFileSync(filePath, JSON.stringify(filtered, null, 2), "utf-8");
   } catch (err) {
-    console.warn("Could not persist deleted risk assessment to disk, updated in memory:", err);
+    console.warn(
+      "Could not persist deleted risk assessment to disk, updated in memory:",
+      err,
+    );
   }
 
   return true;

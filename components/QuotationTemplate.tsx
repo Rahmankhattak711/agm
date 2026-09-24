@@ -35,6 +35,7 @@ import {
   QuotationTerms,
   QuotationTotalsTable,
   SAMPLE_SCOPE_ITEMS,
+  SalesInvoiceTerms,
 } from "./quotation";
 
 export {
@@ -66,17 +67,22 @@ export default function QuotationTemplate({
   const deleteQuotationMutation = useDeleteQuotation();
 
   const [meta, setMeta] = useState<QuotationMeta>({
-    quotationNo: initialMeta?.quotationNo || "AGM-QTN-2026-01217",
-    date: initialMeta?.date || "06/08/2026",
-    validUntil: initialMeta?.validUntil || "16/08/2026",
-    customer: initialMeta?.customer || "Brian Berthelsen",
-    attention: initialMeta?.attention || "",
-    address: initialMeta?.address || "Dubai, UAE",
-    trn: initialMeta?.trn || "",
-    email: initialMeta?.email || "brian@example.com",
-    mobile: initialMeta?.mobile || "+971 56 545 3103",
-    project: initialMeta?.project || "Proposed G+1 Townhouses",
-    location: initialMeta?.location || "Al Furjan, Dubai - UAE",
+    quotationNo:
+      initialMeta?.quotationNo ||
+      `AGM-QTN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
+    date: initialMeta?.date || new Date().toLocaleDateString("en-GB"),
+    validUntil:
+      initialMeta?.validUntil ||
+      new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toLocaleDateString(
+        "en-GB",
+      ),
+    customerId: initialMeta?.customerId || "",
+    customer: initialMeta?.customer || "",
+    address: initialMeta?.address || "",
+    email: initialMeta?.email || "",
+    mobile: initialMeta?.mobile || "",
+    project: initialMeta?.project || "Commercial Fitout Contract",
+    location: initialMeta?.location || "Dubai, UAE",
     reference: initialMeta?.reference || "",
     preparedBy: initialMeta?.preparedBy || "assem@agmfitout.com",
     contact: initialMeta?.contact || "+971 48 749839 / +971 50 3407300",
@@ -205,15 +211,21 @@ export default function QuotationTemplate({
   const total = Math.round((afterDiscount + vatAmt) * 100) / 100;
 
   const handleSaveToDb = async () => {
+    if (!meta.customerId && (!meta.customer || !meta.customer.trim())) {
+      alert(
+        "Cannot generate quotation: Please select or create a registered customer profile first.\n\nQuotations cannot be generated without an existing customer.",
+      );
+      return;
+    }
+
     try {
       const payload = {
         quotationNo: meta.quotationNo,
         date: meta.date,
         validUntil: meta.validUntil,
+        customerId: meta.customerId || null,
         customer: meta.customer,
-        attention: meta.attention,
         address: meta.address,
-        trn: meta.trn,
         mobile: meta.mobile,
         project: meta.project,
         location: meta.location,
@@ -261,10 +273,9 @@ export default function QuotationTemplate({
       quotationNo: q.quotationNo,
       date: q.date || "",
       validUntil: q.validUntil || "",
+      customerId: q.customerId || "",
       customer: q.customer || "",
-      attention: q.attention || "",
       address: q.address || "",
-      trn: q.trn || "",
       mobile: q.mobile || "",
       project: q.project || "",
       location: q.location || "",
@@ -298,10 +309,9 @@ export default function QuotationTemplate({
       validUntil: new Date(
         Date.now() + 15 * 24 * 60 * 60 * 1000,
       ).toLocaleDateString("en-GB"),
+      customerId: "",
       customer: "",
-      attention: "",
       address: "",
-      trn: "",
       mobile: "",
       project: "",
       location: "",
@@ -410,7 +420,16 @@ export default function QuotationTemplate({
           type="button"
           onClick={handleSaveToDb}
           disabled={saveQuotationMutation.isPending}
-          className="bg-[#1b5e3a] hover:bg-[#154b2e] disabled:opacity-70 text-white rounded-2xl px-4 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+          className={`rounded-2xl px-4 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
+            !meta.customerId && !meta.customer.trim()
+              ? "bg-slate-400 hover:bg-slate-500 text-white"
+              : "bg-[#1b5e3a] hover:bg-[#154b2e] text-white"
+          }`}
+          title={
+            !meta.customerId && !meta.customer.trim()
+              ? "Select or create a customer before saving"
+              : "Save quotation to database"
+          }
         >
           <Save className="w-3.5 h-3.5" />
           <span>
@@ -424,12 +443,27 @@ export default function QuotationTemplate({
 
         <button
           type="button"
-          onClick={() => window.print()}
+          onClick={() => {
+            if (!meta.customerId && !meta.customer.trim()) {
+              alert(
+                "Customer Required: Please select or create a customer profile before printing or generating this official quotation.",
+              );
+              return;
+            }
+            window.print();
+          }}
           className="bg-[#243746] hover:bg-[#1a2935] text-white rounded-2xl px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
         >
           <Printer className="w-3.5 h-3.5" />
           <span>Print / PDF</span>
         </button>
+
+        {!meta.customerId && !meta.customer.trim() && (
+          <span className="px-3 py-1 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl text-[11px] font-bold flex items-center gap-1 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+            Customer Profile Required
+          </span>
+        )}
 
         {selectedQuotationId && (
           <span className="px-2.5 py-1 rounded-full bg-agm-green-2 text-white border border-agm-green text-[11px] font-bold">
@@ -526,26 +560,36 @@ export default function QuotationTemplate({
                   />
                 </td>
               </tr>
-              <tr>
-                <td className="p-0 border-none align-top">
-                  <QuotationTerms
-                    termsList={quotationTerms}
-                    onUpdateTerm={updateQuotationTerm}
-                    onAddTerm={addQuotationTerm}
-                    onRemoveTerm={removeQuotationTerm}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td className="p-0 border-none align-top pb-6 print:pb-0">
-                  <QuotationPaymentTerms
-                    paymentTerms={paymentTerms}
-                    onUpdatePaymentTerm={updatePaymentTerm}
-                    onAddPaymentTerm={addPaymentTerm}
-                    onRemovePaymentTerm={removePaymentTerm}
-                  />
-                </td>
-              </tr>
+              {docType === "TAX_INVOICE" ? (
+                <tr>
+                  <td className="p-0 border-none align-top pb-6 print:pb-0">
+                    <SalesInvoiceTerms className="px-10 mt-4 print:px-0 print:mt-2" />
+                  </td>
+                </tr>
+              ) : (
+                <>
+                  <tr>
+                    <td className="p-0 border-none align-top">
+                      <QuotationTerms
+                        termsList={quotationTerms}
+                        onUpdateTerm={updateQuotationTerm}
+                        onAddTerm={addQuotationTerm}
+                        onRemoveTerm={removeQuotationTerm}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-0 border-none align-top pb-6 print:pb-0">
+                      <QuotationPaymentTerms
+                        paymentTerms={paymentTerms}
+                        onUpdatePaymentTerm={updatePaymentTerm}
+                        onAddPaymentTerm={addPaymentTerm}
+                        onRemovePaymentTerm={removePaymentTerm}
+                      />
+                    </td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
 

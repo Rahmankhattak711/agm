@@ -131,15 +131,8 @@ export default function CustomerReportsPage() {
         const matchesCode = c.customerCode?.toLowerCase().includes(q);
         const matchesName = c.name?.toLowerCase().includes(q);
         const matchesCompany = c.companyName?.toLowerCase().includes(q);
-        const matchesTrn = c.trn?.toLowerCase().includes(q);
         const matchesEmail = c.email?.toLowerCase().includes(q);
-        if (
-          !matchesCode &&
-          !matchesName &&
-          !matchesCompany &&
-          !matchesTrn &&
-          !matchesEmail
-        ) {
+        if (!matchesCode && !matchesName && !matchesCompany && !matchesEmail) {
           return false;
         }
       }
@@ -206,11 +199,6 @@ export default function CustomerReportsPage() {
                 {row.original.companyName}
               </span>
             )}
-            {row.original.trn && (
-              <span className="font-mono text-[10px] text-slate-400 mt-0.5 inline-block">
-                TRN: {row.original.trn}
-              </span>
-            )}
           </div>
         ),
       },
@@ -219,13 +207,8 @@ export default function CustomerReportsPage() {
         header: "Contact Details",
         cell: ({ row }) => (
           <div className="space-y-0.5 text-slate-600">
-            {row.original.contactPerson && (
-              <span className="font-medium text-slate-800 block">
-                {row.original.contactPerson}
-              </span>
-            )}
             {row.original.phone && (
-              <span className="font-mono text-[11px] text-slate-500 block">
+              <span className="font-mono text-[11px] text-slate-700 font-medium block">
                 {row.original.phone}
               </span>
             )}
@@ -459,9 +442,9 @@ export default function CustomerReportsPage() {
                 <span className="font-bold text-slate-900 text-sm">
                   {activeCustomer.name}
                 </span>
-                {activeCustomer.trn && (
-                  <span className="font-mono text-[10px] text-slate-500 block mt-0.5">
-                    TRN: {activeCustomer.trn}
+                {activeCustomer.companyName && (
+                  <span className="text-[11px] text-slate-500 block mt-0.5">
+                    {activeCustomer.companyName}
                   </span>
                 )}
               </div>

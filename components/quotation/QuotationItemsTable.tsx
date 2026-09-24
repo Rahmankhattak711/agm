@@ -80,7 +80,7 @@ export const QuotationItemsTable: React.FC<QuotationItemsTableProps> = ({
   };
 
   return (
-    <div className="px-10 mt-3 print:px-8 print:mt-1.5">
+    <div className="px-10 mt-3 print:px-0 print:mt-1.5">
       <Table
         className="w-full text-[12px] print:text-[12.5px] border-collapse border border-agm-box-border bg-white rounded-lg overflow-hidden shadow-xs"
         wrapperClassName="overflow-visible"

@@ -45,7 +45,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Controls Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2.5 bg-agm-card rounded-2xl border border-agm-box-border shadow-2xs print:hidden">
         <div className="flex flex-wrap items-center gap-2">
           <label className="text-xs font-bold text-agm-muted">
@@ -83,7 +82,8 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
             No Account Selected
           </p>
           <p>
-            Please choose a Chart of Accounts code from the dropdown above to view its General Ledger activity.
+            Please choose a Chart of Accounts code from the dropdown above to
+            view its General Ledger activity.
           </p>
         </div>
       ) : isLoading ? (
@@ -92,7 +92,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
           <p>Loading General Ledger transactions...</p>
         </div>
       ) : (
-        /* Printable Sheet */
         <div className="flex justify-center w-full">
           <div
             ref={printRef}
@@ -103,7 +102,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
               printColorAdjust: "exact",
             }}
           >
-            {/* Multi-page Print Table Wrapper */}
             <table className="print-page-table w-full border-collapse">
               <thead className="print-page-header-group">
                 <tr>
@@ -132,13 +130,13 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                 <tr>
                   <td className="p-0 border-none align-top">
                     <div className="space-y-0">
-                      {/* 1. Tax Registration Subheader */}
                       <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
-                        <span>Corporate Tax Registration No: 104094432200001</span>
+                        <span>
+                          Corporate Tax Registration No: 104094432200001
+                        </span>
                         <span>VAT Registration No:104094432200003</span>
                       </div>
 
-                      {/* 2. Title Banner */}
                       <div
                         className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
                         style={{
@@ -146,11 +144,11 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                           printColorAdjust: "exact",
                         }}
                       >
-                        AGM FITOUT TECHNICAL SERVICES LLC - GENERAL LEDGER STATEMENT (
-                        {selectedAccount?.accountCode} - {selectedAccount?.accountName})
+                        AGM FITOUT TECHNICAL SERVICES LLC - GENERAL LEDGER
+                        STATEMENT ({selectedAccount?.accountCode} -{" "}
+                        {selectedAccount?.accountName})
                       </div>
 
-                      {/* 4. Table */}
                       <table className="w-full border-collapse text-[12px] print:text-[11.5px] text-agm-text">
                         <thead>
                           <tr className="bg-agm-box-bg font-bold text-agm-text border-b border-agm-box-border">
@@ -192,7 +190,9 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                               >
                                 <td className="py-1.5 px-3 font-mono text-agm-muted">
                                   {line.entryDate
-                                    ? new Date(line.entryDate).toLocaleDateString("en-GB")
+                                    ? new Date(
+                                        line.entryDate,
+                                      ).toLocaleDateString("en-GB")
                                     : "—"}
                                 </td>
                                 <td className="py-1.5 px-3 font-mono font-medium text-agm-navy">
@@ -212,15 +212,19 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                                     : "-"}
                                 </td>
                                 <td className="py-1.5 px-3 text-right font-mono font-bold text-agm-text">
-                                  {formatNumber(line.runningBalance ?? line.balance ?? 0)}
+                                  {formatNumber(
+                                    line.runningBalance ?? line.balance ?? 0,
+                                  )}
                                 </td>
                               </tr>
                             ))
                           )}
 
-                          {/* Total Line */}
                           <tr className="bg-agm-navy/10 text-agm-navy font-bold border-t border-b border-agm-navy/20">
-                            <td colSpan={3} className="py-2 px-3 font-bold text-agm-navy">
+                            <td
+                              colSpan={3}
+                              className="py-2 px-3 font-bold text-agm-navy"
+                            >
                               Total Period Activity
                             </td>
                             <td className="py-2 px-3 text-right font-mono font-bold text-agm-navy">
@@ -234,9 +238,11 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                             </td>
                           </tr>
 
-                          {/* Net Closing Balance */}
                           <tr className="bg-agm-sidebar text-white font-bold border-t-2 border-agm-green">
-                            <td colSpan={5} className="py-2.5 px-3 font-black text-white text-[12.5px]">
+                            <td
+                              colSpan={5}
+                              className="py-2.5 px-3 font-black text-white text-[12.5px]"
+                            >
                               Net Closing Balance
                             </td>
                             <td className="py-2.5 px-3 text-right font-mono font-black text-emerald-300 text-[12.5px]">
@@ -246,7 +252,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
                         </tbody>
                       </table>
 
-                      {/* Screen Footer */}
                       <div className="pt-6 print:hidden">
                         <QuotationFooter className="!mt-0 !px-0" />
                       </div>
@@ -256,7 +261,6 @@ export const GeneralLedgerReport: React.FC<GeneralLedgerReportProps> = ({
               </tbody>
             </table>
 
-            {/* Fixed Print Footer across every single printed page */}
             <div className="print-footer-bottom fixed-print-footer hidden print:block">
               <QuotationFooter />
             </div>

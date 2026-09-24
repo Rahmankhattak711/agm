@@ -86,7 +86,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Controls Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2.5 bg-agm-card rounded-2xl border border-agm-box-border shadow-2xs print:hidden">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-agm-muted uppercase tracking-wide">
@@ -111,7 +110,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
           <p>Calculating Statutory VAT Position...</p>
         </div>
       ) : (
-        /* Printable Sheet */
         <div className="flex justify-center w-full">
           <div
             ref={printRef}
@@ -122,7 +120,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
               printColorAdjust: "exact",
             }}
           >
-            {/* Multi-page Print Table Wrapper */}
             <table className="print-page-table w-full border-collapse">
               <thead className="print-page-header-group">
                 <tr>
@@ -151,13 +148,13 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                 <tr>
                   <td className="p-0 border-none align-top">
                     <div className="space-y-6">
-                      {/* 1. Tax Registration Subheader */}
                       <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
-                        <span>Corporate Tax Registration No: 104094432200001</span>
+                        <span>
+                          Corporate Tax Registration No: 104094432200001
+                        </span>
                         <span>VAT Registration No:104094432200003</span>
                       </div>
 
-                      {/* 2. Title Banner */}
                       <div
                         className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
                         style={{
@@ -165,10 +162,10 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                           printColorAdjust: "exact",
                         }}
                       >
-                        AGM FITOUT TECHNICAL SERVICES LLC - STATUTORY VAT POSITION DECLARATION
+                        AGM FITOUT TECHNICAL SERVICES LLC - STATUTORY VAT
+                        POSITION DECLARATION
                       </div>
 
-                      {/* 4. VAT Form 201 Statement Table */}
                       <table className="w-full border-collapse text-[12px] print:text-[11.5px] text-agm-text">
                         <thead>
                           <tr className="bg-agm-box-bg font-bold text-agm-text border-b border-agm-box-border">
@@ -184,7 +181,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                           </tr>
                         </thead>
                         <tbody>
-                          {/* 1. Output VAT on Supplies */}
                           <tr className="bg-agm-green-soft text-agm-green-dark border-t border-b border-agm-box-border">
                             <td
                               colSpan={3}
@@ -195,17 +191,19 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                           </tr>
                           <tr className="border-b border-agm-box-border/50">
                             <td className="py-1.5 px-4 font-medium text-agm-text">
-                              Standard Rated Supplies (Dubai &amp; UAE Fitout Services)
+                              Standard Rated Supplies (Dubai &amp; UAE Fitout
+                              Services)
                             </td>
                             <td className="py-1.5 px-4 text-right font-mono text-agm-text font-semibold">
-                              {formatNumber(totalIncomeTaxable || totalIncomeAmount)}
+                              {formatNumber(
+                                totalIncomeTaxable || totalIncomeAmount,
+                              )}
                             </td>
                             <td className="py-1.5 px-4 text-right font-mono text-agm-text font-bold">
                               {formatNumber(totalOutputVat)}
                             </td>
                           </tr>
 
-                          {/* 2. Input VAT on Expenses */}
                           <tr className="bg-agm-box-bg text-agm-navy border-t border-b border-agm-box-border">
                             <td
                               colSpan={3}
@@ -216,27 +214,32 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                           </tr>
                           <tr className="border-b border-agm-box-border/50">
                             <td className="py-1.5 px-4 font-medium text-agm-text">
-                              Standard Rated Expenses &amp; Direct Materials Procurement
+                              Standard Rated Expenses &amp; Direct Materials
+                              Procurement
                             </td>
                             <td className="py-1.5 px-4 text-right font-mono text-agm-text font-semibold">
-                              {formatNumber(totalPurchasesTaxable || totalPurchasesAmount)}
+                              {formatNumber(
+                                totalPurchasesTaxable || totalPurchasesAmount,
+                              )}
                             </td>
                             <td className="py-1.5 px-4 text-right font-mono text-agm-text font-bold">
                               {formatNumber(totalInputVat)}
                             </td>
                           </tr>
 
-                          {/* 3. Net VAT Payable / Refund */}
                           <tr className="bg-agm-sidebar text-white font-bold border-t-2 border-agm-green">
                             <td className="py-2.5 px-4 font-black text-white text-[12.5px]">
-                              Net VAT Due to FTA: {netVat >= 0 ? "Payable" : "Refundable"}
+                              Net VAT Due to FTA:{" "}
+                              {netVat >= 0 ? "Payable" : "Refundable"}
                             </td>
                             <td className="py-2.5 px-4 text-right font-mono text-slate-300">
                               Net Output - Input
                             </td>
                             <td
                               className={`py-2.5 px-4 text-right font-mono font-black text-[13px] ${
-                                netVat > 0 ? "text-rose-300" : "text-emerald-300"
+                                netVat > 0
+                                  ? "text-rose-300"
+                                  : "text-emerald-300"
                               }`}
                             >
                               {netVat < 0
@@ -247,7 +250,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                         </tbody>
                       </table>
 
-                      {/* Quarterly Matrix Table */}
                       {quartersData.length > 0 && (
                         <div className="pt-2">
                           <span className="text-xs font-bold uppercase tracking-wider text-agm-navy mb-2 block">
@@ -256,12 +258,24 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                           <table className="w-full border-collapse text-[12px] print:text-[11.5px] text-agm-text">
                             <thead>
                               <tr className="bg-agm-box-bg font-bold text-agm-text border-b border-agm-box-border">
-                                <th className="py-2 px-3 text-left font-bold">Quarter</th>
-                                <th className="py-2 px-3 text-right font-bold">Sales</th>
-                                <th className="py-2 px-3 text-right font-bold">Purchases</th>
-                                <th className="py-2 px-3 text-right font-bold">Output VAT</th>
-                                <th className="py-2 px-3 text-right font-bold">Input VAT</th>
-                                <th className="py-2 px-3 text-right font-bold">Net VAT</th>
+                                <th className="py-2 px-3 text-left font-bold">
+                                  Quarter
+                                </th>
+                                <th className="py-2 px-3 text-right font-bold">
+                                  Sales
+                                </th>
+                                <th className="py-2 px-3 text-right font-bold">
+                                  Purchases
+                                </th>
+                                <th className="py-2 px-3 text-right font-bold">
+                                  Output VAT
+                                </th>
+                                <th className="py-2 px-3 text-right font-bold">
+                                  Input VAT
+                                </th>
+                                <th className="py-2 px-3 text-right font-bold">
+                                  Net VAT
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
@@ -301,7 +315,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
                         </div>
                       )}
 
-                      {/* Screen Footer */}
                       <div className="pt-6 print:hidden">
                         <QuotationFooter className="!mt-0 !px-0" />
                       </div>
@@ -311,7 +324,6 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
               </tbody>
             </table>
 
-            {/* Fixed Print Footer across every single printed page */}
             <div className="print-footer-bottom fixed-print-footer hidden print:block">
               <QuotationFooter />
             </div>

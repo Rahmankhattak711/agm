@@ -16,7 +16,7 @@ export const QuotationDocTitleBar: React.FC<QuotationDocTitleBarProps> = ({
     "w-36 print:w-40 bg-transparent outline-none focus:bg-emerald-50/70 rounded px-1.5 py-0.5 text-right font-bold text-slate-900 border-b border-dashed border-slate-300 focus:border-emerald-600 transition-colors print:bg-transparent print:p-0 print:border-none print:text-[13px] print:text-slate-900";
 
   return (
-    <div className="px-10 py-3.5 print:px-8 print:py-2.5 w-full border-b border-slate-100 bg-slate-50/50">
+    <div className="px-10 py-3.5 print:px-0 print:py-2.5 w-full border-b border-slate-100 bg-slate-50/50">
       <div className="flex items-center justify-between gap-8">
         <div>
           <h1 className="text-2xl print:text-2xl font-black text-slate-900 tracking-tight">

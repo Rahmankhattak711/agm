@@ -131,10 +131,10 @@ export function CustomerTable({
                   Customer / Company
                 </TableHeaderCell>
                 <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  TRN (UAE VAT)
+                  Phone / Mobile
                 </TableHeaderCell>
                 <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Contact / Phone
+                  Email / Address
                 </TableHeaderCell>
                 <TableHeaderCell
                   align="right"
@@ -210,10 +210,10 @@ export function CustomerTable({
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className="py-3 px-4 font-mono text-slate-600">
-                          {c.trn ? (
-                            <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-mono font-bold">
-                              {c.trn}
+                        <TableCell className="py-3 px-4 font-mono text-slate-700">
+                          {c.phone ? (
+                            <span className="font-semibold text-slate-800 text-[11px]">
+                              {c.phone}
                             </span>
                           ) : (
                             <span className="text-slate-300">—</span>
@@ -221,11 +221,11 @@ export function CustomerTable({
                         </TableCell>
                         <TableCell className="py-3 px-4 text-slate-600">
                           <div className="font-semibold text-slate-800">
-                            {c.contactPerson || c.phone || "—"}
+                            {c.email || "—"}
                           </div>
-                          {c.email && (
-                            <div className="text-[10px] text-slate-400">
-                              {c.email}
+                          {c.address && (
+                            <div className="text-[10px] text-slate-400 truncate max-w-[200px]">
+                              {c.address}
                             </div>
                           )}
                         </TableCell>

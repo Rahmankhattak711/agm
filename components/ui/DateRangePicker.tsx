@@ -12,8 +12,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface DateRange {
-  startDate: string; // "YYYY-MM-DD"
-  endDate: string; // "YYYY-MM-DD"
+  startDate: string;
+  endDate: string;
 }
 
 interface DateRangePickerProps {
@@ -72,12 +72,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Temporary selection state while popover is open
   const [tempStart, setTempStart] = useState<string>(startDate);
   const [tempEnd, setTempEnd] = useState<string>(endDate);
   const [hoverDate, setHoverDate] = useState<string | null>(null);
 
-  // Current view calendar month
   const initialYear = startDate
     ? Number(startDate.split("-")[0])
     : new Date().getFullYear();
@@ -93,7 +91,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     setTempEnd(endDate);
   }, [startDate, endDate]);
 
-  // Click outside to close
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (
@@ -141,11 +138,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     const clickedDate = toDateString(new Date(currentYear, currentMonth, day));
 
     if (!tempStart || (tempStart && tempEnd)) {
-      // First click: start new range
       setTempStart(clickedDate);
       setTempEnd("");
     } else if (tempStart && !tempEnd) {
-      // Second click: set end range
       if (clickedDate < tempStart) {
         setTempEnd(tempStart);
         setTempStart(clickedDate);
@@ -244,7 +239,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
   return (
     <div ref={containerRef} className={`relative inline-block ${className}`}>
-      {/* Trigger Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -280,7 +274,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         />
       </button>
 
-      {/* Popover Dropdown */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -293,7 +286,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
             }`}
           >
             <div className="flex flex-col sm:flex-row gap-4">
-              {/* Presets Sidebar */}
               <div className="sm:w-36 border-b sm:border-b-0 sm:border-r border-slate-100 pb-3 sm:pb-0 sm:pr-3 flex flex-row sm:flex-col gap-1 overflow-x-auto sm:overflow-visible">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 hidden sm:block">
                   Quick Presets
@@ -341,9 +333,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 </div>
               </div>
 
-              {/* Interactive Calendar Month */}
               <div className="flex-1">
-                {/* Month/Year Header */}
                 <div className="flex items-center justify-between mb-3">
                   <button
                     type="button"
@@ -390,7 +380,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   </button>
                 </div>
 
-                {/* Days of Week Header */}
                 <div className="grid grid-cols-7 gap-1 text-center mb-1">
                   {DAYS_SHORT.map((d) => (
                     <span
@@ -402,7 +391,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   ))}
                 </div>
 
-                {/* Days Grid */}
                 <div className="grid grid-cols-7 gap-1 text-center">
                   {Array.from({ length: firstDayIndex }).map((_, idx) => (
                     <div key={`empty-${idx}`} className="h-7 w-7" />
@@ -439,7 +427,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   })}
                 </div>
 
-                {/* Footer Controls */}
                 <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-100">
                   <div className="text-[11px] text-slate-500 font-medium">
                     {tempStart && tempEnd ? (

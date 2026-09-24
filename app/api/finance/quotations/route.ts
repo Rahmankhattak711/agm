@@ -36,6 +36,16 @@ export async function GET(request: Request) {
       where,
       orderBy: { createdAt: "desc" },
       include: {
+        customerRel: {
+          select: {
+            id: true,
+            customerCode: true,
+            name: true,
+            companyName: true,
+            phone: true,
+            email: true,
+          },
+        },
         items: {
           orderBy: { itemOrder: "asc" },
           include: {
@@ -70,6 +80,7 @@ export async function POST(request: Request) {
       quotationNo,
       date,
       validUntil,
+      customerId,
       customer,
       attention,
       address,
@@ -92,6 +103,16 @@ export async function POST(request: Request) {
     if (!quotationNo) {
       return NextResponse.json(
         { error: "Quotation number is required" },
+        { status: 400 },
+      );
+    }
+
+    if (!customerId && (!customer || !customer.trim())) {
+      return NextResponse.json(
+        {
+          error:
+            "Customer is required: You must select or create a registered customer before generating a quotation.",
+        },
         { status: 400 },
       );
     }
@@ -141,6 +162,7 @@ export async function POST(request: Request) {
             data: {
               date: date || "",
               validUntil: validUntil || "",
+              customerId: customerId || null,
               customer: customer || "",
               attention: attention || "",
               address: address || "",
@@ -169,6 +191,7 @@ export async function POST(request: Request) {
               quotationNo,
               date: date || "",
               validUntil: validUntil || "",
+              customerId: customerId || null,
               customer: customer || "",
               attention: attention || "",
               address: address || "",
@@ -227,6 +250,16 @@ export async function POST(request: Request) {
         return tx.quotation.findUnique({
           where: { id: qId },
           include: {
+            customerRel: {
+              select: {
+                id: true,
+                customerCode: true,
+                name: true,
+                companyName: true,
+                phone: true,
+                email: true,
+              },
+            },
             items: {
               orderBy: { itemOrder: "asc" },
               include: { product: true },

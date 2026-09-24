@@ -16,7 +16,7 @@ export const QuotationPaymentTerms: React.FC<QuotationPaymentTermsProps> = ({
   onRemovePaymentTerm,
 }) => {
   return (
-    <div className="px-10 mt-3 print:px-8 print:mt-2 print-avoid-break break-inside-avoid print:break-inside-avoid">
+    <div className="px-10 mt-3 print:px-0 print:mt-2 print-avoid-break break-inside-avoid print:break-inside-avoid">
       <div className="border border-agm-box-border bg-agm-box-bg p-3 print:p-2 rounded-xl print:rounded-lg">
         <div className="flex items-center justify-between mb-1.5 print:mb-1">
           <div className="font-bold text-slate-900 uppercase text-[11px] print:text-[12px] tracking-wider text-agm-green flex items-center gap-1.5">

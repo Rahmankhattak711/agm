@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { FolderOpen, Loader2, Trash2, Eye, Plus, Search } from "lucide-react";
+import {
+  FolderOpenIcon,
+  SpinnerIcon,
+  TrashIcon,
+  EyeIcon,
+  PlusIcon,
+  SearchIcon,
+} from "@/components/icons";
 import { MethodStatementRecord } from "@/lib/hooks/api-hooks";
 import { Button, Modal, Input } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
@@ -16,7 +23,9 @@ export interface MethodStatementSavedModalProps {
   onNewBlank?: () => void;
 }
 
-export const MethodStatementSavedModal: React.FC<MethodStatementSavedModalProps> = ({
+export const MethodStatementSavedModal: React.FC<
+  MethodStatementSavedModalProps
+> = ({
   isOpen,
   onClose,
   savedRecords,
@@ -66,7 +75,7 @@ export const MethodStatementSavedModal: React.FC<MethodStatementSavedModalProps>
             placeholder="Search by ref number, customer, project or work type..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            leftIcon={<Search className="w-4 h-4 text-agm-muted" />}
+            leftIcon={<SearchIcon className="w-4 h-4 text-agm-muted" />}
             className="text-xs bg-agm-box-bg/50 border-agm-box-border text-agm-text"
             containerClassName="flex-1"
           />
@@ -81,7 +90,7 @@ export const MethodStatementSavedModal: React.FC<MethodStatementSavedModalProps>
               }}
               className="text-xs flex items-center gap-1 border-dashed border-agm-green text-agm-green hover:bg-agm-green-soft whitespace-nowrap"
             >
-              <Plus size={13} />
+              <PlusIcon size={13} />
               <span>New Blank</span>
             </Button>
           )}
@@ -90,7 +99,7 @@ export const MethodStatementSavedModal: React.FC<MethodStatementSavedModalProps>
         <div className="max-h-[60vh] overflow-y-auto divide-y divide-slate-100 rounded-lg border border-slate-100">
           {isLoadingSaved ? (
             <div className="py-12 text-center text-xs text-slate-400 flex flex-col items-center gap-2">
-              <Loader2 className="animate-spin text-agm-green" size={24} />
+              <SpinnerIcon className="animate-spin text-agm-green" size={24} />
               Loading database records...
             </div>
           ) : filtered.length === 0 ? (
@@ -101,7 +110,10 @@ export const MethodStatementSavedModal: React.FC<MethodStatementSavedModalProps>
             </div>
           ) : (
             filtered.map((r) => {
-              const hasDeletePermission = canModify(r.createdBy?.id, ["ACCOUNTANT", "ADMIN"]);
+              const hasDeletePermission = canModify(r.createdBy?.id, [
+                "ACCOUNTANT",
+                "ADMIN",
+              ]);
 
               return (
                 <div
@@ -128,7 +140,7 @@ export const MethodStatementSavedModal: React.FC<MethodStatementSavedModalProps>
                       )}
                       {!hasDeletePermission && (
                         <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded inline-flex items-center gap-1">
-                          <Eye size={10} /> View Only
+                          <EyeIcon size={10} /> View Only
                         </span>
                       )}
                     </div>
@@ -141,8 +153,11 @@ export const MethodStatementSavedModal: React.FC<MethodStatementSavedModalProps>
                       {r.workType ? `(${r.workType})` : ""}
                     </p>
                     <p className="text-[11px] text-slate-400">
-                      Date: {r.date || "N/A"} | Location: {r.projectLocation || "N/A"} | Scope Steps:{" "}
-                      <strong className="text-slate-800">{r.items?.length || 0}</strong>
+                      Date: {r.date || "N/A"} | Location:{" "}
+                      {r.projectLocation || "N/A"} | Scope Steps:{" "}
+                      <strong className="text-slate-800">
+                        {r.items?.length || 0}
+                      </strong>
                     </p>
                   </div>
 
@@ -154,7 +169,7 @@ export const MethodStatementSavedModal: React.FC<MethodStatementSavedModalProps>
                       onClick={() => onLoadRecord(r)}
                       className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200 text-xs"
                     >
-                      <FolderOpen size={12} className="mr-1" /> Load
+                      <FolderOpenIcon size={12} className="mr-1" /> Load
                     </Button>
                     {hasDeletePermission && (
                       <Button
@@ -165,7 +180,7 @@ export const MethodStatementSavedModal: React.FC<MethodStatementSavedModalProps>
                         className="bg-rose-50 text-rose-600 hover:bg-rose-100 border-rose-200 text-xs px-2"
                         title="Delete Document"
                       >
-                        <Trash2 size={13} />
+                        <TrashIcon size={13} />
                       </Button>
                     )}
                   </div>

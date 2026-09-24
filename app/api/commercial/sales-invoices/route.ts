@@ -119,7 +119,6 @@ export async function POST(request: Request) {
       const c = await prisma.customer.findUnique({ where: { id: customerId } });
       if (c) {
         if (!custName) custName = c.name;
-        if (!custTrn) custTrn = c.trn;
       }
     }
 
