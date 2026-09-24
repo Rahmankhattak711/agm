@@ -56,6 +56,7 @@ model User {
   riskAssessments      RiskAssessment[]
   methodStatements     MethodStatement[]
   salaryCertificates   SalaryCertificate[]
+  customLetters        CustomLetter[]
 
   @@map("users")
 }
@@ -857,8 +858,6 @@ model Customer {
   customerCode   String  @unique @map("customer_code")
   name           String
   companyName    String? @map("company_name")
-  trn            String?
-  contactPerson  String? @map("contact_person")
   phone          String?
   email          String?
   address        String?

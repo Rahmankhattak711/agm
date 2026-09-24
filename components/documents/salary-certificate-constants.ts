@@ -3,7 +3,7 @@ export interface SalaryCertificateDocumentData {
   refNumber: string;
   date: string;
   status: "DRAFT" | "ACTIVE" | "ISSUED" | "COMPLETED";
-  addressee: string; // e.g. "To Whom It May Concern,"
+  addressee: string;
   employeePrefix: "Mr." | "Ms." | "Mrs." | "Dr.";
   employeeName: string;
   emiratesId: string;
@@ -14,8 +14,7 @@ export interface SalaryCertificateDocumentData {
   monthlySalaryNum: number;
   monthlySalaryText: string;
   currency: string;
-  
-  // Signatory & Contact details
+
   signatoryCompany: string;
   signatoryTitle: string;
   signatoryName: string;
@@ -23,19 +22,17 @@ export interface SalaryCertificateDocumentData {
   signatorySignatureUrl?: string;
   companyStampUrl?: string;
   showStampAndSignature: boolean;
-  
+
   city: string;
   poBox: string;
   landline: string;
   telephone: string;
-  
-  // Footer UAE Details
+
   vatNumber: string;
   footerCompanyName: string;
   registeredAddress: string;
 
-  // Metadata
-  employeeId?: string; // Optional reference to ERP Employee ID
+  employeeId?: string;
   notes?: string;
   createdBy?: {
     id?: string;
@@ -60,7 +57,7 @@ export const SAMPLE_SALARY_CERTIFICATE: SalaryCertificateDocumentData = {
   companyName: "AGM Fitout Technical Services LLC",
   position: "Tile Polisher",
   purposeDisclaimer:
-    "This certificate is issued upon the employee's request for submission to the authority concerned. It does not constitute any financial guarantee or liability on the part of the company.",
+    "This certificate is issued upon the employee's request for submission to the authority concerned. It does not constitute any financial guarantee or liability on the part of the company. This is an official system-generated certificate.",
   monthlySalaryNum: 5000,
   monthlySalaryText: "Five Thousand UAE Dirhams only",
   currency: "AED",
@@ -79,9 +76,6 @@ export const SAMPLE_SALARY_CERTIFICATE: SalaryCertificateDocumentData = {
     "Sheikh Zayed Road, near Oasis Centre Office No. 13-11 Building: Adel Mohammed Ali Jassim Al Marzouqi Al Goze First 1 – Dubai, United Arab Emirates",
 };
 
-/**
- * Utility function to convert numbers into English words formatted for UAE Dirhams.
- */
 export function numberToWordsAED(num: number): string {
   if (isNaN(num) || num <= 0) return "Zero UAE Dirhams only";
 
@@ -123,7 +117,8 @@ export function numberToWordsAED(num: number): string {
   function convertChunk(n: number): string {
     if (n === 0) return "";
     if (n < 20) return a[n];
-    if (n < 100) return b[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + a[n % 10] : "");
+    if (n < 100)
+      return b[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + a[n % 10] : "");
     if (n < 1000)
       return (
         a[Math.floor(n / 100)] +

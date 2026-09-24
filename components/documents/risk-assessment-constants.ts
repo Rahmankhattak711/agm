@@ -41,7 +41,8 @@ export interface RiskAssessmentDocumentData {
 export const DEFAULT_RISK_ITEMS: RiskAssessmentItem[] = [
   {
     id: "risk-1",
-    activity: "1. Preparing the site: covering doors, door frames, furniture (if any), floor protection, etc.",
+    activity:
+      "1. Preparing the site: covering doors, door frames, furniture (if any), floor protection, etc.",
     riskDescription: "No Risk",
     impact: "None",
     mitigation: "Standard site prep and floor protection procedures.",
@@ -49,62 +50,77 @@ export const DEFAULT_RISK_ITEMS: RiskAssessmentItem[] = [
   {
     id: "risk-2",
     activity: "2. Demolition of kitchen and bathrooms",
-    riskDescription: "Labor hazard; potential damage to structural/surrounding areas",
+    riskDescription:
+      "Labor hazard; potential damage to structural/surrounding areas",
     impact: "Potential project delay if major damage occurs",
-    mitigation: "Labor must strictly comply with HSE standards. Workers will receive site induction and briefings prior to demolition.",
+    mitigation:
+      "Labor must strictly comply with HSE standards. Workers will receive site induction and briefings prior to demolition.",
   },
   {
     id: "risk-3",
-    activity: "3. Covering corridor elevator and common areas for material transport",
+    activity:
+      "3. Covering corridor elevator and common areas for material transport",
     riskDescription: "No Risk",
     impact: "None",
-    mitigation: "Protective sheets applied to common areas and elevator interiors.",
+    mitigation:
+      "Protective sheets applied to common areas and elevator interiors.",
   },
   {
     id: "risk-4",
     activity: "4. Debris dumping, site cleaning, and ongoing site preparation",
     riskDescription: "Labor hazard (slips, trips, manual handling)",
     impact: "No impact expected",
-    mitigation: "Labor will wear full PPE and follow standard waste management and site housekeeping guidelines.",
+    mitigation:
+      "Labor will wear full PPE and follow standard waste management and site housekeeping guidelines.",
   },
   {
     id: "risk-5",
-    activity: "5. MEP pre-installation prep (toilets, washbasins, showers, piping)",
-    riskDescription: "Site hazard; risk of damaging main shaft or main waterproofing membrane",
+    activity:
+      "5. MEP pre-installation prep (toilets, washbasins, showers, piping)",
+    riskDescription:
+      "Site hazard; risk of damaging main shaft or main waterproofing membrane",
     impact: "Work halt until site issue is fully resolved",
-    mitigation: "Construction Manager will directly supervise piping and drainage layout. No relocation of drainage that risks touching main slab or structural wall.",
+    mitigation:
+      "Construction Manager will directly supervise piping and drainage layout. No relocation of drainage that risks touching main slab or structural wall.",
   },
   {
     id: "risk-6",
-    activity: "6. Wall plastering; applying polymer cement-based waterproof paint to walls and floors",
+    activity:
+      "6. Wall plastering; applying polymer cement-based waterproof paint to walls and floors",
     riskDescription: "No Risk",
     impact: "None",
-    mitigation: "Apply according to manufacturer technical datasheets and specs.",
+    mitigation:
+      "Apply according to manufacturer technical datasheets and specs.",
   },
   {
     id: "risk-7",
     activity: "7. 24-hour flood waterproofing test",
     riskDescription: "Water leakage",
     impact: "1 day delay",
-    mitigation: "Construction Manager will inspect MEP preparation and ensure waterproofing application is 100% compliant before flood test.",
+    mitigation:
+      "Construction Manager will inspect MEP preparation and ensure waterproofing application is 100% compliant before flood test.",
   },
   {
     id: "risk-8",
     activity: "8. Water pressure test",
     riskDescription: "Water leakage / pipe pressure drop",
     impact: "1 day delay",
-    mitigation: "Construction Manager will supervise pressure testing and verify all mechanical connections.",
+    mitigation:
+      "Construction Manager will supervise pressure testing and verify all mechanical connections.",
   },
   {
     id: "risk-9",
-    activity: "9. Tile installation using Mapei waterproofing adhesive (off-site slab cutting in factory with necessary field trimming)",
+    activity:
+      "9. Tile installation using Mapei waterproofing adhesive (off-site slab cutting in factory with necessary field trimming)",
     riskDescription: "paint scratches or minor surface damage during handling",
     impact: "Minor delay in case of material damage or labor injury",
-    mitigation: "Labor must strictly comply with safety standards (eye/ear PPE) and handle high-value tile slabs carefully.",
+    mitigation:
+      "Labor must strictly comply with safety standards (eye/ear PPE) and handle high-value tile slabs carefully.",
   },
   {
     id: "risk-10",
-    activity: "10. Moisture-resistant (MR) gypsum board ceiling installation for kitchen & bathrooms",
+    activity:
+      "10. Moisture-resistant (MR) gypsum board ceiling installation for kitchen & bathrooms",
     riskDescription: "No Risk",
     impact: "None",
     mitigation: "Standard framing and ceiling installation techniques.",
@@ -114,11 +130,13 @@ export const DEFAULT_RISK_ITEMS: RiskAssessmentItem[] = [
     activity: "11. Kitchen cabinetry and door installation",
     riskDescription: "Paint scratches or minor surface damage during handling",
     impact: "Minor cosmetic touch-up / repainting required",
-    mitigation: "All materials wrapped in protective film at factory and handled with care during transport and assembly.",
+    mitigation:
+      "All materials wrapped in protective film at factory and handled with care during transport and assembly.",
   },
   {
     id: "risk-12",
-    activity: "12. Painting works using pneumatic sprayers and Mapei tile grouting",
+    activity:
+      "12. Painting works using pneumatic sprayers and Mapei tile grouting",
     riskDescription: "No Risk",
     impact: "None",
     mitigation: "Ensure proper ventilation during pneumatic spray application.",

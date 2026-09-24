@@ -121,7 +121,9 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
       {(subtitle || trend) && (
         <div className="flex items-center justify-between text-xs font-normal pt-0.5 min-h-[16px]">
           {subtitle && (
-            <span className={`truncate text-xs ${styles.subtitle}`}>{subtitle}</span>
+            <span className={`truncate text-xs ${styles.subtitle}`}>
+              {subtitle}
+            </span>
           )}
           {trend && (
             <span
@@ -165,8 +167,6 @@ export const DashboardCardGrid: React.FC<DashboardCardGridProps> = ({
   }[cols];
 
   return (
-    <div className={`grid ${colClasses} gap-4 ${className}`}>
-      {children}
-    </div>
+    <div className={`grid ${colClasses} gap-4 ${className}`}>{children}</div>
   );
 };

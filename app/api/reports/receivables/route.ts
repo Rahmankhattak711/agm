@@ -66,7 +66,7 @@ export async function GET() {
         customer: inv.customerName || inv.customerRel?.name || "Client",
         customerEmail: inv.customerRel?.email || "—",
         customerPhone: inv.customerRel?.phone || "—",
-        customerTrn: inv.customerTrn || inv.customerRel?.trn || "—",
+        customerTrn: inv.customerTrn || "—",
         project: inv.projectScope || "Commercial Fitout Contract",
         date: invDate.toISOString().slice(0, 10),
         status: inv.status,

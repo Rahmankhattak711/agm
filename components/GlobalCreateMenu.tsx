@@ -26,11 +26,7 @@ import {
 } from "@/components/icons";
 
 export type ActionCategory =
-  | "SALES"
-  | "PURCHASES"
-  | "COMPANY_DOCS"
-  | "ACCOUNTING"
-  | "MASTER_DATA";
+  "SALES" | "PURCHASES" | "COMPANY_DOCS" | "ACCOUNTING" | "MASTER_DATA";
 
 export interface ActionItem {
   id: string;
@@ -186,7 +182,6 @@ export const ACTION_ITEMS: ActionItem[] = [
     icon: <FileTextIcon size={16} className="text-teal-700" />,
     category: "COMPANY_DOCS",
   },
-
 
   {
     id: "create-purchase-request",

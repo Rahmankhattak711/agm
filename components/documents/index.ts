@@ -14,3 +14,6 @@ export { default as SalaryCertificateTemplate } from "./SalaryCertificateTemplat
 export { SalaryCertificateSavedModal } from "./SalaryCertificateSavedModal";
 export * from "./salary-certificate-constants";
 
+export { default as CustomLetterTemplate } from "./CustomLetterTemplate";
+export { CustomLetterSavedModal } from "./CustomLetterSavedModal";
+export * from "./custom-letter-constants";
