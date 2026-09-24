@@ -28,11 +28,12 @@ export const SECTION_PATHS: Record<string, string> = {
   "company-agreements": "/commercial/agreements",
   "salary-certificates": "/commercial/salary-certificates",
   "commercial-salary-certificates": "/commercial/salary-certificates",
+  "custom-letters": "/commercial/custom-letters",
+  "commercial-custom-letters": "/commercial/custom-letters",
   "risk-assessments": "/commercial/risk-assessments",
   "commercial-risk-assessments": "/commercial/risk-assessments",
   "method-statements": "/commercial/method-statements",
   "commercial-method-statements": "/commercial/method-statements",
-
 
   accounts: "/finance/accounts",
   journals: "/finance/journal-entries",
@@ -131,6 +132,10 @@ export const PAGE_META: Record<string, PageMeta> = {
   "/commercial/salary-certificates": {
     eyebrow: "Company Documents",
     title: "Salary Certificates",
+  },
+  "/commercial/custom-letters": {
+    eyebrow: "Company Documents",
+    title: "Custom Letters & Certificates",
   },
   "/commercial/risk-assessments": {
     eyebrow: "Company Documents",

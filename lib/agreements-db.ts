@@ -1,10 +1,12 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { AgreementDocumentData, SAMPLE_RENOVATION_AGREEMENT } from "@/components/documents/constants";
+import {
+  AgreementDocumentData,
+  SAMPLE_RENOVATION_AGREEMENT,
+} from "@/components/documents/constants";
 
 declare global {
-  // eslint-disable-next-line no-var
   var __agm_agreements_cache: AgreementDocumentData[] | undefined;
 }
 
@@ -43,7 +45,10 @@ function getInitialAgreements(): AgreementDocumentData[] {
 }
 
 export function getAllAgreements(): AgreementDocumentData[] {
-  if (global.__agm_agreements_cache && global.__agm_agreements_cache.length > 0) {
+  if (
+    global.__agm_agreements_cache &&
+    global.__agm_agreements_cache.length > 0
+  ) {
     return global.__agm_agreements_cache;
   }
 
@@ -58,7 +63,10 @@ export function getAllAgreements(): AgreementDocumentData[] {
       }
     }
   } catch (err) {
-    console.warn("Could not read agreements from filesystem, using initial preset:", err);
+    console.warn(
+      "Could not read agreements from filesystem, using initial preset:",
+      err,
+    );
   }
 
   const initial = getInitialAgreements();
@@ -66,9 +74,7 @@ export function getAllAgreements(): AgreementDocumentData[] {
   try {
     const filePath = getStoragePath();
     fs.writeFileSync(filePath, JSON.stringify(initial, null, 2), "utf-8");
-  } catch {
-    // Read-only filesystem fallback
-  }
+  } catch {}
   return initial;
 }
 
@@ -89,15 +95,23 @@ export function saveAgreement(
     targetId = `agr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   }
 
-  const existingIdx = all.findIndex((a) => a.id === targetId || a.refNumber === data.refNumber);
+  const existingIdx = all.findIndex(
+    (a) => a.id === targetId || a.refNumber === data.refNumber,
+  );
 
   const mergedRecord: AgreementDocumentData = {
     ...SAMPLE_RENOVATION_AGREEMENT,
     ...(existingIdx >= 0 ? all[existingIdx] : {}),
     ...data,
     id: existingIdx >= 0 ? all[existingIdx].id : targetId,
-    title: data.title || (existingIdx >= 0 ? all[existingIdx].title : "AGM FITOUT AGREEMENT") || "AGM FITOUT AGREEMENT",
-    status: (data.status as any) || (existingIdx >= 0 ? all[existingIdx].status : "DRAFT") || "DRAFT",
+    title:
+      data.title ||
+      (existingIdx >= 0 ? all[existingIdx].title : "AGM FITOUT AGREEMENT") ||
+      "AGM FITOUT AGREEMENT",
+    status:
+      (data.status as any) ||
+      (existingIdx >= 0 ? all[existingIdx].status : "DRAFT") ||
+      "DRAFT",
     updatedAt: now,
     createdAt: existingIdx >= 0 ? all[existingIdx].createdAt || now : now,
     createdBy:
@@ -127,7 +141,10 @@ export function saveAgreement(
     const filePath = getStoragePath();
     fs.writeFileSync(filePath, JSON.stringify(all, null, 2), "utf-8");
   } catch (err) {
-    console.warn("Could not persist agreements to disk (running in read-only environment), cached in memory:", err);
+    console.warn(
+      "Could not persist agreements to disk (running in read-only environment), cached in memory:",
+      err,
+    );
   }
 
   return mergedRecord;
@@ -145,7 +162,10 @@ export function deleteAgreement(id: string): boolean {
     const filePath = getStoragePath();
     fs.writeFileSync(filePath, JSON.stringify(filtered, null, 2), "utf-8");
   } catch (err) {
-    console.warn("Could not persist deleted agreement to disk, updated in memory:", err);
+    console.warn(
+      "Could not persist deleted agreement to disk, updated in memory:",
+      err,
+    );
   }
 
   return true;
