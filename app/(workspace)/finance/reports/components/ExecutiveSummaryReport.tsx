@@ -97,7 +97,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2.5 bg-agm-card rounded-2xl border border-agm-box-border shadow-2xs print:hidden">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-agm-muted uppercase tracking-wide">
@@ -115,7 +114,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
         </Button>
       </div>
 
-      {/* Printable Sheet */}
       <div className="flex justify-center w-full">
         <div
           ref={printRef}
@@ -126,7 +124,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
             printColorAdjust: "exact",
           }}
         >
-          {/* Multi-page Print Table Wrapper */}
           <table className="print-page-table w-full border-collapse">
             <thead className="print-page-header-group">
               <tr>
@@ -155,13 +152,13 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
               <tr>
                 <td className="p-0 border-none align-top">
                   <div className="space-y-6">
-                    {/* 1. Tax Registration Subheader */}
                     <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
-                      <span>Corporate Tax Registration No: 104094432200001</span>
+                      <span>
+                        Corporate Tax Registration No: 104094432200001
+                      </span>
                       <span>VAT Registration No:104094432200003</span>
                     </div>
 
-                    {/* 2. Title Banner */}
                     <div
                       className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
                       style={{
@@ -169,10 +166,10 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                         printColorAdjust: "exact",
                       }}
                     >
-                      AGM FITOUT TECHNICAL SERVICES LLC - EXECUTIVE FINANCIAL SUMMARY
+                      AGM FITOUT TECHNICAL SERVICES LLC - EXECUTIVE FINANCIAL
+                      SUMMARY
                     </div>
 
-                    {/* 3. Statement KPI Summary Cards (Hidden in print) */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 print-avoid-break print:hidden">
                       <div className="p-3.5 bg-agm-box-bg rounded-xl border border-agm-box-border">
                         <span className="text-[10px] font-bold text-agm-muted uppercase tracking-wider block">
@@ -192,7 +189,9 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                         </span>
                         <span
                           className={`text-base font-black font-mono ${
-                            netProfit >= 0 ? "text-emerald-700" : "text-rose-600"
+                            netProfit >= 0
+                              ? "text-emerald-700"
+                              : "text-rose-600"
                           }`}
                         >
                           {netProfit < 0
@@ -235,9 +234,7 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                       </div>
                     </div>
 
-                    {/* 5. Key Financial Summary Tables */}
                     <div className="space-y-4">
-                      {/* Table: Profit & Loss + Balance Sheet Highlights */}
                       <table className="w-full border-collapse text-[12px] print:text-[11.5px] text-agm-text">
                         <thead>
                           <tr className="bg-agm-box-bg font-bold text-agm-text border-b border-agm-box-border">
@@ -262,7 +259,9 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                             </td>
                           </tr>
                           <tr className="border-b border-agm-box-border/50">
-                            <td className="py-1.5 px-4 text-agm-muted">Operating Revenue</td>
+                            <td className="py-1.5 px-4 text-agm-muted">
+                              Operating Revenue
+                            </td>
                             <td className="py-1.5 px-4 font-medium text-agm-text">
                               Total Contract &amp; Services Income
                             </td>
@@ -271,7 +270,9 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                             </td>
                           </tr>
                           <tr className="border-b border-agm-box-border/50">
-                            <td className="py-1.5 px-4 text-agm-muted">Direct Costs</td>
+                            <td className="py-1.5 px-4 text-agm-muted">
+                              Direct Costs
+                            </td>
                             <td className="py-1.5 px-4 font-medium text-agm-text">
                               Direct Materials Procurement (COGS)
                             </td>
@@ -280,7 +281,10 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                             </td>
                           </tr>
                           <tr className="bg-agm-navy/10 text-agm-navy font-bold border-t border-b border-agm-navy/20">
-                            <td colSpan={2} className="py-2 px-4 font-bold text-agm-navy">
+                            <td
+                              colSpan={2}
+                              className="py-2 px-4 font-bold text-agm-navy"
+                            >
                               Gross Profit
                             </td>
                             <td className="py-2 px-4 text-right font-mono font-bold text-agm-navy">
@@ -288,7 +292,9 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                             </td>
                           </tr>
                           <tr className="border-b border-agm-box-border/50">
-                            <td className="py-1.5 px-4 text-agm-muted">Operating Expenses</td>
+                            <td className="py-1.5 px-4 text-agm-muted">
+                              Operating Expenses
+                            </td>
                             <td className="py-1.5 px-4 font-medium text-agm-text">
                               Overheads, Admin, Salaries &amp; Utilities
                             </td>
@@ -297,12 +303,17 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                             </td>
                           </tr>
                           <tr className="bg-agm-sidebar text-white font-bold border-t-2 border-agm-green">
-                            <td colSpan={2} className="py-2.5 px-4 font-black text-white text-[12.5px]">
+                            <td
+                              colSpan={2}
+                              className="py-2.5 px-4 font-black text-white text-[12.5px]"
+                            >
                               Net Profit / (Loss)
                             </td>
                             <td
                               className={`py-2.5 px-4 text-right font-mono font-black text-[12.5px] ${
-                                netProfit < 0 ? "text-rose-400" : "text-emerald-300"
+                                netProfit < 0
+                                  ? "text-rose-400"
+                                  : "text-emerald-300"
                               }`}
                             >
                               {netProfit < 0
@@ -316,11 +327,14 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                               colSpan={3}
                               className="py-2 px-4 font-bold text-agm-navy text-[11.5px] uppercase tracking-wider"
                             >
-                              2. Balance Sheet &amp; Financial Position Highlights
+                              2. Balance Sheet &amp; Financial Position
+                              Highlights
                             </td>
                           </tr>
                           <tr className="border-b border-agm-box-border/50">
-                            <td className="py-1.5 px-4 text-agm-muted">Total Assets</td>
+                            <td className="py-1.5 px-4 text-agm-muted">
+                              Total Assets
+                            </td>
                             <td className="py-1.5 px-4 font-medium text-agm-text">
                               Current Assets + Fixed Assets
                             </td>
@@ -329,7 +343,9 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                             </td>
                           </tr>
                           <tr className="border-b border-agm-box-border/50">
-                            <td className="py-1.5 px-4 text-agm-muted">Total Liabilities</td>
+                            <td className="py-1.5 px-4 text-agm-muted">
+                              Total Liabilities
+                            </td>
                             <td className="py-1.5 px-4 font-medium text-agm-text">
                               Payables, Accruals &amp; Tax Obligations
                             </td>
@@ -338,7 +354,10 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                             </td>
                           </tr>
                           <tr className="bg-agm-navy/10 text-agm-navy font-bold border-t border-b border-agm-navy/20">
-                            <td colSpan={2} className="py-2 px-4 font-bold text-agm-navy">
+                            <td
+                              colSpan={2}
+                              className="py-2 px-4 font-bold text-agm-navy"
+                            >
                               Total Equity + Liabilities
                             </td>
                             <td className="py-2 px-4 text-right font-mono font-bold text-agm-navy">
@@ -348,7 +367,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                         </tbody>
                       </table>
 
-                      {/* Quarterly Breakdown Table */}
                       <div className="pt-2 print-avoid-break">
                         <span className="text-xs font-bold uppercase tracking-wider text-agm-navy mb-2 block">
                           3. Quarterly Performance &amp; VAT Breakdown
@@ -356,12 +374,24 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                         <table className="w-full border-collapse text-[12px] print:text-[11.5px] text-agm-text">
                           <thead>
                             <tr className="bg-agm-box-bg font-bold text-agm-text border-b border-agm-box-border">
-                              <th className="py-2 px-3 text-left font-bold">Quarter</th>
-                              <th className="py-2 px-3 text-right font-bold">Revenue</th>
-                              <th className="py-2 px-3 text-right font-bold">Purchases</th>
-                              <th className="py-2 px-3 text-right font-bold">Output VAT</th>
-                              <th className="py-2 px-3 text-right font-bold">Input VAT</th>
-                              <th className="py-2 px-3 text-right font-bold">Net VAT</th>
+                              <th className="py-2 px-3 text-left font-bold">
+                                Quarter
+                              </th>
+                              <th className="py-2 px-3 text-right font-bold">
+                                Revenue
+                              </th>
+                              <th className="py-2 px-3 text-right font-bold">
+                                Purchases
+                              </th>
+                              <th className="py-2 px-3 text-right font-bold">
+                                Output VAT
+                              </th>
+                              <th className="py-2 px-3 text-right font-bold">
+                                Input VAT
+                              </th>
+                              <th className="py-2 px-3 text-right font-bold">
+                                Net VAT
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-agm-box-border">
@@ -384,7 +414,9 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                                 </td>
                                 <td
                                   className={`py-2 px-3 text-right font-mono font-bold ${
-                                    q.netVat > 0 ? "text-rose-600" : "text-emerald-700"
+                                    q.netVat > 0
+                                      ? "text-rose-600"
+                                      : "text-emerald-700"
                                   }`}
                                 >
                                   {formatNumber(q.netVat)}
@@ -396,7 +428,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
                       </div>
                     </div>
 
-                    {/* Screen Footer */}
                     <div className="pt-6 print:hidden">
                       <QuotationFooter className="!mt-0 !px-0" />
                     </div>
@@ -406,7 +437,6 @@ export const ExecutiveSummaryReport: React.FC<ExecutiveSummaryReportProps> = ({
             </tbody>
           </table>
 
-          {/* Fixed Print Footer across every single printed page */}
           <div className="print-footer-bottom fixed-print-footer hidden print:block">
             <QuotationFooter />
           </div>

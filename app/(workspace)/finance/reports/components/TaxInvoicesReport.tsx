@@ -1,18 +1,9 @@
 "use client";
 
-import {
-  PrintIcon,
-  SearchIcon,
-} from "@/components/icons";
+import { PrintIcon, SearchIcon } from "@/components/icons";
 import { QuotationFooter, QuotationHeader } from "@/components/quotation";
-import {
-  Button,
-  Modal,
-} from "@/components/ui";
-import {
-  SalesInvoice,
-  useSalesInvoices,
-} from "@/lib/hooks/api-hooks";
+import { Button, Modal } from "@/components/ui";
+import { SalesInvoice, useSalesInvoices } from "@/lib/hooks/api-hooks";
 import React, { useMemo, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import { formatNumber } from "./types";
@@ -117,10 +108,8 @@ export const TaxInvoicesReport: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Controls Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2.5 bg-agm-card rounded-2xl border border-agm-box-border shadow-2xs print:hidden">
         <div className="flex flex-wrap items-center gap-2">
-          {/* Search */}
           <div className="relative">
             <SearchIcon
               size={13}
@@ -135,7 +124,6 @@ export const TaxInvoicesReport: React.FC = () => {
             />
           </div>
 
-          {/* Status Pills */}
           <div className="inline-flex items-center p-1 bg-agm-box-bg rounded-xl border border-agm-box-border overflow-x-auto">
             {statusPills.map((p) => (
               <button
@@ -153,7 +141,6 @@ export const TaxInvoicesReport: React.FC = () => {
             ))}
           </div>
 
-          {/* Period Select */}
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
@@ -186,7 +173,6 @@ export const TaxInvoicesReport: React.FC = () => {
           <p>Loading Tax Invoices register...</p>
         </div>
       ) : (
-        /* Printable Sheet */
         <div className="flex justify-center w-full">
           <div
             ref={printRef}
@@ -197,7 +183,6 @@ export const TaxInvoicesReport: React.FC = () => {
               printColorAdjust: "exact",
             }}
           >
-            {/* Multi-page Print Table Wrapper */}
             <table className="print-page-table w-full border-collapse">
               <thead className="print-page-header-group">
                 <tr>
@@ -226,13 +211,13 @@ export const TaxInvoicesReport: React.FC = () => {
                 <tr>
                   <td className="p-0 border-none align-top">
                     <div className="space-y-0">
-                      {/* 1. Tax Registration Subheader */}
                       <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
-                        <span>Corporate Tax Registration No: 104094432200001</span>
+                        <span>
+                          Corporate Tax Registration No: 104094432200001
+                        </span>
                         <span>VAT Registration No:104094432200003</span>
                       </div>
 
-                      {/* 2. Title Banner */}
                       <div
                         className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
                         style={{
@@ -240,10 +225,10 @@ export const TaxInvoicesReport: React.FC = () => {
                           printColorAdjust: "exact",
                         }}
                       >
-                        AGM FITOUT TECHNICAL SERVICES LLC - TAX INVOICES &amp; REVENUE REGISTER
+                        AGM FITOUT TECHNICAL SERVICES LLC - TAX INVOICES &amp;
+                        REVENUE REGISTER
                       </div>
 
-                      {/* 4. Table */}
                       <table className="w-full border-collapse text-[12px] print:text-[11.5px] text-agm-text">
                         <thead>
                           <tr className="bg-agm-box-bg font-bold text-agm-text border-b border-agm-box-border">
@@ -289,7 +274,9 @@ export const TaxInvoicesReport: React.FC = () => {
                                   </span>
                                   <span className="text-[10.5px] text-agm-muted">
                                     {inv.invoiceDate
-                                      ? new Date(inv.invoiceDate).toLocaleDateString("en-GB")
+                                      ? new Date(
+                                          inv.invoiceDate,
+                                        ).toLocaleDateString("en-GB")
                                       : "—"}
                                   </span>
                                 </td>
@@ -319,10 +306,13 @@ export const TaxInvoicesReport: React.FC = () => {
                             ))
                           )}
 
-                          {/* Totals Row */}
                           <tr className="bg-agm-navy/10 text-agm-navy font-bold border-t border-b border-agm-navy/20">
-                            <td colSpan={3} className="py-2.5 px-3 font-bold text-agm-navy">
-                              Total Tax Invoices ({filteredInvoices.length} Invoices)
+                            <td
+                              colSpan={3}
+                              className="py-2.5 px-3 font-bold text-agm-navy"
+                            >
+                              Total Tax Invoices ({filteredInvoices.length}{" "}
+                              Invoices)
                             </td>
                             <td className="py-2.5 px-3 text-right font-mono font-bold text-agm-navy">
                               {formatNumber(totalNetTaxable)}
@@ -335,9 +325,11 @@ export const TaxInvoicesReport: React.FC = () => {
                             </td>
                           </tr>
 
-                          {/* Outstanding Due Row */}
                           <tr className="bg-agm-sidebar text-white font-bold border-t-2 border-agm-green">
-                            <td colSpan={5} className="py-2.5 px-3 font-black text-white text-[12.5px]">
+                            <td
+                              colSpan={5}
+                              className="py-2.5 px-3 font-black text-white text-[12.5px]"
+                            >
                               Total Balance Outstanding Due
                             </td>
                             <td className="py-2.5 px-3 text-right font-mono font-black text-emerald-300 text-[12.5px]">
@@ -347,7 +339,6 @@ export const TaxInvoicesReport: React.FC = () => {
                         </tbody>
                       </table>
 
-                      {/* Screen Footer */}
                       <div className="pt-6 print:hidden">
                         <QuotationFooter className="!mt-0 !px-0" />
                       </div>
@@ -357,7 +348,6 @@ export const TaxInvoicesReport: React.FC = () => {
               </tbody>
             </table>
 
-            {/* Fixed Print Footer across every single printed page */}
             <div className="print-footer-bottom fixed-print-footer hidden print:block">
               <QuotationFooter />
             </div>
@@ -365,7 +355,6 @@ export const TaxInvoicesReport: React.FC = () => {
         </div>
       )}
 
-      {/* Invoice Detail Modal */}
       {selectedInvoice && (
         <Modal
           isOpen={!!selectedInvoice}

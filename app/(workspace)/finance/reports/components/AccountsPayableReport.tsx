@@ -2,10 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
-import {
-  PrintIcon,
-  SearchIcon,
-} from "@/components/icons";
+import { PrintIcon, SearchIcon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { usePayables } from "@/lib/hooks/api-hooks";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
@@ -64,7 +61,6 @@ export const AccountsPayableReport: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Controls Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2.5 bg-agm-card rounded-2xl border border-agm-box-border shadow-2xs print:hidden">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
@@ -116,7 +112,6 @@ export const AccountsPayableReport: React.FC = () => {
           <p>Loading Accounts Payable statement data...</p>
         </div>
       ) : (
-        /* Printable Sheet */
         <div className="flex justify-center w-full">
           <div
             ref={printRef}
@@ -127,7 +122,6 @@ export const AccountsPayableReport: React.FC = () => {
               printColorAdjust: "exact",
             }}
           >
-            {/* Multi-page Print Table Wrapper */}
             <table className="print-page-table w-full border-collapse">
               <thead className="print-page-header-group">
                 <tr>
@@ -156,13 +150,13 @@ export const AccountsPayableReport: React.FC = () => {
                 <tr>
                   <td className="p-0 border-none align-top">
                     <div className="space-y-0">
-                      {/* 1. Tax Registration Subheader */}
                       <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
-                        <span>Corporate Tax Registration No: 104094432200001</span>
+                        <span>
+                          Corporate Tax Registration No: 104094432200001
+                        </span>
                         <span>VAT Registration No:104094432200003</span>
                       </div>
 
-                      {/* 2. Title Banner */}
                       <div
                         className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
                         style={{
@@ -170,10 +164,10 @@ export const AccountsPayableReport: React.FC = () => {
                           printColorAdjust: "exact",
                         }}
                       >
-                        AGM FITOUT TECHNICAL SERVICES LLC - ACCOUNTS PAYABLE AGING STATEMENT
+                        AGM FITOUT TECHNICAL SERVICES LLC - ACCOUNTS PAYABLE
+                        AGING STATEMENT
                       </div>
 
-                      {/* 4. Table */}
                       <table className="w-full border-collapse text-[12px] print:text-[11.5px] text-agm-text">
                         <thead>
                           <tr className="bg-agm-box-bg font-bold text-agm-text border-b border-agm-box-border">
@@ -239,25 +233,32 @@ export const AccountsPayableReport: React.FC = () => {
                                   </span>
                                 </td>
                                 <td className="py-1.5 px-3 text-right font-mono font-bold text-agm-text">
-                                  {formatNumber(item.remainingBalance ?? item.totalAmount ?? 0)}
+                                  {formatNumber(
+                                    item.remainingBalance ??
+                                      item.totalAmount ??
+                                      0,
+                                  )}
                                 </td>
                               </tr>
                             ))
                           )}
 
-                          {/* Total Balance Row */}
                           <tr className="bg-agm-sidebar text-white font-bold border-t-2 border-agm-green">
-                            <td colSpan={4} className="py-2.5 px-3 font-black text-white text-[12.5px]">
+                            <td
+                              colSpan={4}
+                              className="py-2.5 px-3 font-black text-white text-[12.5px]"
+                            >
                               Total Accounts Payable Outstanding
                             </td>
                             <td className="py-2.5 px-3 text-right font-mono font-black text-emerald-300 text-[12.5px]">
-                              {formatNumber(totalFilteredAmount || totalAllPayables)}
+                              {formatNumber(
+                                totalFilteredAmount || totalAllPayables,
+                              )}
                             </td>
                           </tr>
                         </tbody>
                       </table>
 
-                      {/* Screen Footer */}
                       <div className="pt-6 print:hidden">
                         <QuotationFooter className="!mt-0 !px-0" />
                       </div>
@@ -267,7 +268,6 @@ export const AccountsPayableReport: React.FC = () => {
               </tbody>
             </table>
 
-            {/* Fixed Print Footer across every single printed page */}
             <div className="print-footer-bottom fixed-print-footer hidden print:block">
               <QuotationFooter />
             </div>

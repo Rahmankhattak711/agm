@@ -14,12 +14,7 @@ import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { formatNumber } from "./types";
 
 export type PeriodType =
-  | "daily"
-  | "weekly"
-  | "monthly"
-  | "yearly"
-  | "custom"
-  | "all";
+  "daily" | "weekly" | "monthly" | "yearly" | "custom" | "all";
 
 interface ProfitLossReportProps {
   onDrillDownAccount?: (accountId: string) => void;
@@ -36,13 +31,9 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
   const [customEnd, setCustomEnd] = useState<string>("");
 
   const startDateParam =
-    period === "yearly"
-      ? `${selectedYear}-01-01`
-      : customStart || undefined;
+    period === "yearly" ? `${selectedYear}-01-01` : customStart || undefined;
   const endDateParam =
-    period === "yearly"
-      ? `${selectedYear}-12-31`
-      : customEnd || undefined;
+    period === "yearly" ? `${selectedYear}-12-31` : customEnd || undefined;
 
   const { data: profitLoss, isLoading } = useProfitLoss({
     period,
@@ -77,10 +68,8 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Modern Controls Header Bar (Hidden in Print) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2.5 bg-agm-card rounded-2xl border border-agm-box-border shadow-2xs print:hidden">
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Segmented Period Controls */}
           <div className="inline-flex items-center p-1 bg-agm-box-bg rounded-xl border border-agm-box-border">
             <button
               type="button"
@@ -163,7 +152,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
             </button>
           </div>
 
-          {/* Modern Date Range Picker */}
           <DateRangePicker
             startDate={customStart}
             endDate={customEnd}
@@ -181,7 +169,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
           />
         </div>
 
-        {/* Print Button */}
         <Button
           variant="outline"
           size="sm"
@@ -199,7 +186,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
           <p>Loading Profit &amp; Loss statement data...</p>
         </div>
       ) : (
-        /* Printable Statement Paper Document */
         <div className="flex justify-center w-full">
           <div
             ref={printRef}
@@ -210,7 +196,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
               printColorAdjust: "exact",
             }}
           >
-            {/* Multi-page Print Table Wrapper */}
             <table className="print-page-table w-full border-collapse">
               <thead className="print-page-header-group">
                 <tr>
@@ -239,13 +224,13 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                 <tr>
                   <td className="p-0 border-none align-top">
                     <div className="space-y-0">
-                      {/* 1. Tax Registration Subheader */}
                       <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
-                        <span>Corporate Tax Registration No: 104094432200001</span>
+                        <span>
+                          Corporate Tax Registration No: 104094432200001
+                        </span>
                         <span>VAT Registration No:104094432200003</span>
                       </div>
 
-                      {/* 2. Theme Title Banner */}
                       <div
                         className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
                         style={{
@@ -256,7 +241,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                         {statementTitle}
                       </div>
 
-                      {/* 4. Profit & Loss Table */}
                       <table className="w-full border-collapse text-[12px] print:text-[11.5px] text-agm-text">
                         <thead>
                           <tr className="bg-agm-box-bg font-bold text-agm-text border-b border-agm-box-border">
@@ -272,7 +256,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           </tr>
                         </thead>
                         <tbody>
-                          {/* --- INCOME CATEGORY --- */}
                           <tr className="bg-agm-green-soft text-agm-green-dark border-t border-b border-agm-box-border">
                             <td
                               colSpan={3}
@@ -283,7 +266,9 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                           </tr>
                           {incomeRows.length === 0 ? (
                             <tr className="border-b border-agm-box-border/50">
-                              <td className="py-1.5 px-4 text-agm-muted">Income</td>
+                              <td className="py-1.5 px-4 text-agm-muted">
+                                Income
+                              </td>
                               <td className="py-1.5 px-4 font-medium text-agm-text">
                                 Service Income
                               </td>
@@ -304,12 +289,13 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                                   {item.accountName}
                                 </td>
                                 <td className="py-1.5 px-4 text-right font-mono text-agm-text">
-                                  {item.amount > 0 ? formatNumber(item.amount) : "-"}
+                                  {item.amount > 0
+                                    ? formatNumber(item.amount)
+                                    : "-"}
                                 </td>
                               </tr>
                             ))
                           )}
-                          {/* Total Income Row */}
                           <tr className="bg-agm-green/10 text-agm-green-dark font-bold border-t border-b border-agm-green/20">
                             <td
                               colSpan={2}
@@ -322,7 +308,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             </td>
                           </tr>
 
-                          {/* --- DIRECT EXPENSE CATEGORY --- */}
                           <tr className="bg-agm-box-bg text-agm-navy border-t border-b border-agm-box-border">
                             <td
                               colSpan={3}
@@ -356,12 +341,13 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                                   {item.accountName}
                                 </td>
                                 <td className="py-1.5 px-4 text-right font-mono text-agm-text">
-                                  {item.amount > 0 ? formatNumber(item.amount) : "-"}
+                                  {item.amount > 0
+                                    ? formatNumber(item.amount)
+                                    : "-"}
                                 </td>
                               </tr>
                             ))
                           )}
-                          {/* Gross Profit Row */}
                           <tr className="bg-agm-navy/10 text-agm-navy font-bold border-t border-b border-agm-navy/20">
                             <td
                               colSpan={2}
@@ -374,7 +360,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             </td>
                           </tr>
 
-                          {/* --- OPERATING EXPENSES CATEGORY --- */}
                           <tr className="bg-agm-box-bg text-agm-navy border-t border-b border-agm-box-border">
                             <td
                               colSpan={3}
@@ -408,12 +393,13 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                                   {item.accountName}
                                 </td>
                                 <td className="py-1.5 px-4 text-right font-mono text-agm-text">
-                                  {item.amount > 0 ? formatNumber(item.amount) : "-"}
+                                  {item.amount > 0
+                                    ? formatNumber(item.amount)
+                                    : "-"}
                                 </td>
                               </tr>
                             ))
                           )}
-                          {/* Total Operating Expenses Row */}
                           <tr className="bg-agm-navy/10 text-agm-navy font-bold border-t border-b border-agm-navy/20">
                             <td
                               colSpan={2}
@@ -426,7 +412,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             </td>
                           </tr>
 
-                          {/* --- NET PROFIT / (LOSS) ROW --- */}
                           <tr className="bg-agm-sidebar text-white font-bold border-t-2 border-agm-green">
                             <td
                               colSpan={2}
@@ -436,7 +421,9 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                             </td>
                             <td
                               className={`py-2.5 px-4 text-right font-mono font-black text-[12.5px] ${
-                                netProfit < 0 ? "text-rose-400" : "text-emerald-300"
+                                netProfit < 0
+                                  ? "text-rose-400"
+                                  : "text-emerald-300"
                               }`}
                             >
                               {netProfit < 0
@@ -447,7 +434,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
                         </tbody>
                       </table>
 
-                      {/* Screen Footer */}
                       <div className="pt-6 print:hidden">
                         <QuotationFooter className="!mt-0 !px-0" />
                       </div>
@@ -457,7 +443,6 @@ export const ProfitLossReport: React.FC<ProfitLossReportProps> = ({
               </tbody>
             </table>
 
-            {/* Fixed Print Footer across every single printed page */}
             <div className="print-footer-bottom fixed-print-footer hidden print:block">
               <QuotationFooter />
             </div>
