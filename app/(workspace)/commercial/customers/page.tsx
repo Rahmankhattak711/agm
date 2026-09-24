@@ -83,7 +83,11 @@ export default function CustomersPage() {
       const bal = Number(c.currentBalance || 0);
       if (statusFilter === "OUTSTANDING") return bal > 0;
       if (statusFilter === "SETTLED") return bal <= 0;
-      if (statusFilter === "TRN") return Boolean(c.trn);
+      if (
+        (statusFilter as any) === "TRN" ||
+        (statusFilter as any) === "COMPANY"
+      )
+        return Boolean(c.companyName);
       return true;
     });
   }, [customers, statusFilter]);
@@ -102,8 +106,8 @@ export default function CustomersPage() {
     [customers],
   );
 
-  const trnCount = useMemo(
-    () => customers.filter((c) => c.trn).length,
+  const corporateCount = useMemo(
+    () => customers.filter((c) => c.companyName).length,
     [customers],
   );
 
@@ -137,7 +141,7 @@ export default function CustomersPage() {
         totalClients={customers.length}
         totalReceivables={totalReceivables}
         totalCreditLimits={totalCreditLimits}
-        trnCount={trnCount}
+        corporateCount={corporateCount}
       />
 
       <CustomerTable

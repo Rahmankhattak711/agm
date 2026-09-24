@@ -15,14 +15,14 @@ export interface CustomerKpisProps {
   totalClients: number;
   totalReceivables: number;
   totalCreditLimits: number;
-  trnCount: number;
+  corporateCount: number;
 }
 
 export function CustomerKpis({
   totalClients,
   totalReceivables,
   totalCreditLimits,
-  trnCount,
+  corporateCount,
 }: CustomerKpisProps) {
   return (
     <DashboardCardGrid cols={4}>
@@ -48,14 +48,9 @@ export function CustomerKpis({
       />
 
       <DashboardCard
-        title="Corporate TRN"
-        value={trnCount}
-        subtitle="VAT verified corporate entities"
-        badge={
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-            Tax Reg
-          </span>
-        }
+        title="Corporate Accounts"
+        value={corporateCount}
+        subtitle="Registered company entities"
         variant="default"
       />
     </DashboardCardGrid>

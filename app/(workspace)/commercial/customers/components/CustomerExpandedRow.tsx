@@ -61,14 +61,9 @@ export function CustomerExpandedRow({
                   ({customer.companyName})
                 </span>
               )}
-              {customer.trn ? (
-                <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-bold flex items-center gap-1">
-                  <ShieldCheckIcon size={12} className="text-emerald-700" />
-                  TRN: {customer.trn}
-                </span>
-              ) : (
-                <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                  No TRN Registered
+              {customer.phone && (
+                <span className="text-[11px] font-mono text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded font-medium">
+                  {customer.phone}
                 </span>
               )}
               <span
@@ -147,13 +142,13 @@ export function CustomerExpandedRow({
 
             <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-0.5 shadow-2xs">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                Contact Person &amp; Phone
+                Contact Phone &amp; Email
               </span>
               <span className="text-xs font-bold text-slate-900 block truncate">
-                {customer.contactPerson || "Primary Representative"}
+                {customer.phone || "No direct phone"}
               </span>
               <span className="text-[11px] font-mono text-slate-600 block truncate">
-                {customer.phone || customer.email || "No direct phone"}
+                {customer.email || "No email registered"}
               </span>
             </div>
           </div>
@@ -191,10 +186,10 @@ export function CustomerExpandedRow({
 
                 <div>
                   <span className="text-[10px] font-semibold text-slate-400 block">
-                    UAE VAT TRN (15 Digits)
+                    Contact Email
                   </span>
-                  <span className="font-mono font-bold text-emerald-800">
-                    {customer.trn || "Not Registered"}
+                  <span className="font-mono font-medium text-slate-800">
+                    {customer.email || "—"}
                   </span>
                 </div>
 

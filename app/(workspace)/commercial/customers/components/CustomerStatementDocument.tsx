@@ -153,15 +153,6 @@ export const CustomerStatementDocument: React.FC<
 
                     <div className="flex items-start gap-1">
                       <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
-                        UAE VAT TRN:
-                      </span>
-                      <span className="font-mono text-slate-800 font-bold">
-                        {customer.trn || "N/A"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-start gap-1">
-                      <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
                         Address:
                       </span>
                       <span className="text-slate-700">
@@ -169,13 +160,13 @@ export const CustomerStatementDocument: React.FC<
                       </span>
                     </div>
 
-                    {(customer.contactPerson || customer.phone) && (
+                    {(customer.phone || customer.email) && (
                       <div className="flex items-start gap-1">
                         <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
                           Contact:
                         </span>
                         <span className="text-slate-700">
-                          {[customer.contactPerson, customer.phone]
+                          {[customer.phone, customer.email]
                             .filter(Boolean)
                             .join(" • ")}
                         </span>

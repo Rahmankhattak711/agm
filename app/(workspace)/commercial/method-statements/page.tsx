@@ -15,15 +15,24 @@ import {
   DashboardCard,
   DashboardCardGrid,
 } from "@/components/ui";
-import { SearchIcon } from "@/components/icons";
-import { Trash2, Plus } from "lucide-react";
+import {
+  SearchIcon,
+  PlusIcon,
+  TrashIcon,
+  EditIcon,
+  FileTextIcon,
+  CalendarIcon,
+  FileCheckIcon,
+  ShieldCheckIcon,
+  UserIcon,
+} from "@/components/icons";
 import { SAMPLE_METHOD_STATEMENT } from "@/components/documents/method-statement-constants";
 
 export default function MethodStatementsPage() {
   const { data: recordsList = [], isLoading } = useMethodStatements();
   const deleteMutation = useDeleteMethodStatement();
 
-  const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("EDITOR");
+  const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("LIST");
   const [selectedRecord, setSelectedRecord] =
     useState<MethodStatementRecord | null>(null);
   const [search, setSearch] = useState("");
@@ -38,7 +47,8 @@ export default function MethodStatementsPage() {
         (item.customerName && item.customerName.toLowerCase().includes(q)) ||
         (item.projectName && item.projectName.toLowerCase().includes(q)) ||
         (item.workType && item.workType.toLowerCase().includes(q)) ||
-        (item.projectLocation && item.projectLocation.toLowerCase().includes(q));
+        (item.projectLocation &&
+          item.projectLocation.toLowerCase().includes(q));
       const matchesStatus =
         statusFilter === "ALL" || (item.status || "DRAFT") === statusFilter;
       return matchesSearch && matchesStatus;
@@ -85,20 +95,35 @@ export default function MethodStatementsPage() {
         setSelectedRecord(null);
       }
     } catch (err: any) {
-      alert("Error deleting method statement: " + (err.message || "Unknown error"));
+      alert(
+        "Error deleting method statement: " + (err.message || "Unknown error"),
+      );
     }
   };
 
-  const getStatusBadgeClass = (status?: string) => {
-    switch (status) {
-      case "COMPLETED":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "ACTIVE":
-        return "bg-blue-50 text-blue-700 border-blue-200";
-      case "DRAFT":
-      default:
-        return "bg-slate-100 text-slate-700 border-slate-200";
+  const getStatusBadge = (status?: string) => {
+    if (status === "COMPLETED") {
+      return (
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          COMPLETED
+        </span>
+      );
     }
+    if (status === "ACTIVE") {
+      return (
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          ACTIVE
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+        DRAFT
+      </span>
+    );
   };
 
   const columns: ColumnDef<MethodStatementRecord>[] = useMemo(
@@ -107,7 +132,7 @@ export default function MethodStatementsPage() {
         accessorKey: "refNumber",
         header: "Doc Number",
         cell: ({ row }) => (
-          <span className="font-mono font-bold text-xs text-slate-900">
+          <span className="font-mono font-bold text-xs text-slate-900 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 whitespace-nowrap inline-block">
             {row.original.refNumber}
           </span>
         ),
@@ -116,7 +141,8 @@ export default function MethodStatementsPage() {
         accessorKey: "customerName",
         header: "Customer",
         cell: ({ row }) => (
-          <span className="font-semibold text-slate-800 text-xs">
+          <span className="font-semibold text-slate-800 text-xs flex items-center gap-1.5">
+            <UserIcon size={12} className="text-slate-400 shrink-0" />
             {row.original.customerName || "—"}
           </span>
         ),
@@ -125,13 +151,14 @@ export default function MethodStatementsPage() {
         accessorKey: "projectName",
         header: "Project & Work Type",
         cell: ({ row }) => (
-          <div className="text-xs">
-            <div className="font-medium text-slate-800">
+          <div className="flex flex-col max-w-[260px]">
+            <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5 truncate">
+              <FileTextIcon size={12} className="text-agm-green shrink-0" />
               {row.original.projectName || "—"}
-            </div>
-            <div className="text-[11px] text-slate-400">
+            </span>
+            <span className="text-[11px] text-slate-500 truncate mt-0.5">
               {row.original.workType || "—"}
-            </div>
+            </span>
           </div>
         ),
       },
@@ -139,11 +166,14 @@ export default function MethodStatementsPage() {
         accessorKey: "date",
         header: "Date & Location",
         cell: ({ row }) => (
-          <div className="text-xs text-slate-600">
-            <div>{row.original.date || "—"}</div>
-            <div className="text-[11px] text-slate-400">
+          <div className="flex flex-col text-xs">
+            <span className="text-slate-700 font-medium flex items-center gap-1 whitespace-nowrap">
+              <CalendarIcon size={12} className="text-slate-400 shrink-0" />
+              {row.original.date || "—"}
+            </span>
+            <span className="text-[11px] text-slate-400 truncate mt-0.5">
               {row.original.projectLocation || "—"}
-            </div>
+            </span>
           </div>
         ),
       },
@@ -151,25 +181,16 @@ export default function MethodStatementsPage() {
         id: "itemsCount",
         header: "Scope Steps",
         cell: ({ row }) => (
-          <span className="text-xs text-slate-800 font-medium">
-            {row.original.items?.length || 0} steps
+          <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+            {row.original.items?.length || 0} step
+            {row.original.items?.length === 1 ? "" : "s"}
           </span>
         ),
       },
       {
         accessorKey: "status",
         header: "Status",
-        cell: ({ row }) => (
-          <span
-            className={`text-[10px] font-bold px-2 py-0.5 rounded border inline-block ${getStatusBadgeClass(
-              row.original.status,
-            )}`}
-          >
-            {row.original.status === "COMPLETED"
-              ? "Approved"
-              : row.original.status || "DRAFT"}
-          </span>
-        ),
+        cell: ({ row }) => getStatusBadge(row.original.status),
       },
       {
         id: "actions",
@@ -181,22 +202,23 @@ export default function MethodStatementsPage() {
           >
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={() => handleOpenInEditor(row.original)}
-              className="text-xs text-slate-700 hover:bg-slate-100 px-2.5 py-1"
+              className="text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-100 px-2.5 py-1 flex items-center gap-1 cursor-pointer"
             >
-              Edit
+              <EditIcon size={12} />
+              <span>Edit</span>
             </Button>
             <Button
               type="button"
               variant="danger"
               size="sm"
               onClick={(e) => handleDelete(row.original.id, e)}
-              className="text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 border-rose-200 px-2 py-1"
+              className="text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 border-rose-200 px-2 py-1 flex items-center gap-1 cursor-pointer"
               title="Delete"
             >
-              <Trash2 size={12} />
+              <TrashIcon size={12} />
             </Button>
           </div>
         ),
@@ -207,7 +229,6 @@ export default function MethodStatementsPage() {
 
   return (
     <div className="w-full space-y-6">
-      {/* Simplified Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-agm-box-border pb-4 print:hidden">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
@@ -218,29 +239,29 @@ export default function MethodStatementsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
             <button
               type="button"
+              onClick={() => setActiveView("LIST")}
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                activeView === "LIST"
+                  ? "bg-white text-agm-green shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Saved Statements ({recordsList.length})
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveView("EDITOR")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 activeView === "EDITOR"
-                  ? "bg-white text-agm-green shadow-xs"
+                  ? "bg-white text-agm-green shadow-xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Editor
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveView("LIST")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                activeView === "LIST"
-                  ? "bg-white text-agm-green shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Saved ({recordsList.length})
             </button>
           </div>
 
@@ -250,9 +271,9 @@ export default function MethodStatementsPage() {
               variant="primary"
               size="sm"
               onClick={handleCreateNew}
-              className="text-xs bg-agm-green hover:bg-agm-green-2 text-white flex items-center gap-1.5"
+              className="text-xs bg-agm-green hover:bg-agm-green-2 text-white flex items-center gap-1.5 shadow-xs cursor-pointer font-semibold"
             >
-              <Plus size={14} />
+              <PlusIcon size={14} />
               <span>New Statement</span>
             </Button>
           )}
@@ -261,39 +282,41 @@ export default function MethodStatementsPage() {
 
       {activeView === "LIST" ? (
         <div className="space-y-6">
-          {/* Simplified KPI Cards without icons */}
           <DashboardCardGrid cols={4}>
             <DashboardCard
               title="Total Statements"
               value={recordsList.length}
-              subtitle={`${recordsList.length} documents`}
+              subtitle={`${recordsList.length} procedures recorded`}
+              icon={<FileTextIcon size={20} className="text-slate-500" />}
             />
             <DashboardCard
               title="Approved"
               value={completedCount}
-              subtitle="Signed & ready"
+              subtitle="Ready for execution"
               variant="success"
+              icon={<FileCheckIcon size={20} className="text-emerald-600" />}
             />
             <DashboardCard
-              title="Active"
+              title="Active / Ongoing"
               value={activeCount}
-              subtitle="In-progress"
+              subtitle="Site work in progress"
               variant="default"
+              icon={<ShieldCheckIcon size={20} className="text-blue-600" />}
             />
             <DashboardCard
               title="Drafts"
               value={draftCount}
-              subtitle="In preparation"
+              subtitle="Under review"
               variant="default"
+              icon={<CalendarIcon size={20} className="text-amber-600" />}
             />
           </DashboardCardGrid>
 
-          {/* Search and Filters */}
           <div className="bg-white p-3.5 rounded-xl border border-agm-box-border shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
             <div className="relative w-full md:w-96">
               <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <Input
-                placeholder="Search by ref number, customer, project, or work type..."
+                placeholder="Search by doc number, customer, project, or location..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 text-xs"
@@ -301,21 +324,30 @@ export default function MethodStatementsPage() {
             </div>
 
             <div className="flex items-center gap-2 w-full md:w-auto">
-              <span className="text-xs text-slate-500 font-medium">Status:</span>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="text-xs py-1.5 px-3 bg-slate-50 border border-agm-box-border rounded-lg font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-agm-green"
-              >
-                <option value="ALL">All Statuses ({recordsList.length})</option>
-                <option value="COMPLETED">Approved ({completedCount})</option>
-                <option value="ACTIVE">Active ({activeCount})</option>
-                <option value="DRAFT">Draft ({draftCount})</option>
-              </select>
+              <span className="text-xs text-slate-500 font-medium">
+                Status:
+              </span>
+              <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                {(["ALL", "COMPLETED", "ACTIVE", "DRAFT"] as const).map(
+                  (st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => setStatusFilter(st)}
+                      className={`px-2.5 py-1 text-xs rounded font-semibold transition-all cursor-pointer ${
+                        statusFilter === st
+                          ? "bg-white text-agm-green shadow-xs border border-slate-200"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      {st === "ALL" ? `All (${recordsList.length})` : st}
+                    </button>
+                  ),
+                )}
+              </div>
             </div>
           </div>
 
-          {/* TanStack DataTable */}
           <DataTable
             columns={columns}
             data={filteredRecords}
@@ -334,7 +366,7 @@ export default function MethodStatementsPage() {
           <MethodStatementTemplate
             key={selectedRecord ? selectedRecord.id : "new"}
             initialData={selectedRecord || SAMPLE_METHOD_STATEMENT}
-            onSave={(saved) => setSelectedRecord(saved)}
+            onSave={(saved) => setSelectedRecord(saved as any)}
           />
         </div>
       )}

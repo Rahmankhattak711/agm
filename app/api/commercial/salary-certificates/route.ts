@@ -42,7 +42,10 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/commercial/salary-certificates error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch salary certificates from database", details: error.message },
+      {
+        error: "Failed to fetch salary certificates from database",
+        details: error.message,
+      },
       { status: 500 },
     );
   }
@@ -75,7 +78,8 @@ export async function POST(request: Request) {
       monthlySalaryNum: body.monthlySalaryNum || 0,
       monthlySalaryText: body.monthlySalaryText || "",
       currency: body.currency || "AED",
-      signatoryCompany: body.signatoryCompany || "AGM Fitout Technical Services LLC",
+      signatoryCompany:
+        body.signatoryCompany || "AGM Fitout Technical Services LLC",
       signatoryTitle: body.signatoryTitle || "Authorized Signatory,",
       signatoryName: body.signatoryName || "Zeeshan Ahmad",
       signatoryDesignation: body.signatoryDesignation || "Accountant",
@@ -85,7 +89,8 @@ export async function POST(request: Request) {
       landline: body.landline || "New 1143 Business Center LLC",
       telephone: body.telephone || "+971 4 280 4184",
       vatNumber: body.vatNumber || "104094432200003",
-      footerCompanyName: body.footerCompanyName || "AGM Fitout Technical Services",
+      footerCompanyName:
+        body.footerCompanyName || "AGM Fitout Technical Services",
       registeredAddress: body.registeredAddress || "",
       notes: body.notes || null,
       createdById: authUser?.id || null,
@@ -129,7 +134,10 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/commercial/salary-certificates error:", error);
     return NextResponse.json(
-      { error: "Failed to save salary certificate to database", details: error.message },
+      {
+        error: "Failed to save salary certificate to database",
+        details: error.message,
+      },
       { status: 500 },
     );
   }

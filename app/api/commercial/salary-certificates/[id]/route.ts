@@ -33,7 +33,10 @@ export async function GET(
   } catch (error: any) {
     console.error("GET /api/commercial/salary-certificates/[id] error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch salary certificate from database", details: error.message },
+      {
+        error: "Failed to fetch salary certificate from database",
+        details: error.message,
+      },
       { status: 500 },
     );
   }
@@ -52,9 +55,15 @@ export async function DELETE(
 
     return NextResponse.json({ ok: true });
   } catch (error: any) {
-    console.error("DELETE /api/commercial/salary-certificates/[id] error:", error);
+    console.error(
+      "DELETE /api/commercial/salary-certificates/[id] error:",
+      error,
+    );
     return NextResponse.json(
-      { error: "Failed to delete salary certificate from database", details: error.message },
+      {
+        error: "Failed to delete salary certificate from database",
+        details: error.message,
+      },
       { status: 500 },
     );
   }

@@ -3,14 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
 import { Modal, Button, FormInput, FormSubmit } from "@/components/ui";
-import { useCreateCustomer } from "@/lib/hooks/api-hooks";
+import { useCreateCustomer, Customer } from "@/lib/hooks/api-hooks";
 
 const EMPTY_FORM = {
   customerCode: "",
   name: "",
   companyName: "",
-  trn: "",
-  contactPerson: "",
   phone: "",
   email: "",
   address: "",
@@ -20,7 +18,7 @@ const EMPTY_FORM = {
 export interface CustomerCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (customer?: Customer) => void;
 }
 
 export function CustomerCreateModal({
@@ -36,12 +34,10 @@ export function CustomerCreateModal({
     onSubmit: async ({ value }) => {
       setFormError("");
       try {
-        await createCustomerMutation.mutateAsync({
+        const res = await createCustomerMutation.mutateAsync({
           customerCode: value.customerCode.trim() || undefined,
           name: value.name.trim(),
           companyName: value.companyName.trim() || undefined,
-          trn: value.trn.trim() || undefined,
-          contactPerson: value.contactPerson.trim() || undefined,
           phone: value.phone.trim() || undefined,
           email: value.email.trim() || undefined,
           address: value.address.trim() || undefined,
@@ -49,7 +45,7 @@ export function CustomerCreateModal({
         });
         form.reset();
         onClose();
-        if (onSuccess) onSuccess();
+        if (onSuccess) onSuccess(res);
       } catch (err: any) {
         setFormError(err.message || "Failed to save customer record");
       }
@@ -68,7 +64,7 @@ export function CustomerCreateModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Add New Customer Profile"
-      maxWidth="lg"
+      maxWidth="2xl"
     >
       <form
         onSubmit={(e) => {
@@ -114,36 +110,13 @@ export function CustomerCreateModal({
           </form.Field>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <form.Field name="companyName">
             {(field) => (
               <FormInput
                 field={field}
                 label="Company / Organization Name"
                 placeholder="Company LLC / Corporation"
-              />
-            )}
-          </form.Field>
-
-          <form.Field name="trn">
-            {(field) => (
-              <FormInput
-                field={field}
-                label="UAE VAT TRN (15 Digits)"
-                placeholder="100XXXXXXXXX003"
-                className="font-mono"
-              />
-            )}
-          </form.Field>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <form.Field name="contactPerson">
-            {(field) => (
-              <FormInput
-                field={field}
-                label="Contact Person"
-                placeholder="Managing Director / PM"
               />
             )}
           </form.Field>
