@@ -2,7 +2,7 @@ import React from "react";
 
 export const QuotationSignatures: React.FC = () => {
   return (
-    <div className="grid grid-cols-2 gap-4 px-10 print:px-8 mt-6 print:mt-3 mb-10 print:mb-4 text-[11.5px] print:text-[12px] print-avoid-break">
+    <div className="grid grid-cols-2 gap-4 px-10 print:px-0 mt-6 print:mt-3 mb-10 print:mb-4 text-[11.5px] print:text-[12px] print-avoid-break">
       <div className="border border-agm-box-border bg-agm-box-bg p-4 print:p-2.5 rounded-xl">
         <div className="font-bold mb-2 print:mb-1 text-slate-900 uppercase text-[11px] print:text-[12px] tracking-wider text-agm-green">
           CLIENT ACCEPTANCE

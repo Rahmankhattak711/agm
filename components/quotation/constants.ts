@@ -2,10 +2,11 @@ export interface QuotationMeta {
   quotationNo: string;
   date: string;
   validUntil: string;
+  customerId?: string;
   customer: string;
-  attention: string;
+  attention?: string;
   address: string;
-  trn: string;
+  trn?: string;
   mobile: string;
   email?: string;
   project: string;

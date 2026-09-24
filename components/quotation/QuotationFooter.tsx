@@ -65,13 +65,31 @@ export const QuotationFooter: React.FC<QuotationFooterProps> = ({
             d="M 298,76 A 22,22 0 1,0 298,120 A 22,22 0 1,0 298,76 Z M 306,90 H 290 c -1.1,0 -1.99,0.9 -1.99,2 L 288,104 c 0,1.1 0.9,2 2,2 h 16 c 1.1,0 2,-0.9 2,-2 V 92 c 0,-1.1 -0.9,-2 -2,-2 z m 0,4 l -8,5 l -8,-5 v -2 l 8,5 l 8,-5 z"
           />
 
-          <text x="332" y="93" fontSize="13.5" fill="#000000" fontWeight="700">
-            info@agmfitout.ae
-          </text>
+          <a href="mailto:accountant@agmfitout.com">
+            <text
+              x="330"
+              y="93"
+              fontSize="12"
+              fill="#000000"
+              fontWeight="700"
+              className="hover:underline cursor-pointer"
+            >
+              accountant@agmfitout.com
+            </text>
+          </a>
 
-          <text x="332" y="112" fontSize="13.5" fill="#000000" fontWeight="700">
-            projects@agmfitout.ae
-          </text>
+          <a href="mailto:assem@agmfitout.com">
+            <text
+              x="330"
+              y="112"
+              fontSize="12"
+              fill="#000000"
+              fontWeight="700"
+              className="hover:underline cursor-pointer"
+            >
+              assem@agmfitout.com
+            </text>
+          </a>
         </g>
 
         <line
@@ -90,9 +108,22 @@ export const QuotationFooter: React.FC<QuotationFooterProps> = ({
             d="M 552,76 A 22,22 0 1,0 552,120 A 22,22 0 1,0 552,76 Z M 552,88 c -5.52,0 -10,4.48 -10,10 s 4.48,10 10,10 s 10,-4.48 10,-10 s -4.48,-10 -10,-10 z m -1,17.93 c -3.95,-0.49 -7,-3.85 -7,-7.93 c 0,-0.62 0.08,-1.21 0.21,-1.79 L 549,101 v 1 c 0,1.1 0.9,2 2,2 v 1.93 z m 6.9,-2.54 c -0.26,-0.81 -1,-1.39 -1.9,-1.39 h -1 v -3 c 0,-0.55 -0.45,-1 -1,-1 h -2 v -2 h 2 c 0.55,0 1,-0.45 1,-1 v -2 h 2 c 1.1,0 2,-0.9 2,-2 v -0.41 c 2.93,1.19 5,4.06 5,7.41 c 0,2.08 -0.8,3.97 -2.1,5.39 z"
           />
 
-          <text x="586" y="103" fontSize="14" fill="#000000" fontWeight="700">
-            www.agmfitout.ae
-          </text>
+          <a
+            href="https://www.agmfitout.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <text
+              x="586"
+              y="103"
+              fontSize="13.5"
+              fill="#000000"
+              fontWeight="700"
+              className="hover:underline cursor-pointer"
+            >
+              www.agmfitout.com
+            </text>
+          </a>
         </g>
 
         <line

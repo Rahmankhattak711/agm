@@ -25,7 +25,7 @@ export const QuotationTerms: React.FC<QuotationTermsProps> = ({
   const [showAllTerms, setShowAllTerms] = useState<boolean>(true);
 
   return (
-    <div className="px-10 mt-4 print:px-8 print:mt-3.5">
+    <div className="px-10 mt-4 print:px-0 print:mt-3.5">
       <div className="border border-agm-box-border bg-agm-box-bg p-4 print:p-0 rounded-xl print:rounded-none print:border-none print:bg-transparent">
         <div className="flex items-center justify-between mb-2 print:mb-1.5">
           <div className="font-bold text-red-600 uppercase text-[11.5px] print:text-[12px] tracking-wider text-agm-green flex items-center gap-1.5">

@@ -9,3 +9,4 @@ export * from "./QuotationTotalsTable";
 export * from "./QuotationTerms";
 export * from "./QuotationSignatures";
 export * from "./QuotationSavedModal";
+export * from "./SalesInvoiceTerms";

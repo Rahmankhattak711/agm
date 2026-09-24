@@ -24,6 +24,16 @@ export async function GET(
     const quotation = await prisma.quotation.findUnique({
       where: { id },
       include: {
+        customerRel: {
+          select: {
+            id: true,
+            customerCode: true,
+            name: true,
+            companyName: true,
+            phone: true,
+            email: true,
+          },
+        },
         items: {
           orderBy: { itemOrder: "asc" },
           include: {
@@ -82,6 +92,7 @@ export async function PUT(
       quotationNo,
       date,
       validUntil,
+      customerId,
       customer,
       attention,
       address,
@@ -130,6 +141,7 @@ export async function PUT(
             quotationNo: quotationNo || undefined,
             date: date || "",
             validUntil: validUntil || "",
+            customerId: customerId || null,
             customer: customer || "",
             attention: attention || "",
             address: address || "",
@@ -185,6 +197,16 @@ export async function PUT(
         return tx.quotation.findUnique({
           where: { id },
           include: {
+            customerRel: {
+              select: {
+                id: true,
+                customerCode: true,
+                name: true,
+                companyName: true,
+                phone: true,
+                email: true,
+              },
+            },
             items: {
               orderBy: { itemOrder: "asc" },
               include: { product: true },

@@ -1,16 +1,18 @@
-import React from "react";
 import Image from "next/image";
+import React from "react";
 
 interface QuotationHeaderProps {
   className?: string;
+  fullWidthPrint?: boolean;
 }
 
 export const QuotationHeader: React.FC<QuotationHeaderProps> = ({
   className = "",
+  fullWidthPrint = false,
 }) => {
   return (
     <div
-      className={`flex items-start justify-between px-10 pt-8 pb-6 print:px-8 print:pt-3 print:pb-2 border-b border-slate-100 bg-white ${className}`}
+      className={`flex items-start justify-between px-10 pt-8 pb-6 print:px-0 print:pt-3 print:pb-2 border-b border-slate-100 bg-white ${className}`}
     >
       <div className="flex flex-col items-start">
         <Image

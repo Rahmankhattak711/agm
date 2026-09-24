@@ -37,7 +37,7 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
   };
 
   return (
-    <div className="px-10 print:px-8 overflow-hidden">
+    <div className="px-10 print:px-0 overflow-hidden">
       <div className="flex items-stretch justify-between overflow-hidden gap-4 mt-3.5 print:mt-3.5 print-avoid-break">
         <div className="flex-1 border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl text-[11.5px] print:text-[12px] flex flex-col justify-between shadow-2xs">
           <div>
