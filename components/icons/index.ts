@@ -84,3 +84,7 @@ export * from "./NetworkIcon";
 export * from "./SaveIcon";
 export * from "./FolderOpenIcon";
 export * from "./CustomLetterExtraIcons";
+export * from "./DoorIcon";
+export * from "./PaintbrushIcon";
+export * from "./ZapIcon";
+export * from "./WrenchIcon";

@@ -3,16 +3,19 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui";
 import {
   ArrowDownLeftIcon,
   ArrowUpRightIcon,
   BookOpenIcon,
   BoxesIcon,
+  BuildingIcon,
   ChevronDownIcon,
   CreditCardIcon,
   FileCheckIcon,
   FileTextIcon,
   LayersIcon,
+  LineChartIcon,
   PackageIcon,
   PlusIcon,
   ReceiptIcon,
@@ -26,7 +29,12 @@ import {
 } from "@/components/icons";
 
 export type ActionCategory =
-  "SALES" | "PURCHASES" | "COMPANY_DOCS" | "ACCOUNTING" | "MASTER_DATA";
+  | "SALES"
+  | "PROJECTS"
+  | "PURCHASES"
+  | "COMPANY_DOCS"
+  | "ACCOUNTING"
+  | "MASTER_DATA";
 
 export interface ActionItem {
   id: string;
@@ -56,6 +64,13 @@ export const CATEGORY_META: Record<
     dot: "bg-agm-green",
     iconBg: "bg-agm-green-soft text-agm-green border-agm-box-border",
     hover: "hover:bg-agm-green-soft/40 hover:border-agm-green/40",
+  },
+  PROJECTS: {
+    title: "Projects & Operations",
+    accent: "text-emerald-800",
+    dot: "bg-emerald-600",
+    iconBg: "bg-emerald-50 text-emerald-800 border-emerald-200/80",
+    hover: "hover:bg-emerald-50/50 hover:border-emerald-300",
   },
   PURCHASES: {
     title: "Procurement & Payables",
@@ -90,6 +105,7 @@ export const CATEGORY_META: Record<
 export const CATEGORY_TABS: { key: "ALL" | ActionCategory; label: string }[] = [
   { key: "ALL", label: "All Actions" },
   { key: "SALES", label: "Sales & Revenue" },
+  { key: "PROJECTS", label: "Projects & Ops" },
   { key: "PURCHASES", label: "Purchases & Bills" },
   { key: "COMPANY_DOCS", label: "Company Documents" },
   { key: "ACCOUNTING", label: "Accounting" },
@@ -97,6 +113,28 @@ export const CATEGORY_TABS: { key: "ALL" | ActionCategory; label: string }[] = [
 ];
 
 export const ACTION_ITEMS: ActionItem[] = [
+  {
+    id: "create-project",
+    label: "New Project",
+    sublabel: "Start project from quotation or contract",
+    href: "/operations/projects",
+    icon: <BuildingIcon size={16} className="text-emerald-700" />,
+    category: "PROJECTS",
+    badge: "Popular",
+    badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200/70",
+    isPopular: true,
+  },
+  {
+    id: "create-project-cost",
+    label: "Record Project Cost",
+    sublabel: "Log site expense, material or labor",
+    href: "/operations/cost-tracking",
+    icon: <LineChartIcon size={16} className="text-emerald-700" />,
+    category: "PROJECTS",
+    badge: "Cost",
+    badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200/70",
+    isPopular: true,
+  },
   {
     id: "create-quotation",
     label: "Quotation",
@@ -295,26 +333,26 @@ export const GlobalCreateTrigger: React.FC<GlobalCreateTriggerProps> = ({
   isOpen,
   onToggle,
 }) => (
-  <button
+  <Button
     type="button"
     id="global-create-button"
     aria-expanded={isOpen}
     aria-haspopup="true"
     onClick={onToggle}
-    className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-agm-green hover:bg-agm-green-2 text-white text-xs font-bold transition-all shadow-xs active:scale-[0.98] cursor-pointer min-h-[38px] border border-agm-green-2/40"
+    variant="primary"
+    size="md"
+    className="min-h-[38px] shadow-xs cursor-pointer select-none"
     title="Create new document or record (Ctrl+K)"
   >
-    <span className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center">
-      <PlusIcon size={12} strokeWidth={2.5} />
-    </span>
+    <PlusIcon size={13} strokeWidth={2.5} />
     <span className="tracking-wide">Create</span>
     <ChevronDownIcon
-      size={13}
+      size={12}
       className={`transition-transform duration-200 opacity-80 ${
         isOpen ? "rotate-180" : ""
       }`}
     />
-  </button>
+  </Button>
 );
 
 interface GlobalCreateHeaderProps {

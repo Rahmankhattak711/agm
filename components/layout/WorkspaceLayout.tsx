@@ -7,6 +7,10 @@ import {
   LogoutIcon,
   MenuIcon,
   SearchIcon,
+  BuildingIcon,
+  ShieldCheckIcon,
+  CheckCircle2Icon,
+  MailIcon,
 } from "@/components/icons";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui";
@@ -151,60 +155,24 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
             </nav>
           </div>
 
-          <form
-            onSubmit={handleSearchSubmit}
-            className="flex-1 max-w-xl mx-4 hidden md:block"
-          >
-            <div className="relative flex items-center">
-              <SearchIcon
-                size={14}
-                className="absolute left-3 text-agm-subtle pointer-events-none"
-              />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search anything... (e.g. invoice, customer, account)"
-                className="w-full pl-9 pr-4 py-1.5 rounded-lg border border-agm-box-border bg-agm-box-bg/50 hover:bg-white focus:bg-white text-xs text-agm-text placeholder:text-agm-subtle focus:outline-none focus:border-agm-green focus:ring-2 focus:ring-agm-green/10 transition-all shadow-2xs"
-              />
-            </div>
-          </form>
-
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             <GlobalCreateMenu />
-
-            <button
-              type="button"
-              title="Help & Support"
-              onClick={() => router.push("/finance/reports")}
-              className="w-8 h-8 rounded-full border border-agm-box-border flex items-center justify-center text-agm-muted hover:text-agm-text hover:bg-agm-box-bg transition cursor-pointer"
-            >
-              <svg
-                className="w-4 h-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
-            </button>
 
             <div className="relative" ref={userMenuRef}>
               <button
                 type="button"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center gap-2.5 pl-1.5 py-1 rounded-xl hover:bg-agm-box-bg transition cursor-pointer text-left"
+                className="flex items-center gap-2.5 pl-1.5 pr-2 py-1 rounded-xl hover:bg-agm-box-bg border border-transparent hover:border-agm-box-border transition cursor-pointer text-left"
+                aria-expanded={userMenuOpen}
               >
-                <div className="w-8 h-8 rounded-full bg-agm-navy text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                  {userInitials}
+                <div className="relative">
+                  <div className="w-8 h-8 rounded-full bg-agm-navy text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                    {userInitials}
+                  </div>
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
                 </div>
                 <div className="hidden sm:flex flex-col">
-                  <span className="text-xs font-bold text-agm-text leading-tight">
+                  <span className="text-xs font-bold text-agm-text leading-tight truncate max-w-[140px]">
                     {user?.fullName || "Rahman Khattak"}
                   </span>
                   <span className="text-[11px] text-agm-muted font-normal">
@@ -220,26 +188,80 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white border border-agm-box-border shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="px-3.5 py-2.5 border-b border-agm-box-border/60">
-                    <p className="text-xs font-bold text-agm-text truncate">
-                      {user?.fullName || "Rahman Khattak"}
-                    </p>
-                    <p className="text-[11px] text-agm-muted truncate">
-                      {user?.email || "admin@agm.ae"}
-                    </p>
+                <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-white border border-agm-box-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="p-4 bg-gradient-to-b from-slate-50/90 to-white border-b border-agm-box-border/60">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div className="w-11 h-11 rounded-2xl bg-agm-navy text-white font-black text-sm flex items-center justify-center shadow-xs">
+                          {userInitials}
+                        </div>
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-900 truncate">
+                          {user?.fullName || "Rahman Khattak"}
+                        </p>
+                        <p className="text-[11px] text-slate-500 truncate flex items-center gap-1 mt-0.5">
+                          <MailIcon
+                            size={11}
+                            className="shrink-0 text-slate-400"
+                          />
+                          <span className="truncate">
+                            {user?.email || "rahmankhattak796@gmail.com"}
+                          </span>
+                        </p>
+                        <div className="mt-1.5 flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-agm-green border border-emerald-200/80">
+                            <ShieldCheckIcon
+                              size={11}
+                              className="text-agm-green shrink-0"
+                            />
+                            <span>{roleDisplay}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      logout();
-                    }}
-                    className="w-full flex items-center gap-2 px-3.5 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 transition text-left cursor-pointer"
-                  >
-                    <LogoutIcon className="w-3.5 h-3.5" />
-                    <span>Sign out</span>
-                  </button>
+
+                  <div className="p-3 border-b border-agm-box-border/50 bg-slate-50/50 space-y-2 text-[11px]">
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span className="flex items-center gap-1.5 text-slate-500">
+                        <BuildingIcon size={12} className="text-slate-400" />{" "}
+                        Company
+                      </span>
+                      <span className="font-semibold text-slate-800">
+                        AGM Fitout LLC
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span className="flex items-center gap-1.5 text-slate-500">
+                        <CheckCircle2Icon
+                          size={12}
+                          className="text-emerald-500"
+                        />{" "}
+                        Status
+                      </span>
+                      <span className="font-semibold text-emerald-700 bg-emerald-100/60 px-1.5 py-0.5 rounded text-[10px]">
+                        Active Session
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 bg-slate-50/80 border-t border-agm-box-border/60">
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="md"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        logout();
+                      }}
+                      className="w-full justify-center"
+                      icon={<LogoutIcon className="w-3.5 h-3.5" />}
+                    >
+                      Sign out
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BuildingIcon,
   EyeIcon,
   FileSpreadsheetIcon,
   FileTextIcon,
@@ -28,6 +29,7 @@ import {
 import {
   useConvertQuotationToSalesInvoice,
   useConvertQuotationToSalesOrder,
+  useCreateProject,
   useProducts,
   useQuotations,
 } from "@/lib/hooks/api-hooks";
@@ -38,6 +40,7 @@ export default function CommercialQuotationsPage() {
   const { data: quotationsList = [], isLoading, error } = useQuotations();
   const convertToOrderMutation = useConvertQuotationToSalesOrder();
   const convertToInvoiceMutation = useConvertQuotationToSalesInvoice();
+  const createProjectMutation = useCreateProject();
 
   const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("LIST");
   const [selectedQuotation, setSelectedQuotation] = useState<any | null>(null);
@@ -156,6 +159,32 @@ export default function CommercialQuotationsPage() {
       }
     },
     [convertToInvoiceMutation],
+  );
+
+  const handleConvertToProject = useCallback(
+    async (q: any) => {
+      try {
+        setConvertingId(q.id);
+        await createProjectMutation.mutateAsync({
+          quotationId: q.id,
+          name: q.project
+            ? `${q.project} (${q.quotationNo})`
+            : `Project ${q.quotationNo}`,
+          contractValue: Number(q.totalAmount || 0),
+          budget: Math.round(Number(q.totalAmount || 0) * 0.75),
+          customerId: q.customerId || undefined,
+          location: q.location || undefined,
+          status: "PLANNING",
+          priority: "MEDIUM",
+        });
+        window.location.href = "/operations/projects";
+      } catch (err: any) {
+        alert(`Error initiating project from quotation: ${err.message}`);
+      } finally {
+        setConvertingId(null);
+      }
+    },
+    [createProjectMutation],
   );
 
   const filteredQuotations = useMemo(() => {
@@ -452,6 +481,26 @@ export default function CommercialQuotationsPage() {
                               >
                                 <EyeIcon size={13} />
                               </Button>
+                              {q.status === "ACCEPTED" && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleConvertToProject(q)}
+                                  disabled={convertingId === q.id}
+                                  icon={
+                                    <BuildingIcon
+                                      size={12}
+                                      className="text-teal-700"
+                                    />
+                                  }
+                                  className="text-[10px] font-bold text-teal-800 hover:bg-teal-50 border-teal-300 bg-teal-50/50 cursor-pointer"
+                                  title="Initiate Project & Cost Tracking"
+                                >
+                                  {convertingId === q.id
+                                    ? "Starting..."
+                                    : "Start Project"}
+                                </Button>
+                              )}
                               <Button
                                 variant="outline"
                                 size="sm"
