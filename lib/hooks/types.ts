@@ -723,3 +723,124 @@ export interface VatSummaryReport {
 }
 
 export type User = UserItem;
+
+export type ProjectStatus =
+  "PLANNING" | "IN_PROGRESS" | "ON_HOLD" | "COMPLETED" | "CANCELLED";
+
+export type ProjectPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+
+export type ProjectCostType =
+  | "MATERIAL"
+  | "LABOR"
+  | "EQUIPMENT"
+  | "SUBCONTRACTOR"
+  | "PERMITS"
+  | "TRANSPORT"
+  | "OVERHEAD"
+  | "OTHER";
+
+export type MilestoneStatus =
+  "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED" | "DELAYED";
+
+export interface ProjectCost {
+  id: string;
+  projectId: string;
+  costType: ProjectCostType;
+  category?: string | null;
+  description: string;
+  quantity?: number | string | null;
+  unitRate?: number | string | null;
+  amount: number | string;
+  date: string;
+  reference?: string | null;
+  notes?: string | null;
+  recordedById?: string | null;
+  recordedBy?: {
+    id: string;
+    fullName: string;
+    email: string;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectMilestone {
+  id: string;
+  projectId: string;
+  title: string;
+  description?: string | null;
+  order: number;
+  status: MilestoneStatus;
+  progressPct: number;
+  dueDate?: string | null;
+  completionDate?: string | null;
+  billedAmount?: number | string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Project {
+  id: string;
+  projectCode: string;
+  name: string;
+  description?: string | null;
+  status: ProjectStatus;
+  priority: ProjectPriority;
+
+  location?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  deadline?: string | null;
+
+  contractValue: number | string;
+  budget: number | string;
+  estimatedCost: number | string;
+  actualCost: number | string;
+  materialCost: number | string;
+  laborCost: number | string;
+  otherExpenses: number | string;
+  progressPct: number;
+
+  quotationId?: string | null;
+  quotation?: {
+    id: string;
+    quotationNo: string;
+    customer: string;
+    totalAmount: number | string;
+    status: string;
+  } | null;
+
+  customerId?: string | null;
+  customer?: {
+    id: string;
+    customerCode: string;
+    name: string;
+    companyName?: string | null;
+    phone?: string | null;
+    email?: string | null;
+  } | null;
+
+  managerId?: string | null;
+  manager?: {
+    id: string;
+    fullName: string;
+    email: string;
+  } | null;
+
+  createdById?: string | null;
+  createdBy?: {
+    id: string;
+    fullName: string;
+  } | null;
+
+  costs?: ProjectCost[];
+  milestones?: ProjectMilestone[];
+
+  _count?: {
+    costs: number;
+    milestones: number;
+  };
+
+  createdAt: string;
+  updatedAt: string;
+}

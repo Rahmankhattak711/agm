@@ -6,3 +6,4 @@ export * from "./inventory-hooks";
 export * from "./commercial-hooks";
 export * from "./documents-hooks";
 export * from "./admin-hooks";
+export * from "./projects-hooks";
