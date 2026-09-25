@@ -61,6 +61,8 @@ export const SECTION_PATHS: Record<string, string> = {
   "report-management": "/reports/management",
 
   "operations-dashboard": "/operations/dashboard",
+  projects: "/operations/projects",
+  "operations-projects": "/operations/projects",
   employees: "/operations/employees",
   attendance: "/operations/attendance",
   leaves: "/operations/leaves",
@@ -212,6 +214,14 @@ export const PAGE_META: Record<string, PageMeta> = {
   "/operations/dashboard": {
     eyebrow: "Operations",
     title: "Operations Dashboard",
+  },
+  "/operations/projects": {
+    eyebrow: "Projects",
+    title: "Projects & Cost Tracking",
+  },
+  "/projects": {
+    eyebrow: "Projects",
+    title: "Projects & Cost Tracking",
   },
   "/operations/employees": {
     eyebrow: "HR & Operations",
