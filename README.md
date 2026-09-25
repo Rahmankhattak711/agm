@@ -5,7 +5,7 @@
 <h1 align="center">AGM Aesthetic House ERP & Financial Management System</h1>
 
 <p align="center">
-  <strong>Enterprise-grade ERP, Double-Entry Accounting, Commercial Vouchers Engine, Inventory & Operations Platform</strong><br>
+  <strong>Enterprise-grade ERP, Double-Entry Accounting, Commercial Vouchers Engine, Engineering & Statutory Documents, Project Cost Tracking, Inventory & Operations Platform</strong><br>
   Custom engineered for <em>AGM Aesthetic House Fitout Technical Services L.L.C</em> (Dubai, UAE)
 </p>
 
@@ -24,12 +24,14 @@
 ## 📋 Table of Contents
 
 - [Key Modules & Capabilities](#-key-modules--capabilities)
-  - [1. Commercial Vouchers Engine (`/commercial`)](#1--commercial-vouchers-engine-commercial)
-  - [2. Financial Accounting & General Ledger (`/finance`)](#2--financial-accounting--general-ledger-finance)
-  - [3. Financial Reports & UAE Statutory Compliance (`/finance/reports` & `/reports`)](#3--financial-reports--uae-statutory-compliance-financereports--reports)
-  - [4. Inventory & Supply Chain Management (`/inventory`)](#4--inventory--supply-chain-management-inventory)
-  - [5. Human Capital & Workforce Operations (`/operations`)](#5--human-capital--workforce-operations-operations)
-  - [6. Role-Based Access Control & Security (`/administration`)](#6--role-based-access-control--security-administration)
+  - [1. Commercial Vouchers & Procurement Engine (`/commercial`)](#1--commercial-vouchers--procurement-engine-commercial)
+  - [2. Engineering, Safety & Corporate Documents (`/commercial/*`)](#2--engineering-safety--corporate-documents-commercial)
+  - [3. Financial Accounting & General Ledger (`/finance`)](#3--financial-accounting--general-ledger-finance)
+  - [4. Financial Reports & UAE Statutory Compliance (`/finance/reports` & `/reports`)](#4--financial-reports--uae-statutory-compliance-financereports--reports)
+  - [5. Project Management & Real-Time Cost Tracking (`/operations/projects` & `/operations/cost-tracking`)](#5--project-management--real-time-cost-tracking-operationsprojects--operationscost-tracking)
+  - [6. Inventory & Supply Chain Management (`/inventory`)](#6--inventory--supply-chain-management-inventory)
+  - [7. Human Capital & Workforce Operations (`/operations`)](#7--human-capital--workforce-operations-operations)
+  - [8. Role-Based Access Control & Security (`/administration`)](#8--role-based-access-control--security-administration)
 - [Double-Entry Accounting Reference](#-double-entry-accounting-reference)
 - [Interactive API Documentation (Swagger)](#-interactive-api-documentation-swagger)
 - [Project Architecture & Directory Structure](#-project-architecture--directory-structure)
@@ -46,7 +48,7 @@
 
 ## 🌟 Key Modules & Capabilities
 
-### 1. 📑 Commercial Vouchers Engine (`/commercial`)
+### 1. 📑 Commercial Vouchers & Procurement Engine (`/commercial`)
 
 Transforms commercial transactions into an end-to-end connected pipeline spanning Sales, Purchasing, Physical Inventory Movements, and Automated Double-Entry General Ledger (GL) posting.
 
@@ -54,9 +56,9 @@ Transforms commercial transactions into an end-to-end connected pipeline spannin
 
 $$\text{Quotation} \longrightarrow \text{Sales Order} \longrightarrow \text{Sales Invoice} \longrightarrow \text{Customer Payment} \longrightarrow \text{Credit Note}$$
 
-- **Commercial Quotations (`/commercial/quotations`)**:
-  - Multi-line Bill of Quantities (BOQ) scope builder with live product catalog search.
-  - Dynamic 5% UAE VAT, line-item discounts, payment milestones, and official A4 PDF print layouts.
+- **Commercial Quotations (`/commercial/quotations` & `/finance/quotations`)**:
+  - Multi-line Bill of Quantities (BOQ) scope builder with live product catalog search and unit pricing.
+  - Dynamic 5% UAE VAT calculation, line-item discounts, structured payment terms/milestones, and official A4 PDF print layouts.
   - One-click **"Convert to Sales Order"** upon customer sign-off.
 - **Sales Orders & Contracts (`/commercial/sales-orders`)**:
   - Tracks client project scope, expected delivery milestones, and order pipelines (`DRAFT`, `CONFIRMED`, `PROCESSING`, `COMPLETED`, `CANCELLED`).
@@ -73,7 +75,7 @@ $$\text{Quotation} \longrightarrow \text{Sales Order} \longrightarrow \text{Sale
   - Automated GL posting: `Dr. Bank / Cash`, `Cr. Accounts Receivable`.
 - **Sales Returns & Credit Notes (`/commercial/credit-notes`)**:
   - Issues credit notes for project scope adjustments or material returns.
-  - Automatically reverses Accounts Receivable and Output VAT liabilities.
+  - Automatically reverses Accounts Receivable and Output VAT liabilities with journal entries.
 
 ---
 
@@ -82,10 +84,10 @@ $$\text{Quotation} \longrightarrow \text{Sales Order} \longrightarrow \text{Sale
 $$\text{Purchase Request} \longrightarrow \text{Purchase Order} \longrightarrow \text{Goods Received (GRN)} \longrightarrow \text{Supplier Bill} \longrightarrow \text{Supplier Payment} \longrightarrow \text{Debit Note}$$
 
 - **Purchase Requests & Requisitions (`/commercial/purchase-requests`)**:
-  - Site team material requisitions, required-by dates, and department approval workflows (`DRAFT`, `PENDING_APPROVAL`, `APPROVED`, `REJECTED`, `CONVERTED`).
+  - Site team material requisitions, required-by dates, priority levels, and department approval workflows (`DRAFT`, `PENDING_APPROVAL`, `APPROVED`, `REJECTED`, `CONVERTED`).
   - One-click **"Convert to Purchase Order"**.
 - **Purchase Orders (`/commercial/purchase-orders` & `/inventory/purchase-orders`)**:
-  - Supplier procurement orders, vendor reference numbers, unit pricing lines, and status tracking (`DRAFT`, `ORDERED`, `PARTIALLY_RECEIVED`, `RECEIVED`).
+  - Supplier procurement orders, vendor reference numbers, unit pricing lines, payment terms, and status tracking (`DRAFT`, `ORDERED`, `PARTIALLY_RECEIVED`, `RECEIVED`).
 - **Goods Received Notes - GRN (`/commercial/goods-received`)**:
   - Logs supplier deliveries against open Purchase Orders with warehouse facility routing.
   - Tracks accepted vs. damaged quantities and **automatically increments physical warehouse stock on hand** via `PURCHASE_IN` stock movements.
@@ -101,20 +103,24 @@ $$\text{Purchase Request} \longrightarrow \text{Purchase Order} \longrightarrow 
 
 ---
 
-#### **C. Master Data & Statements**
+### 2. 📜 Engineering, Safety & Corporate Documents (`/commercial/*`)
 
-- **Customer Directory & Statements (`/commercial/customers`)**:
-  - Comprehensive client database with credit limits, TRN numbers, and a live **Statement of Account Ledger** tracking chronological debits, credits, and running balances.
-- **Suppliers & Vendors (`/inventory/suppliers`)**:
-  - Vendor master directory with payment terms, contact persons, TRN, and purchase histories.
-- **Products & Materials Catalog (`/inventory/products`)**:
-  - Product SKUs, barcodes, cost vs. selling prices, warehouse reorder thresholds, and external/internal origin tracking.
-- **Warehouses & Facilities (`/inventory/warehouses`)**:
-  - Multi-facility location management with per-warehouse stock tracking.
+Specialized fit-out and engineering document generators with customizable templates, signature controls, and official print-ready formats:
+
+- **Method Statements (`/commercial/method-statements`)**:
+  - Comprehensive technical fit-out method statements with scope descriptions, sequential installation procedures, required tools/plant, safety PPE, quality check controls, and emergency protocols.
+- **Risk Assessments (`/commercial/risk-assessments`)**:
+  - HSE hazard identification matrix evaluating probability, severity, and risk scores before and after mitigation controls. Compliant with UAE municipality and civil defense standards.
+- **Company Agreements (`/commercial/agreements`)**:
+  - Subcontractor agreements, project supply contracts, and confidentiality agreements with structured clauses, scope definitions, and execution signatures.
+- **Salary Certificates (`/commercial/salary-certificates`)**:
+  - Official UAE salary certificates for banking, embassy visa, or tenancy purposes with basic pay, allowances, and authorized signatory blocks.
+- **Custom Letters & Certificates (`/commercial/custom-letters`)**:
+  - Formal letterhead communications, experience certificates, NOCs (No Objection Certificates), and site clearance notices.
 
 ---
 
-### 2. 💼 Financial Accounting & General Ledger (`/finance`)
+### 3. 💼 Financial Accounting & General Ledger (`/finance`)
 
 - **Interactive Executive Dashboard (`/dashboard`)**:
   - Real-time revenue metrics, gross/net margins, asset balances, and WPS workforce statistics.
@@ -124,11 +130,11 @@ $$\text{Purchase Request} \longrightarrow \text{Purchase Order} \longrightarrow 
 - **General Journal Entries (`/finance/journal-entries`)**:
   - Standardized double-entry transaction posting, draft/posted controls, and strict debit/credit balance integrity validation.
 - **Operational Expenses (`/finance/expenses`)**:
-  - Tracks company operating expenses, tax deductions, and bank/cash payment account linkages.
+  - Tracks company operating expenses, tax deductions, payment account linkages, and receipt attachments.
 
 ---
 
-### 3. 📊 Financial Reports & UAE Statutory Compliance (`/finance/reports` & `/reports`)
+### 4. 📊 Financial Reports & UAE Statutory Compliance (`/finance/reports` & `/reports`)
 
 - **Executive Financial Summary (`/finance/reports?tab=summary`)**:
   - High-level KPIs, working capital, liquidity ratios, and audit balance integrity checks.
@@ -156,7 +162,26 @@ $$\text{Purchase Request} \longrightarrow \text{Purchase Order} \longrightarrow 
 
 ---
 
-### 4. 📦 Inventory & Supply Chain Management (`/inventory`)
+### 5. 🏗️ Project Management & Real-Time Cost Tracking (`/operations/projects` & `/operations/cost-tracking`)
+
+Designed specifically for commercial interior fit-out projects and contracting management:
+
+- **Project Master Registry (`/projects` & `/operations/projects`)**:
+  - Client project registry with start/end timelines, contract values, project statuses (`PLANNING`, `IN_PROGRESS`, `ON_HOLD`, `COMPLETED`, `CANCELLED`), and location details.
+  - Milestone delivery tracking with percentage completion and progress monitoring.
+- **Real-Time Project Cost Tracking (`/operations/cost-tracking`)**:
+  - Live variance analysis comparing **Estimated Budget vs. Actual Incurred Costs**.
+  - Granular cost categorization:
+    - `MATERIALS`: Direct materials, joinery, and fittings.
+    - `LABOR`: Direct site workforce and technician hours.
+    - `SUBCONTRACTOR`: MEP, glass, flooring, and specialized subcontractor invoices.
+    - `EQUITY / EQUIPMENT`: Scaffolding, machinery rental, and transport.
+    - `OVERHEAD`: Site utilities, municipality permits, and logistical expenses.
+  - Detailed cost entry ledger with search, category filtering, and instant budget margin impact calculations.
+
+---
+
+### 6. 📦 Inventory & Supply Chain Management (`/inventory`)
 
 - **Stock Level Overview (`/inventory/products`)**:
   - Real-time stock levels with automatic color-coded reorder alerts (`Low Stock`, `Out of Stock`).
@@ -164,10 +189,14 @@ $$\text{Purchase Request} \longrightarrow \text{Purchase Order} \longrightarrow 
   - Complete historical movement audit trail: `PURCHASE_IN`, `SALE_OUT`, `ADJUSTMENT_IN`, `ADJUSTMENT_OUT`, `TRANSFER_IN`, `TRANSFER_OUT`, `RETURN_IN`, `RETURN_OUT`, and `PROJECT_CONSUMPTION`.
 - **Sales & Purchase Returns (`/inventory/sales-returns` & `/inventory/purchase-returns`)**:
   - Physical goods return logging synchronized with financial Credit & Debit notes.
+- **Master Directories**:
+  - **Customer Master (`/commercial/customers`)**: Complete client database with credit limits, TRN numbers, and live Statement of Account ledgers.
+  - **Suppliers & Vendors (`/inventory/suppliers`)**: Vendor records with payment terms, contact details, and procurement histories.
+  - **Warehouses & Facilities (`/inventory/warehouses`)**: Multi-facility location tracking.
 
 ---
 
-### 5. 👥 Human Capital & Workforce Operations (`/operations`)
+### 7. 👥 Human Capital & Workforce Operations (`/operations`)
 
 - **Employee Master Directory (`/operations/employees`)**:
   - UAE Labor Law compliance: Emirates ID, Passport, Labor Card, and Visa expiry tracking with alert thresholds.
@@ -178,24 +207,26 @@ $$\text{Purchase Request} \longrightarrow \text{Purchase Order} \longrightarrow 
   - Annual (30-day UAE statutory), Sick, Unpaid, Emergency, and Maternity leaves with multi-stage approval workflows.
 - **Bonuses & Performance Incentives (`/operations/bonuses`)**:
   - Performance, festival, project completion, and attendance bonus approvals.
+  - Linkage to payroll accounts and disbursement tracking.
 - **Fixed Asset Management (`/operations/fixed-assets`)**:
-  - Registry for vehicles, tools, machinery, office equipment, and furniture.
+  - Registry for vehicles, site tools, heavy machinery, office equipment, and furniture.
   - Automated straight-line depreciation schedules linked to Chart of Accounts.
 
 ---
 
-### 6. 🛡️ Role-Based Access Control & Security (`/administration`)
+### 8. 🛡️ Role-Based Access Control & Security (`/administration`)
 
 - **Granular RBAC Hierarchy**:
-  - `SUPER_ADMIN`: Unrestricted global system access and user role assignment.
+  - `SUPER_ADMIN`: Unrestricted global system access, audit logs, and user role assignment.
   - `ADMIN`: Full operational and administrative access.
+  - `MANAGER`: Project supervision, approvals, and cost tracking.
   - `ACCOUNTANT`: Finance, journal entries, commercial vouchers, billing, and tax reports.
   - `HR`: Workforce management, attendance, leaves, bonuses, and payroll.
   - `INVENTORY_MANAGER`: Products, warehouse stock, GRN, and procurement.
   - `USER`: Read-only or restricted access to specific assigned workspaces.
 - **Authentication**:
   - Dual-token JWT architecture (Short-lived Access Token in HTTP-only cookies/headers + Database-persisted Refresh Token rotation).
-  - Protected API routes and route-guard middleware ([`middleware.ts`](file:///c:/Users/Rahman%20ullah/Documents/agm/middleware.ts)).
+  - Protected API routes and route-guard middleware ([`middleware.ts`](middleware.ts)).
 
 ---
 
@@ -232,21 +263,23 @@ agm/
 │   ├── (auth)/                     # Unauthenticated auth routes (login, signup)
 │   ├── (workspace)/                # Authenticated application shell
 │   │   ├── administration/users/   # User provisioning & role management
-│   │   ├── commercial/             # Quotations, Sales Orders, Invoices, GRN, Bills
+│   │   ├── commercial/             # Quotations, Sales Orders, Invoices, GRN, Bills, Technical Docs
 │   │   ├── dashboard/              # Executive KPI & Cash Flow dashboard
 │   │   ├── finance/                # Chart of Accounts, Journals, Reports
 │   │   ├── inventory/              # Products, Warehouses, Stock Movements
-│   │   ├── operations/             # Employees, Attendance, Leaves, Fixed Assets
+│   │   ├── operations/             # Projects, Cost Tracking, Employees, Attendance, Leaves, Fixed Assets
+│   │   ├── projects/               # Project management shortcut route
 │   │   └── reports/                # Dedicated operational and tax reporting
 │   ├── api/                        # Next.js Route Handlers (REST API)
 │   │   ├── accounts/               # Chart of accounts endpoints
 │   │   ├── assets/                 # Fixed asset registry & depreciation endpoints
 │   │   ├── auth/                   # Login, register, refresh, logout
-│   │   ├── commercial/             # Commercial vouchers CRUD & GL posting
+│   │   ├── commercial/             # Commercial vouchers, technical docs CRUD & GL posting
 │   │   ├── doc/                    # Swagger JSON generator
 │   │   ├── employees/              # HR, attendance, leaves, bonuses
 │   │   ├── finance/                # Journal entries & accounting logic
 │   │   ├── inventory/              # Products, stock, warehouses, suppliers
+│   │   ├── projects/               # Projects, milestones, and cost tracking endpoints
 │   │   ├── reports/                # Financial statements (P&L, BS, Aging, VAT)
 │   │   └── users/                  # User management & RBAC endpoints
 │   ├── docs/                       # Swagger UI documentation viewer
@@ -254,10 +287,12 @@ agm/
 │   └── layout.tsx                  # Root layout & query client provider
 ├── components/
 │   ├── layout/WorkspaceLayout.tsx  # Workspace shell with topbar & responsive sidebar
+│   ├── documents/                  # Method statement, Risk assessment, Salary certificate templates
+│   ├── quotation/                  # Modular quotation & sales invoice builder components
+│   ├── ui/                         # Reusable UI primitives (Button, Table, FormControls, DatePicker)
 │   ├── GlobalCreateMenu.tsx        # Fast-action modal for creating vouchers & records
 │   ├── Sidebar.tsx                 # Navigation sidebar with role-aware items
 │   ├── StatCard.tsx                # KPI statistic cards with sparkline & delta metrics
-│   ├── QuotationTemplate.tsx       # Printable A4 UAE commercial quotation template
 │   ├── PrintLayout.tsx             # Printable document wrapper
 │   ├── BarChart.tsx                # Chart.js bar chart component
 │   └── DoughnutChart.tsx           # Chart.js doughnut chart component
@@ -268,14 +303,14 @@ agm/
 │   ├── auth-server.ts              # Server-side token validation & RBAC guards
 │   ├── auth-service.ts             # Browser token storage & session manager
 │   ├── commercial-accounting.ts    # Automated GL posting engine
-│   ├── hooks/api-hooks.ts          # Centralized TanStack Query hooks library
+│   ├── hooks/                      # Centralized TanStack Query hooks library (commercial, finance, projects, HR)
 │   ├── jwt.ts                      # JWT signing & verification utilities
 │   ├── navigation.ts               # Routing map & page metadata dictionary
 │   ├── prisma.ts                   # Prisma client singleton with Postgres adapter
 │   └── swagger.ts                  # OpenAPI definition schemas
 ├── prisma/
 │   ├── migrations/                 # PostgreSQL schema migrations
-│   └── schema.prisma               # 1,300+ line database schema definition
+│   └── schema.prisma               # Complete database schema definition
 ├── docker-compose.yml              # PostgreSQL 16 Alpine local database container
 ├── middleware.ts                   # Edge route protection & token inspection
 ├── next.config.ts                  # Next.js configuration & API proxy rewrites
