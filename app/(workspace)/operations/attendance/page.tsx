@@ -24,7 +24,12 @@ import {
   DashboardCard,
   DashboardCardGrid,
 } from "@/components/ui";
-import { PlusIcon, TrashIcon, EditIcon, CheckCircle2Icon } from "@/components/icons";
+import {
+  PlusIcon,
+  TrashIcon,
+  EditIcon,
+  CheckCircle2Icon,
+} from "@/components/icons";
 
 export default function AttendancePage() {
   const { canModify } = useAuth();
@@ -422,7 +427,9 @@ export default function AttendancePage() {
                   variant="danger"
                   size="sm"
                   onClick={async () => {
-                    if (confirm("Reset attendance entry back to default Present?")) {
+                    if (
+                      confirm("Reset attendance entry back to default Present?")
+                    ) {
                       await deleteAttendance.mutateAsync(row.original.id);
                     }
                   }}
@@ -462,7 +469,9 @@ export default function AttendancePage() {
                 size="sm"
                 onClick={handleMarkAllPresent}
                 loading={isSavingAll}
-                icon={<CheckCircle2Icon size={14} className="text-emerald-700" />}
+                icon={
+                  <CheckCircle2Icon size={14} className="text-emerald-700" />
+                }
                 className="text-xs font-bold border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 text-emerald-800 cursor-pointer"
                 title="Save all active employees as Present in database for this date"
               >
