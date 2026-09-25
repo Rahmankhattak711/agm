@@ -181,6 +181,17 @@ export const ACTION_ITEMS: ActionItem[] = [
     icon: <RotateCcwIcon size={16} className="text-purple-600" />,
     category: "SALES",
   },
+  {
+    id: "generate-soa",
+    label: "Statement of Account (SOA)",
+    sublabel: "Client receivables ledger & statements",
+    href: "/finance/reports?tab=statement-of-account",
+    icon: <ReceiptIcon size={16} className="text-emerald-700" />,
+    category: "SALES",
+    badge: "SOA",
+    badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200/70",
+    isPopular: true,
+  },
 
   {
     id: "create-agreement",

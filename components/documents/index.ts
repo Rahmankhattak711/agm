@@ -17,3 +17,7 @@ export * from "./salary-certificate-constants";
 export { default as CustomLetterTemplate } from "./CustomLetterTemplate";
 export { CustomLetterSavedModal } from "./CustomLetterSavedModal";
 export * from "./custom-letter-constants";
+
+export { default as StatementOfAccountDocument } from "./StatementOfAccountDocument";
+export * from "./StatementOfAccountDocument";
+

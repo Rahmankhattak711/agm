@@ -12,6 +12,7 @@ import type {
   LedgerReport,
   ReceivablesReport,
   PayablesReport,
+  StatementOfAccountData,
 } from "./types";
 
 export function useAccounts() {
@@ -374,5 +375,42 @@ export function usePayables() {
   return useQuery<PayablesReport>({
     queryKey: ["reports", "payables"],
     queryFn: () => fetchJson<PayablesReport>("/api/reports/payables"),
+  });
+}
+
+export function useStatementOfAccount(params?: {
+  customerId?: string | null;
+  fromDate?: string;
+  toDate?: string;
+  projectId?: string | null;
+  transactionType?: string;
+  status?: string;
+}) {
+  const queryParts: string[] = [];
+  if (params?.customerId)
+    queryParts.push(`customerId=${encodeURIComponent(params.customerId)}`);
+  if (params?.fromDate)
+    queryParts.push(`fromDate=${encodeURIComponent(params.fromDate)}`);
+  if (params?.toDate)
+    queryParts.push(`toDate=${encodeURIComponent(params.toDate)}`);
+  if (params?.projectId)
+    queryParts.push(`projectId=${encodeURIComponent(params.projectId)}`);
+  if (params?.transactionType && params.transactionType !== "ALL") {
+    queryParts.push(
+      `transactionType=${encodeURIComponent(params.transactionType)}`,
+    );
+  }
+  if (params?.status && params.status !== "ALL") {
+    queryParts.push(`status=${encodeURIComponent(params.status)}`);
+  }
+  const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
+
+  return useQuery<StatementOfAccountData>({
+    queryKey: ["reports", "statement-of-account", params],
+    queryFn: () =>
+      fetchJson<StatementOfAccountData>(
+        `/api/reports/statement-of-account${queryString}`,
+      ),
+    enabled: Boolean(params?.customerId),
   });
 }

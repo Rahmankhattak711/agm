@@ -434,6 +434,15 @@ export default function CustomerReportsPage() {
           maxWidth="2xl"
         >
           <div className="space-y-5 text-xs">
+            <div className="flex justify-end">
+              <a
+                href={`/finance/reports?tab=statement-of-account&customerId=${activeCustomer.id}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold hover:bg-emerald-100 transition-colors shadow-2xs"
+              >
+                <FileText size={13} />
+                <span>Open Full Statement of Account (SOA)</span>
+              </a>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block">

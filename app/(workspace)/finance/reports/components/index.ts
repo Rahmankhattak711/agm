@@ -9,5 +9,6 @@ export * from "./TaxInvoicesReport";
 export * from "./AccountsPayableReport";
 export * from "./GeneralLedgerReport";
 export * from "./VatPositionReport";
+export * from "./StatementOfAccountReport";
 export * from "./QuotationPrintModal";
 export * from "./ReportKpiCard";

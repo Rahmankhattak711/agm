@@ -1,5 +1,7 @@
 export type ReportTab =
   | "summary"
+  | "statement-of-account"
+  | "soa"
   | "tax-invoices"
   | "quotation"
   | "profit-loss"

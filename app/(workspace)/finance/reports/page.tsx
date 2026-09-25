@@ -30,6 +30,7 @@ import {
   GeneralLedgerReport,
   ProfitLossReport,
   ReportTab,
+  StatementOfAccountReport,
   TaxInvoicesReport,
   TrialBalanceReport,
   VatPositionReport,
@@ -65,6 +66,11 @@ function ReportsContent() {
       id: "summary",
       label: "Executive Summary",
       icon: <SparklesIcon size={14} className="text-amber-500" />,
+    },
+    {
+      id: "statement-of-account",
+      label: "Statement of Account (SOA)",
+      icon: <ReceiptIcon size={14} className="text-emerald-700" />,
     },
     {
       id: "tax-invoices",
@@ -152,6 +158,12 @@ function ReportsContent() {
           balanceSheet={balanceSheet}
           vatSummary={vatSummary}
           setActiveTab={setActiveTab}
+        />
+      )}
+
+      {(activeTab === "statement-of-account" || activeTab === "soa") && (
+        <StatementOfAccountReport
+          initialCustomerId={searchParams.get("customerId")}
         />
       )}
 
