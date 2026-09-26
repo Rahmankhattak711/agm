@@ -844,3 +844,105 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface StatementOfAccountTransaction {
+  id: string;
+  date: string;
+  reference: string;
+  rawType: "INVOICE" | "PAYMENT" | "CREDIT_NOTE";
+  type: "Sales Invoice" | "Customer Payment" | "Credit Note";
+  description: string;
+  projectScope?: string | null;
+  debit: number;
+  credit: number;
+  balance: number;
+  status: string;
+  dueDate?: string | null;
+  documentId: string;
+  journalEntry?: {
+    id: string;
+    entryNumber: string;
+    isPosted: boolean;
+  } | null;
+  paymentMethod?: string | null;
+  referenceNumber?: string | null;
+}
+
+export interface OutstandingInvoice {
+  id: string;
+  invoiceNo: string;
+  invoiceDate: string;
+  dueDate: string | null;
+  invoiceAmount: number;
+  paid: number;
+  creditNote: number;
+  outstanding: number;
+  status: "Paid" | "Partially Paid" | "Unpaid" | "Overdue";
+  daysOverdue: number;
+  projectScope?: string | null;
+}
+
+export interface StatementOfAccountProject {
+  id: string;
+  projectCode: string;
+  name: string;
+  description?: string | null;
+  location?: string | null;
+  contractValue?: number;
+  status?: string;
+  progressPct?: number;
+}
+
+export interface StatementOfAccountData {
+  customer: {
+    id: string;
+    customerCode: string;
+    name: string;
+    companyName: string | null;
+    trn: string | null;
+    phone: string | null;
+    email: string | null;
+    address: string | null;
+    creditLimit: number;
+    currentBalance: number;
+  };
+  period: {
+    fromDate: string;
+    toDate: string;
+    currency: string;
+    projectName?: string | null;
+  };
+  projects?: StatementOfAccountProject[];
+  openingBalance: number;
+  transactions: StatementOfAccountTransaction[];
+  totals: {
+    invoices: number;
+    payments: number;
+    creditNotes: number;
+    adjustments: number;
+    closingBalance: number;
+    overdueAmount: number;
+  };
+  outstandingInvoices: OutstandingInvoice[];
+  aging: {
+    current: number;
+    days1to30: number;
+    days31to60: number;
+    days61to90: number;
+    days90Plus: number;
+    counts: {
+      current: number;
+      days1to30: number;
+      days31to60: number;
+      days61to90: number;
+      days90Plus: number;
+    };
+  };
+  reconciliation: {
+    customerSoaBalance: number;
+    arControlAccountBalance: number;
+    customerArPostedBalance: number;
+    status: "Reconciled" | "Difference Found";
+    difference: number;
+  };
+}

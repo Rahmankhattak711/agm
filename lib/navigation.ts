@@ -52,6 +52,11 @@ export const SECTION_PATHS: Record<string, string> = {
   "report-payables": "/finance/reports?tab=payables",
   "report-ledger": "/finance/reports?tab=ledger",
   "report-vat": "/finance/reports?tab=vat-summary",
+  "report-soa": "/finance/reports?tab=statement-of-account",
+  "report-statement-of-account": "/finance/reports?tab=statement-of-account",
+  soa: "/finance/reports?tab=statement-of-account",
+  "statement-of-account": "/finance/reports?tab=statement-of-account",
+  "commercial-statement-of-account": "/commercial/statement-of-account",
 
   "report-sales": "/reports/sales",
   "report-purchases": "/reports/purchases",
@@ -205,6 +210,10 @@ export const PAGE_META: Record<string, PageMeta> = {
   "/finance/reports": {
     eyebrow: "Financial Reports",
     title: "Financial Reports",
+  },
+  "/commercial/statement-of-account": {
+    eyebrow: "Financial Reports",
+    title: "Statement of Account (SOA)",
   },
 
   "/operations": {

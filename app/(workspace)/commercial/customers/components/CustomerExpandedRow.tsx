@@ -80,6 +80,13 @@ export function CustomerExpandedRow({
             </div>
 
             <div className="flex items-center gap-2">
+              <a
+                href={`/finance/reports?tab=statement-of-account&customerId=${customer.id}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 shadow-2xs transition-colors"
+              >
+                <FileTextIcon size={13} className="text-emerald-700" />
+                <span>Full SOA Report</span>
+              </a>
               <Button
                 variant="outline"
                 size="sm"

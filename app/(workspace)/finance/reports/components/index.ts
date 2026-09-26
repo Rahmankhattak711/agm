@@ -1,4 +1,5 @@
 export * from "./types";
+export * from "./ReportsHubView";
 export * from "./ExecutiveSummaryReport";
 export * from "./QuotationReport";
 export * from "./ProfitLossReport";
@@ -9,5 +10,6 @@ export * from "./TaxInvoicesReport";
 export * from "./AccountsPayableReport";
 export * from "./GeneralLedgerReport";
 export * from "./VatPositionReport";
+export * from "./StatementOfAccountReport";
 export * from "./QuotationPrintModal";
 export * from "./ReportKpiCard";

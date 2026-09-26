@@ -1,7 +1,13 @@
 "use client";
 
-import { EyeIcon, PrintIcon, SearchIcon } from "@/components/icons";
+import {
+  ChevronLeftIcon,
+  EyeIcon,
+  PrintIcon,
+  SearchIcon,
+} from "@/components/icons";
 import { QuotationFooter, QuotationHeader } from "@/components/quotation";
+import { useRouter } from "next/navigation";
 import {
   ReportDateFilter,
   ChartBarItem,
@@ -14,8 +20,10 @@ import {
 import {
   Button,
   DataTable,
+  DateRangePicker,
   Input,
   Modal,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -55,16 +63,64 @@ export default function ExpenseReportsPage() {
     })}`;
   };
 
+  const periodTabs = [
+    { key: "ALL", label: "All Time" },
+    { key: "THIS_MONTH", label: "This Month" },
+    { key: "LAST_MONTH", label: "Last Month" },
+    { key: "THIS_QUARTER", label: "This Quarter" },
+    { key: "THIS_YEAR", label: "This Year" },
+    { key: "CUSTOM", label: "Custom Date" },
+  ];
+
   const filteredExpenses = useMemo(() => {
     return expenses.filter((e) => {
-      if (startDate || endDate) {
-        const d = new Date(e.expenseDate);
-        if (startDate && d < new Date(startDate)) return false;
-        if (endDate && d > new Date(endDate)) return false;
+      if (e.expenseDate) {
+        const expDate = new Date(e.expenseDate);
+        const now = new Date();
+
+        if (periodFilter === "THIS_MONTH") {
+          if (
+            expDate.getMonth() !== now.getMonth() ||
+            expDate.getFullYear() !== now.getFullYear()
+          ) {
+            return false;
+          }
+        } else if (periodFilter === "LAST_MONTH") {
+          const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          if (
+            expDate.getMonth() !== lastMonth.getMonth() ||
+            expDate.getFullYear() !== lastMonth.getFullYear()
+          ) {
+            return false;
+          }
+        } else if (periodFilter === "THIS_QUARTER") {
+          const currentQuarter = Math.floor(now.getMonth() / 3);
+          const expQuarter = Math.floor(expDate.getMonth() / 3);
+          if (
+            currentQuarter !== expQuarter ||
+            expDate.getFullYear() !== now.getFullYear()
+          ) {
+            return false;
+          }
+        } else if (periodFilter === "THIS_YEAR") {
+          if (expDate.getFullYear() !== now.getFullYear()) {
+            return false;
+          }
+        } else if (periodFilter === "CUSTOM") {
+          if (startDate && new Date(e.expenseDate) < new Date(startDate)) {
+            return false;
+          }
+          if (
+            endDate &&
+            new Date(e.expenseDate) > new Date(endDate + "T23:59:59")
+          ) {
+            return false;
+          }
+        }
       }
       return true;
     });
-  }, [expenses, startDate, endDate]);
+  }, [expenses, periodFilter, startDate, endDate]);
 
   const metrics = useMemo(() => {
     const totalExpenses = filteredExpenses.reduce(
@@ -245,31 +301,50 @@ export default function ExpenseReportsPage() {
     [],
   );
 
+  const router = useRouter();
+
   return (
     <>
-      <div className="space-y-6 print:hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Operating Expenses & Overhead Report
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Audit direct corporate expenditures, VAT recoverable, and
-              departmental cost allocations.
-            </p>
+      <div className="space-y-6 print:hidden pb-8">
+        <div className="space-y-3 pb-3 border-b border-slate-200">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+            <button
+              type="button"
+              onClick={() => router.push("/finance/reports")}
+              className="hover:text-emerald-700 transition-colors flex items-center gap-1 cursor-pointer font-semibold"
+            >
+              <ChevronLeftIcon size={12} />
+              <span>Reports Hub</span>
+            </button>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-800 font-bold">Operating Expenses</span>
           </div>
 
-          <Button
-            variant="outline"
-            onClick={() => window.print()}
-            icon={<PrintIcon className="w-4 h-4" />}
-            className="font-bold"
-          >
-            Print Report Statement
-          </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+                Operating Expenses
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Corporate expenditures, recoverable input VAT, and payments.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.print()}
+                className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 shadow-2xs cursor-pointer"
+                icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
+              >
+                Print Statement
+              </Button>
+            </div>
+          </div>
         </div>
 
-        <ReportKpiGrid cols={3}>
+        <ReportKpiGrid cols={4}>
           <ReportKpiCard
             title="Total Expenditure"
             subtitle={`${metrics.count} total expense items`}
@@ -318,59 +393,90 @@ export default function ExpenseReportsPage() {
           />
         </ReportKpiGrid>
 
-        {categoryBreakdown.length > 0 && (
-          <ReportSummaryChart
-            title="Expense Distribution by Category"
-            subtitle="Top operating expense categories across the selected audit period"
-            data={categoryBreakdown}
-            primaryLegend="Direct Spend"
-          />
-        )}
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
+                {periodTabs.map((tab) => {
+                  const isActive = periodFilter === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => {
+                        setPeriodFilter(tab.key);
+                        if (tab.key !== "CUSTOM") {
+                          setStartDate("");
+                          setEndDate("");
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-white text-emerald-950 shadow-xs border border-slate-200"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-          <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
-            <div className="w-full lg:w-80">
-              <Input
-                placeholder="Search expense #, category, payee, ref..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+              {periodFilter === "CUSTOM" && (
+                <DateRangePicker
+                  startDate={startDate}
+                  endDate={endDate}
+                  placeholder="Select Date Range"
+                  align="right"
+                  onChange={({ startDate: s, endDate: e }) => {
+                    setStartDate(s);
+                    setEndDate(e);
+                  }}
+                />
+              )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-              <select
-                className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-              >
-                <option value="ALL">All Categories</option>
-                {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+            <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-2 border-t border-slate-200/80">
+              <div className="w-full lg:w-80">
+                <Input
+                  type="text"
+                  placeholder="Search expense #, category, payee, ref..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  leftIcon={<SearchIcon className="w-4 h-4 text-slate-400" />}
+                  className="bg-white text-xs py-1.5"
+                  containerClassName="w-full"
+                />
+              </div>
 
-              <select
-                className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-                value={paymentMethodFilter}
-                onChange={(e) => setPaymentMethodFilter(e.target.value)}
-              >
-                <option value="ALL">All Payment Methods</option>
-                <option value="BANK_TRANSFER">Bank Transfer</option>
-                <option value="CREDIT_CARD">Credit Card</option>
-                <option value="CASH">Cash</option>
-                <option value="CHEQUE">Cheque</option>
-              </select>
+              <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+                <Select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  containerClassName="w-full sm:w-48"
+                  className="bg-white text-xs py-1.5"
+                >
+                  <option value="ALL">All Categories</option>
+                  {categories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </Select>
 
-              <ReportDateFilter
-                periodFilter={periodFilter}
-                startDate={startDate}
-                endDate={endDate}
-                onPeriodChange={setPeriodFilter}
-                onStartDateChange={setStartDate}
-                onEndDateChange={setEndDate}
-              />
+                <Select
+                  value={paymentMethodFilter}
+                  onChange={(e) => setPaymentMethodFilter(e.target.value)}
+                  containerClassName="w-full sm:w-48"
+                  className="bg-white text-xs py-1.5"
+                >
+                  <option value="ALL">All Payment Methods</option>
+                  <option value="BANK_TRANSFER">Bank Transfer</option>
+                  <option value="CREDIT_CARD">Credit Card</option>
+                  <option value="CASH">Cash</option>
+                  <option value="CHEQUE">Cheque</option>
+                </Select>
+              </div>
             </div>
           </div>
         </div>

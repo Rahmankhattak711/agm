@@ -1,34 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ColumnDef } from "@tanstack/react-table";
+import React, { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   useSalesInvoices,
   useCustomers,
   SalesInvoice,
 } from "@/lib/hooks/api-hooks";
 import {
-  EyeIcon,
+  ChevronLeftIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
   PrintIcon,
   ReceiptIcon,
   SearchIcon,
 } from "@/components/icons";
-import {
-  Button,
-  Input,
-  Select,
-  DateRangePicker,
-  DataTable,
-  Modal,
-  Table,
-  TableHead,
-  TableHeaderCell,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui";
+import { Button, Input, Select, DateRangePicker } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
-import { ReportSummaryChart, ChartBarItem } from "../components";
 import {
   ReportKpiCard,
   ReportKpiGrid,
@@ -83,14 +71,15 @@ function renderDescriptionPoints(desc?: string, fallback = "—") {
 }
 
 export default function SalesReportsPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [customerFilter, setCustomerFilter] = useState<string>("");
   const [periodFilter, setPeriodFilter] = useState<string>("ALL");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
-  const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(
-    null,
+  const [expandedInvoiceIds, setExpandedInvoiceIds] = useState<Set<string>>(
+    new Set(),
   );
 
   const { data: invoices = [], isLoading, error } = useSalesInvoices();
@@ -243,45 +232,20 @@ export default function SalesReportsPage() {
   const collectionEfficiency =
     totalInvoicedSales > 0 ? (totalCollected / totalInvoicedSales) * 100 : 0;
 
-  const topClientsChartData = useMemo<ChartBarItem[]>(() => {
-    const clientMap: Record<string, { invoiced: number; collected: number }> =
-      {};
-    nonCancelledInvoices.forEach((inv) => {
-      const name = inv.customerName || "General Client";
-      if (!clientMap[name]) {
-        clientMap[name] = { invoiced: 0, collected: 0 };
-      }
-      clientMap[name].invoiced += Number(inv.totalAmount || 0);
-      clientMap[name].collected += Number(inv.paidAmount || 0);
-    });
-
-    return Object.entries(clientMap)
-      .map(([name, data]) => ({
-        label: name.length > 16 ? name.slice(0, 14) + "…" : name,
-        sublabel: name,
-        value: data.invoiced,
-        secondaryValue: data.collected,
-        color: "#233c4d",
-        secondaryColor: "#059669",
-      }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 6);
-  }, [nonCancelledInvoices]);
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PAID":
-        return "bg-emerald-50 text-emerald-800 border border-emerald-200/80";
+        return "bg-emerald-50 text-emerald-800 border border-emerald-200/90";
       case "POSTED":
-        return "bg-sky-50 text-sky-800 border border-sky-200/80";
+        return "bg-sky-50 text-sky-800 border border-sky-200/90";
       case "PARTIALLY_PAID":
-        return "bg-amber-50 text-amber-800 border border-amber-200/80";
+        return "bg-amber-50 text-amber-800 border border-amber-200/90";
       case "DRAFT":
-        return "bg-slate-50 text-slate-700 border border-slate-200/80";
+        return "bg-slate-100 text-slate-700 border border-slate-200/90";
       case "CANCELLED":
-        return "bg-rose-50 text-rose-800 border border-rose-200/80";
+        return "bg-rose-50 text-rose-800 border border-rose-200/90";
       default:
-        return "bg-slate-50 text-slate-700 border border-slate-200/80";
+        return "bg-slate-100 text-slate-700 border border-slate-200/90";
     }
   };
 
@@ -294,233 +258,112 @@ export default function SalesReportsPage() {
     { key: "CUSTOM", label: "Custom Date" },
   ];
 
-  const columns = useMemo<ColumnDef<SalesInvoice>[]>(
-    () => [
-      {
-        accessorKey: "invoiceNumber",
-        header: "Invoice No",
-        cell: ({ row }) => (
-          <div>
-            <span
-              onClick={() => setSelectedInvoice(row.original)}
-              className="font-mono font-bold text-blue-950 hover:underline cursor-pointer flex items-center gap-1.5"
-            >
-              <ReceiptIcon size={14} className="text-emerald-700 shrink-0" />
-              {row.original.invoiceNumber}
-            </span>
-            {row.original.projectScope && (
-              <span className="block text-[10.5px] text-slate-400 max-w-[180px] truncate mt-0.5">
-                {row.original.projectScope}
-              </span>
-            )}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "customerName",
-        header: "Client / Entity",
-        cell: ({ row }) => (
-          <div>
-            <span className="font-bold text-slate-900 block leading-tight">
-              {row.original.customerName}
-            </span>
-            {row.original.customerTrn && (
-              <span className="font-mono text-[10px] text-slate-400 mt-0.5 inline-block">
-                TRN: {row.original.customerTrn}
-              </span>
-            )}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "invoiceDate",
-        header: "Invoice Date",
-        cell: ({ row }) => (
-          <div>
-            <span className="font-mono text-slate-700 block text-[11px]">
-              {row.original.invoiceDate
-                ? new Date(row.original.invoiceDate).toISOString().slice(0, 10)
-                : "—"}
-            </span>
-            {row.original.dueDate && (
-              <span className="text-[10px] text-slate-400 block mt-0.5 font-mono">
-                Due: {new Date(row.original.dueDate).toISOString().slice(0, 10)}
-              </span>
-            )}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "subtotal",
-        header: () => <div className="text-right">Net Sales (AED)</div>,
-        cell: ({ row }) => (
-          <span className="font-mono font-bold text-slate-700 block text-right">
-            {formatNumber(row.original.subtotal)}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "vatAmount",
-        header: () => <div className="text-right">Output VAT (5%)</div>,
-        cell: ({ row }) => (
-          <span className="font-mono font-bold text-blue-700 block text-right">
-            {formatNumber(row.original.vatAmount)}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "totalAmount",
-        header: () => <div className="text-right">Total Invoiced</div>,
-        cell: ({ row }) => (
-          <span className="font-mono font-black text-slate-900 block text-right">
-            {formatNumber(row.original.totalAmount)}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "remainingBalance",
-        header: () => <div className="text-right">Balance Due</div>,
-        cell: ({ row }) => {
-          const balance = Number(row.original.remainingBalance || 0);
-          return (
-            <span
-              className={`font-mono font-black block text-right ${
-                balance > 0 ? "text-rose-700" : "text-emerald-700"
-              }`}
-            >
-              {formatNumber(balance)}
-            </span>
-          );
-        },
-      },
-      {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => (
-          <span
-            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusBadge(
-              row.original.status,
-            )}`}
-          >
-            {row.original.status.replace("_", " ")}
-          </span>
-        ),
-      },
-      {
-        id: "actions",
-        header: () => <div className="text-center">Action</div>,
-        cell: ({ row }) => (
-          <div className="flex items-center justify-center gap-1.5">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedInvoice(row.original)}
-              className="p-1.5 text-slate-500 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 transition-colors cursor-pointer h-auto"
-              title="View Invoice Audit"
-              icon={<EyeIcon className="w-4 h-4" />}
-            />
-          </div>
-        ),
-      },
-    ],
-    [],
-  );
+  const toggleRow = (id: string) => {
+    setExpandedInvoiceIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleAllRows = () => {
+    if (expandedInvoiceIds.size === filteredInvoices.length) {
+      setExpandedInvoiceIds(new Set());
+    } else {
+      setExpandedInvoiceIds(new Set(filteredInvoices.map((inv) => inv.id)));
+    }
+  };
 
   return (
     <>
-      <div className="space-y-6 print:hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-              Sales Reports
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Track revenue trends, customer invoicing, payments received, and
-              outstanding receivables.
-            </p>
+      <div className="space-y-6 print:hidden pb-8">
+        <div className="space-y-3 pb-3 border-b border-slate-200">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+            <button
+              type="button"
+              onClick={() => router.push("/finance/reports")}
+              className="hover:text-emerald-700 transition-colors flex items-center gap-1 cursor-pointer font-semibold"
+            >
+              <ChevronLeftIcon size={12} />
+              <span>Reports Hub</span>
+            </button>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-800 font-bold">
+              Sales &amp; Revenue
+            </span>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
-          >
-            Print Statement
-          </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+                Sales &amp; Revenue
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Sales invoices, payment collections, and receivables.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.print()}
+                className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 shadow-2xs cursor-pointer"
+                icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
+              >
+                Print Statement
+              </Button>
+            </div>
+          </div>
         </div>
 
         <ReportKpiGrid cols={4}>
           <ReportKpiCard
-            title="1. Total Invoiced Sales"
+            title="Total Invoiced Sales"
             subtitle={`${nonCancelledInvoices.length} billing vouchers`}
-            value={formatNumber(totalInvoicedSales)}
+            value={formatCurrency(totalInvoicedSales)}
             accentColor="sky"
           />
 
           <ReportKpiCard
-            title="2. Settled Receipts"
-            subtitle="Realized bank & cash"
-            value={formatNumber(totalCollected)}
+            title="Realized Collections"
+            subtitle={`${collectionEfficiency.toFixed(1)}% recovery yield`}
+            value={formatCurrency(totalCollected)}
             accentColor="emerald"
             valueColor="text-emerald-800"
           />
 
           <ReportKpiCard
-            title="3. Outstanding Due"
-            subtitle="Open customer balance"
-            value={formatNumber(totalOutstanding)}
+            title="Outstanding Receivables"
+            subtitle="Open client balances"
+            value={formatCurrency(totalOutstanding)}
             accentColor="rose"
             valueColor="text-rose-700"
           />
 
           <ReportKpiCard
-            title="4. UAE 5% Output VAT"
-            subtitle="FTA Form 201 Box 1"
-            value={formatNumber(totalOutputVat)}
+            title="Output VAT (5%)"
+            subtitle="FTA Tax Box 1 Standard"
+            value={formatCurrency(totalOutputVat)}
             accentColor="amber"
             valueColor="text-amber-800"
           />
-
-          <ReportKpiCard
-            title="5. Collection Rate"
-            subtitle="Realization efficiency"
-            value={`${collectionEfficiency.toFixed(1)}%`}
-            currency={false}
-            accentColor="indigo"
-            badge={
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
-                Yield
-              </span>
-            }
-          />
         </ReportKpiGrid>
 
-        {topClientsChartData.length > 0 && (
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
-            <ReportSummaryChart
-              title="Revenue &amp; Collection Breakdown by Top Clients"
-              subtitle="Comparison of total amount billed versus payments collected per client account"
-              data={topClientsChartData}
-              primaryLegend="Total Invoiced"
-              secondaryLegend="Collected Receipts"
-            />
-          </div>
-        )}
-
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-          <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-1">
+              <div className="flex flex-wrap items-center gap-1.5">
                 {periodTabs.map((tab) => {
                   const isActive = periodFilter === tab.key;
                   return (
-                    <Button
+                    <button
                       key={tab.key}
                       type="button"
-                      size="sm"
-                      variant={isActive ? "outline" : "ghost"}
                       onClick={() => {
                         setPeriodFilter(tab.key);
                         if (tab.key !== "CUSTOM") {
@@ -528,14 +371,14 @@ export default function SalesReportsPage() {
                           setEndDate("");
                         }
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer h-auto ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         isActive
-                          ? "!bg-white !text-emerald-900 shadow-xs border border-slate-200/90 hover:!bg-white"
-                          : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
+                          ? "bg-white text-emerald-950 shadow-xs border border-slate-200"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                       }`}
                     >
                       {tab.label}
-                    </Button>
+                    </button>
                   );
                 })}
               </div>
@@ -554,7 +397,7 @@ export default function SalesReportsPage() {
               )}
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-1 border-t border-slate-200/60">
+            <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-2 border-t border-slate-200/80">
               <div className="w-full lg:w-80">
                 <Input
                   type="text"
@@ -562,6 +405,7 @@ export default function SalesReportsPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   leftIcon={<SearchIcon className="w-4 h-4 text-slate-400" />}
+                  className="bg-white text-xs py-1.5"
                   containerClassName="w-full"
                 />
               </div>
@@ -571,6 +415,7 @@ export default function SalesReportsPage() {
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                   containerClassName="w-full sm:w-40"
+                  className="bg-white text-xs py-1.5"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="PAID">Paid</option>
@@ -583,7 +428,8 @@ export default function SalesReportsPage() {
                 <Select
                   value={customerFilter}
                   onChange={(e) => setCustomerFilter(e.target.value)}
-                  containerClassName="w-full sm:w-52"
+                  containerClassName="w-full sm:w-56"
+                  className="bg-white text-xs py-1.5"
                 >
                   <option value="">All Customers</option>
                   {customers.map((c) => (
@@ -603,203 +449,400 @@ export default function SalesReportsPage() {
           ) : isLoading ? (
             <div className="py-16 text-center text-xs text-slate-400 animate-pulse space-y-2">
               <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mx-auto" />
-              <p>Calculating Sales &amp; Commercial Billing Schedules...</p>
+              <p>Loading Sales &amp; Invoices Register...</p>
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-              <div className="bg-[#233c4d] bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] print:bg-none print:!bg-slate-100 print:border-b print:border-slate-300 text-white print:text-slate-900 p-3.5 px-5 flex items-center justify-between">
-                <h4 className="font-black text-xs uppercase tracking-wider text-white print:text-slate-900">
-                  Sales Invoices &amp; Billing Realization Register
-                </h4>
-                <span className="text-[11px] font-mono text-emerald-300 print:text-emerald-800 font-bold">
-                  {filteredInvoices.length} Matching Records
-                </span>
+            <div className="rounded-xl border border-slate-200/90 overflow-hidden shadow-xs">
+              <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ReceiptIcon size={14} className="text-slate-700" />
+                  <h4 className="font-bold text-xs uppercase tracking-wider text-slate-800">
+                    Sales Invoices &amp; Realization Register
+                  </h4>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200 font-bold">
+                    {filteredInvoices.length} Invoices
+                  </span>
+                  {filteredInvoices.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={toggleAllRows}
+                      className="text-xs font-bold text-slate-600 hover:text-slate-900 underline cursor-pointer"
+                    >
+                      {expandedInvoiceIds.size === filteredInvoices.length
+                        ? "Collapse All"
+                        : "Expand All"}
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <DataTable
-                columns={columns}
-                data={filteredInvoices}
-                isLoading={false}
-                emptyTitle="No sales invoices found"
-                emptyMessage="No sales transactions match your search or filter criteria."
-              />
+              {filteredInvoices.length === 0 ? (
+                <div className="py-16 text-center text-xs text-slate-400">
+                  No sales invoices match your filter criteria.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-slate-100/90 border-b border-slate-200 text-slate-600 font-bold text-[11px] uppercase tracking-wider">
+                        <th className="py-3 px-3 w-10 text-center"></th>
+                        <th className="py-3 px-3">Invoice No</th>
+                        <th className="py-3 px-3">Client / Entity</th>
+                        <th className="py-3 px-3">Date</th>
+                        <th className="py-3 px-3 text-right">Net Sales</th>
+                        <th className="py-3 px-3 text-right">VAT (5%)</th>
+                        <th className="py-3 px-3 text-right">Total Invoiced</th>
+                        <th className="py-3 px-3 text-right">Collected</th>
+                        <th className="py-3 px-3 text-right">Balance Due</th>
+                        <th className="py-3 px-3 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200/80 bg-white">
+                      {filteredInvoices.map((inv) => {
+                        const isExpanded = expandedInvoiceIds.has(inv.id);
+                        const invDate = inv.invoiceDate
+                          ? new Date(inv.invoiceDate).toISOString().slice(0, 10)
+                          : "—";
+                        const dueDate = inv.dueDate
+                          ? new Date(inv.dueDate).toISOString().slice(0, 10)
+                          : null;
+                        const remaining = Number(
+                          inv.remainingBalance ??
+                            Number(inv.totalAmount || 0) -
+                              Number(inv.paidAmount || 0),
+                        );
+
+                        return (
+                          <React.Fragment key={inv.id}>
+                            <tr
+                              onClick={() => toggleRow(inv.id)}
+                              className={`hover:bg-slate-50/80 cursor-pointer transition-colors ${
+                                isExpanded ? "bg-slate-50/60" : ""
+                              }`}
+                            >
+                              <td className="py-3 px-3 text-center text-slate-400">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleRow(inv.id);
+                                  }}
+                                  className="p-1 hover:bg-slate-200 rounded text-slate-500 transition-colors cursor-pointer"
+                                  title={
+                                    isExpanded ? "Collapse Row" : "Expand Row"
+                                  }
+                                >
+                                  {isExpanded ? (
+                                    <ChevronDownIcon size={14} />
+                                  ) : (
+                                    <ChevronRightIcon size={14} />
+                                  )}
+                                </button>
+                              </td>
+                              <td className="py-3 px-3">
+                                <div className="flex items-center gap-1.5">
+                                  <ReceiptIcon
+                                    size={13}
+                                    className="text-emerald-700 shrink-0"
+                                  />
+                                  <span className="font-mono font-bold text-slate-900">
+                                    {inv.invoiceNumber}
+                                  </span>
+                                </div>
+                                {inv.projectScope && (
+                                  <span className="block text-[10.5px] text-slate-400 max-w-[200px] truncate mt-0.5">
+                                    {inv.projectScope}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-3">
+                                <span className="font-bold text-slate-900 block leading-tight">
+                                  {inv.customerName}
+                                </span>
+                                {inv.customerTrn && (
+                                  <span className="font-mono text-[10px] text-slate-400 mt-0.5 inline-block">
+                                    TRN: {inv.customerTrn}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-3 font-mono text-[11px] text-slate-700 whitespace-nowrap">
+                                <div>{invDate}</div>
+                                {dueDate && (
+                                  <span className="text-[10px] text-slate-400 block mt-0.5">
+                                    Due: {dueDate}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-3 text-right font-mono text-slate-700 font-medium">
+                                {formatNumber(inv.subtotal)}
+                              </td>
+                              <td className="py-3 px-3 text-right font-mono text-blue-700 font-medium">
+                                {formatNumber(inv.vatAmount)}
+                              </td>
+                              <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">
+                                {formatNumber(inv.totalAmount)}
+                              </td>
+                              <td className="py-3 px-3 text-right font-mono text-emerald-700 font-bold">
+                                {formatNumber(inv.paidAmount)}
+                              </td>
+                              <td
+                                className={`py-3 px-3 text-right font-mono font-black ${
+                                  remaining > 0
+                                    ? "text-rose-700"
+                                    : "text-emerald-700"
+                                }`}
+                              >
+                                {formatNumber(remaining)}
+                              </td>
+                              <td className="py-3 px-3 text-center">
+                                <span
+                                  className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusBadge(
+                                    inv.status,
+                                  )}`}
+                                >
+                                  {inv.status}
+                                </span>
+                              </td>
+                            </tr>
+
+                            {isExpanded && (
+                              <tr className="bg-slate-50/70 border-b border-slate-200">
+                                <td colSpan={10} className="p-3 sm:p-5">
+                                  <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 space-y-4 max-w-6xl mx-auto">
+                                    <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200">
+                                          <ReceiptIcon size={14} />
+                                        </div>
+                                        <div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-mono font-bold text-slate-900 text-sm">
+                                              {inv.invoiceNumber}
+                                            </span>
+                                            <span
+                                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusBadge(
+                                                inv.status,
+                                              )}`}
+                                            >
+                                              {inv.status}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleRow(inv.id);
+                                        }}
+                                        className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1 cursor-pointer"
+                                      >
+                                        <span>Close Details</span>
+                                        <ChevronDownIcon
+                                          size={13}
+                                          className="rotate-180"
+                                        />
+                                      </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+                                          Client Entity
+                                        </span>
+                                        <span className="font-bold text-slate-900 block truncate">
+                                          {inv.customerName}
+                                        </span>
+                                        {inv.customerTrn ? (
+                                          <span className="font-mono text-[10.5px] text-slate-500 block mt-0.5">
+                                            TRN: {inv.customerTrn}
+                                          </span>
+                                        ) : (
+                                          <span className="text-[10.5px] text-slate-400 block mt-0.5">
+                                            No TRN Recorded
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+                                          Invoice Date
+                                        </span>
+                                        <span className="font-mono font-bold text-slate-800 text-xs">
+                                          {invDate}
+                                        </span>
+                                      </div>
+
+                                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+                                          Payment Due Date
+                                        </span>
+                                        <span className="font-mono font-bold text-slate-800 text-xs">
+                                          {dueDate || "—"}
+                                        </span>
+                                      </div>
+
+                                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+                                          Collection Health
+                                        </span>
+                                        <span
+                                          className={`font-bold text-xs ${
+                                            remaining <= 0
+                                              ? "text-emerald-700"
+                                              : Number(inv.paidAmount || 0) > 0
+                                                ? "text-amber-700"
+                                                : "text-rose-700"
+                                          }`}
+                                        >
+                                          {remaining <= 0
+                                            ? "Fully Settled"
+                                            : Number(inv.paidAmount || 0) > 0
+                                              ? "Partially Recovered"
+                                              : "Unpaid / Pending"}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    {inv.projectScope && (
+                                      <div className="p-3 bg-slate-50/90 rounded-xl border border-slate-200 text-xs flex items-start gap-2.5">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0 mt-1.5" />
+                                        <div>
+                                          <span className="text-[10px] uppercase font-bold text-slate-600 block mb-0.5">
+                                            Project Scope &amp; Billing
+                                            Milestone
+                                          </span>
+                                          <p className="text-slate-800 leading-relaxed font-medium">
+                                            {inv.projectScope}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {inv.items && inv.items.length > 0 ? (
+                                      <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                                            Scope Bill of Quantities (BOQ)
+                                          </span>
+                                          <span className="text-[11px] text-slate-500 font-medium">
+                                            {inv.items.length} line item(s)
+                                          </span>
+                                        </div>
+
+                                        <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
+                                          <table className="w-full text-left text-xs border-collapse">
+                                            <thead className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-bold text-[10.5px]">
+                                              <tr>
+                                                <th className="py-2.5 px-3 w-10 text-center">
+                                                  #
+                                                </th>
+                                                <th className="py-2.5 px-3">
+                                                  Description / Line Item
+                                                </th>
+                                                <th className="py-2.5 px-3 text-center w-28">
+                                                  Quantity
+                                                </th>
+                                                <th className="py-2.5 px-3 text-right w-32">
+                                                  Rate (AED)
+                                                </th>
+                                                <th className="py-2.5 px-3 text-right w-36">
+                                                  Line Total (AED)
+                                                </th>
+                                              </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100">
+                                              {inv.items.map(
+                                                (it: any, idx: number) => (
+                                                  <tr
+                                                    key={idx}
+                                                    className="hover:bg-slate-50/50"
+                                                  >
+                                                    <td className="py-2.5 px-3 text-center font-mono text-slate-400">
+                                                      {idx + 1}
+                                                    </td>
+                                                    <td className="py-2.5 px-3 text-slate-800 font-medium">
+                                                      {renderDescriptionPoints(
+                                                        it.description,
+                                                      )}
+                                                    </td>
+                                                    <td className="py-2.5 px-3 text-center font-mono text-slate-700 whitespace-nowrap">
+                                                      {it.quantity}{" "}
+                                                      {it.unit || ""}
+                                                    </td>
+                                                    <td className="py-2.5 px-3 text-right font-mono text-slate-700">
+                                                      {formatNumber(
+                                                        it.unitPrice,
+                                                      )}
+                                                    </td>
+                                                    <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
+                                                      {formatNumber(it.amount)}
+                                                    </td>
+                                                  </tr>
+                                                ),
+                                              )}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </div>
+                                    ) : null}
+
+                                    <div className="flex justify-end pt-2">
+                                      <div className="w-full sm:w-88 p-4 bg-slate-50/80 rounded-xl border border-slate-200/90 shadow-2xs space-y-2 text-xs">
+                                        <div className="flex justify-between text-slate-600">
+                                          <span>Net Taxable Subtotal:</span>
+                                          <span className="font-mono font-bold text-slate-800">
+                                            {formatCurrency(inv.subtotal)}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between text-blue-700">
+                                          <span>UAE VAT (5%):</span>
+                                          <span className="font-mono font-bold">
+                                            {formatCurrency(inv.vatAmount)}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between text-slate-900 font-bold border-t border-slate-200/80 pt-2 text-sm">
+                                          <span>Total Invoiced:</span>
+                                          <span className="font-mono text-slate-900">
+                                            {formatCurrency(inv.totalAmount)}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between text-emerald-700 font-semibold">
+                                          <span>Settled / Paid:</span>
+                                          <span className="font-mono font-bold">
+                                            {formatCurrency(inv.paidAmount)}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between text-rose-700 font-black border-t border-slate-200/80 pt-2 text-sm">
+                                          <span>Outstanding Balance:</span>
+                                          <span className="font-mono">
+                                            {formatCurrency(remaining)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      {selectedInvoice && (
-        <Modal
-          isOpen={Boolean(selectedInvoice)}
-          onClose={() => setSelectedInvoice(null)}
-          title={`Sales Invoice Audit: ${selectedInvoice.invoiceNumber}`}
-          maxWidth="2xl"
-        >
-          <div className="space-y-5 text-xs">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                  Client Name
-                </span>
-                <span className="font-bold text-slate-900 text-sm">
-                  {selectedInvoice.customerName}
-                </span>
-                {selectedInvoice.customerTrn && (
-                  <span className="font-mono text-[10px] text-slate-500 block mt-0.5">
-                    TRN: {selectedInvoice.customerTrn}
-                  </span>
-                )}
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                  Invoice Date
-                </span>
-                <span className="font-mono font-semibold text-slate-800">
-                  {selectedInvoice.invoiceDate
-                    ? new Date(selectedInvoice.invoiceDate)
-                        .toISOString()
-                        .slice(0, 10)
-                    : "—"}
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                  Payment Due Date
-                </span>
-                <span className="font-mono font-semibold text-slate-800">
-                  {selectedInvoice.dueDate
-                    ? new Date(selectedInvoice.dueDate)
-                        .toISOString()
-                        .slice(0, 10)
-                    : "—"}
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                  Posting Status
-                </span>
-                <span
-                  className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-1 ${getStatusBadge(
-                    selectedInvoice.status,
-                  )}`}
-                >
-                  {selectedInvoice.status}
-                </span>
-              </div>
-            </div>
-
-            {selectedInvoice.projectScope && (
-              <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-200">
-                <span className="text-[10px] uppercase font-bold text-blue-800 block mb-0.5">
-                  Project Scope &amp; Billing Milestone
-                </span>
-                <p className="text-slate-700 text-xs whitespace-pre-line leading-relaxed">
-                  {selectedInvoice.projectScope}
-                </p>
-              </div>
-            )}
-
-            {selectedInvoice.items && selectedInvoice.items.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
-                  Scope Bill of Quantities (BOQ)
-                </h4>
-                <div className="rounded-xl border border-slate-200 overflow-hidden">
-                  <Table>
-                    <TableHead className="bg-slate-50 border-b border-slate-200">
-                      <TableHeaderCell className="py-2.5 px-3 font-bold text-slate-600 text-[10.5px]">
-                        Description / Line Item
-                      </TableHeaderCell>
-                      <TableHeaderCell className="py-2.5 px-3 font-bold text-slate-600 text-[10.5px] text-center">
-                        Quantity
-                      </TableHeaderCell>
-                      <TableHeaderCell className="py-2.5 px-3 font-bold text-slate-600 text-[10.5px] text-right">
-                        Rate (AED)
-                      </TableHeaderCell>
-                      <TableHeaderCell className="py-2.5 px-3 font-bold text-slate-600 text-[10.5px] text-right">
-                        Line Total (AED)
-                      </TableHeaderCell>
-                    </TableHead>
-                    <TableBody className="divide-y divide-slate-100">
-                      {selectedInvoice.items.map((it: any, idx: number) => (
-                        <TableRow key={idx}>
-                          <TableCell className="py-2.5 px-3 font-medium text-slate-800 align-top">
-                            {renderDescriptionPoints(
-                              it.description || it.product?.name,
-                              `Item #${idx + 1}`,
-                            )}
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 text-center font-mono align-top">
-                            {it.quantity} {it.unit || "Unit"}
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 text-right font-mono align-top">
-                            {Number(it.unitPrice).toFixed(2)}
-                          </TableCell>
-                          <TableCell className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 align-top">
-                            {Number(
-                              it.totalPrice || it.quantity * it.unitPrice,
-                            ).toFixed(2)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-end pt-2">
-              <div className="w-full sm:w-72 p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
-                <div className="flex justify-between text-slate-600">
-                  <span>Net Taxable Subtotal:</span>
-                  <span className="font-mono font-bold text-slate-800">
-                    {formatCurrency(selectedInvoice.subtotal)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-blue-700">
-                  <span>UAE VAT (5%):</span>
-                  <span className="font-mono font-bold">
-                    {formatCurrency(selectedInvoice.vatAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-slate-900 text-sm font-black pt-1.5 border-t border-slate-200">
-                  <span>Total Invoiced:</span>
-                  <span className="font-mono text-emerald-800">
-                    {formatCurrency(selectedInvoice.totalAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-emerald-700 pt-1">
-                  <span>Settled / Paid:</span>
-                  <span className="font-mono font-bold">
-                    {formatCurrency(selectedInvoice.paidAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-rose-700 font-bold pt-1 border-t border-dashed border-slate-200">
-                  <span>Outstanding Balance:</span>
-                  <span className="font-mono font-black">
-                    {formatCurrency(selectedInvoice.remainingBalance)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSelectedInvoice(null)}
-                className="text-xs cursor-pointer"
-              >
-                Close Audit
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
       <div
         id="printable-voucher"
-        className="mx-auto bg-white max-w-4xl rounded-xl print:rounded-none overflow-visible print:overflow-visible hidden print:block w-full text-agm-text"
+        className="hidden print:block w-full text-slate-900 bg-white"
       >
         <table className="print-page-table w-full border-collapse">
           <thead className="print-page-header-group">
@@ -809,7 +852,6 @@ export default function SalesReportsPage() {
               </th>
             </tr>
           </thead>
-
           <tfoot className="print-page-footer-group">
             <tr>
               <td className="p-0 border-none align-bottom">
@@ -824,134 +866,81 @@ export default function SalesReportsPage() {
               </td>
             </tr>
           </tfoot>
-
           <tbody className="print-page-body-group">
             <tr>
               <td className="p-0 border-none align-top">
-                <div className="space-y-0">
-                  <div className="flex justify-between items-center py-2 text-[12px] font-bold text-agm-text print:text-[11px] border-t border-agm-box-border">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-2 text-[12px] font-bold text-slate-800 border-t border-slate-200">
                     <span>Corporate Tax Registration No: 104094432200001</span>
-                    <span>VAT Registration No:104094432200003</span>
+                    <span>VAT Registration No: 104094432200003</span>
                   </div>
 
-                  <div
-                    className="w-full text-center py-2.5 px-4 font-bold text-[13px] print:text-[12.5px] text-white tracking-wide uppercase mb-0 bg-agm-navy"
-                    style={{
-                      WebkitPrintColorAdjust: "exact",
-                      printColorAdjust: "exact",
-                    }}
-                  >
-                    AGM FITOUT TECHNICAL SERVICES LLC - COMMERCIAL SALES &amp;
-                    REVENUE STATEMENT
+                  <div className="w-full text-center py-2 px-4 font-bold text-[13px] text-white tracking-wide uppercase bg-slate-800">
+                    COMMERCIAL SALES INVOICES &amp; REALIZATION REGISTER
                   </div>
 
-                  <div className="grid grid-cols-4 gap-3 p-4 bg-agm-box-bg rounded-xl border border-agm-box-border my-4 print-avoid-break">
-                    <div>
-                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
-                        Total Billed
-                      </span>
-                      <span className="font-mono font-black text-agm-text">
-                        {formatCurrency(totalInvoicedSales)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
-                        Collected
-                      </span>
-                      <span className="font-mono font-black text-emerald-700">
-                        {formatCurrency(totalCollected)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
-                        Receivables (A/R)
-                      </span>
-                      <span className="font-mono font-black text-rose-600">
-                        {formatCurrency(totalOutstanding)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-agm-muted uppercase font-bold block">
-                        Output VAT (5%)
-                      </span>
-                      <span className="font-mono font-black text-blue-700">
-                        {formatCurrency(totalOutputVat)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h4 className="font-bold text-agm-text text-xs">
-                      Invoiced Revenue Breakdown ({filteredInvoices.length}{" "}
-                      records)
-                    </h4>
-                    <div className="rounded-xl border border-agm-box-border overflow-hidden">
-                      <table className="w-full text-left text-xs text-agm-text">
-                        <thead className="bg-agm-box-bg border-b border-agm-box-border">
-                          <tr>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase">
-                              Invoice No
-                            </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase">
-                              Customer
-                            </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase">
-                              Date
-                            </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase text-right">
-                              Net (AED)
-                            </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase text-right">
-                              VAT (AED)
-                            </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase text-right">
-                              Total (AED)
-                            </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase text-right">
-                              Due (AED)
-                            </th>
-                            <th className="py-2.5 px-3 text-[10px] font-bold text-agm-text uppercase text-center">
-                              Status
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-agm-box-border font-mono">
-                          {filteredInvoices.map((inv) => (
-                            <tr key={inv.id}>
-                              <td className="py-2 px-3 font-bold text-agm-text">
-                                {inv.invoiceNumber}
-                              </td>
-                              <td className="py-2 px-3 font-sans font-medium text-agm-text">
-                                {inv.customerName}
-                              </td>
-                              <td className="py-2 px-3 text-agm-muted">
-                                {inv.invoiceDate
-                                  ? new Date(inv.invoiceDate)
-                                      .toISOString()
-                                      .slice(0, 10)
-                                  : "—"}
-                              </td>
-                              <td className="py-2 px-3 text-right">
-                                {Number(inv.subtotal).toFixed(2)}
-                              </td>
-                              <td className="py-2 px-3 text-right text-blue-700">
-                                {Number(inv.vatAmount).toFixed(2)}
-                              </td>
-                              <td className="py-2 px-3 text-right font-bold text-agm-text">
-                                {Number(inv.totalAmount).toFixed(2)}
-                              </td>
-                              <td className="py-2 px-3 text-right font-bold text-rose-600">
-                                {Number(inv.remainingBalance).toFixed(2)}
-                              </td>
-                              <td className="py-2 px-3 text-center font-sans text-[10px]">
-                                {inv.status}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                  <table className="w-full border-collapse text-[11px] text-slate-800">
+                    <thead>
+                      <tr className="bg-slate-100 font-bold border-b border-slate-300">
+                        <th className="py-2 px-2 text-left">Invoice No</th>
+                        <th className="py-2 px-2 text-left">Client Entity</th>
+                        <th className="py-2 px-2 text-left">Date</th>
+                        <th className="py-2 px-2 text-right">
+                          Net Sales (AED)
+                        </th>
+                        <th className="py-2 px-2 text-right">VAT (AED)</th>
+                        <th className="py-2 px-2 text-right">Total (AED)</th>
+                        <th className="py-2 px-2 text-right">
+                          Collected (AED)
+                        </th>
+                        <th className="py-2 px-2 text-right">
+                          Balance Due (AED)
+                        </th>
+                        <th className="py-2 px-2 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {filteredInvoices.map((inv) => (
+                        <tr key={inv.id}>
+                          <td className="py-1.5 px-2 font-mono font-bold">
+                            {inv.invoiceNumber}
+                          </td>
+                          <td className="py-1.5 px-2 font-medium">
+                            {inv.customerName}
+                          </td>
+                          <td className="py-1.5 px-2 font-mono">
+                            {inv.invoiceDate
+                              ? new Date(inv.invoiceDate)
+                                  .toISOString()
+                                  .slice(0, 10)
+                              : "—"}
+                          </td>
+                          <td className="py-1.5 px-2 text-right font-mono">
+                            {formatNumber(inv.subtotal)}
+                          </td>
+                          <td className="py-1.5 px-2 text-right font-mono">
+                            {formatNumber(inv.vatAmount)}
+                          </td>
+                          <td className="py-1.5 px-2 text-right font-mono font-bold">
+                            {formatNumber(inv.totalAmount)}
+                          </td>
+                          <td className="py-1.5 px-2 text-right font-mono">
+                            {formatNumber(inv.paidAmount)}
+                          </td>
+                          <td className="py-1.5 px-2 text-right font-mono font-bold">
+                            {formatNumber(
+                              inv.remainingBalance ??
+                                Number(inv.totalAmount || 0) -
+                                  Number(inv.paidAmount || 0),
+                            )}
+                          </td>
+                          <td className="py-1.5 px-2 text-center font-bold">
+                            {inv.status}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </td>
             </tr>

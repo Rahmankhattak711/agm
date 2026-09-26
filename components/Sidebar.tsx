@@ -151,33 +151,10 @@ const navGroups: NavGroup[] = [
         ],
       },
       {
-        id: "reports-group",
+        id: "reports",
         label: "Reports",
         icon: <ReportsIcon />,
         href: "/finance/reports",
-        children: [
-          {
-            id: "finance-reports",
-            label: "Financial Statements",
-            href: "/finance/reports",
-          },
-          {
-            id: "report-sales",
-            label: "Sales Reports",
-            href: "/reports/sales",
-          },
-          {
-            id: "report-purchases",
-            label: "Purchase Reports",
-            href: "/reports/purchases",
-          },
-          { id: "report-vat", label: "VAT & Tax Return", href: "/reports/vat" },
-          {
-            id: "report-management",
-            label: "Executive Summary",
-            href: "/reports/management",
-          },
-        ],
       },
     ],
   },
@@ -311,7 +288,6 @@ export default function Sidebar({
       "sales-group": false,
       "purchases-group": false,
       "accounts-group": false,
-      "reports-group": false,
       "hr-group": false,
       "assets-group": false,
     },

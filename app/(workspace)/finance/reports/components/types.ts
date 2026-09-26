@@ -1,5 +1,8 @@
 export type ReportTab =
+  | "hub"
   | "summary"
+  | "statement-of-account"
+  | "soa"
   | "tax-invoices"
   | "quotation"
   | "profit-loss"

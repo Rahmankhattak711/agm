@@ -11,6 +11,8 @@ import {
   ShieldCheckIcon,
   CheckCircle2Icon,
   MailIcon,
+  UserAdminIcon,
+  ReportsIcon,
 } from "@/components/icons";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui";
@@ -162,105 +164,100 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center gap-2.5 pl-1.5 pr-2 py-1 rounded-xl hover:bg-agm-box-bg border border-transparent hover:border-agm-box-border transition cursor-pointer text-left"
+                className="flex items-center gap-2.5 pl-1.5 pr-2.5 py-1 rounded-xl hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-all cursor-pointer text-left group"
                 aria-expanded={userMenuOpen}
               >
                 <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-agm-navy text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                  <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs ring-2 ring-slate-100 group-hover:ring-slate-200 transition-all">
                     {userInitials}
                   </div>
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
                 </div>
                 <div className="hidden sm:flex flex-col">
-                  <span className="text-xs font-bold text-agm-text leading-tight truncate max-w-[140px]">
+                  <span className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[130px]">
                     {user?.fullName || "Rahman Khattak"}
                   </span>
-                  <span className="text-[11px] text-agm-muted font-normal">
+                  <span className="text-[10.5px] text-slate-500 font-medium">
                     {roleDisplay}
                   </span>
                 </div>
                 <ChevronDownIcon
                   size={12}
-                  className={`text-agm-subtle transition-transform duration-200 hidden sm:block ${
-                    userMenuOpen ? "rotate-180" : ""
+                  className={`text-slate-400 transition-transform duration-200 hidden sm:block ${
+                    userMenuOpen ? "rotate-180 text-slate-600" : ""
                   }`}
                 />
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-white border border-agm-box-border shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="p-4 bg-gradient-to-b from-slate-50/90 to-white border-b border-agm-box-border/60">
-                    <div className="flex items-center gap-3">
-                      <div className="relative">
-                        <div className="w-11 h-11 rounded-2xl bg-agm-navy text-white font-black text-sm flex items-center justify-center shadow-xs">
-                          {userInitials}
-                        </div>
-                        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white" />
+                <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-white border border-slate-200 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="p-4 bg-slate-50/80 border-b border-slate-100 flex items-center gap-3">
+                    <div className="relative shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white font-bold text-sm flex items-center justify-center shadow-xs">
+                        {userInitials}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-slate-900 truncate">
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <h4 className="text-xs font-bold text-slate-900 truncate">
                           {user?.fullName || "Rahman Khattak"}
-                        </p>
-                        <p className="text-[11px] text-slate-500 truncate flex items-center gap-1 mt-0.5">
-                          <MailIcon
-                            size={11}
-                            className="shrink-0 text-slate-400"
-                          />
-                          <span className="truncate">
-                            {user?.email || "rahmankhattak796@gmail.com"}
-                          </span>
-                        </p>
-                        <div className="mt-1.5 flex items-center gap-1.5">
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-agm-green border border-emerald-200/80">
-                            <ShieldCheckIcon
-                              size={11}
-                              className="text-agm-green shrink-0"
-                            />
-                            <span>{roleDisplay}</span>
-                          </span>
-                        </div>
+                        </h4>
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded-full shrink-0">
+                          {roleDisplay}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                        {user?.email || "rahmankhattak796@gmail.com"}
+                      </p>
+                      <div className="text-[10.5px] text-slate-400 mt-1 flex items-center gap-1 font-medium">
+                        <BuildingIcon
+                          size={11}
+                          className="text-slate-400 shrink-0"
+                        />
+                        <span className="truncate">AGM Fitout LLC</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-3 border-b border-agm-box-border/50 bg-slate-50/50 space-y-2 text-[11px]">
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span className="flex items-center gap-1.5 text-slate-500">
-                        <BuildingIcon size={12} className="text-slate-400" />{" "}
-                        Company
-                      </span>
-                      <span className="font-semibold text-slate-800">
-                        AGM Fitout LLC
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span className="flex items-center gap-1.5 text-slate-500">
-                        <CheckCircle2Icon
-                          size={12}
-                          className="text-emerald-500"
-                        />{" "}
-                        Status
-                      </span>
-                      <span className="font-semibold text-emerald-700 bg-emerald-100/60 px-1.5 py-0.5 rounded text-[10px]">
-                        Active Session
-                      </span>
-                    </div>
+                  <div className="p-1.5 space-y-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        router.push("/administration/users");
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer text-left"
+                    >
+                      <UserAdminIcon size={14} className="text-slate-400" />
+                      <span>Manage Users</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        router.push("/finance/reports");
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer text-left"
+                    >
+                      <ReportsIcon size={14} className="text-slate-400" />
+                      <span>Reports Hub</span>
+                    </button>
                   </div>
 
-                  <div className="p-2.5 bg-slate-50/80 border-t border-agm-box-border/60">
-                    <Button
+                  <div className="p-1.5 border-t border-slate-100 bg-slate-50/50">
+                    <button
                       type="button"
-                      variant="danger"
-                      size="md"
                       onClick={() => {
                         setUserMenuOpen(false);
                         logout();
                       }}
-                      className="w-full justify-center"
-                      icon={<LogoutIcon className="w-3.5 h-3.5" />}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer text-left"
                     >
-                      Sign out
-                    </Button>
+                      <LogoutIcon className="w-3.5 h-3.5" />
+                      <span>Sign out</span>
+                    </button>
                   </div>
                 </div>
               )}
