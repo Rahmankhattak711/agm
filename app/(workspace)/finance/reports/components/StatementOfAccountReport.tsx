@@ -41,7 +41,7 @@ export const StatementOfAccountReport: React.FC<
   const { data: customers = [] } = useCustomers();
 
   useEffect(() => {
-    if (customerIdParam && customerIdParam !== selectedCustomerId) {
+    if (customerIdParam) {
       setSelectedCustomerId(customerIdParam);
     }
   }, [customerIdParam]);

@@ -52,19 +52,22 @@ export function CreateProjectModal({
   const [cDeadline, setCDeadline] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  function fillFromQuote(quoteId: string) {
-    setCQuoteId(quoteId);
-    const q = quotations.find((x) => x.id === quoteId);
-    if (!q) return;
-    setCName(
-      q.project
-        ? `${q.project} (${q.quotationNo})`
-        : `Project – ${q.quotationNo}`,
-    );
-    setCLocation(q.location || "");
-    setCBudget(String(q.totalAmount || "0"));
-    if (q.customerId) setCCustomer(q.customerId);
-  }
+  const fillFromQuote = React.useCallback(
+    (quoteId: string) => {
+      setCQuoteId(quoteId);
+      const q = quotations.find((x) => x.id === quoteId);
+      if (!q) return;
+      setCName(
+        q.project
+          ? `${q.project} (${q.quotationNo})`
+          : `Project – ${q.quotationNo}`,
+      );
+      setCLocation(q.location || "");
+      setCBudget(String(q.totalAmount || "0"));
+      if (q.customerId) setCCustomer(q.customerId);
+    },
+    [quotations],
+  );
 
   React.useEffect(() => {
     if (isOpen) {
@@ -86,7 +89,7 @@ export function CreateProjectModal({
       setCStart(isoToDP(new Date().toISOString().split("T")[0]));
       setCDeadline("");
     }
-  }, [isOpen]);
+  }, [isOpen, acceptedQuotations, customers, fillFromQuote, quotations]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
