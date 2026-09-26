@@ -18,7 +18,11 @@ function formatDateDisplay(dateStr?: string | null): string {
   try {
     const parts = dateStr.split("-");
     if (parts.length === 3) {
-      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      const d = new Date(
+        Number(parts[0]),
+        Number(parts[1]) - 1,
+        Number(parts[2]),
+      );
       return d.toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
@@ -40,12 +44,38 @@ function formatDateDisplay(dateStr?: string | null): string {
 function convertNumberToWords(num: number): string {
   if (num === 0) return "Zero UAE Dirhams Only";
   const ones = [
-    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
-    "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
-    "Seventeen", "Eighteen", "Nineteen",
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
   ];
   const tens = [
-    "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety",
+    "",
+    "",
+    "Twenty",
+    "Thirty",
+    "Forty",
+    "Fifty",
+    "Sixty",
+    "Seventy",
+    "Eighty",
+    "Ninety",
   ];
 
   const chunk = (n: number): string => {
@@ -96,10 +126,9 @@ export interface StatementOfAccountDocumentProps {
   hidePrintControls?: boolean;
 }
 
-export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProps> = ({
-  data,
-  className = "",
-}) => {
+export const StatementOfAccountDocument: React.FC<
+  StatementOfAccountDocumentProps
+> = ({ data, className = "" }) => {
   const currentDate = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -113,14 +142,20 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
 
   const projectName = data.period?.projectName
     ? data.period.projectName
-    : (data.projects && data.projects.length > 0
-        ? data.projects.map(p => p.name).join(", ")
-        : "All Projects / Contracts");
+    : data.projects && data.projects.length > 0
+      ? data.projects.map((p) => p.name).join(", ")
+      : "All Projects / Contracts";
 
-  const totalOutstandingInvoiced = data.outstandingInvoices?.reduce((s, i) => s + (i.invoiceAmount || 0), 0) || 0;
-  const totalOutstandingPaid = data.outstandingInvoices?.reduce((s, i) => s + (i.paid || 0), 0) || 0;
-  const totalOutstandingCredit = data.outstandingInvoices?.reduce((s, i) => s + (i.creditNote || 0), 0) || 0;
-  const totalOutstandingBal = data.outstandingInvoices?.reduce((s, i) => s + (i.outstanding || 0), 0) || 0;
+  const totalOutstandingInvoiced =
+    data.outstandingInvoices?.reduce((s, i) => s + (i.invoiceAmount || 0), 0) ||
+    0;
+  const totalOutstandingPaid =
+    data.outstandingInvoices?.reduce((s, i) => s + (i.paid || 0), 0) || 0;
+  const totalOutstandingCredit =
+    data.outstandingInvoices?.reduce((s, i) => s + (i.creditNote || 0), 0) || 0;
+  const totalOutstandingBal =
+    data.outstandingInvoices?.reduce((s, i) => s + (i.outstanding || 0), 0) ||
+    0;
   const totalInvoicesCount = data.outstandingInvoices?.length || 0;
 
   const agingCurrent = Number(data.aging?.current || 0);
@@ -128,14 +163,17 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
   const agingDays60 = Number(data.aging?.days31to60 || 0);
   const agingDays90 = Number(data.aging?.days61to90 || 0);
   const agingDays90Plus = Number(data.aging?.days90Plus || 0);
-  const agingTotal = agingCurrent + agingDays30 + agingDays60 + agingDays90 + agingDays90Plus;
+  const agingTotal =
+    agingCurrent + agingDays30 + agingDays60 + agingDays90 + agingDays90Plus;
 
   const countCurrent = data.aging?.counts?.current || 0;
   const countDays30 = data.aging?.counts?.days1to30 || 0;
   const countDays60 = data.aging?.counts?.days31to60 || 0;
   const countDays90 = data.aging?.counts?.days61to90 || 0;
   const countDays90Plus = data.aging?.counts?.days90Plus || 0;
-  const countTotal = countCurrent + countDays30 + countDays60 + countDays90 + countDays90Plus || totalInvoicesCount;
+  const countTotal =
+    countCurrent + countDays30 + countDays60 + countDays90 + countDays90Plus ||
+    totalInvoicesCount;
 
   return (
     <div
@@ -189,11 +227,15 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                         CUSTOMER DETAILS
                       </div>
                       <div className="grid grid-cols-[95px_10px_1fr] text-[11px] leading-tight text-slate-800">
-                        <span className="text-[#657484] font-medium">Customer Name</span>
+                        <span className="text-[#657484] font-medium">
+                          Customer Name
+                        </span>
                         <span className="text-slate-400">:</span>
                         <span className="font-bold text-[#263b4d]">
                           {data.customer.name}
-                          {data.customer.companyName ? ` (${data.customer.companyName})` : ""}
+                          {data.customer.companyName
+                            ? ` (${data.customer.companyName})`
+                            : ""}
                         </span>
                       </div>
                       <div className="grid grid-cols-[95px_10px_1fr] text-[11px] leading-tight text-slate-800">
@@ -204,21 +246,32 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                         </span>
                       </div>
                       <div className="grid grid-cols-[95px_10px_1fr] text-[11px] leading-tight text-slate-800">
-                        <span className="text-[#657484] font-medium">Address</span>
+                        <span className="text-[#657484] font-medium">
+                          Address
+                        </span>
                         <span className="text-slate-400">:</span>
                         <span className="text-slate-700">
-                          {data.customer.address || "Office No. 102, Al Barsha 1, Dubai, United Arab Emirates"}
+                          {data.customer.address ||
+                            "Office No. 102, Al Barsha 1, Dubai, United Arab Emirates"}
                         </span>
                       </div>
                       <div className="grid grid-cols-[95px_10px_1fr] text-[11px] leading-tight text-slate-800">
-                        <span className="text-[#657484] font-medium">Contact</span>
+                        <span className="text-[#657484] font-medium">
+                          Contact
+                        </span>
                         <span className="text-slate-400">:</span>
-                        <span className="text-slate-700">{data.customer.phone || "+971 50 123 4567"}</span>
+                        <span className="text-slate-700">
+                          {data.customer.phone || "+971 50 123 4567"}
+                        </span>
                       </div>
                       <div className="grid grid-cols-[95px_10px_1fr] text-[11px] leading-tight text-slate-800">
-                        <span className="text-[#657484] font-medium">Email</span>
+                        <span className="text-[#657484] font-medium">
+                          Email
+                        </span>
                         <span className="text-slate-400">:</span>
-                        <span className="text-slate-700">{data.customer.email || "accounts@client.ae"}</span>
+                        <span className="text-slate-700">
+                          {data.customer.email || "accounts@client.ae"}
+                        </span>
                       </div>
                     </div>
 
@@ -227,31 +280,50 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                         STATEMENT PARTICULARS
                       </div>
                       <div className="grid grid-cols-[105px_10px_1fr] text-[11px] leading-tight text-slate-800">
-                        <span className="text-[#657484] font-medium">Statement No</span>
+                        <span className="text-[#657484] font-medium">
+                          Statement No
+                        </span>
                         <span className="text-slate-400">:</span>
-                        <span className="font-mono font-bold text-[#263b4d]">{statementNo}</span>
-                      </div>
-                      <div className="grid grid-cols-[105px_10px_1fr] text-[11px] leading-tight text-slate-800">
-                        <span className="text-[#657484] font-medium">Statement Date</span>
-                        <span className="text-slate-400">:</span>
-                        <span className="font-bold text-[#263b4d]">{currentDate}</span>
-                      </div>
-                      <div className="grid grid-cols-[105px_10px_1fr] text-[11px] leading-tight text-slate-800">
-                        <span className="text-[#657484] font-medium">Period</span>
-                        <span className="text-slate-400">:</span>
-                        <span className="font-bold text-[#263b4d]">
-                          {formatDateDisplay(data.period.fromDate)} – {formatDateDisplay(data.period.toDate)}
+                        <span className="font-mono font-bold text-[#263b4d]">
+                          {statementNo}
                         </span>
                       </div>
                       <div className="grid grid-cols-[105px_10px_1fr] text-[11px] leading-tight text-slate-800">
-                        <span className="text-[#657484] font-medium">Currency</span>
+                        <span className="text-[#657484] font-medium">
+                          Statement Date
+                        </span>
                         <span className="text-slate-400">:</span>
-                        <span className="font-mono font-bold text-[#263b4d]">AED</span>
+                        <span className="font-bold text-[#263b4d]">
+                          {currentDate}
+                        </span>
                       </div>
                       <div className="grid grid-cols-[105px_10px_1fr] text-[11px] leading-tight text-slate-800">
-                        <span className="text-[#657484] font-medium">Project(s)</span>
+                        <span className="text-[#657484] font-medium">
+                          Period
+                        </span>
                         <span className="text-slate-400">:</span>
-                        <span className="font-semibold text-[#263b4d]">{projectName}</span>
+                        <span className="font-bold text-[#263b4d]">
+                          {formatDateDisplay(data.period.fromDate)} –{" "}
+                          {formatDateDisplay(data.period.toDate)}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-[105px_10px_1fr] text-[11px] leading-tight text-slate-800">
+                        <span className="text-[#657484] font-medium">
+                          Currency
+                        </span>
+                        <span className="text-slate-400">:</span>
+                        <span className="font-mono font-bold text-[#263b4d]">
+                          AED
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-[105px_10px_1fr] text-[11px] leading-tight text-slate-800">
+                        <span className="text-[#657484] font-medium">
+                          Project(s)
+                        </span>
+                        <span className="text-slate-400">:</span>
+                        <span className="font-semibold text-[#263b4d]">
+                          {projectName}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -263,33 +335,50 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                   <div className="text-[10.5px] font-bold text-[#28633a] uppercase tracking-wider mb-1 flex items-center justify-between">
                     <span>PROJECTS & CONTRACT DETAILS</span>
                     <span className="text-[9.5px] text-[#657484] font-normal normal-case">
-                      {data.projects.length} Contract{data.projects.length > 1 ? "s" : ""}
+                      {data.projects.length} Contract
+                      {data.projects.length > 1 ? "s" : ""}
                     </span>
                   </div>
                   <div className="border border-[#dbe2db] rounded-lg overflow-hidden">
                     <table className="w-full text-[10.5px] border-collapse">
                       <thead>
                         <tr className="bg-[#f4f6f4] text-[#263b4d] border-b border-[#dbe2db] text-left">
-                          <th className="py-1.5 px-2.5 font-bold w-28">Project Code</th>
-                          <th className="py-1.5 px-2.5 font-bold">Project Name & Description</th>
-                          <th className="py-1.5 px-2.5 font-bold w-28">Location</th>
-                          <th className="py-1.5 px-2.5 font-bold text-center w-24">Status</th>
-                          <th className="py-1.5 px-2.5 font-bold text-right w-28">Contract Value</th>
+                          <th className="py-1.5 px-2.5 font-bold w-28">
+                            Project Code
+                          </th>
+                          <th className="py-1.5 px-2.5 font-bold">
+                            Project Name & Description
+                          </th>
+                          <th className="py-1.5 px-2.5 font-bold w-28">
+                            Location
+                          </th>
+                          <th className="py-1.5 px-2.5 font-bold text-center w-24">
+                            Status
+                          </th>
+                          <th className="py-1.5 px-2.5 font-bold text-right w-28">
+                            Contract Value
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#e8ebe8]">
                         {data.projects.map((proj, idx) => (
-                          <tr key={proj.id || idx} className="bg-white hover:bg-[#f8f9f8]">
+                          <tr
+                            key={proj.id || idx}
+                            className="bg-white hover:bg-[#f8f9f8]"
+                          >
                             <td className="py-1.5 px-2.5 font-mono font-bold text-[#263b4d]">
                               {proj.projectCode || `PRJ-${idx + 1}`}
                             </td>
                             <td className="py-1.5 px-2.5 text-slate-800">
-                              <div className="font-medium text-[#263b4d]">{proj.name}</div>
-                              {proj.description && proj.description !== proj.name && (
-                                <div className="text-[9.5px] text-slate-500 leading-tight">
-                                  {proj.description}
-                                </div>
-                              )}
+                              <div className="font-medium text-[#263b4d]">
+                                {proj.name}
+                              </div>
+                              {proj.description &&
+                                proj.description !== proj.name && (
+                                  <div className="text-[9.5px] text-slate-500 leading-tight">
+                                    {proj.description}
+                                  </div>
+                                )}
                             </td>
                             <td className="py-1.5 px-2.5 text-slate-600 text-[10px]">
                               {proj.location || "Dubai, UAE"}
@@ -300,7 +389,9 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                               </span>
                             </td>
                             <td className="py-1.5 px-2.5 text-right font-mono font-bold text-[#263b4d]">
-                              {proj.contractValue ? `AED ${formatAmount(proj.contractValue)}` : "-"}
+                              {proj.contractValue
+                                ? `AED ${formatAmount(proj.contractValue)}`
+                                : "-"}
                             </td>
                           </tr>
                         ))}
@@ -319,23 +410,35 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                     <div className="p-2.5 bg-white text-[11px] space-y-1.5 flex-1 flex flex-col justify-between">
                       <div className="flex justify-between items-center text-slate-700">
                         <span>Opening balance (brought forward)</span>
-                        <span className="font-mono font-bold text-[#263b4d]">{formatAmount(data.openingBalance)}</span>
+                        <span className="font-mono font-bold text-[#263b4d]">
+                          {formatAmount(data.openingBalance)}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center text-slate-700">
                         <span>Total Invoices</span>
-                        <span className="font-mono font-bold text-[#263b4d]">{formatAmount(data.totals.invoices)}</span>
+                        <span className="font-mono font-bold text-[#263b4d]">
+                          {formatAmount(data.totals.invoices)}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center text-slate-700">
                         <span>Total Payments</span>
-                        <span className="font-mono font-bold text-emerald-700">({formatAmount(data.totals.payments)})</span>
+                        <span className="font-mono font-bold text-emerald-700">
+                          ({formatAmount(data.totals.payments)})
+                        </span>
                       </div>
                       <div className="flex justify-between items-center text-slate-700">
                         <span>Total Credit Notes</span>
-                        <span className="font-mono font-bold text-sky-700">({formatAmount(data.totals.creditNotes)})</span>
+                        <span className="font-mono font-bold text-sky-700">
+                          ({formatAmount(data.totals.creditNotes)})
+                        </span>
                       </div>
                       <div className="bg-[#e8f0e8] text-[#0e3812] px-2.5 py-1 rounded font-black flex justify-between items-center mt-1 border border-[#c3d9c7]">
-                        <span className="text-[11px] uppercase tracking-wider">Closing Balance</span>
-                        <span className="font-mono text-xs">{formatAmount(data.totals.closingBalance)}</span>
+                        <span className="text-[11px] uppercase tracking-wider">
+                          Closing Balance
+                        </span>
+                        <span className="font-mono text-xs">
+                          {formatAmount(data.totals.closingBalance)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -366,22 +469,40 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                     <thead>
                       <tr className="bg-[#f4f6f4] text-[#263b4d] border-b border-[#dbe2db] text-left">
                         <th className="py-1.5 px-2.5 font-bold w-20">Date</th>
-                        <th className="py-1.5 px-2 font-bold w-24">Reference</th>
+                        <th className="py-1.5 px-2 font-bold w-24">
+                          Reference
+                        </th>
                         <th className="py-1.5 px-2 font-bold w-28">Type</th>
                         <th className="py-1.5 px-2.5 font-bold">Description</th>
-                        <th className="py-1.5 px-2.5 font-bold text-right w-24">Debit (AED)</th>
-                        <th className="py-1.5 px-2.5 font-bold text-right w-24">Credit (AED)</th>
-                        <th className="py-1.5 px-2.5 font-bold text-right w-24">Balance (AED)</th>
+                        <th className="py-1.5 px-2.5 font-bold text-right w-24">
+                          Debit (AED)
+                        </th>
+                        <th className="py-1.5 px-2.5 font-bold text-right w-24">
+                          Credit (AED)
+                        </th>
+                        <th className="py-1.5 px-2.5 font-bold text-right w-24">
+                          Balance (AED)
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#e8ebe8]">
                       <tr className="bg-slate-50/50 text-slate-700">
-                        <td className="py-1.5 px-2.5 font-mono">{formatDateDisplay(data.period.fromDate)}</td>
+                        <td className="py-1.5 px-2.5 font-mono">
+                          {formatDateDisplay(data.period.fromDate)}
+                        </td>
                         <td className="py-1.5 px-2 font-mono">Opening</td>
-                        <td className="py-1.5 px-2 text-slate-600">Opening Balance</td>
-                        <td className="py-1.5 px-2.5 text-slate-500 italic">Balance brought forward</td>
-                        <td className="py-1.5 px-2.5 text-right font-mono text-slate-400">-</td>
-                        <td className="py-1.5 px-2.5 text-right font-mono text-slate-400">-</td>
+                        <td className="py-1.5 px-2 text-slate-600">
+                          Opening Balance
+                        </td>
+                        <td className="py-1.5 px-2.5 text-slate-500 italic">
+                          Balance brought forward
+                        </td>
+                        <td className="py-1.5 px-2.5 text-right font-mono text-slate-400">
+                          -
+                        </td>
+                        <td className="py-1.5 px-2.5 text-right font-mono text-slate-400">
+                          -
+                        </td>
                         <td className="py-1.5 px-2.5 text-right font-mono font-bold text-[#263b4d]">
                           {formatAmount(data.openingBalance)}
                         </td>
@@ -389,23 +510,38 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
 
                       {data.transactions.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="py-4 text-center text-slate-400 italic">
+                          <td
+                            colSpan={7}
+                            className="py-4 text-center text-slate-400 italic"
+                          >
                             No ledger activity recorded for this period.
                           </td>
                         </tr>
                       ) : (
                         data.transactions.map((tx, idx) => (
-                          <tr key={tx.id || idx} className="hover:bg-[#f8f9f8] bg-white">
-                            <td className="py-1.5 px-2.5 font-mono text-slate-700">{formatDateDisplay(tx.date)}</td>
-                            <td className="py-1.5 px-2 font-mono font-bold text-[#263b4d]">{tx.reference}</td>
-                            <td className="py-1.5 px-2 text-slate-700 font-medium">{tx.type}</td>
+                          <tr
+                            key={tx.id || idx}
+                            className="hover:bg-[#f8f9f8] bg-white"
+                          >
+                            <td className="py-1.5 px-2.5 font-mono text-slate-700">
+                              {formatDateDisplay(tx.date)}
+                            </td>
+                            <td className="py-1.5 px-2 font-mono font-bold text-[#263b4d]">
+                              {tx.reference}
+                            </td>
+                            <td className="py-1.5 px-2 text-slate-700 font-medium">
+                              {tx.type}
+                            </td>
                             <td className="py-1.5 px-2.5 text-slate-800">
                               <div>{tx.description}</div>
-                              {tx.projectScope && !tx.description.toLowerCase().includes(tx.projectScope.toLowerCase()) && (
-                                <div className="text-[9px] text-[#28633a] font-medium mt-0.5">
-                                  Scope: {tx.projectScope}
-                                </div>
-                              )}
+                              {tx.projectScope &&
+                                !tx.description
+                                  .toLowerCase()
+                                  .includes(tx.projectScope.toLowerCase()) && (
+                                  <div className="text-[9px] text-[#28633a] font-medium mt-0.5">
+                                    Scope: {tx.projectScope}
+                                  </div>
+                                )}
                             </td>
                             <td className="py-1.5 px-2.5 text-right font-mono text-[#263b4d]">
                               {tx.debit > 0 ? formatAmount(tx.debit) : "-"}
@@ -433,41 +569,71 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                     <thead>
                       <tr className="bg-[#f4f6f4] text-[#263b4d] border-b border-[#dbe2db] text-left">
                         <th className="py-1.5 px-2.5 font-bold">Invoice No</th>
-                        <th className="py-1.5 px-2.5 font-bold">Invoice Date</th>
+                        <th className="py-1.5 px-2.5 font-bold">
+                          Invoice Date
+                        </th>
                         <th className="py-1.5 px-2.5 font-bold">Due Date</th>
-                        <th className="py-1.5 px-2.5 font-bold text-right">Invoice Amount</th>
-                        <th className="py-1.5 px-2.5 font-bold text-right">Paid</th>
-                        <th className="py-1.5 px-2.5 font-bold text-right">Credit Note</th>
-                        <th className="py-1.5 px-2.5 font-bold text-right">Outstanding</th>
-                        <th className="py-1.5 px-2.5 font-bold text-center">Status</th>
+                        <th className="py-1.5 px-2.5 font-bold text-right">
+                          Invoice Amount
+                        </th>
+                        <th className="py-1.5 px-2.5 font-bold text-right">
+                          Paid
+                        </th>
+                        <th className="py-1.5 px-2.5 font-bold text-right">
+                          Credit Note
+                        </th>
+                        <th className="py-1.5 px-2.5 font-bold text-right">
+                          Outstanding
+                        </th>
+                        <th className="py-1.5 px-2.5 font-bold text-center">
+                          Status
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#e8ebe8]">
-                      {!data.outstandingInvoices || data.outstandingInvoices.length === 0 ? (
+                      {!data.outstandingInvoices ||
+                      data.outstandingInvoices.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="py-3 text-center text-slate-400 italic">
-                            No unsettled or outstanding invoices for this client.
+                          <td
+                            colSpan={8}
+                            className="py-3 text-center text-slate-400 italic"
+                          >
+                            No unsettled or outstanding invoices for this
+                            client.
                           </td>
                         </tr>
                       ) : (
                         data.outstandingInvoices.map((inv) => (
-                          <tr key={inv.id} className="bg-white hover:bg-[#f8f9f8]">
+                          <tr
+                            key={inv.id}
+                            className="bg-white hover:bg-[#f8f9f8]"
+                          >
                             <td className="py-1.5 px-2.5">
-                              <div className="font-mono font-bold text-[#263b4d]">{inv.invoiceNo}</div>
+                              <div className="font-mono font-bold text-[#263b4d]">
+                                {inv.invoiceNo}
+                              </div>
                               {inv.projectScope && (
                                 <div className="text-[9px] font-sans text-[#28633a] font-medium leading-tight">
                                   {inv.projectScope}
                                 </div>
                               )}
                             </td>
-                            <td className="py-1.5 px-2.5 font-mono text-slate-700">{formatDateDisplay(inv.invoiceDate)}</td>
-                            <td className="py-1.5 px-2.5 font-mono text-slate-700">{formatDateDisplay(inv.dueDate)}</td>
-                            <td className="py-1.5 px-2.5 text-right font-mono text-slate-800">{formatAmount(inv.invoiceAmount)}</td>
+                            <td className="py-1.5 px-2.5 font-mono text-slate-700">
+                              {formatDateDisplay(inv.invoiceDate)}
+                            </td>
+                            <td className="py-1.5 px-2.5 font-mono text-slate-700">
+                              {formatDateDisplay(inv.dueDate)}
+                            </td>
+                            <td className="py-1.5 px-2.5 text-right font-mono text-slate-800">
+                              {formatAmount(inv.invoiceAmount)}
+                            </td>
                             <td className="py-1.5 px-2.5 text-right font-mono text-emerald-700">
                               {inv.paid > 0 ? formatAmount(inv.paid) : "-"}
                             </td>
                             <td className="py-1.5 px-2.5 text-right font-mono text-sky-700">
-                              {inv.creditNote > 0 ? formatAmount(inv.creditNote) : "-"}
+                              {inv.creditNote > 0
+                                ? formatAmount(inv.creditNote)
+                                : "-"}
                             </td>
                             <td className="py-1.5 px-2.5 text-right font-mono font-bold text-[#263b4d]">
                               {formatAmount(inv.outstanding)}
@@ -478,8 +644,8 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                                   inv.status === "Partially Paid"
                                     ? "bg-amber-100 text-amber-800 border border-amber-200"
                                     : inv.status === "Overdue"
-                                    ? "bg-rose-100 text-rose-800 border border-rose-200"
-                                    : "bg-rose-50 text-rose-700 border border-rose-100"
+                                      ? "bg-rose-100 text-rose-800 border border-rose-200"
+                                      : "bg-rose-50 text-rose-700 border border-rose-100"
                                 }`}
                               >
                                 {inv.status}
@@ -489,20 +655,29 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                         ))
                       )}
                     </tbody>
-                    {data.outstandingInvoices && data.outstandingInvoices.length > 0 && (
-                      <tfoot>
-                        <tr className="bg-[#f4f6f4] font-bold text-[#263b4d] border-t border-[#dbe2db]">
-                          <td className="py-1.5 px-2.5" colSpan={3}>Total</td>
-                          <td className="py-1.5 px-2.5 text-right font-mono">{formatAmount(totalOutstandingInvoiced)}</td>
-                          <td className="py-1.5 px-2.5 text-right font-mono">{formatAmount(totalOutstandingPaid)}</td>
-                          <td className="py-1.5 px-2.5 text-right font-mono">{formatAmount(totalOutstandingCredit)}</td>
-                          <td className="py-1.5 px-2.5 text-right font-mono font-black text-[#28633a]">
-                            {formatAmount(totalOutstandingBal)}
-                          </td>
-                          <td></td>
-                        </tr>
-                      </tfoot>
-                    )}
+                    {data.outstandingInvoices &&
+                      data.outstandingInvoices.length > 0 && (
+                        <tfoot>
+                          <tr className="bg-[#f4f6f4] font-bold text-[#263b4d] border-t border-[#dbe2db]">
+                            <td className="py-1.5 px-2.5" colSpan={3}>
+                              Total
+                            </td>
+                            <td className="py-1.5 px-2.5 text-right font-mono">
+                              {formatAmount(totalOutstandingInvoiced)}
+                            </td>
+                            <td className="py-1.5 px-2.5 text-right font-mono">
+                              {formatAmount(totalOutstandingPaid)}
+                            </td>
+                            <td className="py-1.5 px-2.5 text-right font-mono">
+                              {formatAmount(totalOutstandingCredit)}
+                            </td>
+                            <td className="py-1.5 px-2.5 text-right font-mono font-black text-[#28633a]">
+                              {formatAmount(totalOutstandingBal)}
+                            </td>
+                            <td></td>
+                          </tr>
+                        </tfoot>
+                      )}
                   </table>
                 </div>
               </div>
@@ -515,41 +690,77 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                   <table className="w-full text-[10.5px] border-collapse">
                     <thead>
                       <tr className="bg-[#f4f6f4] text-[#263b4d] border-b border-[#dbe2db] text-center">
-                        <th className="py-1.5 px-2.5 font-bold border-r border-[#dbe2db]">Current</th>
-                        <th className="py-1.5 px-2.5 font-bold border-r border-[#dbe2db]">1 – 30 Days</th>
-                        <th className="py-1.5 px-2.5 font-bold border-r border-[#dbe2db]">31 – 60 Days</th>
-                        <th className="py-1.5 px-2.5 font-bold border-r border-[#dbe2db]">61 – 90 Days</th>
-                        <th className="py-1.5 px-2.5 font-bold border-r border-[#dbe2db]">90+ Days</th>
-                        <th className="py-1.5 px-2.5 font-bold bg-[#e8f0e8] text-[#0e3812]">Total</th>
+                        <th className="py-1.5 px-2.5 font-bold border-r border-[#dbe2db]">
+                          Current
+                        </th>
+                        <th className="py-1.5 px-2.5 font-bold border-r border-[#dbe2db]">
+                          1 – 30 Days
+                        </th>
+                        <th className="py-1.5 px-2.5 font-bold border-r border-[#dbe2db]">
+                          31 – 60 Days
+                        </th>
+                        <th className="py-1.5 px-2.5 font-bold border-r border-[#dbe2db]">
+                          61 – 90 Days
+                        </th>
+                        <th className="py-1.5 px-2.5 font-bold border-r border-[#dbe2db]">
+                          90+ Days
+                        </th>
+                        <th className="py-1.5 px-2.5 font-bold bg-[#e8f0e8] text-[#0e3812]">
+                          Total
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr className="bg-white text-center">
                         <td className="py-1.5 px-2.5 font-mono border-r border-[#e8ebe8]">
-                          <div className="font-bold text-[#263b4d]">{formatAmount(agingCurrent)}</div>
-                          <div className="text-[9.5px] text-slate-400">({countCurrent})</div>
+                          <div className="font-bold text-[#263b4d]">
+                            {formatAmount(agingCurrent)}
+                          </div>
+                          <div className="text-[9.5px] text-slate-400">
+                            ({countCurrent})
+                          </div>
                         </td>
                         <td className="py-1.5 px-2.5 font-mono border-r border-[#e8ebe8]">
-                          <div className="font-bold text-[#263b4d]">{formatAmount(agingDays30)}</div>
-                          <div className="text-[9.5px] text-slate-400">({countDays30})</div>
+                          <div className="font-bold text-[#263b4d]">
+                            {formatAmount(agingDays30)}
+                          </div>
+                          <div className="text-[9.5px] text-slate-400">
+                            ({countDays30})
+                          </div>
                         </td>
                         <td className="py-1.5 px-2.5 font-mono border-r border-[#e8ebe8]">
-                          <div className="font-bold text-[#263b4d]">{formatAmount(agingDays60)}</div>
-                          <div className="text-[9.5px] text-slate-400">({countDays60})</div>
+                          <div className="font-bold text-[#263b4d]">
+                            {formatAmount(agingDays60)}
+                          </div>
+                          <div className="text-[9.5px] text-slate-400">
+                            ({countDays60})
+                          </div>
                         </td>
                         <td className="py-1.5 px-2.5 font-mono border-r border-[#e8ebe8]">
-                          <div className="font-bold text-[#263b4d]">{formatAmount(agingDays90)}</div>
-                          <div className="text-[9.5px] text-slate-400">({countDays90})</div>
+                          <div className="font-bold text-[#263b4d]">
+                            {formatAmount(agingDays90)}
+                          </div>
+                          <div className="text-[9.5px] text-slate-400">
+                            ({countDays90})
+                          </div>
                         </td>
                         <td className="py-1.5 px-2.5 font-mono border-r border-[#e8ebe8]">
-                          <div className="font-bold text-[#263b4d]">{formatAmount(agingDays90Plus)}</div>
-                          <div className="text-[9.5px] text-slate-400">({countDays90Plus})</div>
+                          <div className="font-bold text-[#263b4d]">
+                            {formatAmount(agingDays90Plus)}
+                          </div>
+                          <div className="text-[9.5px] text-slate-400">
+                            ({countDays90Plus})
+                          </div>
                         </td>
                         <td className="py-1.5 px-2.5 font-mono bg-[#e8f0e8]">
                           <div className="font-black text-[#28633a]">
-                            {formatAmount(agingTotal || data.totals.closingBalance)}
+                            {formatAmount(
+                              agingTotal || data.totals.closingBalance,
+                            )}
                           </div>
-                          <div className="text-[9.5px] text-[#28633a] font-semibold">({countTotal})</div>
+                          <div className="text-[9.5px] text-[#28633a] font-semibold">
+                            ({countTotal})
+                          </div>
                         </td>
                       </tr>
                     </tbody>
@@ -564,13 +775,25 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                       <Check className="w-3.5 h-3.5" />
                     </div>
                     <div>
-                      <span className="font-bold text-[#0e3812] uppercase mr-2">AR RECONCILIATION:</span>
+                      <span className="font-bold text-[#0e3812] uppercase mr-2">
+                        AR RECONCILIATION:
+                      </span>
                       <span className="text-slate-600 mr-3">
-                        Customer SOA Balance: <strong className="text-slate-900 font-mono">AED {formatAmount(data.totals.closingBalance)}</strong>
+                        Customer SOA Balance:{" "}
+                        <strong className="text-slate-900 font-mono">
+                          AED {formatAmount(data.totals.closingBalance)}
+                        </strong>
                       </span>
                       <span className="text-slate-400 mr-3">|</span>
                       <span className="text-slate-600">
-                        AR Control Account: <strong className="text-slate-900 font-mono">AED {formatAmount(data.reconciliation?.arControlAccountBalance ?? data.totals.closingBalance)}</strong>
+                        AR Control Account:{" "}
+                        <strong className="text-slate-900 font-mono">
+                          AED{" "}
+                          {formatAmount(
+                            data.reconciliation?.arControlAccountBalance ??
+                              data.totals.closingBalance,
+                          )}
+                        </strong>
                       </span>
                     </div>
                   </div>
@@ -585,16 +808,22 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                   <div className="col-span-6 flex items-start gap-2 bg-[#f8f7f2] p-2 print:p-1.5 rounded-lg border border-[#dbe2db]">
                     <FileText className="w-3.5 h-3.5 text-[#28633a] shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-bold text-slate-800 mb-0.5">Notes:</div>
+                      <div className="font-bold text-slate-800 mb-0.5">
+                        Notes:
+                      </div>
                       <p className="text-slate-600 leading-tight">
-                        This Statement of Account represents the transactions recorded in the AGM ERP for the stated statement period. Please review and report discrepancies promptly.
+                        This Statement of Account represents the transactions
+                        recorded in the AGM ERP for the stated statement period.
+                        Please review and report discrepancies promptly.
                       </p>
                     </div>
                   </div>
 
                   <div className="col-span-6 grid grid-cols-2 gap-2.5">
                     <div className="border border-[#dbe2db] rounded-lg p-1.5 flex flex-col justify-between bg-white h-16 print:h-12">
-                      <div className="text-[10px] print:text-[9px] font-bold text-slate-700">Prepared by:</div>
+                      <div className="text-[10px] print:text-[9px] font-bold text-slate-700">
+                        Prepared by:
+                      </div>
                       <div className="border-b border-slate-300 w-full mb-0.5"></div>
                       <div className="text-[9px] print:text-[8px] text-slate-500 flex justify-between">
                         <span>Date:</span>
@@ -603,7 +832,9 @@ export const StatementOfAccountDocument: React.FC<StatementOfAccountDocumentProp
                     </div>
 
                     <div className="border border-[#dbe2db] rounded-lg p-1.5 flex flex-col justify-between bg-white h-16 print:h-12">
-                      <div className="text-[10px] print:text-[9px] font-bold text-slate-700">Authorized by:</div>
+                      <div className="text-[10px] print:text-[9px] font-bold text-slate-700">
+                        Authorized by:
+                      </div>
                       <div className="border-b border-slate-300 w-full mb-0.5"></div>
                       <div className="text-[9px] print:text-[8px] text-slate-500 flex justify-between">
                         <span>Date:</span>

@@ -1,4 +1,5 @@
 export type ReportTab =
+  | "hub"
   | "summary"
   | "statement-of-account"
   | "soa"

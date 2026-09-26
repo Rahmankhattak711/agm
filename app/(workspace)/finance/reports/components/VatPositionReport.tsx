@@ -16,11 +16,13 @@ import { formatNumber } from "./types";
 interface VatPositionReportProps {
   vatSummary?: VatSummaryData;
   isLoading: boolean;
+  hideHeaderBar?: boolean;
 }
 
 export const VatPositionReport: React.FC<VatPositionReportProps> = ({
   vatSummary,
   isLoading,
+  hideHeaderBar = false,
 }) => {
   const quartersData: VatQuarterDetail[] =
     vatSummary?.quarters && vatSummary.quarters.length > 0
@@ -86,23 +88,25 @@ export const VatPositionReport: React.FC<VatPositionReportProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2.5 bg-agm-card rounded-2xl border border-agm-box-border shadow-2xs print:hidden">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-agm-muted uppercase tracking-wide">
-            UAE FTA VAT Return Form 201 Position
-          </span>
-        </div>
+      {!hideHeaderBar && (
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2.5 bg-agm-card rounded-2xl border border-agm-box-border shadow-2xs print:hidden">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-agm-muted uppercase tracking-wide">
+              UAE FTA VAT Return Form 201 Position
+            </span>
+          </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handlePrint()}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-agm-text border-agm-box-border bg-agm-card hover:bg-agm-box-bg cursor-pointer shadow-2xs rounded-xl h-auto shrink-0"
-          icon={<PrintIcon size={14} />}
-        >
-          Print VAT Statement
-        </Button>
-      </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePrint()}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-agm-text border-agm-box-border bg-agm-card hover:bg-agm-box-bg cursor-pointer shadow-2xs rounded-xl h-auto shrink-0"
+            icon={<PrintIcon size={14} />}
+          >
+            Print VAT Statement
+          </Button>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="py-20 text-center text-xs text-agm-muted animate-pulse space-y-2">

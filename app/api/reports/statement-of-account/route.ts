@@ -49,7 +49,9 @@ export async function GET(request: Request) {
           customer.companyName,
           customer.customerCode,
           ...customer.name.split(" ").filter((w) => w.length > 2),
-          ...(customer.companyName ? customer.companyName.split(" ").filter((w) => w.length > 2) : []),
+          ...(customer.companyName
+            ? customer.companyName.split(" ").filter((w) => w.length > 2)
+            : []),
         ].filter(Boolean) as string[],
       ),
     );
@@ -280,19 +282,28 @@ export async function GET(request: Request) {
     let selectedProjectName: string | null = null;
     if (projectId) {
       const proj = projects.find(
-        (p) => p.id === projectId || p.name === projectId || p.projectCode === projectId,
+        (p) =>
+          p.id === projectId ||
+          p.name === projectId ||
+          p.projectCode === projectId,
       );
       if (proj) selectedProjectName = `${proj.projectCode} - ${proj.name}`;
     } else if (projects.length > 0) {
       selectedProjectName = projects.map((p) => p.name).join(", ");
     }
 
-    type RawTxType = "INVOICE" | "PAYMENT" | "CREDIT_NOTE" | "QUOTATION" | "ORDER";
+    type RawTxType =
+      "INVOICE" | "PAYMENT" | "CREDIT_NOTE" | "QUOTATION" | "ORDER";
     interface RawEvent {
       id: string;
       date: Date;
       rawType: RawTxType;
-      type: "Sales Invoice" | "Customer Payment" | "Credit Note" | "Quotation" | "Sales Order";
+      type:
+        | "Sales Invoice"
+        | "Customer Payment"
+        | "Credit Note"
+        | "Quotation"
+        | "Sales Order";
       reference: string;
       description: string;
       projectScope?: string | null;
@@ -350,7 +361,9 @@ export async function GET(request: Request) {
         description: `Sales Order - ${so.projectScope || "Confirmed Fitout Contract"}`,
         projectScope: so.projectScope,
         status: so.status,
-        dueDate: so.deliveryDate ? so.deliveryDate.toISOString().slice(0, 10) : null,
+        dueDate: so.deliveryDate
+          ? so.deliveryDate.toISOString().slice(0, 10)
+          : null,
         debit: Number(so.totalAmount),
         credit: 0,
         documentId: so.id,
@@ -359,7 +372,12 @@ export async function GET(request: Request) {
     });
 
     rawQuotations.forEach((q) => {
-      if (recordedRefs.has(q.quotationNo) || q.status === "REJECTED" || Number(q.totalAmount) === 0) return;
+      if (
+        recordedRefs.has(q.quotationNo) ||
+        q.status === "REJECTED" ||
+        Number(q.totalAmount) === 0
+      )
+        return;
       recordedRefs.add(q.quotationNo);
 
       allEvents.push({
@@ -666,7 +684,10 @@ export async function GET(request: Request) {
     const diff = Math.abs(totalCustomerSoaBalance - customerArPostedBalance);
     const isReconciled = diff < 0.05;
 
-    const resolvedTrn = (customer as any).trn || rawSalesInvoices.find(i => i.customerTrn)?.customerTrn || null;
+    const resolvedTrn =
+      (customer as any).trn ||
+      rawSalesInvoices.find((i) => i.customerTrn)?.customerTrn ||
+      null;
 
     return NextResponse.json({
       customer: {

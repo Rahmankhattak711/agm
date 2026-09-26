@@ -1,4 +1,5 @@
 export * from "./types";
+export * from "./ReportsHubView";
 export * from "./ExecutiveSummaryReport";
 export * from "./QuotationReport";
 export * from "./ProfitLossReport";

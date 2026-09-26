@@ -2,12 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useRouter } from "next/navigation";
 import {
   useSuppliers,
   useSupplierBills,
   Supplier,
 } from "@/lib/hooks/api-hooks";
-import { SearchIcon, PrintIcon, EyeIcon } from "@/components/icons";
+import {
+  ChevronLeftIcon,
+  SearchIcon,
+  PrintIcon,
+  EyeIcon,
+} from "@/components/icons";
 import {
   Button,
   Input,
@@ -359,36 +365,53 @@ export default function SupplierReportsPage() {
     [supplierMetricsMap],
   );
 
+  const router = useRouter();
+
   return (
     <>
-      <div className="space-y-6 print:hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                Supplier &amp; Vendor Payable Reports
-              </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">
-                Accounts Payable Directory
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              AGM FITOUT TECHNICAL SERVICES LLC — Vendor accounts payable
-              ledgers, procurement history, payment terms, and outstanding
-              liability balances.
-            </p>
+      <div className="space-y-6 print:hidden pb-8">
+        <div className="space-y-3 pb-3 border-b border-slate-200">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+            <button
+              type="button"
+              onClick={() => router.push("/finance/reports")}
+              className="hover:text-emerald-700 transition-colors flex items-center gap-1 cursor-pointer font-semibold"
+            >
+              <ChevronLeftIcon size={12} />
+              <span>Reports Hub</span>
+            </button>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-800 font-bold">
+              Suppliers &amp; Payables
+            </span>
           </div>
 
-          <Button
-            variant="primary"
-            onClick={() => window.print()}
-            icon={<PrintIcon className="w-4 h-4" strokeWidth={2.2} />}
-          >
-            Print Report
-          </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+                Supplier &amp; Vendor Payable Reports
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Vendor accounts payable ledgers, procurement history, payment
+                terms, and outstanding liability balances.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.print()}
+                className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 shadow-2xs cursor-pointer"
+                icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
+              >
+                Print Statement
+              </Button>
+            </div>
+          </div>
         </div>
 
-        <ReportKpiGrid cols={3}>
+        <ReportKpiGrid cols={4}>
           <ReportKpiCard
             title="Total Active Suppliers"
             subtitle="Registered materials & fitout vendors"

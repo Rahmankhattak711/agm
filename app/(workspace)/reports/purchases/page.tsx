@@ -2,12 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useRouter } from "next/navigation";
 import {
   SupplierBill,
   useSupplierBills,
   useSuppliers,
 } from "@/lib/hooks/api-hooks";
 import {
+  ChevronLeftIcon,
   EyeIcon,
   FileSpreadsheetIcon,
   PrintIcon,
@@ -83,6 +85,7 @@ function renderDescriptionPoints(desc?: string, fallback = "—") {
 }
 
 export default function PurchaseReportsPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [supplierFilter, setSupplierFilter] = useState<string>("");
@@ -410,72 +413,78 @@ export default function PurchaseReportsPage() {
 
   return (
     <>
-      <div className="space-y-6 print:hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-              Purchase Reports
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Monitor procurement expenditure, supplier bills, payment
-              disbursements, and outstanding payables.
-            </p>
+      <div className="space-y-6 print:hidden pb-8">
+        <div className="space-y-3 pb-3 border-b border-slate-200">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+            <button
+              type="button"
+              onClick={() => router.push("/finance/reports")}
+              className="hover:text-emerald-700 transition-colors flex items-center gap-1 cursor-pointer font-semibold"
+            >
+              <ChevronLeftIcon size={12} />
+              <span>Reports Hub</span>
+            </button>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-800 font-bold">
+              Purchases &amp; Payables
+            </span>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-            icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
-          >
-            Print Statement
-          </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+                Purchases &amp; Payables Reports
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Procurement expenditure, supplier bills register, VAT recovery,
+                and liabilities ageing.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.print()}
+                className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 shadow-2xs cursor-pointer"
+                icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
+              >
+                Print Statement
+              </Button>
+            </div>
+          </div>
         </div>
 
         <ReportKpiGrid cols={4}>
           <ReportKpiCard
-            title="1. Procurement Spend"
-            subtitle={`${nonCancelledBills.length} supplier bills`}
-            value={formatNumber(totalProcurementSpend)}
+            title="Total Procurement Spend"
+            subtitle={`${nonCancelledBills.length} vendor billing records`}
+            value={formatCurrency(totalProcurementSpend)}
             accentColor="sky"
           />
 
           <ReportKpiCard
-            title="2. Settled Disbursals"
-            subtitle="Cleared payments"
-            value={formatNumber(totalDisbursed)}
+            title="Disbursed Settlements"
+            subtitle={`${settlementRatio.toFixed(1)}% settlement efficiency`}
+            value={formatCurrency(totalDisbursed)}
             accentColor="emerald"
             valueColor="text-emerald-800"
           />
 
           <ReportKpiCard
-            title="3. Open Accounts Payable"
-            subtitle="Pending liabilities"
-            value={formatNumber(totalOutstandingAP)}
+            title="Open Accounts Payable (A/P)"
+            subtitle="Pending supplier liabilities"
+            value={formatCurrency(totalOutstandingAP)}
             accentColor="amber"
             valueColor="text-amber-700"
           />
 
           <ReportKpiCard
-            title="4. 5% Input VAT (Recoverable)"
-            subtitle="FTA Form 201 Box 9"
-            value={formatNumber(totalInputVat)}
+            title="Input VAT Recoverable (5%)"
+            subtitle="FTA Tax Box 9 Claimable"
+            value={formatCurrency(totalInputVat)}
             accentColor="blue"
             valueColor="text-blue-700"
-          />
-
-          <ReportKpiCard
-            title="5. Settlement Ratio"
-            subtitle="AP clearing efficiency"
-            value={`${settlementRatio.toFixed(1)}%`}
-            currency={false}
-            accentColor="indigo"
-            badge={
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
-                Disbursed
-              </span>
-            }
           />
         </ReportKpiGrid>
 

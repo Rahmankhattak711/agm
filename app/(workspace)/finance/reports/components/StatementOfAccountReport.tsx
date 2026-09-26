@@ -1,16 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  useCustomers,
-  useStatementOfAccount,
-} from "@/lib/hooks/api-hooks";
+import { useCustomers, useStatementOfAccount } from "@/lib/hooks/api-hooks";
 import { StatementOfAccountDocument } from "@/components/documents";
-import {
-  PrintIcon,
-  RefreshIcon,
-  ReceiptIcon,
-} from "@/components/icons";
+import { PrintIcon, RefreshIcon, ReceiptIcon } from "@/components/icons";
 import { Button, DatePicker, Select } from "@/components/ui";
 import { useSearchParams } from "next/navigation";
 
@@ -81,7 +74,9 @@ export const StatementOfAccountReport: React.FC<
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Official client account ledger reconciling opening balances, tax invoices, <br /> receipts, credit notes, and outstanding receivables.
+              Official client account ledger reconciling opening balances, tax
+              invoices, <br /> receipts, credit notes, and outstanding
+              receivables.
             </p>
           </div>
 
@@ -183,7 +178,9 @@ export const StatementOfAccountReport: React.FC<
               Select a Customer to Generate Statement
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Choose an active customer from the list below or select from the dropdown above to load their complete ledger and receivables statement.
+              Choose an active customer from the list below or select from the
+              dropdown above to load their complete ledger and receivables
+              statement.
             </p>
           </div>
 

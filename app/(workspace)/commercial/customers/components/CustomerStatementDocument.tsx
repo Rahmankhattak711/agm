@@ -31,8 +31,9 @@ export const CustomerStatementDocument: React.FC<
     type: (tx.type === "PAYMENT"
       ? "Customer Payment"
       : tx.type === "CREDIT_NOTE"
-      ? "Credit Note"
-      : "Sales Invoice") as "Sales Invoice" | "Customer Payment" | "Credit Note",
+        ? "Credit Note"
+        : "Sales Invoice") as
+      "Sales Invoice" | "Customer Payment" | "Credit Note",
     description: tx.description || "",
     debit: Number(tx.debit || 0),
     credit: Number(tx.credit || 0),
@@ -53,7 +54,9 @@ export const CustomerStatementDocument: React.FC<
       email: customer.email || null,
       address: customer.address || null,
       creditLimit: Number(customer.creditLimit || 0),
-      currentBalance: Number(summary?.currentOutstanding || customer.currentBalance || 0),
+      currentBalance: Number(
+        summary?.currentOutstanding || customer.currentBalance || 0,
+      ),
     },
     period: {
       fromDate,

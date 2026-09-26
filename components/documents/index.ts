@@ -20,4 +20,3 @@ export * from "./custom-letter-constants";
 
 export { default as StatementOfAccountDocument } from "./StatementOfAccountDocument";
 export * from "./StatementOfAccountDocument";
-
