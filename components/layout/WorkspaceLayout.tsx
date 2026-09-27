@@ -15,12 +15,12 @@ import {
   ReportsIcon,
 } from "@/components/icons";
 import Sidebar from "@/components/Sidebar";
-import { Button } from "@/components/ui";
+import { Button, GlobalLoading } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { getPageMeta } from "@/lib/navigation";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ClipLoader } from "react-spinners";
+
 
 export default function WorkspaceLayout({ children }: { children: ReactNode }) {
   const { user, checkAuth, loading, logout } = useAuth();
@@ -55,11 +55,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-agm-bg select-none">
-        <ClipLoader color="#28633a" size={40} speedMultiplier={0.8} />
-      </div>
-    );
+    return <GlobalLoading fullScreen={true} />;
   }
 
   const userInitials = user?.fullName
