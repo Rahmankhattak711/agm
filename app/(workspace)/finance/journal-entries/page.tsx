@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useAuth } from "@/context/AuthContext";
 import { formatAed } from "@/lib/utils/format";
+import { toast } from "@/lib/toast";
 import {
   useAccounts,
   useCreateJournalEntry,
@@ -11,22 +12,21 @@ import {
   useJournalEntries,
   useUpdateJournalEntry,
 } from "@/lib/hooks/api-hooks";
+import { useProjects } from "@/lib/hooks/projects-hooks";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   Button,
   Input,
   Modal,
   Select,
-  Textarea,
   DashboardCard,
   DashboardCardGrid,
 } from "@/components/ui";
 import {
-  CheckIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   CloseIcon,
   EditIcon,
-  JournalEntriesIcon,
   PlusIcon,
   SearchIcon,
   TrashIcon,
@@ -45,7 +45,9 @@ interface JournalLineFormItem {
 export default function JournalEntriesPage() {
   const { data: journalEntries, isLoading, error } = useJournalEntries();
   const { data: accounts } = useAccounts();
+  const { data: projects = [] } = useProjects();
   const { user, canModify } = useAuth();
+  const { confirm } = useConfirm();
   const createJournalEntryMutation = useCreateJournalEntry();
   const updateJournalEntryMutation = useUpdateJournalEntry();
   const deleteJournalEntryMutation = useDeleteJournalEntry();
@@ -80,10 +82,32 @@ export default function JournalEntriesPage() {
     }
   };
 
+  const getEntryProject = (je: any) => {
+    if (!projects || projects.length === 0) return null;
+    return (
+      projects.find((p) => {
+        if (
+          je.reference &&
+          (je.reference === p.projectCode ||
+            je.reference.includes(p.projectCode))
+        )
+          return true;
+        if (
+          je.description &&
+          (je.description.includes(`[${p.projectCode}`) ||
+            je.description.includes(p.name))
+        )
+          return true;
+        return false;
+      }) || null
+    );
+  };
+
   const form = useForm({
     defaultValues: {
       entryNumber: `JE-${Date.now().toString().slice(-6)}`,
       entryDate: new Date().toISOString().split("T")[0],
+      projectId: "",
       description: "",
       reference: "",
       isPosted: true,
@@ -174,14 +198,29 @@ export default function JournalEntriesPage() {
         return;
       }
 
+      const selectedProj = projects.find((p) => p.id === value.projectId);
+      let desc = value.description.trim();
+      let ref = value.reference.trim();
+
+      if (selectedProj) {
+        if (!ref) {
+          ref = selectedProj.projectCode;
+        }
+        if (desc && !desc.includes(selectedProj.projectCode)) {
+          desc = `[${selectedProj.projectCode}: ${selectedProj.name}] ${desc}`;
+        } else if (!desc) {
+          desc = `[${selectedProj.projectCode}: ${selectedProj.name}] Project ledger adjustment`;
+        }
+      }
+
       try {
         if (editingId) {
           await updateJournalEntryMutation.mutateAsync({
             id: editingId,
             entryNumber: value.entryNumber,
             entryDate: value.entryDate,
-            description: value.description,
-            reference: value.reference,
+            description: desc,
+            reference: ref,
             isPosted: value.isPosted,
             lines: payloadLines,
           });
@@ -189,17 +228,23 @@ export default function JournalEntriesPage() {
           await createJournalEntryMutation.mutateAsync({
             entryNumber: value.entryNumber,
             entryDate: value.entryDate,
-            description: value.description,
-            reference: value.reference,
+            description: desc,
+            reference: ref,
             isPosted: value.isPosted,
             createdBy: user?.id,
             lines: payloadLines,
           });
         }
 
+        toast.success(
+          editingId
+            ? `Journal entry ${value.entryNumber} updated successfully`
+            : `Journal entry ${value.entryNumber} recorded successfully`,
+        );
         setIsModalOpen(false);
       } catch (err: any) {
         setFormError(err.message || "Failed to save journal entry");
+        toast.error(err.message || "Failed to save journal entry");
       }
     },
   });
@@ -207,16 +252,24 @@ export default function JournalEntriesPage() {
   const filteredEntries = useMemo(() => {
     const q = search.toLowerCase();
     return (journalEntries || []).filter((entry) => {
+      const matchedProj = getEntryProject(entry);
       const matchesSearch =
         entry.entryNumber.toLowerCase().includes(q) ||
         (entry.description && entry.description.toLowerCase().includes(q)) ||
-        (entry.reference && entry.reference.toLowerCase().includes(q));
+        (entry.reference && entry.reference.toLowerCase().includes(q)) ||
+        (matchedProj &&
+          (matchedProj.projectCode.toLowerCase().includes(q) ||
+            matchedProj.name.toLowerCase().includes(q) ||
+            (matchedProj.customer?.name &&
+              matchedProj.customer.name.toLowerCase().includes(q)) ||
+            (matchedProj.customer?.companyName &&
+              matchedProj.customer.companyName.toLowerCase().includes(q))));
 
       if (statusFilter === "POSTED") return matchesSearch && entry.isPosted;
       if (statusFilter === "DRAFT") return matchesSearch && !entry.isPosted;
       return matchesSearch;
     });
-  }, [journalEntries, search, statusFilter]);
+  }, [journalEntries, search, statusFilter, projects]);
 
   const handleOpenAddModal = () => {
     setEditingId(null);
@@ -225,6 +278,7 @@ export default function JournalEntriesPage() {
     form.reset({
       entryNumber: `JE-${Date.now().toString().slice(-6)}`,
       entryDate: new Date().toISOString().split("T")[0],
+      projectId: "",
       description: "",
       reference: "",
       isPosted: true,
@@ -241,12 +295,22 @@ export default function JournalEntriesPage() {
     setEditingId(je.id);
     setFormError("");
 
+    const matchedProj = getEntryProject(je);
+    let cleanDesc = je.description || "";
+    if (matchedProj && cleanDesc.startsWith(`[${matchedProj.projectCode}`)) {
+      const idx = cleanDesc.indexOf("] ");
+      if (idx !== -1) {
+        cleanDesc = cleanDesc.slice(idx + 2);
+      }
+    }
+
     form.reset({
       entryNumber: je.entryNumber,
       entryDate: je.entryDate
         ? new Date(je.entryDate).toISOString().split("T")[0]
         : new Date().toISOString().split("T")[0],
-      description: je.description || "",
+      projectId: matchedProj?.id || "",
+      description: cleanDesc,
       reference: je.reference || "",
       isPosted: Boolean(je.isPosted),
       lines:
@@ -274,8 +338,13 @@ export default function JournalEntriesPage() {
         id: je.id,
         isPosted: !je.isPosted,
       });
+      toast.success(
+        je.isPosted
+          ? `Journal entry ${je.entryNumber} unposted to Draft`
+          : `Journal entry ${je.entryNumber} posted to General Ledger`,
+      );
     } catch (err: any) {
-      alert(err.message || "Failed to update entry status");
+      toast.error(err.message || "Failed to update entry status");
     }
   };
 
@@ -285,15 +354,18 @@ export default function JournalEntriesPage() {
     e?: React.MouseEvent,
   ) => {
     if (e) e.stopPropagation();
-    if (
-      confirm(
-        `Are you sure you want to delete journal entry "${entryNum}"? This will reverse all associated line items.`,
-      )
-    ) {
+    const isConfirmed = await confirm({
+      title: "Delete Journal Entry",
+      message: `Are you sure you want to delete journal entry "${entryNum}"? This will reverse all associated line items.`,
+      variant: "danger",
+      confirmText: "Delete",
+    });
+    if (isConfirmed) {
       try {
         await deleteJournalEntryMutation.mutateAsync(id);
+        toast.success(`Journal entry "${entryNum}" deleted successfully`);
       } catch (err: any) {
-        alert(err.message || "Failed to delete journal entry");
+        toast.error(err.message || "Failed to delete journal entry");
       }
     }
   };
@@ -306,8 +378,8 @@ export default function JournalEntriesPage() {
             Journal Entries
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Record double-entry transactions, make ledger adjustments, and track
-            financial movements.
+            Record double-entry transactions, link active project scopes, make
+            ledger adjustments, and track financial movements.
           </p>
         </div>
 
@@ -396,7 +468,7 @@ export default function JournalEntriesPage() {
         <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
           <Input
             leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-            placeholder="Search entry #, reference, memo..."
+            placeholder="Search entry #, project, reference, memo..."
             containerClassName="w-full sm:w-80"
             className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
             value={search}
@@ -431,6 +503,7 @@ export default function JournalEntriesPage() {
               const isExpanded = expandedId === je.id;
               const totalDebit =
                 je.lines?.reduce((s, l) => s + Number(l.debit || 0), 0) || 0;
+              const matchedProj = getEntryProject(je);
 
               return (
                 <div
@@ -459,7 +532,7 @@ export default function JournalEntriesPage() {
                       </Button>
 
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="font-mono font-bold text-slate-900 text-sm flex items-center gap-1.5">
                             <FileSpreadsheetIcon
                               size={14}
@@ -476,6 +549,12 @@ export default function JournalEntriesPage() {
                           >
                             {je.isPosted ? "Posted to GL" : "Draft"}
                           </span>
+                          {matchedProj && (
+                            <span className="text-[11px] font-bold text-teal-800 bg-teal-50 border border-teal-200/90 px-2 py-0.5 rounded-md flex items-center gap-1.5 shadow-2xs">
+                              <span className="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
+                              {matchedProj.projectCode} — {matchedProj.name}
+                            </span>
+                          )}
                           {je.reference && (
                             <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
                               Ref: {je.reference}
@@ -558,88 +637,114 @@ export default function JournalEntriesPage() {
                   </div>
 
                   {isExpanded && (
-                    <div className="border-t border-slate-100 bg-slate-50/70 p-4 sm:p-5">
-                      <div className="flex items-center justify-between mb-3 text-xs">
-                        <span className="font-bold text-slate-800 uppercase text-[10.5px] tracking-wider">
-                          Line Items Breakdown
-                        </span>
-                        <span className="text-slate-500 text-xs">
-                          Created by:{" "}
-                          <span className="font-semibold text-slate-700">
-                            {je.user?.fullName || "System Admin"}
+                    <div className="border-t border-slate-100 bg-slate-50/70 p-4 sm:p-5 space-y-4">
+                      {matchedProj && (
+                        <div className="p-3 bg-white rounded-xl border border-teal-200/90 shadow-2xs flex flex-wrap items-center justify-between gap-2 text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-teal-600 shrink-0" />
+                            <span className="font-bold text-slate-900">
+                              Associated Project:
+                            </span>
+                            <span className="font-bold text-teal-800">
+                              {matchedProj.projectCode} — {matchedProj.name}
+                            </span>
+                          </div>
+                          {(matchedProj.customer?.companyName ||
+                            matchedProj.customer?.name) && (
+                            <div className="text-slate-500 font-medium">
+                              Client:{" "}
+                              <span className="font-bold text-slate-700">
+                                {matchedProj.customer?.companyName ||
+                                  matchedProj.customer?.name}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div>
+                        <div className="flex items-center justify-between mb-2.5 text-xs">
+                          <span className="font-bold text-slate-800 uppercase text-[10.5px] tracking-wider">
+                            Line Items Breakdown
                           </span>
-                        </span>
-                      </div>
-                      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-                        <table className="w-full text-xs text-left">
-                          <thead className="bg-slate-50 border-b border-slate-200">
-                            <tr className="text-slate-600 font-bold uppercase text-[10px] tracking-wider">
-                              <th className="py-2.5 px-3">
-                                Account Code &amp; Name
-                              </th>
-                              <th className="py-2.5 px-3">Classification</th>
-                              <th className="py-2.5 px-3 text-right">
-                                Debit (AED)
-                              </th>
-                              <th className="py-2.5 px-3 text-right">
-                                Credit (AED)
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 font-medium">
-                            {je.lines?.map((line: any) => (
-                              <tr
-                                key={line.id}
-                                className="hover:bg-slate-50/50"
-                              >
-                                <td className="py-2.5 px-3 font-medium text-slate-800">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono text-teal-800 font-bold bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded text-[11px]">
-                                      {line.account?.accountCode}
-                                    </span>
-                                    <span className="font-bold text-slate-900">
-                                      {line.account?.accountName}
-                                    </span>
-                                    {line.vatEntry && (
-                                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                                        5% {line.vatEntry.vatType} VAT
+                          <span className="text-slate-500 text-xs">
+                            Created by:{" "}
+                            <span className="font-semibold text-slate-700">
+                              {je.user?.fullName || "System Admin"}
+                            </span>
+                          </span>
+                        </div>
+                        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-slate-50 border-b border-slate-200">
+                              <tr className="text-slate-600 font-bold uppercase text-[10px] tracking-wider">
+                                <th className="py-2.5 px-3">
+                                  Account Code &amp; Name
+                                </th>
+                                <th className="py-2.5 px-3">Classification</th>
+                                <th className="py-2.5 px-3 text-right">
+                                  Debit (AED)
+                                </th>
+                                <th className="py-2.5 px-3 text-right">
+                                  Credit (AED)
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 font-medium">
+                              {je.lines?.map((line: any) => (
+                                <tr
+                                  key={line.id}
+                                  className="hover:bg-slate-50/50"
+                                >
+                                  <td className="py-2.5 px-3 font-medium text-slate-800">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-mono text-teal-800 font-bold bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded text-[11px]">
+                                        {line.account?.accountCode}
                                       </span>
-                                    )}
-                                  </div>
+                                      <span className="font-bold text-slate-900">
+                                        {line.account?.accountName}
+                                      </span>
+                                      {line.vatEntry && (
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                          5% {line.vatEntry.vatType} VAT
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="py-2.5 px-3 text-slate-500 text-[11px] font-semibold">
+                                    {line.account?.type}
+                                  </td>
+                                  <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
+                                    {Number(line.debit) > 0
+                                      ? formatAed(line.debit)
+                                      : "—"}
+                                  </td>
+                                  <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
+                                    {Number(line.credit) > 0
+                                      ? formatAed(line.credit)
+                                      : "—"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                            <tfoot>
+                              <tr className="border-t border-slate-200 font-black bg-slate-100/80">
+                                <td
+                                  colSpan={2}
+                                  className="py-2.5 px-3 text-right text-slate-700 uppercase text-[10px] tracking-wider"
+                                >
+                                  BALANCED TOTALS:
                                 </td>
-                                <td className="py-2.5 px-3 text-slate-500 text-[11px] font-semibold">
-                                  {line.account?.type}
+                                <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-xs">
+                                  {formatAed(totalDebit)}
                                 </td>
-                                <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                                  {Number(line.debit) > 0
-                                    ? formatAed(line.debit)
-                                    : "—"}
-                                </td>
-                                <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                                  {Number(line.credit) > 0
-                                    ? formatAed(line.credit)
-                                    : "—"}
+                                <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-xs">
+                                  {formatAed(totalDebit)}
                                 </td>
                               </tr>
-                            ))}
-                          </tbody>
-                          <tfoot>
-                            <tr className="border-t border-slate-200 font-black bg-slate-100/80">
-                              <td
-                                colSpan={2}
-                                className="py-2.5 px-3 text-right text-slate-700 uppercase text-[10px] tracking-wider"
-                              >
-                                BALANCED TOTALS:
-                              </td>
-                              <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-xs">
-                                {formatAed(totalDebit)}
-                              </td>
-                              <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-xs">
-                                {formatAed(totalDebit)}
-                              </td>
-                            </tr>
-                          </tfoot>
-                        </table>
+                            </tfoot>
+                          </table>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -730,15 +835,38 @@ export default function JournalEntriesPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <form.Field name="description">
+            <form.Field name="projectId">
               {(field) => (
-                <Input
-                  label="Description / Memo"
-                  placeholder="e.g. Office rent payment or Sales invoice #1024"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1 text-xs">
+                    Associated Project (Optional)
+                  </label>
+                  <select
+                    value={field.state.value}
+                    onChange={(e) => {
+                      const pId = e.target.value;
+                      field.handleChange(pId);
+                      if (pId) {
+                        const p = projects.find((proj) => proj.id === pId);
+                        if (p && !form.getFieldValue("reference")) {
+                          form.setFieldValue("reference", p.projectCode);
+                        }
+                      }
+                    }}
+                    className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
+                  >
+                    <option value="">— General / No Project Assigned —</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.projectCode} — {p.name} (
+                        {p.customer?.companyName ||
+                          p.customer?.name ||
+                          "Client"}
+                        )
+                      </option>
+                    ))}
+                  </select>
+                </div>
               )}
             </form.Field>
 
@@ -746,7 +874,7 @@ export default function JournalEntriesPage() {
               {(field) => (
                 <Input
                   label="Reference"
-                  placeholder="e.g. INV-2026-001"
+                  placeholder="e.g. INV-2026-001 or PO-102"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
@@ -754,6 +882,18 @@ export default function JournalEntriesPage() {
               )}
             </form.Field>
           </div>
+
+          <form.Field name="description">
+            {(field) => (
+              <Input
+                label="Description / Memo"
+                placeholder="e.g. Office rent payment, site contractor settlement, or project material adjustment"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+              />
+            )}
+          </form.Field>
 
           <form.Field name="lines">
             {(linesField) => {
@@ -949,7 +1089,7 @@ export default function JournalEntriesPage() {
                             >
                               <option value="">Non-VAT (0%)</option>
                               <option value="VAT_5">VAT (5%)</option>
-                            </Select>{" "}
+                            </Select>
                           </div>
 
                           <div

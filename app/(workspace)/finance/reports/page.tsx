@@ -108,7 +108,7 @@ function ReportsContent() {
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
                 {reportSubtitles[activeTab] ||
-                  "Statutory accounts, general ledger, and financial audit reports."}
+                  "Statutory accounts, commercial ledgers, and financial audit reports."}
               </p>
             </div>
           </div>

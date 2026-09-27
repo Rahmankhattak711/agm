@@ -1,26 +1,26 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import {
-  SearchIcon,
-  TrendingUpIcon,
-  FileSpreadsheetIcon,
-  RotateCcwIcon,
-  FileCheck2Icon,
-  UserIcon,
-  ClockIcon,
-  ShoppingCartIcon,
-  BuildingIcon,
-  WalletIcon,
   ActivityIcon,
   ArrowRightIcon,
-  PercentIcon,
-  ScaleIcon,
   BookOpenIcon,
+  BuildingIcon,
+  ClockIcon,
+  FileCheck2Icon,
+  FileSpreadsheetIcon,
   FileTextIcon,
+  PercentIcon,
+  RotateCcwIcon,
+  ScaleIcon,
+  SearchIcon,
+  ShoppingCartIcon,
+  TrendingUpIcon,
+  UserIcon,
+  WalletIcon,
 } from "@/components/icons";
 import { Input } from "@/components/ui";
+import { useRouter } from "next/navigation";
+import React, { useMemo, useState } from "react";
 import { ReportTab } from "./types";
 
 export interface HubReportItem {
@@ -71,7 +71,6 @@ export function ReportsHubView({ onSelectReport }: ReportsHubViewProps) {
           {
             id: "balance-sheet",
             name: "Balance Sheet",
-            targetHref: "/reports/finance",
             targetTab: "balance-sheet",
             icon: FileSpreadsheetIcon,
             iconColor: "#0ea5e9",
@@ -80,7 +79,6 @@ export function ReportsHubView({ onSelectReport }: ReportsHubViewProps) {
           {
             id: "trial-balance",
             name: "Trial Balance",
-            targetHref: "/reports/finance",
             targetTab: "trial-balance",
             icon: ScaleIcon,
             iconColor: "#f43f5e",

@@ -11,6 +11,7 @@ import {
   useAccountLedger,
   ChartOfAccount,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
 import {
   SearchIcon,
   PlusIcon,
@@ -249,9 +250,12 @@ export default function AccountsPage() {
     if (!deletingAccount) return;
     try {
       await deleteAccountMutation.mutateAsync(deletingAccount.id);
+      toast.success(
+        `Account "${deletingAccount.accountName}" deleted successfully`,
+      );
       setDeletingAccount(null);
     } catch (err: any) {
-      alert(err.message || "Failed to delete account");
+      toast.error(err.message || "Failed to delete account");
     }
   };
 
