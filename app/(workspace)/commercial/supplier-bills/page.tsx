@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useRef, Fragment } from "react";
 import { useReactToPrint } from "react-to-print";
+import { toast } from "@/lib/toast";
 import {
   BanknoteIcon,
   ChevronDownIcon,
@@ -607,8 +608,9 @@ export default function SupplierBillsPage() {
   const handlePostBill = async (id: string) => {
     try {
       await postBillMutation.mutateAsync(id);
+      toast.success("Supplier bill posted to General Ledger successfully!");
     } catch (err: any) {
-      alert(`Error posting bill: ${err.message}`);
+      toast.error(`Error posting bill: ${err.message}`);
     }
   };
 

@@ -10,7 +10,9 @@ import {
   useUsers,
   UserItem,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   Button,
   Input,
@@ -66,6 +68,7 @@ const ROLES = [
 export default function UsersPage() {
   const { data: usersData, isLoading, error } = useUsers();
   const { user: currentUser, isSuperAdmin, isAdmin } = useAuth();
+  const { confirm } = useConfirm();
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
   const deleteUserMutation = useDeleteUser();
@@ -199,26 +202,29 @@ export default function UsersPage() {
   const handleDeleteUser = useCallback(
     async (user: UserItem) => {
       if (user.id === currentUser?.id) {
-        alert("You cannot delete your own account.");
+        toast.warning("You cannot delete your own account.");
         return;
       }
 
-      if (
-        confirm(
-          `Are you sure you want to delete user account "${user.fullName}" (${user.email})?`,
-        )
-      ) {
+      const isConfirmed = await confirm({
+        title: "Delete User Account",
+        message: `Are you sure you want to delete user account "${user.fullName}" (${user.email})?`,
+        variant: "danger",
+        confirmText: "Delete",
+      });
+      if (isConfirmed) {
         try {
           const res = await deleteUserMutation.mutateAsync(user.id);
-          if (res?.message) {
-            alert(res.message);
-          }
+          toast.success(
+            res?.message ||
+              `User account "${user.fullName}" deleted successfully`,
+          );
         } catch (err: any) {
-          alert(err.message || "Failed to delete user");
+          toast.error(err.message || "Failed to delete user");
         }
       }
     },
-    [currentUser?.id, deleteUserMutation],
+    [confirm, currentUser?.id, deleteUserMutation],
   );
 
   const canManageTargetUser = useCallback(

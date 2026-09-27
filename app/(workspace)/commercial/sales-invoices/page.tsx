@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui";
 import { PlusIcon } from "@/components/icons";
+import { toast } from "@/lib/toast";
 import {
   useSalesInvoices,
   useCreateSalesInvoice,
@@ -46,9 +47,9 @@ export default function SalesInvoicesPage() {
   const handlePostInvoice = async (invoiceId: string) => {
     try {
       await postInvoiceMutation.mutateAsync(invoiceId);
-      alert("Sales invoice posted to General Ledger successfully!");
+      toast.success("Sales invoice posted to General Ledger successfully!");
     } catch (err: any) {
-      alert(`Error posting invoice: ${err.message}`);
+      toast.error(`Error posting invoice: ${err.message}`);
     }
   };
 

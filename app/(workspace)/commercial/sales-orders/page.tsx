@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { toast } from "@/lib/toast";
 import {
   EyeIcon,
   PlusIcon,
@@ -88,10 +89,11 @@ export default function SalesOrdersPage() {
           notes: value.notes,
           items: value.items,
         });
+        toast.success("Sales order created successfully!");
         setIsCreateOpen(false);
         createOrderForm.reset();
       } catch (err: any) {
-        alert(`Error creating sales order: ${err.message}`);
+        toast.error(`Error creating sales order: ${err.message}`);
       }
     },
   });
@@ -138,9 +140,9 @@ export default function SalesOrdersPage() {
   const handleConvertToInvoice = async (soId: string) => {
     try {
       await convertInvoiceMutation.mutateAsync(soId);
-      alert("Sales Order converted to Sales Invoice successfully!");
+      toast.success("Sales Order converted to Sales Invoice successfully!");
     } catch (err: any) {
-      alert(`Error converting to invoice: ${err.message}`);
+      toast.error(`Error converting to invoice: ${err.message}`);
     }
   };
 

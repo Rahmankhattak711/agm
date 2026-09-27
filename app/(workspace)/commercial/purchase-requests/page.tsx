@@ -13,6 +13,7 @@ import {
   Truck,
   X,
 } from "lucide-react";
+import { toast } from "@/lib/toast";
 import {
   Button,
   Table,
@@ -168,8 +169,13 @@ export default function PurchaseRequestsPage() {
   const handleApprove = async (id: string, action: "APPROVE" | "REJECT") => {
     try {
       await approveRequestMutation.mutateAsync({ id, action });
+      toast.success(
+        action === "APPROVE"
+          ? "Purchase request approved successfully!"
+          : "Purchase request rejected",
+      );
     } catch (err: any) {
-      alert(`Error updating request: ${err.message}`);
+      toast.error(`Error updating request: ${err.message}`);
     }
   };
 

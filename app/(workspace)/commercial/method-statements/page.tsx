@@ -8,6 +8,8 @@ import {
   useMethodStatements,
   useDeleteMethodStatement,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   Button,
   DataTable,
@@ -31,6 +33,7 @@ import { SAMPLE_METHOD_STATEMENT } from "@/components/documents/method-statement
 export default function MethodStatementsPage() {
   const { data: recordsList = [], isLoading } = useMethodStatements();
   const deleteMutation = useDeleteMethodStatement();
+  const { confirm } = useConfirm();
 
   const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("LIST");
   const [selectedRecord, setSelectedRecord] =
@@ -83,26 +86,30 @@ export default function MethodStatementsPage() {
   const handleDelete = useCallback(
     async (id: string, e: React.MouseEvent) => {
       e.stopPropagation();
-      if (
-        !window.confirm(
-          "Are you sure you want to delete this method statement from the database?",
-        )
-      ) {
+      const isConfirmed = await confirm({
+        title: "Delete Method Statement",
+        message:
+          "Are you sure you want to delete this method statement from the database? This action cannot be undone.",
+        confirmText: "Delete Statement",
+        variant: "danger",
+      });
+      if (!isConfirmed) {
         return;
       }
       try {
         await deleteMutation.mutateAsync(id);
+        toast.success("Method statement deleted successfully");
         if (selectedRecord?.id === id) {
           setSelectedRecord(null);
         }
       } catch (err: any) {
-        alert(
+        toast.error(
           "Error deleting method statement: " +
             (err.message || "Unknown error"),
         );
       }
     },
-    [deleteMutation, selectedRecord?.id],
+    [confirm, deleteMutation, selectedRecord?.id],
   );
 
   const getStatusBadge = (status?: string) => {

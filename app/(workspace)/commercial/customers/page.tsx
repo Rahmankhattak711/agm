@@ -4,6 +4,7 @@ import React, { useState, useMemo, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon } from "@/components/icons";
 import { Button } from "@/components/ui";
+import { toast } from "@/lib/toast";
 import { useCustomers, Customer } from "@/lib/hooks/api-hooks";
 import {
   CustomerKpis,
@@ -74,7 +75,7 @@ export default function CustomersPage() {
         triggerPrint();
       }, 100);
     } catch (err: any) {
-      alert(`Unable to print statement: ${err.message}`);
+      toast.error(`Unable to print statement: ${err.message}`);
     }
   };
 
