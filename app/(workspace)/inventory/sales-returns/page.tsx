@@ -27,55 +27,30 @@ import {
   ReportKpiGrid,
 } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
+import {
+  useCreditNotes,
+  useCreateCreditNote,
+  useSalesInvoices,
+  useCustomers,
+  CreditNote,
+} from "@/lib/hooks/commercial-hooks";
 
-type ReturnStatus =
-  "DRAFT" | "SUBMITTED" | "APPROVED" | "COMPLETED" | "REJECTED";
-
-interface SalesReturnItem {
-  id: string;
-  returnNumber: string;
-  invoiceReference: string;
-  customerName: string;
-  projectScope: string;
-  returnDate: string;
-  reason: string;
-  totalAmount: number;
-  status: ReturnStatus;
-}
-
-const STATUS_BADGE_CLASSES: Record<ReturnStatus, string> = {
+const STATUS_BADGE_CLASSES: Record<string, string> = {
+  POSTED: "bg-emerald-50 text-emerald-800 border-emerald-200",
   COMPLETED: "bg-emerald-50 text-emerald-800 border-emerald-200",
   APPROVED: "bg-sky-50 text-sky-800 border-sky-200",
   SUBMITTED: "bg-amber-50 text-amber-800 border-amber-200",
   DRAFT: "bg-slate-100 text-slate-700 border-slate-200",
+  CANCELLED: "bg-rose-50 text-rose-800 border-rose-200",
   REJECTED: "bg-rose-50 text-rose-800 border-rose-200",
 };
 
 const STATUS_FILTERS = [
   { id: "ALL", label: "All Returns" },
-  { id: "SUBMITTED", label: "Submitted" },
-  { id: "APPROVED", label: "Approved" },
-  { id: "COMPLETED", label: "Completed" },
+  { id: "POSTED", label: "Posted / Approved" },
   { id: "DRAFT", label: "Drafts" },
+  { id: "CANCELLED", label: "Cancelled" },
 ] as const;
-
-const INITIAL_SALES_RETURNS: SalesReturnItem[] = [
-  {
-    id: "sr-1",
-    returnNumber: "SR-2026-001",
-    invoiceReference: "FSDFDSAFR",
-    customerName: "RWERWE",
-    projectScope: "REWREWQRR",
-    returnDate: "2026-09-13",
-    reason: "EWQRWE",
-    totalAmount: 54.0,
-    status: "SUBMITTED",
-  },
-];
-
-function generateReturnNumber(count: number): string {
-  return `SR-2026-${String(count + 1).padStart(3, "0")}`;
-}
 
 function formatNumber(val: number | string | undefined): string {
   const num = Number(val || 0);
@@ -85,36 +60,55 @@ function formatNumber(val: number | string | undefined): string {
   });
 }
 
-function formatAed(amount: number): string {
+function formatAed(amount: number | string | undefined): string {
   return `AED ${formatNumber(amount)}`;
 }
 
 interface ReturnFormState {
+  salesInvoiceId: string;
   invoiceReference: string;
+  customerId: string;
   customerName: string;
   projectScope: string;
   returnReason: string;
   returnAmount: string;
+  returnDate: string;
 }
 
 const EMPTY_FORM: ReturnFormState = {
+  salesInvoiceId: "",
   invoiceReference: "",
+  customerId: "",
   customerName: "",
   projectScope: "",
   returnReason: "",
   returnAmount: "",
+  returnDate: new Date().toISOString().slice(0, 10),
 };
 
 interface SalesReturnDocumentProps {
-  item: SalesReturnItem;
+  item: CreditNote;
 }
 
 const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
-  const subtotal = item.totalAmount / 1.05;
-  const vatAmount = item.totalAmount - subtotal;
+  const total = Number(item.totalAmount || 0);
+  const subtotal = Number(item.subtotal || total / 1.05);
+  const vatAmount = Number(item.vatAmount || total - subtotal);
   const formattedDate = item.returnDate
     ? new Date(item.returnDate).toLocaleDateString("en-GB")
     : new Date().toLocaleDateString("en-GB");
+
+  const customerDisplay =
+    item.customerRel?.companyName ||
+    item.customerRel?.name ||
+    item.customerName ||
+    "Valued Client";
+
+  const invoiceRefDisplay =
+    item.salesInvoice?.invoiceNumber || "Credit Adjustment";
+
+  const scopeDisplay =
+    item.salesInvoice?.projectScope || "Commercial Fitout Adjustment";
 
   return (
     <div
@@ -166,7 +160,7 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                         Credit Note No:
                       </span>
                       <span className="font-mono font-bold text-slate-900">
-                        {item.returnNumber}
+                        {item.creditNoteNumber}
                       </span>
                     </div>
 
@@ -184,7 +178,7 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                         Invoice Ref:
                       </span>
                       <span className="font-mono font-bold text-slate-900">
-                        {item.invoiceReference}
+                        {invoiceRefDisplay}
                       </span>
                     </div>
 
@@ -216,7 +210,7 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                         Client Name:
                       </span>
                       <span className="font-bold text-slate-900">
-                        {item.customerName}
+                        {customerDisplay}
                       </span>
                     </div>
 
@@ -234,7 +228,7 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                         Linked Ref:
                       </span>
                       <span className="font-mono text-slate-800 font-bold">
-                        Invoice #{item.invoiceReference}
+                        Invoice #{invoiceRefDisplay}
                       </span>
                     </div>
                   </div>
@@ -251,7 +245,7 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                         Project Scope:
                       </span>
                       <span className="font-bold text-slate-900">
-                        {item.projectScope || "Commercial Fitout Adjustment"}
+                        {scopeDisplay}
                       </span>
                     </div>
 
@@ -260,7 +254,7 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                         Return Reason:
                       </span>
                       <span className="text-slate-700 font-medium">
-                        {item.reason}
+                        {item.reason || "Credit adjustment on invoice scope"}
                       </span>
                     </div>
 
@@ -302,29 +296,67 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-agm-box-border">
-                    <tr className="hover:bg-slate-50/50 bg-white print-avoid-break">
-                      <td className="py-3 px-2 print:py-2 print:px-1 align-middle text-center font-bold text-slate-700 border border-agm-box-border">
-                        1
-                      </td>
-                      <td className="py-3 px-3 print:py-2 print:px-2 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
-                        <div className="font-bold text-slate-900 leading-snug">
-                          {item.reason}
-                        </div>
-                        <div className="text-[11px] text-slate-500 mt-0.5">
-                          Scope: {item.projectScope} • Reversal against Tax
-                          Invoice Ref: {item.invoiceReference}
-                        </div>
-                      </td>
-                      <td className="py-3 px-2 print:py-2 print:px-1 align-middle text-center font-mono font-bold text-slate-800 border border-agm-box-border">
-                        1
-                      </td>
-                      <td className="py-3 px-3 print:py-2 print:px-2 align-middle text-right font-mono font-semibold text-slate-800 border border-agm-box-border">
-                        {formatNumber(subtotal)}
-                      </td>
-                      <td className="py-3 px-3 print:py-2 print:px-2 align-middle text-right font-mono font-bold text-slate-900 border border-agm-box-border">
-                        {formatNumber(subtotal)}
-                      </td>
-                    </tr>
+                    {item.items && item.items.length > 0 ? (
+                      item.items.map((it: any, idx: number) => {
+                        const qty = Number(it.quantity || 1);
+                        const price = Number(it.unitPrice || subtotal);
+                        const lineTot = Number(it.totalAmount || qty * price);
+                        return (
+                          <tr
+                            key={it.id || idx}
+                            className="hover:bg-slate-50/50 bg-white print-avoid-break"
+                          >
+                            <td className="py-3 px-2 print:py-2 print:px-1 align-middle text-center font-bold text-slate-700 border border-agm-box-border">
+                              {idx + 1}
+                            </td>
+                            <td className="py-3 px-3 print:py-2 print:px-2 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
+                              <div className="font-bold text-slate-900 leading-snug">
+                                {it.description ||
+                                  item.reason ||
+                                  "Credit adjustment"}
+                              </div>
+                              <div className="text-[11px] text-slate-500 mt-0.5">
+                                Reversal against Invoice Ref:{" "}
+                                {invoiceRefDisplay}
+                              </div>
+                            </td>
+                            <td className="py-3 px-2 print:py-2 print:px-1 align-middle text-center font-mono font-bold text-slate-800 border border-agm-box-border">
+                              {qty}
+                            </td>
+                            <td className="py-3 px-3 print:py-2 print:px-2 align-middle text-right font-mono font-semibold text-slate-800 border border-agm-box-border">
+                              {formatNumber(price)}
+                            </td>
+                            <td className="py-3 px-3 print:py-2 print:px-2 align-middle text-right font-mono font-bold text-slate-900 border border-agm-box-border">
+                              {formatNumber(lineTot)}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr className="hover:bg-slate-50/50 bg-white print-avoid-break">
+                        <td className="py-3 px-2 print:py-2 print:px-1 align-middle text-center font-bold text-slate-700 border border-agm-box-border">
+                          1
+                        </td>
+                        <td className="py-3 px-3 print:py-2 print:px-2 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
+                          <div className="font-bold text-slate-900 leading-snug">
+                            {item.reason || "Credit Adjustment"}
+                          </div>
+                          <div className="text-[11px] text-slate-500 mt-0.5">
+                            Scope: {scopeDisplay} • Reversal against Invoice
+                            Ref: {invoiceRefDisplay}
+                          </div>
+                        </td>
+                        <td className="py-3 px-2 print:py-2 print:px-1 align-middle text-center font-mono font-bold text-slate-800 border border-agm-box-border">
+                          1
+                        </td>
+                        <td className="py-3 px-3 print:py-2 print:px-2 align-middle text-right font-mono font-semibold text-slate-800 border border-agm-box-border">
+                          {formatNumber(subtotal)}
+                        </td>
+                        <td className="py-3 px-3 print:py-2 print:px-2 align-middle text-right font-mono font-bold text-slate-900 border border-agm-box-border">
+                          {formatNumber(subtotal)}
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -344,7 +376,7 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                       <div>
                         This Credit Note certifies an agreed reduction in
                         Accounts Receivable for client{" "}
-                        <strong>{item.customerName}</strong>.
+                        <strong>{customerDisplay}</strong>.
                       </div>
                       <div className="text-[10.5px] text-slate-600 font-mono">
                         Double-Entry GL Impact: Dr. Service Income (4000) • Dr.
@@ -376,7 +408,7 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
                           Total Credit Note Value:
                         </span>
                         <span className="font-mono text-base print:text-sm font-black text-rose-700">
-                          AED {formatNumber(item.totalAmount)}
+                          AED {formatNumber(total)}
                         </span>
                       </div>
                     </div>
@@ -400,73 +432,72 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
 };
 
 export default function SalesReturnsPage() {
-  const [returnsList, setReturnsList] = useState<SalesReturnItem[]>(
-    INITIAL_SALES_RETURNS,
-  );
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [itemToPrint, setItemToPrint] = useState<SalesReturnItem | null>(
-    INITIAL_SALES_RETURNS[0] || null,
-  );
+  const [itemToPrint, setItemToPrint] = useState<CreditNote | null>(null);
   const [expandedReturnId, setExpandedReturnId] = useState<string | null>(null);
   const [form, setForm] = useState<ReturnFormState>(EMPTY_FORM);
+
+  const { data: creditNotes = [], isLoading } = useCreditNotes(search);
+  const { data: salesInvoices = [] } = useSalesInvoices();
+  const { data: customers = [] } = useCustomers();
+  const createMutation = useCreateCreditNote();
 
   const printDocumentRef = useRef<HTMLDivElement>(null);
 
   const triggerPrint = useReactToPrint({
     contentRef: printDocumentRef,
     documentTitle: itemToPrint
-      ? `Credit-Note-${itemToPrint.returnNumber}`
+      ? `Credit-Note-${itemToPrint.creditNoteNumber}`
       : "Sales-Credit-Note",
   });
 
-  const handlePrintRow = (item: SalesReturnItem) => {
+  const handlePrintRow = (item: CreditNote) => {
     setItemToPrint(item);
     setTimeout(() => {
       triggerPrint();
     }, 60);
   };
 
-  const currentReturnNumber = useMemo(
-    () => generateReturnNumber(returnsList.length),
-    [returnsList.length],
-  );
+  const currentReturnNumber = useMemo(() => {
+    const nextNum = creditNotes.length + 1;
+    return `CN-2026-${String(nextNum).padStart(4, "0")}`;
+  }, [creditNotes.length]);
 
   const filteredReturns = useMemo(() => {
     const q = search.toLowerCase();
-    return returnsList.filter((item) => {
+    return creditNotes.filter((item) => {
+      const custName =
+        item.customerRel?.name ||
+        item.customerRel?.companyName ||
+        item.customerName ||
+        "";
+      const invRef = item.salesInvoice?.invoiceNumber || "";
       const matchesSearch =
-        item.returnNumber.toLowerCase().includes(q) ||
-        item.invoiceReference.toLowerCase().includes(q) ||
-        item.customerName.toLowerCase().includes(q) ||
-        item.projectScope.toLowerCase().includes(q) ||
-        item.reason.toLowerCase().includes(q);
+        item.creditNoteNumber.toLowerCase().includes(q) ||
+        invRef.toLowerCase().includes(q) ||
+        custName.toLowerCase().includes(q) ||
+        (item.reason || "").toLowerCase().includes(q);
       const matchesStatus =
         statusFilter === "ALL" || item.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [returnsList, search, statusFilter]);
+  }, [creditNotes, search, statusFilter]);
 
   const totalReturnAmount = useMemo(
-    () => filteredReturns.reduce((s, i) => s + i.totalAmount, 0),
+    () => filteredReturns.reduce((s, i) => s + Number(i.totalAmount || 0), 0),
     [filteredReturns],
   );
 
   const approvedCount = useMemo(
-    () =>
-      returnsList.filter(
-        (r) => r.status === "APPROVED" || r.status === "COMPLETED",
-      ).length,
-    [returnsList],
+    () => creditNotes.filter((r) => r.status === "POSTED").length,
+    [creditNotes],
   );
 
   const pendingCount = useMemo(
-    () =>
-      returnsList.filter(
-        (r) => r.status === "SUBMITTED" || r.status === "DRAFT",
-      ).length,
-    [returnsList],
+    () => creditNotes.filter((r) => r.status === "DRAFT").length,
+    [creditNotes],
   );
 
   const setField = useCallback(
@@ -480,40 +511,93 @@ export default function SalesReturnsPage() {
     setForm(EMPTY_FORM);
   }, []);
 
-  const handleCreateReturn = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!form.invoiceReference || !form.customerName || !form.returnAmount)
-        return;
+  const handleInvoiceSelect = (invoiceId: string) => {
+    if (!invoiceId) {
+      setForm((prev) => ({
+        ...prev,
+        salesInvoiceId: "",
+        invoiceReference: "",
+        customerId: "",
+        customerName: "",
+        projectScope: "",
+      }));
+      return;
+    }
 
-      const newReturn: SalesReturnItem = {
-        id: `sr-${Date.now()}`,
-        returnNumber: currentReturnNumber,
-        invoiceReference: form.invoiceReference,
-        customerName: form.customerName,
-        projectScope: form.projectScope || "Commercial Fitout Adjustment",
-        returnDate: new Date().toISOString().slice(0, 10),
-        reason: form.returnReason || "Client scope alteration / Credit Note",
-        totalAmount: parseFloat(form.returnAmount) || 0,
-        status: "SUBMITTED",
-      };
+    const selectedInv = salesInvoices.find((inv) => inv.id === invoiceId);
+    if (selectedInv) {
+      setForm((prev) => ({
+        ...prev,
+        salesInvoiceId: selectedInv.id,
+        invoiceReference: selectedInv.invoiceNumber,
+        customerId: selectedInv.customerId || "",
+        customerName:
+          selectedInv.customerRel?.companyName ||
+          selectedInv.customerRel?.name ||
+          selectedInv.customerName ||
+          "",
+        projectScope:
+          selectedInv.projectScope || "Commercial Fitout Adjustment",
+        returnAmount:
+          prev.returnAmount || String(selectedInv.totalAmount || ""),
+      }));
+    }
+  };
 
-      setReturnsList((prev) => [newReturn, ...prev]);
-      handleCloseCreate();
-    },
-    [form, currentReturnNumber, handleCloseCreate],
-  );
+  const handleCustomerSelect = (customerId: string) => {
+    const selectedCust = customers.find((c) => c.id === customerId);
+    if (selectedCust) {
+      setForm((prev) => ({
+        ...prev,
+        customerId: selectedCust.id,
+        customerName: selectedCust.companyName || selectedCust.name,
+      }));
+    }
+  };
+
+  const handleCreateReturn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.customerName || !form.returnAmount) return;
+
+    const amount = parseFloat(form.returnAmount) || 0;
+    const subtotal = amount / 1.05;
+    const vat = amount - subtotal;
+
+    await createMutation.mutateAsync({
+      creditNoteNumber: currentReturnNumber,
+      salesInvoiceId: form.salesInvoiceId || null,
+      customerId: form.customerId || null,
+      customerName: form.customerName,
+      returnDate: form.returnDate,
+      reason: form.returnReason || "Customer scope adjustment / credit memo",
+      subtotal,
+      vatAmount: vat,
+      totalAmount: amount,
+      autoPost: true,
+      items: [
+        {
+          description:
+            form.returnReason ||
+            `Credit Note adjustment for ${form.customerName}`,
+          quantity: 1,
+          unitPrice: subtotal,
+        },
+      ],
+    });
+
+    handleCloseCreate();
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Sales Returns
+            Sales Returns &amp; Credit Notes
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Process client returned goods, track credit adjustments, and update
-            warehouse inventory.
+            Process client returned goods, track credit adjustments, and post
+            automated accounting GL reversals.
           </p>
         </div>
 
@@ -525,7 +609,7 @@ export default function SalesReturnsPage() {
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
             className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
-            Log Sales Return
+            Log Sales Return / Credit Note
           </Button>
         </div>
       </div>
@@ -543,28 +627,28 @@ export default function SalesReturnsPage() {
           <ReportKpiCard
             title="2. Total Credit Vouchers"
             subtitle="Registered credit memos"
-            value={returnsList.length}
+            value={creditNotes.length}
             currency={false}
             accentColor="sky"
             footerText="Vouchers"
           />
           <ReportKpiCard
-            title="3. Approved Reversals"
+            title="3. Posted / Active Reversals"
             subtitle="Settled customer credits"
             value={approvedCount}
             currency={false}
             accentColor="emerald"
             valueColor="text-emerald-800"
-            footerText="Approved"
+            footerText="Posted"
           />
           <ReportKpiCard
-            title="4. In-Review Requests"
-            subtitle="Pending management approval"
+            title="4. Draft Requests"
+            subtitle="Unposted credit vouchers"
             value={pendingCount}
             currency={false}
             accentColor="amber"
             valueColor="text-amber-700"
-            footerText="Pending"
+            footerText="Drafts"
           />
         </ReportKpiGrid>
       </div>
@@ -617,7 +701,7 @@ export default function SalesReturnsPage() {
               Sales Returns &amp; Client Credit Notes Register
             </h4>
             <span className="text-[11px] font-mono text-emerald-300 font-bold">
-              {filteredReturns.length} Active Records
+              {filteredReturns.length} Live Database Records
             </span>
           </div>
 
@@ -653,19 +737,50 @@ export default function SalesReturnsPage() {
             </TableHead>
 
             <TableBody className="divide-y divide-slate-100 font-medium">
-              {filteredReturns.length === 0 ? (
+              {isLoading ? (
                 <TableRow>
                   <TableCell
                     colSpan={8}
                     className="py-12 text-center text-slate-400 italic"
                   >
-                    No sales returns found. Log a customer credit note or
-                    rejected scope item.
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin" />
+                      <span>Loading sales returns from database...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredReturns.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={8}
+                    className="py-12 text-center text-slate-400 italic"
+                  >
+                    No sales returns found in database. Click &ldquo;Log Sales
+                    Return / Credit Note&rdquo; to create a new record.
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredReturns.map((item) => {
                   const isExpanded = expandedReturnId === item.id;
+                  const customerDisplay =
+                    item.customerRel?.companyName ||
+                    item.customerRel?.name ||
+                    item.customerName ||
+                    "Valued Customer";
+                  const invoiceRefDisplay =
+                    item.salesInvoice?.invoiceNumber || "—";
+                  const scopeDisplay =
+                    item.salesInvoice?.projectScope || "Commercial Fitout";
+                  const dateDisplay = item.returnDate
+                    ? new Date(item.returnDate).toLocaleDateString("en-GB")
+                    : "—";
+
+                  const totalAmt = Number(item.totalAmount || 0);
+                  const subtotalAmt = Number(item.subtotal || totalAmt / 1.05);
+                  const vatAmt = Number(
+                    item.vatAmount || totalAmt - subtotalAmt,
+                  );
+
                   return (
                     <Fragment key={item.id}>
                       <TableRow
@@ -693,32 +808,30 @@ export default function SalesReturnsPage() {
                               className="text-teal-700 shrink-0"
                             />
                             <span className="hover:text-emerald-800 transition-colors">
-                              {item.returnNumber}
+                              {item.creditNoteNumber}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell className="py-3 px-4 font-mono font-semibold text-slate-800">
-                          {item.invoiceReference}
+                          {invoiceRefDisplay}
                         </TableCell>
                         <TableCell className="py-3 px-4 font-bold text-slate-900">
-                          <div>{item.customerName}</div>
-                          {item.projectScope && (
+                          <div>{customerDisplay}</div>
+                          {scopeDisplay && (
                             <div className="text-[10px] text-slate-400 font-normal">
-                              {item.projectScope}
+                              {scopeDisplay}
                             </div>
                           )}
                         </TableCell>
                         <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
-                          {new Date(item.returnDate).toLocaleDateString(
-                            "en-GB",
-                          )}
+                          {dateDisplay}
                         </TableCell>
                         <TableCell className="py-3 px-4 max-w-xs truncate text-slate-600">
-                          {item.reason}
+                          {item.reason || "Credit adjustment"}
                         </TableCell>
                         <TableCell className="py-3 px-3 text-center">
                           <span
-                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status]}`}
+                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status] || STATUS_BADGE_CLASSES.DRAFT}`}
                           >
                             {item.status}
                           </span>
@@ -727,7 +840,7 @@ export default function SalesReturnsPage() {
                           align="right"
                           className="py-3 px-4 text-right font-mono font-black text-rose-700 text-xs"
                         >
-                          {formatAed(item.totalAmount)}
+                          {formatAed(totalAmt)}
                         </TableCell>
                         <TableCell className="py-3 px-3 text-center">
                           <div className="flex items-center justify-center gap-1">
@@ -791,16 +904,18 @@ export default function SalesReturnsPage() {
                               <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
                                 <div className="flex flex-wrap items-center gap-2.5">
                                   <span className="px-2.5 py-1 rounded-lg bg-teal-900 text-teal-200 font-mono font-bold text-xs shadow-2xs">
-                                    {item.returnNumber}
+                                    {item.creditNoteNumber}
                                   </span>
                                   <span className="text-xs font-bold text-slate-900">
-                                    {item.customerName}
+                                    {customerDisplay}
                                   </span>
-                                  <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-bold">
-                                    Invoice #{item.invoiceReference}
-                                  </span>
+                                  {invoiceRefDisplay !== "—" && (
+                                    <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-bold">
+                                      Invoice #{invoiceRefDisplay}
+                                    </span>
+                                  )}
                                   <span
-                                    className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status]}`}
+                                    className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status] || STATUS_BADGE_CLASSES.DRAFT}`}
                                   >
                                     {item.status}
                                   </span>
@@ -838,7 +953,7 @@ export default function SalesReturnsPage() {
                                     Total Credit Amount
                                   </span>
                                   <span className="text-base font-black font-mono text-rose-800 block">
-                                    {formatAed(item.totalAmount)}
+                                    {formatAed(totalAmt)}
                                   </span>
                                   <span className="text-[10px] text-rose-600/90 font-medium block">
                                     Receivable deduction
@@ -850,7 +965,7 @@ export default function SalesReturnsPage() {
                                     Net Scope (Excl. VAT)
                                   </span>
                                   <span className="text-base font-black font-mono text-slate-900 block">
-                                    AED {formatNumber(item.totalAmount / 1.05)}
+                                    AED {formatNumber(subtotalAmt)}
                                   </span>
                                   <span className="text-[10px] text-slate-500 block">
                                     Direct revenue deduction
@@ -862,11 +977,7 @@ export default function SalesReturnsPage() {
                                     Output VAT Adjustment (5%)
                                   </span>
                                   <span className="text-base font-black font-mono text-emerald-800 block">
-                                    AED{" "}
-                                    {formatNumber(
-                                      item.totalAmount -
-                                        item.totalAmount / 1.05,
-                                    )}
+                                    AED {formatNumber(vatAmt)}
                                   </span>
                                   <span className="text-[10px] text-emerald-600/90 block">
                                     UAE FTA standard rated (5%)
@@ -886,7 +997,7 @@ export default function SalesReturnsPage() {
                                         Customer:
                                       </span>
                                       <span className="font-bold text-slate-900 text-right">
-                                        {item.customerName}
+                                        {customerDisplay}
                                       </span>
                                     </div>
                                     <div className="flex items-start justify-between">
@@ -894,8 +1005,7 @@ export default function SalesReturnsPage() {
                                         Project Scope:
                                       </span>
                                       <span className="font-semibold text-slate-800 text-right">
-                                        {item.projectScope ||
-                                          "Commercial Fitout"}
+                                        {scopeDisplay}
                                       </span>
                                     </div>
                                     <div className="flex items-start justify-between">
@@ -903,7 +1013,9 @@ export default function SalesReturnsPage() {
                                         Linked Invoice:
                                       </span>
                                       <span className="font-mono text-teal-800 font-bold text-right">
-                                        #{item.invoiceReference}
+                                        {invoiceRefDisplay !== "—"
+                                          ? `#${invoiceRefDisplay}`
+                                          : "Direct Adjustment"}
                                       </span>
                                     </div>
                                     <div className="flex items-start justify-between">
@@ -911,9 +1023,7 @@ export default function SalesReturnsPage() {
                                         Return Date:
                                       </span>
                                       <span className="font-mono text-slate-700 text-right">
-                                        {new Date(
-                                          item.returnDate,
-                                        ).toLocaleDateString("en-GB")}
+                                        {dateDisplay}
                                       </span>
                                     </div>
                                   </div>
@@ -947,7 +1057,9 @@ export default function SalesReturnsPage() {
                                         Status:
                                       </span>
                                       <span className="font-bold text-emerald-800 text-right">
-                                        Automated GL Reversal
+                                        {item.status === "POSTED"
+                                          ? "Automated GL Reversal"
+                                          : "Draft / Pending Posting"}
                                       </span>
                                     </div>
                                   </div>
@@ -959,7 +1071,9 @@ export default function SalesReturnsPage() {
                                   Credit Adjustment Reason / Client Return Note
                                 </span>
                                 <p className="text-xs font-medium text-slate-800 pl-3 border-l-2 border-amber-400 mt-1">
-                                  &ldquo;{item.reason}&rdquo;
+                                  &ldquo;
+                                  {item.reason || "No custom note provided"}
+                                  &rdquo;
                                 </p>
                               </div>
                             </div>
@@ -991,14 +1105,56 @@ export default function SalesReturnsPage() {
               className="font-mono font-bold"
             />
             <Input
-              label="Invoice / QTN Ref *"
-              placeholder="e.g. AGM-QTN-2026-01217"
-              value={form.invoiceReference}
-              onChange={(e) => setField("invoiceReference", e.target.value)}
+              label="Return Date *"
+              type="date"
+              value={form.returnDate}
+              onChange={(e) => setField("returnDate", e.target.value)}
               required
               className="font-mono"
             />
           </div>
+
+          <div>
+            <label className="block text-slate-700 font-semibold mb-1 text-xs">
+              Link Existing Tax Invoice (Optional)
+            </label>
+            <select
+              value={form.salesInvoiceId}
+              onChange={(e) => handleInvoiceSelect(e.target.value)}
+              className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
+            >
+              <option value="">— Select an Invoice or enter manually —</option>
+              {salesInvoices.map((inv) => (
+                <option key={inv.id} value={inv.id}>
+                  {inv.invoiceNumber} —{" "}
+                  {inv.customerRel?.companyName ||
+                    inv.customerRel?.name ||
+                    inv.customerName}{" "}
+                  ({formatAed(inv.totalAmount)})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {!form.salesInvoiceId && (
+            <div>
+              <label className="block text-slate-700 font-semibold mb-1 text-xs">
+                Select Customer
+              </label>
+              <select
+                value={form.customerId}
+                onChange={(e) => handleCustomerSelect(e.target.value)}
+                className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
+              >
+                <option value="">— Select a Customer —</option>
+                {customers.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.companyName ? `${c.companyName} (${c.name})` : c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <Input
             label="Client / Customer Name *"
@@ -1025,10 +1181,10 @@ export default function SalesReturnsPage() {
           />
 
           <Input
-            label="Credit Amount (AED) *"
+            label="Total Credit Amount (AED Incl. VAT) *"
             type="number"
             step="0.01"
-            min="0"
+            min="0.01"
             placeholder="0.00"
             value={form.returnAmount}
             onChange={(e) => setField("returnAmount", e.target.value)}
@@ -1042,15 +1198,17 @@ export default function SalesReturnsPage() {
               type="button"
               onClick={handleCloseCreate}
               className="cursor-pointer"
+              disabled={createMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               variant="primary"
               type="submit"
+              disabled={createMutation.isPending}
               className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
-              Submit Sales Return
+              {createMutation.isPending ? "Creating..." : "Submit Sales Return"}
             </Button>
           </div>
         </form>

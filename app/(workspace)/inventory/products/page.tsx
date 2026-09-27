@@ -17,6 +17,8 @@ import {
   ProductType,
 } from "@/lib/hooks/api-hooks";
 import { PlusIcon, SearchIcon } from "@/components/icons";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   ReportKpiCard,
   ReportKpiGrid,
@@ -35,6 +37,7 @@ import {
 
 export default function ProductsPage() {
   const { hasRole, isAdmin } = useAuth();
+  const { confirm } = useConfirm();
   const canManageInventory = hasRole("INVENTORY_MANAGER") || isAdmin;
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
@@ -186,9 +189,10 @@ export default function ProductsPage() {
           notes: value.notes.trim() || undefined,
         });
 
+        toast.success("Stock movement recorded successfully!");
         setAdjustStockProduct(null);
       } catch (err: any) {
-        alert(err.message || "Failed to record stock movement");
+        toast.error(err.message || "Failed to record stock movement");
       }
     },
   });
@@ -407,13 +411,24 @@ export default function ProductsPage() {
                 variant="danger"
                 size="sm"
                 loading={deleteProduct.isPending}
-                onClick={() => {
-                  if (
-                    confirm(
-                      `Are you sure you want to delete SKU ${row.original.sku}?`,
-                    )
-                  ) {
-                    deleteProduct.mutate(row.original.id);
+                onClick={async () => {
+                  const isConfirmed = await confirm({
+                    title: "Delete Product SKU",
+                    message: `Are you sure you want to delete SKU ${row.original.sku}?`,
+                    variant: "danger",
+                    confirmText: "Delete",
+                  });
+                  if (isConfirmed) {
+                    deleteProduct.mutate(row.original.id, {
+                      onSuccess: () => {
+                        toast.success(
+                          `Product SKU ${row.original.sku} deleted`,
+                        );
+                      },
+                      onError: (err: any) => {
+                        toast.error(err.message || "Failed to delete product");
+                      },
+                    });
                   }
                 }}
               >
@@ -424,7 +439,13 @@ export default function ProductsPage() {
         },
       },
     ],
-    [canManageInventory, deleteProduct, handleOpenEdit, handleOpenAdjust],
+    [
+      canManageInventory,
+      confirm,
+      deleteProduct,
+      handleOpenEdit,
+      handleOpenAdjust,
+    ],
   );
 
   return (

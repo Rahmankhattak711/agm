@@ -11,12 +11,15 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { PlusIcon } from "@/components/icons";
 import { Button, Modal, FormInput, FormSubmit } from "@/components/ui";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   ReportKpiCard,
   ReportKpiGrid,
 } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 
 export default function WarehousesPage() {
+  const { confirm } = useConfirm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(
     null,
@@ -225,8 +228,21 @@ export default function WarehousesPage() {
                       variant="danger"
                       size="sm"
                       onClick={async () => {
-                        if (confirm(`Delete warehouse "${w.name}"?`)) {
-                          await deleteWarehouse.mutateAsync(w.id);
+                        const isConfirmed = await confirm({
+                          title: "Delete Warehouse",
+                          message: `Are you sure you want to delete warehouse "${w.name}"?`,
+                          variant: "danger",
+                          confirmText: "Delete",
+                        });
+                        if (isConfirmed) {
+                          try {
+                            await deleteWarehouse.mutateAsync(w.id);
+                            toast.success(`Warehouse "${w.name}" deleted`);
+                          } catch (err: any) {
+                            toast.error(
+                              err.message || "Failed to delete warehouse",
+                            );
+                          }
                         }
                       }}
                     >

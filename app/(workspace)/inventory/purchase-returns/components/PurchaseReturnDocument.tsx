@@ -11,11 +11,16 @@ interface PurchaseReturnDocumentProps {
 const PurchaseReturnDocument: React.FC<PurchaseReturnDocumentProps> = ({
   item,
 }) => {
-  const subtotal = item.totalAmount / 1.05;
-  const vatAmount = item.totalAmount - subtotal;
+  const total = Number(item.totalAmount || 0);
+  const subtotal = Number(item.subtotal || total / 1.05);
+  const vatAmount = Number(item.vatAmount || total - subtotal);
   const formattedDate = item.returnDate
     ? new Date(item.returnDate).toLocaleDateString("en-GB")
     : new Date().toLocaleDateString("en-GB");
+
+  const projectDisplay = item.projectName
+    ? `${item.projectCode ? `${item.projectCode} — ` : ""}${item.projectName}`
+    : "General / Commercial Fitout Stock";
 
   return (
     <div
@@ -82,10 +87,10 @@ const PurchaseReturnDocument: React.FC<PurchaseReturnDocumentProps> = ({
 
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 font-semibold whitespace-nowrap">
-                        PO Reference:
+                        PO / Bill Ref:
                       </span>
                       <span className="font-mono font-bold text-slate-900">
-                        {item.poReference}
+                        {item.poReference || "Direct"}
                       </span>
                     </div>
 
@@ -132,57 +137,67 @@ const PurchaseReturnDocument: React.FC<PurchaseReturnDocumentProps> = ({
 
                     <div className="flex items-start gap-1">
                       <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
-                        Purchase Order:
+                        Reference:
                       </span>
                       <span className="font-mono text-slate-800 font-bold">
-                        #{item.poReference}
+                        #{item.poReference || "Direct Debit"}
                       </span>
                     </div>
 
                     <div className="flex items-start gap-1">
                       <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
-                        Warehouse:
+                        Receiving Bay:
                       </span>
                       <span className="text-slate-700">
-                        AGM Central Receiving Bay, Dubai
+                        AGM Central Facility, Dubai
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs flex flex-col justify-between">
-                  <div>
-                    <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[11px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
-                      FINANCIAL DEBIT RECAP
-                    </div>
-                    <div className="space-y-1.5 print:space-y-1 text-[11.5px] print:text-[11px]">
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-500 font-medium">
-                          Debit Scope (Excl. VAT):
-                        </span>
-                        <span className="font-mono font-bold text-slate-900">
-                          AED {formatNumber(subtotal)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-500 font-medium">
-                          Input VAT Reversal (5%):
-                        </span>
-                        <span className="font-mono font-bold text-purple-700">
-                          AED {formatNumber(vatAmount)}
-                        </span>
-                      </div>
-                    </div>
+                <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2.5 rounded-xl shadow-2xs">
+                  <div className="font-bold mb-2 print:mb-1.5 text-slate-900 uppercase text-[11px] print:text-[11px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
+                    PROJECT ALLOCATION &amp; SCOPE
                   </div>
+                  <div className="space-y-1.5 print:space-y-1">
+                    <div className="flex items-start gap-1">
+                      <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
+                        Project:
+                      </span>
+                      <span className="font-bold text-slate-900">
+                        {projectDisplay}
+                      </span>
+                    </div>
 
-                  <div className="mt-2.5 pt-2 border-t border-slate-200 flex items-center justify-between bg-white print:bg-transparent p-2 rounded-lg border">
-                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-700">
-                      Total Debit Adjustment:
-                    </span>
-                    <span className="font-mono text-base font-black text-rose-700">
-                      {formatAed(item.totalAmount)}
-                    </span>
+                    {item.clientName && (
+                      <div className="flex items-start gap-1">
+                        <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
+                          Client:
+                        </span>
+                        <span className="font-semibold text-slate-700">
+                          {item.clientName}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-start gap-1">
+                      <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
+                        Reason:
+                      </span>
+                      <span className="text-slate-700 font-medium">
+                        {item.reason}
+                      </span>
+                    </div>
+
+                    <div className="flex items-start gap-1">
+                      <span className="w-24 print:w-24 text-[11px] print:text-[11px] font-semibold text-slate-500 shrink-0">
+                        Jurisdiction:
+                      </span>
+                      <span className="text-slate-700">
+                        UAE FTA Standard Rated 5% VAT
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -213,29 +228,69 @@ const PurchaseReturnDocument: React.FC<PurchaseReturnDocumentProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-agm-box-border">
-                    <tr className="hover:bg-slate-50/50 bg-white print-avoid-break">
-                      <td className="py-2 px-2.5 align-middle text-center font-bold text-slate-700 border border-agm-box-border">
-                        1
-                      </td>
-                      <td className="py-2 px-3 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
-                        <div className="font-bold text-slate-900 leading-snug">
-                          {item.reason}
-                        </div>
-                        <div className="text-[11px] text-slate-500 mt-0.5">
-                          Debit Note against PO #{item.poReference} • Supplier:{" "}
-                          {item.supplierName}
-                        </div>
-                      </td>
-                      <td className="py-2 px-2 align-middle text-center font-mono font-bold text-slate-800 border border-agm-box-border">
-                        {item.itemsCount || 1}
-                      </td>
-                      <td className="py-2 px-3 align-middle text-right font-mono font-semibold text-slate-800 border border-agm-box-border">
-                        {formatNumber(subtotal)}
-                      </td>
-                      <td className="py-2 px-3 align-middle text-right font-mono font-bold text-slate-900 border border-agm-box-border">
-                        {formatNumber(subtotal)}
-                      </td>
-                    </tr>
+                    {item.items && item.items.length > 0 ? (
+                      item.items.map((it: any, idx: number) => {
+                        const qty = Number(it.quantity || 1);
+                        const rate = Number(
+                          it.unitCost || it.unitPrice || subtotal,
+                        );
+                        const lineTot = Number(it.totalAmount || qty * rate);
+                        return (
+                          <tr
+                            key={it.id || idx}
+                            className="hover:bg-slate-50/50 bg-white print-avoid-break"
+                          >
+                            <td className="py-2 px-2.5 align-middle text-center font-bold text-slate-700 border border-agm-box-border">
+                              {idx + 1}
+                            </td>
+                            <td className="py-2 px-3 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
+                              <div className="font-bold text-slate-900 leading-snug">
+                                {it.description || item.reason}
+                              </div>
+                              <div className="text-[11px] text-slate-500 mt-0.5">
+                                Debit Note against #
+                                {item.poReference || "Direct"} • Supplier:{" "}
+                                {item.supplierName}
+                              </div>
+                            </td>
+                            <td className="py-2 px-2 align-middle text-center font-mono font-bold text-slate-800 border border-agm-box-border">
+                              {qty}
+                            </td>
+                            <td className="py-2 px-3 align-middle text-right font-mono font-semibold text-slate-800 border border-agm-box-border">
+                              {formatNumber(rate)}
+                            </td>
+                            <td className="py-2 px-3 align-middle text-right font-mono font-bold text-slate-900 border border-agm-box-border">
+                              {formatNumber(lineTot)}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr className="hover:bg-slate-50/50 bg-white print-avoid-break">
+                        <td className="py-2 px-2.5 align-middle text-center font-bold text-slate-700 border border-agm-box-border">
+                          1
+                        </td>
+                        <td className="py-2 px-3 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
+                          <div className="font-bold text-slate-900 leading-snug">
+                            {item.reason}
+                          </div>
+                          <div className="text-[11px] text-slate-500 mt-0.5">
+                            Debit Note against #{item.poReference || "Direct"} •
+                            Supplier: {item.supplierName} • Project:{" "}
+                            {projectDisplay}
+                          </div>
+                        </td>
+                        <td className="py-2 px-2 align-middle text-center font-mono font-bold text-slate-800 border border-agm-box-border">
+                          {item.itemsCount || 1}
+                        </td>
+                        <td className="py-2 px-3 align-middle text-right font-mono font-semibold text-slate-800 border border-agm-box-border">
+                          {formatNumber(subtotal)}
+                        </td>
+                        <td className="py-2 px-3 align-middle text-right font-mono font-bold text-slate-900 border border-agm-box-border">
+                          {formatNumber(subtotal)}
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -259,7 +314,7 @@ const PurchaseReturnDocument: React.FC<PurchaseReturnDocumentProps> = ({
                       </div>
                       <div className="text-[10.5px] text-slate-600 font-mono">
                         Double-Entry Impact: Dr. Accounts Payable (2000) • Cr.
-                        Purchase Returns / Cost (5000) • Cr. Input VAT (2220)
+                        Direct Cost (5010) • Cr. Input VAT (2200)
                       </div>
                     </div>
                   </div>
@@ -287,7 +342,7 @@ const PurchaseReturnDocument: React.FC<PurchaseReturnDocumentProps> = ({
                           Net Debit Total:
                         </span>
                         <span className="font-mono font-black text-sm">
-                          {formatAed(item.totalAmount)}
+                          {formatAed(total)}
                         </span>
                       </div>
                     </div>

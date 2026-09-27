@@ -29,6 +29,7 @@ interface PurchaseReturnsTableProps {
   expandedReturnId: string | null;
   onToggleExpand: (id: string) => void;
   onPrintReturn: (item: PurchaseReturnItem) => void;
+  isLoading?: boolean;
 }
 
 const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
@@ -36,6 +37,7 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
   expandedReturnId,
   onToggleExpand,
   onPrintReturn,
+  isLoading = false,
 }) => {
   return (
     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
@@ -44,7 +46,7 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
           Vendor Return Vouchers &amp; Debit Notes Register
         </h4>
         <span className="text-[11px] font-mono text-emerald-300 font-bold print:!text-slate-700">
-          {filteredReturns.length} Vouchers
+          {filteredReturns.length} Active Records
         </span>
       </div>
 
@@ -52,10 +54,13 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
         <TableHead className="bg-slate-50 border-b border-slate-200">
           <TableRow>
             <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-              Return No &amp; PO
+              Debit Note &amp; Ref
             </TableHeaderCell>
             <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
               Supplier / Vendor
+            </TableHeaderCell>
+            <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+              Project / Scope
             </TableHeaderCell>
             <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
               Return Reason
@@ -79,19 +84,38 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
         </TableHead>
 
         <TableBody className="divide-y divide-slate-100 font-medium">
-          {filteredReturns.length === 0 ? (
+          {isLoading ? (
             <TableRow>
               <TableCell
-                colSpan={7}
+                colSpan={8}
                 className="py-12 text-center text-slate-400 italic"
               >
-                No purchase returns found. Click &quot;Log Purchase Return&quot;
-                to register a vendor material rejection.
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin" />
+                  <span>Loading purchase returns from database...</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : filteredReturns.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={8}
+                className="py-12 text-center text-slate-400 italic"
+              >
+                No purchase returns found in database. Click &ldquo;Log Purchase
+                Return&rdquo; to register a vendor material rejection.
               </TableCell>
             </TableRow>
           ) : (
             filteredReturns.map((item) => {
               const isExpanded = expandedReturnId === item.id;
+              const projectDisplay = item.projectName
+                ? `${item.projectCode ? `${item.projectCode} — ` : ""}${item.projectName}`
+                : "General / Warehouse Stock";
+              const total = Number(item.totalAmount || 0);
+              const subtotal = Number(item.subtotal || total / 1.05);
+              const vat = Number(item.vatAmount || total - subtotal);
+
               return (
                 <Fragment key={item.id}>
                   <TableRow
@@ -121,7 +145,7 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
                         </span>
                       </div>
                       <p className="text-[10px] text-teal-800 font-mono font-semibold mt-0.5 ml-6">
-                        Ref: {item.poReference}
+                        Ref: {item.poReference || "Direct Debit"}
                       </p>
                     </TableCell>
 
@@ -136,17 +160,30 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
                       )}
                     </TableCell>
 
+                    <TableCell className="py-3 px-4">
+                      <p className="font-semibold text-slate-800">
+                        {projectDisplay}
+                      </p>
+                      {item.clientName && (
+                        <p className="text-[10px] text-slate-500">
+                          Client: {item.clientName}
+                        </p>
+                      )}
+                    </TableCell>
+
                     <TableCell className="py-3 px-4 text-slate-600 text-xs max-w-xs truncate">
                       {item.reason}
                     </TableCell>
 
                     <TableCell className="py-3 px-3 font-mono text-slate-700 text-xs">
-                      {new Date(item.returnDate).toLocaleDateString("en-GB")}
+                      {item.returnDate
+                        ? new Date(item.returnDate).toLocaleDateString("en-GB")
+                        : "—"}
                     </TableCell>
 
                     <TableCell className="py-3 px-3 text-center">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status]}`}
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status] || STATUS_BADGE_CLASSES.DRAFT}`}
                       >
                         {item.status}
                       </span>
@@ -156,7 +193,7 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
                       align="right"
                       className="py-3 px-4 text-right font-mono font-black text-rose-700 text-xs"
                     >
-                      {formatAed(item.totalAmount)}
+                      {formatAed(total)}
                     </TableCell>
 
                     <TableCell className="py-3 px-3 text-center print:hidden">
@@ -206,7 +243,7 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
                   {isExpanded && (
                     <TableRow className="hover:bg-transparent bg-slate-50/70">
                       <TableCell
-                        colSpan={7}
+                        colSpan={8}
                         className="p-0 border-b-2 border-emerald-600/40"
                       >
                         <div className="px-6 py-5 space-y-4 border-l-4 border-l-emerald-600 bg-gradient-to-b from-white via-slate-50/40 to-slate-100/40 shadow-inner">
@@ -218,9 +255,11 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
                               <span className="text-xs font-bold text-slate-900">
                                 {item.supplierName}
                               </span>
-                              <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-bold">
-                                PO #{item.poReference}
-                              </span>
+                              {item.poReference && (
+                                <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-bold">
+                                  Ref #{item.poReference}
+                                </span>
+                              )}
                               {item.supplierTrn && (
                                 <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-bold flex items-center gap-1">
                                   <ShieldCheckIcon
@@ -231,7 +270,7 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
                                 </span>
                               )}
                               <span
-                                className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status]}`}
+                                className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status] || STATUS_BADGE_CLASSES.DRAFT}`}
                               >
                                 {item.status}
                               </span>
@@ -256,20 +295,20 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
                                 type="button"
                                 onClick={() => onToggleExpand(item.id)}
                                 className="text-xs text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 transition cursor-pointer"
-                                title="Collapse preview"
+                                title="Close preview"
                               >
                                 <CloseIcon size={15} />
                               </button>
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div className="p-3 bg-rose-50/90 border border-rose-200/80 rounded-xl space-y-0.5">
                               <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block">
                                 Total Debit Amount
                               </span>
                               <span className="text-base font-black font-mono text-rose-800 block">
-                                {formatAed(item.totalAmount)}
+                                {formatAed(total)}
                               </span>
                               <span className="text-[10px] text-rose-600/90 font-medium block">
                                 Payable liability deduction
@@ -281,10 +320,10 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
                                 Net Scope (Excl. VAT)
                               </span>
                               <span className="text-base font-black font-mono text-slate-900 block">
-                                AED {formatNumber(item.totalAmount / 1.05)}
+                                AED {formatNumber(subtotal)}
                               </span>
                               <span className="text-[10px] text-slate-500 block">
-                                Cost reduction reversal
+                                Material cost reduction
                               </span>
                             </div>
 
@@ -293,133 +332,116 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
                                 Input VAT Reversal (5%)
                               </span>
                               <span className="text-base font-black font-mono text-purple-800 block">
-                                AED{" "}
-                                {formatNumber(
-                                  item.totalAmount - item.totalAmount / 1.05,
-                                )}
+                                AED {formatNumber(vat)}
                               </span>
-                              <span className="text-[10px] text-purple-600 block">
-                                FTA Input tax reduction
-                              </span>
-                            </div>
-
-                            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-0.5 shadow-2xs">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                                Return Date
-                              </span>
-                              <span className="text-xs font-bold text-slate-900 block font-mono">
-                                {new Date(item.returnDate).toLocaleDateString(
-                                  "en-GB",
-                                )}
-                              </span>
-                              <span className="text-[10px] text-slate-500 block">
-                                PO #{item.poReference}
+                              <span className="text-[10px] text-purple-600/90 block">
+                                UAE FTA standard rate deduction
                               </span>
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs space-y-2.5">
-                              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                                <span className="font-bold text-xs uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
-                                  <RotateCcwIcon
-                                    size={14}
-                                    className="text-teal-700"
-                                  />
-                                  Supplier &amp; PO Link Details
-                                </span>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase font-mono">
-                                  Debit Record
-                                </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="p-4 bg-white rounded-xl border border-slate-200/90 space-y-2.5 shadow-2xs">
+                              <div className="flex items-center gap-1.5 pb-2 border-b border-slate-100 text-slate-900 font-bold text-[11px] uppercase tracking-wider">
+                                <span className="w-2 h-2 rounded-full bg-teal-600"></span>
+                                Vendor &amp; Project Assignment
                               </div>
-
-                              <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
-                                <div>
-                                  <span className="text-[10px] font-semibold text-slate-400 block">
-                                    Vendor / Supplier
+                              <div className="space-y-1.5 text-xs">
+                                <div className="flex items-start justify-between">
+                                  <span className="text-slate-500 font-medium">
+                                    Supplier:
                                   </span>
-                                  <span className="font-bold text-slate-800">
+                                  <span className="font-bold text-slate-900 text-right">
                                     {item.supplierName}
                                   </span>
                                 </div>
-
-                                <div>
-                                  <span className="text-[10px] font-semibold text-slate-400 block">
-                                    UAE VAT TRN
+                                <div className="flex items-start justify-between">
+                                  <span className="text-slate-500 font-medium">
+                                    Associated Project:
                                   </span>
-                                  <span className="font-mono font-bold text-emerald-800">
-                                    {item.supplierTrn || "Not Registered"}
-                                  </span>
-                                </div>
-
-                                <div>
-                                  <span className="text-[10px] font-semibold text-slate-400 block">
-                                    Purchase Order Ref
-                                  </span>
-                                  <span className="font-mono text-slate-700 font-bold">
-                                    #{item.poReference}
+                                  <span className="font-bold text-emerald-800 text-right">
+                                    {projectDisplay}
                                   </span>
                                 </div>
-
-                                <div>
-                                  <span className="text-[10px] font-semibold text-slate-400 block">
-                                    Return Execution Date
+                                {item.clientName && (
+                                  <div className="flex items-start justify-between">
+                                    <span className="text-slate-500 font-medium">
+                                      Project Client:
+                                    </span>
+                                    <span className="font-medium text-slate-700 text-right">
+                                      {item.clientName}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="flex items-start justify-between">
+                                  <span className="text-slate-500 font-medium">
+                                    Ref / PO Number:
                                   </span>
-                                  <span className="font-mono text-slate-700">
-                                    {new Date(
-                                      item.returnDate,
-                                    ).toLocaleDateString("en-GB")}
+                                  <span className="font-mono text-slate-800 font-semibold text-right">
+                                    {item.poReference || "Direct Return"}
+                                  </span>
+                                </div>
+                                <div className="flex items-start justify-between">
+                                  <span className="text-slate-500 font-medium">
+                                    Return Date:
+                                  </span>
+                                  <span className="font-mono text-slate-700 text-right">
+                                    {item.returnDate
+                                      ? new Date(
+                                          item.returnDate,
+                                        ).toLocaleDateString("en-GB")
+                                      : "—"}
                                   </span>
                                 </div>
                               </div>
                             </div>
 
-                            <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs space-y-2.5 flex flex-col justify-between">
-                              <div>
-                                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                                  <span className="font-bold text-xs uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
-                                    <ShieldCheckIcon
-                                      size={14}
-                                      className="text-teal-700"
-                                    />
-                                    Material Rejection Justification
-                                  </span>
-                                  <span className="text-[10px] font-bold text-slate-400 uppercase font-mono">
-                                    QA Certified
-                                  </span>
-                                </div>
-
-                                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1 mt-2">
-                                  <span className="text-[10px] font-bold uppercase text-slate-500 block">
-                                    Documented Cause:
-                                  </span>
-                                  <p className="text-xs text-slate-800 font-medium leading-relaxed">
-                                    {item.reason}
-                                  </p>
-                                </div>
+                            <div className="p-4 bg-white rounded-xl border border-slate-200/90 space-y-2.5 shadow-2xs">
+                              <div className="flex items-center gap-1.5 pb-2 border-b border-slate-100 text-slate-900 font-bold text-[11px] uppercase tracking-wider">
+                                <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                Accounting &amp; Ledger Audit
                               </div>
-
-                              <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                                <span className="text-[10.5px] text-slate-500 font-mono">
-                                  GL Impact: Dr. 2000 AP • Cr. 5000 Purchases •
-                                  Cr. 2220 Input VAT
-                                </span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => onPrintReturn(item)}
-                                  icon={
-                                    <PrintIcon
-                                      size={12}
-                                      className="text-emerald-700"
-                                    />
-                                  }
-                                  className="text-xs font-bold text-teal-800 hover:text-teal-900 cursor-pointer p-0 h-auto flex items-center gap-1"
-                                >
-                                  Print Debit Note →
-                                </Button>
+                              <div className="space-y-1.5 text-xs">
+                                <div className="flex items-start justify-between">
+                                  <span className="text-slate-500 font-medium">
+                                    Type:
+                                  </span>
+                                  <span className="font-bold text-slate-800 text-right">
+                                    Purchase Debit Note
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-slate-500 font-medium block">
+                                    Double-Entry Impact:
+                                  </span>
+                                  <span className="font-mono text-[11px] text-slate-700 block mt-0.5">
+                                    Dr. Accounts Payable (2000) • Cr. Direct
+                                    Cost (5010) • Cr. VAT Input (2200)
+                                  </span>
+                                </div>
+                                <div className="flex items-start justify-between">
+                                  <span className="text-slate-500 font-medium">
+                                    Posting Status:
+                                  </span>
+                                  <span className="font-bold text-emerald-800 text-right">
+                                    {item.status === "POSTED"
+                                      ? "Automated GL Liability Reduction"
+                                      : "Draft / Unposted"}
+                                  </span>
+                                </div>
                               </div>
                             </div>
+                          </div>
+
+                          <div className="p-3.5 bg-amber-50/80 rounded-xl border border-amber-200/90 space-y-1">
+                            <span className="text-[10.5px] font-bold uppercase tracking-wider text-amber-900 block">
+                              Material Rejection Reason / Quality Note
+                            </span>
+                            <p className="text-xs font-medium text-slate-800 pl-3 border-l-2 border-amber-400 mt-1">
+                              &ldquo;
+                              {item.reason || "Material return / defect note"}
+                              &rdquo;
+                            </p>
                           </div>
                         </div>
                       </TableCell>
