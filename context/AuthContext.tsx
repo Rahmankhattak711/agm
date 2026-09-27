@@ -54,17 +54,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [logout]);
 
   useEffect(() => {
-    const currentUser = authService.getUser();
-    if (currentUser && authService.isAuthenticated()) {
-      setUser(currentUser);
-    } else {
-      if (authService.isSessionExpired()) {
-        authService.clearSession();
+    const verifyDatabaseSession = async () => {
+      const currentUser = authService.getUser();
+      const token = authService.getAccessToken();
+
+      if (currentUser && token && authService.isAuthenticated()) {
+        setUser(currentUser);
+        try {
+          const res = await fetch("/api/auth/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!res.ok) {
+            authService.clearSession();
+            setUser(null);
+            router.push("/login?reset=1");
+          } else {
+            const data = await res.json();
+            if (data.user) {
+              setUser(data.user);
+            }
+          }
+        } catch {
+        }
+      } else {
+        if (authService.isSessionExpired()) {
+          authService.clearSession();
+        }
+        setUser(null);
       }
-      setUser(null);
-    }
-    setLoading(false);
-  }, []);
+      setLoading(false);
+    };
+
+    verifyDatabaseSession();
+  }, [router]);
 
   useEffect(() => {
     if (!user) return;
