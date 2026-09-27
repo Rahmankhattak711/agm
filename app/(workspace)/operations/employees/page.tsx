@@ -33,9 +33,12 @@ import {
   DashboardCard,
   DashboardCardGrid,
 } from "@/components/ui";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 
 export default function EmployeesPage() {
   const { hasRole, isAdmin } = useAuth();
+  const { confirm } = useConfirm();
   const isHR = hasRole("HR") || isAdmin;
   const [search, setSearch] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("ALL");
@@ -369,12 +372,21 @@ export default function EmployeesPage() {
                 variant="danger"
                 size="sm"
                 onClick={async () => {
-                  if (
-                    confirm(
-                      `Delete employee record for ${row.original.firstName} ${row.original.lastName}?`,
-                    )
-                  ) {
-                    await deleteEmployeeMutation.mutateAsync(row.original.id);
+                  const isConfirmed = await confirm({
+                    title: "Delete Employee",
+                    message: `Delete employee record for ${row.original.firstName} ${row.original.lastName}?`,
+                    variant: "danger",
+                    confirmText: "Delete",
+                  });
+                  if (isConfirmed) {
+                    try {
+                      await deleteEmployeeMutation.mutateAsync(row.original.id);
+                      toast.success(
+                        `Employee ${row.original.firstName} ${row.original.lastName} deleted`,
+                      );
+                    } catch (err: any) {
+                      toast.error(err.message || "Failed to delete employee");
+                    }
                   }
                 }}
                 icon={<TrashIcon size={13} />}
@@ -387,7 +399,7 @@ export default function EmployeesPage() {
         },
       },
     ],
-    [deleteEmployeeMutation, isHR, handleOpenEditModal],
+    [confirm, deleteEmployeeMutation, isHR, handleOpenEditModal],
   );
 
   return (

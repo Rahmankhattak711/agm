@@ -30,9 +30,12 @@ import {
   EditIcon,
   CheckCircle2Icon,
 } from "@/components/icons";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 
 export default function AttendancePage() {
   const { canModify } = useAuth();
+  const { confirm } = useConfirm();
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split("T")[0],
   );
@@ -427,10 +430,22 @@ export default function AttendancePage() {
                   variant="danger"
                   size="sm"
                   onClick={async () => {
-                    if (
-                      confirm("Reset attendance entry back to default Present?")
-                    ) {
-                      await deleteAttendance.mutateAsync(row.original.id);
+                    const isConfirmed = await confirm({
+                      title: "Reset Attendance",
+                      message:
+                        "Reset attendance entry back to default Present?",
+                      variant: "warning",
+                      confirmText: "Reset",
+                    });
+                    if (isConfirmed) {
+                      try {
+                        await deleteAttendance.mutateAsync(row.original.id);
+                        toast.success("Attendance entry reset");
+                      } catch (err: any) {
+                        toast.error(
+                          err.message || "Failed to reset attendance",
+                        );
+                      }
                     }
                   }}
                   icon={<TrashIcon size={12} />}

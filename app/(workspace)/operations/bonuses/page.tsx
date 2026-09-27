@@ -27,9 +27,12 @@ import {
   DashboardCardGrid,
 } from "@/components/ui";
 import { CheckIcon, PlusIcon, TrashIcon } from "@/components/icons";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 
 export default function BonusesPage() {
   const { hasRole, isAdmin } = useAuth();
+  const { confirm } = useConfirm();
   const isHR = hasRole("HR") || isAdmin;
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth() + 1,
@@ -245,8 +248,22 @@ export default function BonusesPage() {
                 variant="danger"
                 size="sm"
                 onClick={async () => {
-                  if (confirm("Delete this bonus grant?")) {
-                    await deleteBonus.mutateAsync(row.original.id);
+                  const isConfirmed = await confirm({
+                    title: "Delete Bonus Grant",
+                    message:
+                      "Are you sure you want to delete this bonus grant?",
+                    variant: "danger",
+                    confirmText: "Delete",
+                  });
+                  if (isConfirmed) {
+                    try {
+                      await deleteBonus.mutateAsync(row.original.id);
+                      toast.success("Bonus grant deleted");
+                    } catch (err: any) {
+                      toast.error(
+                        err.message || "Failed to delete bonus grant",
+                      );
+                    }
                   }
                 }}
                 icon={<TrashIcon size={13} />}
@@ -259,7 +276,7 @@ export default function BonusesPage() {
         },
       },
     ],
-    [deleteBonus, isHR, updateBonus],
+    [confirm, deleteBonus, isHR, updateBonus],
   );
 
   return (
