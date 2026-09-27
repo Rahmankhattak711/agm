@@ -493,6 +493,17 @@ export interface UsersResponse {
   };
 }
 
+export interface AccountDetailItem {
+  id: string;
+  date: string;
+  reference?: string | null;
+  description: string;
+  partyName?: string | null;
+  debit?: number;
+  credit?: number;
+  amount: number;
+}
+
 export interface ProfitLossItem {
   id?: string;
   section?: string;
@@ -502,6 +513,7 @@ export interface ProfitLossItem {
   prevAmount?: number;
   variance?: number;
   variancePct?: number;
+  details?: AccountDetailItem[];
 }
 
 export interface ProfitLossReport {
@@ -531,6 +543,8 @@ export interface ProfitLossReport {
   revenue: number;
   expenses: number;
   netIncome: number;
+  projects?: TrialBalanceProjectSummary[];
+  customers?: TrialBalanceCustomerSummary[];
 }
 
 export interface BalanceSheetItem {
@@ -539,6 +553,7 @@ export interface BalanceSheetItem {
   accountCode?: string;
   accountName: string;
   amount: number;
+  details?: AccountDetailItem[];
 }
 
 export interface BalanceSheetReport {
@@ -560,6 +575,8 @@ export interface BalanceSheetReport {
   assets: number;
   liabilities: number;
   equityAmount?: number;
+  projects?: TrialBalanceProjectSummary[];
+  customers?: TrialBalanceCustomerSummary[];
 }
 
 export interface TrialBalanceRow {
@@ -570,6 +587,90 @@ export interface TrialBalanceRow {
   debit: number;
   credit: number;
   netBalance?: number;
+  details?: AccountDetailItem[];
+}
+
+export interface ProjectCostItem {
+  id: string;
+  description: string;
+  costType: string;
+  amount: number;
+  unitRate?: number | null;
+  quantity?: number | null;
+  date: string;
+  reference?: string | null;
+}
+
+export interface ProjectInvoiceItem {
+  id: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  totalAmount: number;
+  paidAmount: number;
+  status: string;
+}
+
+export interface CustomerPaymentItem {
+  id: string;
+  receiptNumber: string;
+  paymentDate: string;
+  amount: number;
+  paymentMethod: string;
+}
+
+export interface TrialBalanceProjectSummary {
+  id: string;
+  code: string;
+  name: string;
+  customerName?: string;
+  contractValue: number;
+  budget?: number;
+  invoicedAmount: number;
+  paidAmount: number;
+  directCost: number;
+  materialCost: number;
+  laborCost: number;
+  actualCost: number;
+  otherExpenses: number;
+  grossMargin: number;
+  marginPercent: number;
+  status: string;
+  managerName?: string;
+  costs?: ProjectCostItem[];
+  invoices?: ProjectInvoiceItem[];
+}
+
+export interface TrialBalanceCustomerSummary {
+  id: string;
+  name: string;
+  companyName?: string;
+  phone?: string;
+  email?: string;
+  totalInvoiced: number;
+  totalPaid: number;
+  currentBalance: number;
+  activeProjectsCount: number;
+  invoices?: ProjectInvoiceItem[];
+  payments?: CustomerPaymentItem[];
+  projectsList?: Array<{
+    id: string;
+    code: string;
+    name: string;
+    status: string;
+    contractValue: number;
+  }>;
+}
+
+export interface TrialBalanceUserSummary {
+  id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  invoicesCount: number;
+  billsCount: number;
+  paymentsCount: number;
+  expensesCount: number;
+  totalRecordedVolume: number;
 }
 
 export interface TrialBalanceReport {
@@ -578,6 +679,17 @@ export interface TrialBalanceReport {
   totalCredit: number;
   difference?: number;
   isBalanced?: boolean;
+  projects?: TrialBalanceProjectSummary[];
+  customers?: TrialBalanceCustomerSummary[];
+  users?: TrialBalanceUserSummary[];
+  summary?: {
+    totalRevenue: number;
+    totalDirectCosts: number;
+    totalGrossProfit: number;
+    totalReceivables: number;
+    totalPayables: number;
+    netCashFlow: number;
+  };
 }
 
 export interface LedgerReport {

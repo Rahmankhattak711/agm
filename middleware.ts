@@ -63,7 +63,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isAuthPath && token) {
+  const isForceLogin =
+    request.nextUrl.searchParams.has("reset") ||
+    request.nextUrl.searchParams.has("expired") ||
+    request.nextUrl.searchParams.has("force");
+
+  if (isAuthPath && token && !isForceLogin) {
     const dashboardUrl = new URL("/inventory/products", request.url);
     return NextResponse.redirect(dashboardUrl);
   }

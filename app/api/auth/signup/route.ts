@@ -26,6 +26,9 @@ export async function POST(request: Request) {
       );
     }
 
+    const userCount = await prisma.user.count();
+    const assignedRole = userCount === 0 ? "SUPER_ADMIN" : "USER";
+
     const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
@@ -33,7 +36,7 @@ export async function POST(request: Request) {
         fullName,
         email,
         passwordHash,
-        role: "USER",
+        role: assignedRole,
       },
       select: {
         id: true,

@@ -33,6 +33,8 @@ import {
   useDeleteRiskAssessment,
   RiskAssessmentRecord,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import { RiskAssessmentSavedModal } from "./RiskAssessmentSavedModal";
 
 interface RiskAssessmentTemplateProps {
@@ -50,7 +52,6 @@ export default function RiskAssessmentTemplate({
     initialData || SAMPLE_RISK_ASSESSMENT,
   );
   const [isEditing, setIsEditing] = useState<boolean>(!readOnly);
-  const [saveSuccess, setSaveSuccess] = useState<string>("");
   const [isSavedModalOpen, setIsSavedModalOpen] = useState<boolean>(false);
   const [status, setStatus] = useState<"DRAFT" | "ACTIVE" | "COMPLETED">(
     (data.status as any) || "COMPLETED",
@@ -60,6 +61,7 @@ export default function RiskAssessmentTemplate({
     useRiskAssessments();
   const saveMutation = useSaveRiskAssessment();
   const deleteMutation = useDeleteRiskAssessment();
+  const { confirm } = useConfirm();
 
   useEffect(() => {
     if (initialData) {
@@ -116,8 +118,7 @@ export default function RiskAssessmentTemplate({
     setData(newDoc);
     setStatus("DRAFT");
     setIsEditing(true);
-    setSaveSuccess("Initialized blank Risk Assessment template!");
-    setTimeout(() => setSaveSuccess(""), 3000);
+    toast.info("Initialized blank Risk Assessment template!");
   };
 
   const handleSaveToDb = async () => {
@@ -141,10 +142,9 @@ export default function RiskAssessmentTemplate({
         onSave(result);
       }
 
-      setSaveSuccess(`Successfully saved ${result.refNumber} to database!`);
-      setTimeout(() => setSaveSuccess(""), 4000);
+      toast.success(`Successfully saved ${result.refNumber} to database!`);
     } catch (err: any) {
-      alert(
+      toast.error(
         "Failed to save risk assessment: " + (err.message || "Unknown error"),
       );
     }
@@ -154,36 +154,38 @@ export default function RiskAssessmentTemplate({
     setData(record);
     setStatus(record.status || "COMPLETED");
     setIsSavedModalOpen(false);
-    setSaveSuccess(
+    toast.info(
       `Loaded ${record.refNumber} (${record.customerName || "Customer"})`,
     );
-    setTimeout(() => setSaveSuccess(""), 3000);
   };
 
   const handleDeleteRecord = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (
-      !confirm(
+    const isConfirmed = await confirm({
+      title: "Delete Risk Assessment",
+      message:
         "Are you sure you want to permanently delete this Risk Assessment from the database?",
-      )
-    ) {
+      variant: "danger",
+      confirmText: "Delete",
+    });
+    if (!isConfirmed) {
       return;
     }
     try {
       await deleteMutation.mutateAsync(id);
+      toast.success("Risk assessment deleted successfully");
       if (data.id === id) {
         handleNewBlank();
       }
     } catch (err: any) {
-      alert("Error deleting record: " + (err.message || "Unknown error"));
+      toast.error("Error deleting record: " + (err.message || "Unknown error"));
     }
   };
 
   const loadSamplePreset = () => {
     setData(SAMPLE_RISK_ASSESSMENT);
     setStatus("COMPLETED");
-    setSaveSuccess("Loaded Matthysen Studio Risk Assessment Preset!");
-    setTimeout(() => setSaveSuccess(""), 3000);
+    toast.success("Loaded Matthysen Studio Risk Assessment Preset!");
   };
 
   const handleAddItem = () => {
@@ -234,13 +236,6 @@ export default function RiskAssessmentTemplate({
             </span>
           )}
         </div>
-
-        {saveSuccess && (
-          <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 animate-in fade-in">
-            <CheckIcon size={14} className="text-emerald-600 font-bold" />
-            <span>{saveSuccess}</span>
-          </div>
-        )}
 
         <div className="flex items-center flex-wrap gap-2">
           <Button

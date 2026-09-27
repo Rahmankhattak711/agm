@@ -25,6 +25,8 @@ import {
   useDeleteSalaryCertificate,
   SalaryCertificateRecord,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import { SalaryCertificateSavedModal } from "./SalaryCertificateSavedModal";
 
 interface SalaryCertificateTemplateProps {
@@ -39,7 +41,6 @@ export default function SalaryCertificateTemplate({
   const [data, setData] = useState<SalaryCertificateDocumentData>(
     initialData || SAMPLE_SALARY_CERTIFICATE,
   );
-  const [saveSuccess, setSaveSuccess] = useState<string>("");
   const [isSavedModalOpen, setIsSavedModalOpen] = useState<boolean>(false);
   const [status, setStatus] = useState<
     "DRAFT" | "ACTIVE" | "ISSUED" | "COMPLETED"
@@ -49,6 +50,7 @@ export default function SalaryCertificateTemplate({
     useSalaryCertificates();
   const saveMutation = useSaveSalaryCertificate();
   const deleteMutation = useDeleteSalaryCertificate();
+  const { confirm } = useConfirm();
 
   const stampInputRef = useRef<HTMLInputElement>(null);
 
@@ -102,15 +104,13 @@ export default function SalaryCertificateTemplate({
     };
     setData(newDoc);
     setStatus("DRAFT");
-    setSaveSuccess("New blank salary certificate initialized");
-    setTimeout(() => setSaveSuccess(""), 3000);
+    toast.info("New blank salary certificate initialized");
   };
 
   const handleResetSample = () => {
     setData(SAMPLE_SALARY_CERTIFICATE);
     setStatus("ISSUED");
-    setSaveSuccess("Reset to default sample certificate");
-    setTimeout(() => setSaveSuccess(""), 3000);
+    toast.info("Reset to default sample certificate");
   };
 
   const handleSalaryChange = (numVal: number) => {
@@ -132,12 +132,11 @@ export default function SalaryCertificateTemplate({
       const result = await saveMutation.mutateAsync(payload);
       if (result) {
         setData((prev) => ({ ...prev, id: result.id }));
-        setSaveSuccess("Salary Certificate saved successfully!");
+        toast.success("Salary Certificate saved successfully!");
         if (onSave) onSave(result as any);
-        setTimeout(() => setSaveSuccess(""), 4000);
       }
     } catch (err: any) {
-      alert(
+      toast.error(
         "Failed to save salary certificate: " +
           (err.message || "Unknown error"),
       );
@@ -147,24 +146,28 @@ export default function SalaryCertificateTemplate({
   const handleLoadCertificate = (cert: SalaryCertificateRecord) => {
     setData(cert as any);
     setStatus((cert.status as any) || "ISSUED");
+    toast.info(`Loaded certificate ${cert.refNumber}`);
   };
 
   const handleDeleteCertificate = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this salary certificate?",
-      )
-    ) {
+    const isConfirmed = await confirm({
+      title: "Delete Salary Certificate",
+      message: "Are you sure you want to delete this salary certificate?",
+      variant: "danger",
+      confirmText: "Delete",
+    });
+    if (!isConfirmed) {
       return;
     }
     try {
       await deleteMutation.mutateAsync(id);
+      toast.success("Salary certificate deleted successfully");
       if (data.id === id) {
         handleNewBlank();
       }
     } catch (err: any) {
-      alert("Error deleting salary certificate: " + err.message);
+      toast.error("Error deleting salary certificate: " + err.message);
     }
   };
 
@@ -181,13 +184,6 @@ export default function SalaryCertificateTemplate({
             </span>
           )}
         </div>
-
-        {saveSuccess && (
-          <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 animate-in fade-in">
-            <CheckIcon size={14} className="text-emerald-600 font-bold" />
-            <span>{saveSuccess}</span>
-          </div>
-        )}
 
         <div className="flex items-center flex-wrap gap-2">
           <Button

@@ -57,11 +57,43 @@ export const SalesInvoiceTerms: React.FC<SalesInvoiceTermsProps> = ({
   onRemovePaymentPlan,
   customTerms,
 }) => {
-  const [internalTerms, setInternalTerms] = useState<string[]>(
-    DEFAULT_SALES_INVOICE_TERMS_TEXT,
-  );
+  const [internalTerms, setInternalTerms] = useState<string[]>(() => {
+    if (customTerms) {
+      try {
+        const parsed = JSON.parse(customTerms);
+        if (Array.isArray(parsed))
+          return parsed.map((t) =>
+            typeof t === "string" ? t : t.text || t.title || "",
+          );
+        if (parsed.terms && Array.isArray(parsed.terms)) {
+          return parsed.terms.map((t: any) =>
+            typeof t === "string"
+              ? t
+              : `${t.title ? t.title + ": " : ""}${t.text || ""}`,
+          );
+        }
+      } catch {
+        if (!customTerms.includes("DEFAULT") && customTerms.trim().length > 0) {
+          return customTerms.split("\n").filter((l) => l.trim().length > 0);
+        }
+      }
+    }
+    return DEFAULT_SALES_INVOICE_TERMS_TEXT;
+  });
+
   const [internalPaymentPlans, setInternalPaymentPlans] = useState<string[]>(
-    DEFAULT_SALES_INVOICE_PAYMENT_PLANS,
+    () => {
+      if (customTerms) {
+        try {
+          const parsed = JSON.parse(customTerms);
+          if (parsed.paymentPlans && Array.isArray(parsed.paymentPlans))
+            return parsed.paymentPlans;
+          if (parsed.paymentTerms && Array.isArray(parsed.paymentTerms))
+            return parsed.paymentTerms;
+        } catch {}
+      }
+      return DEFAULT_SALES_INVOICE_PAYMENT_PLANS;
+    },
   );
 
   const termsList = externalTerms || internalTerms;
@@ -125,11 +157,6 @@ export const SalesInvoiceTerms: React.FC<SalesInvoiceTermsProps> = ({
     }
   };
 
-  const hasCustomTerms =
-    customTerms &&
-    customTerms.trim().length > 0 &&
-    !customTerms.includes("DEFAULT");
-
   return (
     <div
       className={`sales-invoice-terms print-avoid-break break-inside-avoid ${className}`}
@@ -148,47 +175,41 @@ export const SalesInvoiceTerms: React.FC<SalesInvoiceTermsProps> = ({
         </button>
       </div>
 
-      {hasCustomTerms ? (
-        <div className="w-full text-[11px] print:text-[9.5px] text-slate-800 font-semibold leading-relaxed whitespace-pre-line py-1">
-          {customTerms}
-        </div>
-      ) : (
-        <div className="w-full space-y-0.5">
-          {termsList.map((term, idx) => (
-            <div
-              key={idx}
-              className="flex items-start gap-1 py-0.5 text-[11px] print:text-[9.5px] font-semibold text-slate-900 leading-snug group"
-            >
-              <span className="w-5 shrink-0 font-bold select-none text-slate-900 mt-0.5">
-                {idx + 1}.
-              </span>
-              <div className="flex-1">
-                <textarea
-                  rows={1}
-                  value={term}
-                  onChange={(e) => handleUpdateTerm(idx, e.target.value)}
-                  className="w-full bg-transparent hover:bg-slate-50 focus:bg-emerald-50/50 border border-transparent hover:border-slate-200 focus:border-emerald-500 rounded px-1.5 py-0.5 text-[11px] print:text-[9.5px] font-semibold text-slate-900 leading-snug resize-y outline-none transition-colors print:hidden"
-                  placeholder="Enter term or condition clause..."
-                />
-                <div className="hidden print:block leading-snug">
-                  {renderHighlightedText(term)}
-                </div>
+      <div className="w-full space-y-0.5">
+        {termsList.map((term, idx) => (
+          <div
+            key={idx}
+            className="flex items-start gap-1 py-0.5 text-[11px] print:text-[9.5px] font-semibold text-slate-900 leading-snug group"
+          >
+            <span className="w-5 shrink-0 font-bold select-none text-slate-900 mt-0.5">
+              {idx + 1}.
+            </span>
+            <div className="flex-1">
+              <textarea
+                rows={1}
+                value={term}
+                onChange={(e) => handleUpdateTerm(idx, e.target.value)}
+                className="w-full bg-transparent hover:bg-slate-50 focus:bg-emerald-50/50 border border-transparent hover:border-slate-200 focus:border-emerald-500 rounded px-1.5 py-0.5 text-[11px] print:text-[9.5px] font-semibold text-slate-900 leading-snug resize-y outline-none transition-colors print:hidden"
+                placeholder="Enter term or condition clause..."
+              />
+              <div className="hidden print:block leading-snug">
+                {renderHighlightedText(term)}
               </div>
-
-              {termsList.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveTerm(idx)}
-                  className="print:hidden opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity p-0.5 rounded cursor-pointer shrink-0 mt-0.5"
-                  title="Delete term"
-                >
-                  <X size={12} />
-                </button>
-              )}
             </div>
-          ))}
-        </div>
-      )}
+
+            {termsList.length > 1 && (
+              <button
+                type="button"
+                onClick={() => handleRemoveTerm(idx)}
+                className="print:hidden opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity p-0.5 rounded cursor-pointer shrink-0 mt-0.5"
+                title="Delete term"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
 
       <div className="flex items-center justify-between mt-3 mb-1">
         <div className="font-bold text-red-600 text-[11.5px] print:text-[10px] tracking-wider uppercase">

@@ -10,19 +10,27 @@ import {
 } from "@/components/icons";
 import AgmLogo from "@/components/AgmLogo";
 import { useAuth } from "@/context/AuthContext";
+import { authService } from "@/lib/auth-service";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
-import { Clock } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
+import { Clock, RefreshCw, UserPlus } from "lucide-react";
 
 function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const isExpired = searchParams.get("expired") === "1";
+  const isDbReset = searchParams.get("reset") === "1";
   const { login } = useAuth();
+
+  useEffect(() => {
+    if (isDbReset || isExpired) {
+      authService.clearSession();
+    }
+  }, [isDbReset, isExpired]);
 
   const mutation = useMutation({
     mutationFn: async (values: { email: string; password: string }) => {
@@ -33,7 +41,11 @@ function LoginForm() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed");
+      if (!res.ok) {
+        const err: any = new Error(data.error || "Login failed");
+        err.isDbEmpty = Boolean(data.isDbEmpty);
+        throw err;
+      }
       return data;
     },
     onSuccess: (data) => {
@@ -166,20 +178,51 @@ function LoginForm() {
             </p>
           </div>
 
-          {isExpired && (
+          {isDbReset && (
+            <div className="mb-4 rounded-xl bg-teal-50 p-3.5 text-xs font-semibold text-teal-900 border border-teal-200 flex items-start gap-2.5 animate-in fade-in shadow-2xs">
+              <RefreshCw className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Database Reset Detected</p>
+                <p className="text-[11px] text-teal-800 font-normal mt-0.5">
+                  Previous sessions were cleared. Please sign in or create an
+                  administrator account.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {isExpired && !isDbReset && (
             <div className="mb-4 rounded-xl bg-amber-50 p-3.5 text-xs font-semibold text-amber-800 border border-amber-200 flex items-center gap-2.5 animate-in fade-in">
               <Clock className="w-4 h-4 text-amber-600 shrink-0" />
               <span>
-                Your 24-hour session has expired. Please sign in again to
-                continue.
+                Your session has expired. Please sign in again to continue.
               </span>
             </div>
           )}
 
           {mutation.error && (
-            <div className="mb-4 rounded-xl bg-rose-50 p-3 text-xs font-semibold text-rose-700 border border-rose-200 flex items-center gap-2 animate-in fade-in">
-              <AlertCircleIcon className="w-4 h-4 shrink-0" />
-              <span>{mutation.error.message}</span>
+            <div className="mb-4 rounded-xl bg-rose-50 p-3.5 text-xs font-semibold text-rose-800 border border-rose-200 space-y-2 animate-in fade-in">
+              <div className="flex items-start gap-2">
+                <AlertCircleIcon className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+                <span>{mutation.error.message}</span>
+              </div>
+              {(mutation.error.message
+                .toLowerCase()
+                .includes("user not found") ||
+                (mutation.error as any).isDbEmpty) && (
+                <div className="pt-2 border-t border-rose-200/80 flex items-center justify-between">
+                  <span className="text-[11px] text-rose-700 font-normal">
+                    Database reset or new system?
+                  </span>
+                  <Link
+                    href="/signup"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-agm-green hover:bg-agm-green-2 px-2.5 py-1 rounded-lg transition"
+                  >
+                    <UserPlus className="w-3 h-3" />
+                    Sign Up Admin
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 

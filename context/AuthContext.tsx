@@ -74,8 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setUser(data.user);
             }
           }
-        } catch {
-        }
+        } catch {}
       } else {
         if (authService.isSessionExpired()) {
           authService.clearSession();

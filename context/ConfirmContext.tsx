@@ -33,8 +33,7 @@ interface ConfirmContextType {
 const ConfirmContext = createContext<ConfirmContextType | undefined>(undefined);
 
 let globalConfirmFn:
-  | ((options: ConfirmOptions | string) => Promise<boolean>)
-  | null = null;
+  ((options: ConfirmOptions | string) => Promise<boolean>) | null = null;
 
 export const confirmModal = (
   options: ConfirmOptions | string,

@@ -32,6 +32,8 @@ import {
   useDeleteMethodStatement,
   MethodStatementRecord,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import { MethodStatementSavedModal } from "./MethodStatementSavedModal";
 
 interface MethodStatementTemplateProps {
@@ -49,7 +51,6 @@ export default function MethodStatementTemplate({
     initialData || SAMPLE_METHOD_STATEMENT,
   );
   const [isEditing, setIsEditing] = useState<boolean>(!readOnly);
-  const [saveSuccess, setSaveSuccess] = useState<string>("");
   const [isSavedModalOpen, setIsSavedModalOpen] = useState<boolean>(false);
   const [status, setStatus] = useState<"DRAFT" | "ACTIVE" | "COMPLETED">(
     (data.status as any) || "COMPLETED",
@@ -59,6 +60,7 @@ export default function MethodStatementTemplate({
     useMethodStatements();
   const saveMutation = useSaveMethodStatement();
   const deleteMutation = useDeleteMethodStatement();
+  const { confirm } = useConfirm();
 
   useEffect(() => {
     if (initialData) {
@@ -117,8 +119,7 @@ export default function MethodStatementTemplate({
     setData(newDoc);
     setStatus("DRAFT");
     setIsEditing(true);
-    setSaveSuccess("Initialized blank Method Statement template!");
-    setTimeout(() => setSaveSuccess(""), 3000);
+    toast.info("Initialized blank Method Statement template!");
   };
 
   const handleSaveToDb = async () => {
@@ -142,10 +143,9 @@ export default function MethodStatementTemplate({
         onSave(result);
       }
 
-      setSaveSuccess(`Successfully saved ${result.refNumber} to database!`);
-      setTimeout(() => setSaveSuccess(""), 4000);
+      toast.success(`Successfully saved ${result.refNumber} to database!`);
     } catch (err: any) {
-      alert(
+      toast.error(
         "Failed to save method statement: " + (err.message || "Unknown error"),
       );
     }
@@ -155,36 +155,38 @@ export default function MethodStatementTemplate({
     setData(record);
     setStatus(record.status || "COMPLETED");
     setIsSavedModalOpen(false);
-    setSaveSuccess(
+    toast.info(
       `Loaded ${record.refNumber} (${record.customerName || "Customer"})`,
     );
-    setTimeout(() => setSaveSuccess(""), 3000);
   };
 
   const handleDeleteRecord = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (
-      !confirm(
+    const isConfirmed = await confirm({
+      title: "Delete Method Statement",
+      message:
         "Are you sure you want to permanently delete this Method Statement from the database?",
-      )
-    ) {
+      variant: "danger",
+      confirmText: "Delete",
+    });
+    if (!isConfirmed) {
       return;
     }
     try {
       await deleteMutation.mutateAsync(id);
+      toast.success("Method statement deleted successfully");
       if (data.id === id) {
         handleNewBlank();
       }
     } catch (err: any) {
-      alert("Error deleting record: " + (err.message || "Unknown error"));
+      toast.error("Error deleting record: " + (err.message || "Unknown error"));
     }
   };
 
   const loadSamplePreset = () => {
     setData(SAMPLE_METHOD_STATEMENT);
     setStatus("COMPLETED");
-    setSaveSuccess("Loaded Matthysen Studio Method Statement Preset!");
-    setTimeout(() => setSaveSuccess(""), 3000);
+    toast.success("Loaded Matthysen Studio Method Statement Preset!");
   };
 
   const handleAddItem = () => {
@@ -241,13 +243,6 @@ export default function MethodStatementTemplate({
             </span>
           )}
         </div>
-
-        {saveSuccess && (
-          <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 animate-in fade-in">
-            <CheckIcon size={14} className="text-emerald-600 font-bold" />
-            <span>{saveSuccess}</span>
-          </div>
-        )}
 
         <div className="flex items-center flex-wrap gap-2">
           <Button
