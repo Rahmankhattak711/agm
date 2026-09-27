@@ -9,7 +9,9 @@ import {
   useAccounts,
   Expense,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   Button,
   Input,
@@ -62,6 +64,7 @@ const EXPENSE_CATEGORIES = [
 
 export default function ExpensesPage() {
   const { user } = useAuth();
+  const { confirm } = useConfirm();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
@@ -186,21 +189,26 @@ export default function ExpensesPage() {
       });
 
       setIsCreateOpen(false);
+      toast.success("Expense recorded successfully!");
     } catch (err: any) {
       setFormError(err.message || "Failed to record expense");
+      toast.error(err.message || "Failed to record expense");
     }
   };
 
   const handleDelete = async (id: string, num: string) => {
-    if (
-      confirm(
-        `Delete expense "${num}"? Associated journal entry will also be removed.`,
-      )
-    ) {
+    const isConfirmed = await confirm({
+      title: "Delete Expense",
+      message: `Delete expense "${num}"? Associated journal entry will also be removed.`,
+      variant: "danger",
+      confirmText: "Delete",
+    });
+    if (isConfirmed) {
       try {
         await deleteMutation.mutateAsync(id);
+        toast.success(`Expense "${num}" deleted successfully`);
       } catch (err: any) {
-        alert(err.message || "Failed to delete expense");
+        toast.error(err.message || "Failed to delete expense");
       }
     }
   };

@@ -49,6 +49,8 @@ import {
   FormTextarea,
   FormSubmit,
 } from "@/components/ui";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 
 interface PurchaseOrderDocumentProps {
@@ -392,6 +394,7 @@ interface ItemRow {
 
 export default function PurchaseOrdersPage() {
   const { canModify } = useAuth();
+  const { confirm } = useConfirm();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [supplierFilter, setSupplierFilter] = useState<string>("");
@@ -1103,13 +1106,27 @@ export default function PurchaseOrdersPage() {
                                   type="button"
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => {
-                                    if (
-                                      confirm(
-                                        `Are you sure you want to delete PO ${po.poNumber}?`,
-                                      )
-                                    ) {
-                                      deletePO.mutate(po.id);
+                                  onClick={async () => {
+                                    const isConfirmed = await confirm({
+                                      title: "Delete Purchase Order",
+                                      message: `Are you sure you want to delete PO ${po.poNumber}?`,
+                                      variant: "danger",
+                                      confirmText: "Delete",
+                                    });
+                                    if (isConfirmed) {
+                                      deletePO.mutate(po.id, {
+                                        onSuccess: () => {
+                                          toast.success(
+                                            `Purchase Order ${po.poNumber} deleted`,
+                                          );
+                                        },
+                                        onError: (err: any) => {
+                                          toast.error(
+                                            err.message ||
+                                              "Failed to delete PO",
+                                          );
+                                        },
+                                      });
                                     }
                                   }}
                                   className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer"

@@ -5,10 +5,16 @@ import { useReactToPrint } from "react-to-print";
 import { PlusIcon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { useSuppliers } from "@/lib/hooks/api-hooks";
+import { useProjects } from "@/lib/hooks/projects-hooks";
+import {
+  useDebitNotes,
+  useCreateDebitNote,
+  useSupplierBills,
+  DebitNote,
+} from "@/lib/hooks/inventory-hooks";
 import {
   PurchaseReturnItem,
   ReturnFormState,
-  INITIAL_PURCHASE_RETURNS,
   EMPTY_FORM,
   generateReturnNumber,
 } from "./components/types";
@@ -19,11 +25,6 @@ import PurchaseReturnsTable from "./components/PurchaseReturnsTable";
 import LogReturnModal from "./components/LogReturnModal";
 
 export default function PurchaseReturnsPage() {
-  const { data: suppliers = [] } = useSuppliers();
-
-  const [returnsList, setReturnsList] = useState<PurchaseReturnItem[]>(
-    INITIAL_PURCHASE_RETURNS,
-  );
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -31,6 +32,14 @@ export default function PurchaseReturnsPage() {
   const [returnToPrint, setReturnToPrint] = useState<PurchaseReturnItem | null>(
     null,
   );
+  const [form, setForm] = useState<ReturnFormState>(EMPTY_FORM);
+
+  const { data: debitNotes = [], isLoading } = useDebitNotes(search);
+  const { data: suppliers = [] } = useSuppliers();
+  const { data: projects = [] } = useProjects();
+  const { data: supplierBills = [] } = useSupplierBills();
+  const createMutation = useCreateDebitNote();
+
   const printDocumentRef = useRef<HTMLDivElement>(null);
 
   const triggerPrint = useReactToPrint({
@@ -47,12 +56,72 @@ export default function PurchaseReturnsPage() {
     }, 80);
   };
 
-  const [form, setForm] = useState<ReturnFormState>(EMPTY_FORM);
-
   const currentReturnNumber = useMemo(
-    () => generateReturnNumber(returnsList.length),
-    [returnsList.length],
+    () => generateReturnNumber(debitNotes.length),
+    [debitNotes.length],
   );
+
+  const returnsList: PurchaseReturnItem[] = useMemo(() => {
+    return debitNotes.map((dn: DebitNote) => {
+      const linkedBill =
+        dn.supplierBill ||
+        supplierBills.find((b) => b.id === dn.supplierBillId);
+      const supplierObj =
+        dn.supplier || suppliers.find((s) => s.id === dn.supplierId);
+
+      let matchedProject = projects.find((p) => {
+        if (dn.reason && dn.reason.includes(`[${p.projectCode}`)) return true;
+        if (dn.reason && dn.reason.includes(p.name)) return true;
+        return false;
+      });
+
+      let rawReason = dn.reason || "Material return / debit note";
+      let cleanReason = rawReason;
+      if (rawReason.startsWith("[") && rawReason.includes("] ")) {
+        const parts = rawReason.split("] ");
+        const tag = parts[0].slice(1);
+        cleanReason = parts.slice(1).join("] ");
+        if (!matchedProject) {
+          matchedProject = projects.find(
+            (p) => p.projectCode === tag || tag.startsWith(p.projectCode),
+          );
+        }
+      }
+
+      const total = Number(dn.totalAmount || 0);
+      const sub = Number(dn.subtotal || total / 1.05);
+      const vat = Number(dn.vatAmount || total - sub);
+
+      const poRef =
+        linkedBill?.billNumber || dn.purchaseOrderId || "Direct Debit";
+
+      return {
+        id: dn.id,
+        returnNumber: dn.debitNoteNumber,
+        poReference: poRef,
+        supplierId: dn.supplierId,
+        supplierName: dn.supplierName || supplierObj?.name || "Vendor",
+        supplierTrn: supplierObj?.trn || "",
+        projectId: matchedProject?.id || null,
+        projectCode: matchedProject?.projectCode || undefined,
+        projectName: matchedProject?.name || undefined,
+        clientName:
+          matchedProject?.customer?.companyName ||
+          matchedProject?.customer?.name ||
+          undefined,
+        returnDate: dn.returnDate,
+        reason: cleanReason,
+        itemsCount: dn.items && dn.items.length > 0 ? dn.items.length : 1,
+        subtotal: sub,
+        vatAmount: vat,
+        totalAmount: total,
+        status: (dn.status as any) || "POSTED",
+        items: dn.items || [],
+        supplier: supplierObj,
+        supplierBill: linkedBill,
+      };
+    });
+  }, [debitNotes, supplierBills, suppliers, projects]);
 
   const filteredReturns = useMemo(() => {
     const q = search.toLowerCase();
@@ -61,6 +130,9 @@ export default function PurchaseReturnsPage() {
         item.returnNumber.toLowerCase().includes(q) ||
         item.poReference.toLowerCase().includes(q) ||
         item.supplierName.toLowerCase().includes(q) ||
+        (item.projectName && item.projectName.toLowerCase().includes(q)) ||
+        (item.projectCode && item.projectCode.toLowerCase().includes(q)) ||
+        (item.clientName && item.clientName.toLowerCase().includes(q)) ||
         item.reason.toLowerCase().includes(q);
       const matchesStatus =
         statusFilter === "ALL" || item.status === statusFilter;
@@ -74,14 +146,20 @@ export default function PurchaseReturnsPage() {
   );
 
   const completedCount = useMemo(
-    () => returnsList.filter((r) => r.status === "COMPLETED").length,
+    () =>
+      returnsList.filter(
+        (r) => r.status === "POSTED" || r.status === "COMPLETED",
+      ).length,
     [returnsList],
   );
 
   const activeReviewCount = useMemo(
     () =>
       returnsList.filter(
-        (r) => r.status === "SUBMITTED" || r.status === "APPROVED",
+        (r) =>
+          r.status === "SUBMITTED" ||
+          r.status === "APPROVED" ||
+          r.status === "DRAFT",
       ).length,
     [returnsList],
   );
@@ -105,33 +183,60 @@ export default function PurchaseReturnsPage() {
   );
 
   const handleCreateReturn = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!form.poReference || !form.selectedSupplier || !form.returnAmount) {
+      if (!form.selectedSupplier || !form.returnAmount) {
         return;
       }
 
       const supplierObj = suppliers.find((s) => s.id === form.selectedSupplier);
       const supplierName = supplierObj ? supplierObj.name : "Vendor";
-      const supplierTrn = supplierObj?.trn || "";
 
-      const newReturn: PurchaseReturnItem = {
-        id: `pr-${Date.now()}`,
-        returnNumber: currentReturnNumber,
-        poReference: form.poReference,
+      const selectedProj = projects.find((p) => p.id === form.selectedProject);
+      const projectTag = selectedProj
+        ? `[${selectedProj.projectCode}: ${selectedProj.name}] `
+        : "";
+
+      const returnReasonFormatted = `${projectTag}${form.returnReason || "Material defect / Debit Note"}`;
+
+      const totalAmt = parseFloat(form.returnAmount) || 0;
+      const subtotalAmt = totalAmt / 1.05;
+      const vatAmt = totalAmt - subtotalAmt;
+
+      await createMutation.mutateAsync({
+        debitNoteNumber: currentReturnNumber,
+        supplierId: form.selectedSupplier,
         supplierName,
-        supplierTrn,
-        returnDate: new Date().toISOString().slice(0, 10),
-        reason: form.returnReason || "Material defect / Debit Note",
-        itemsCount: 1,
-        totalAmount: parseFloat(form.returnAmount) || 0,
-        status: "SUBMITTED",
-      };
+        supplierBillId: form.supplierBillId || null,
+        purchaseOrderId: form.purchaseOrderId || null,
+        returnDate: form.returnDate,
+        reason: returnReasonFormatted,
+        subtotal: subtotalAmt,
+        vatAmount: vatAmt,
+        totalAmount: totalAmt,
+        autoPost: true,
+        items: [
+          {
+            description:
+              form.returnReason || `Debit Note adjustment for ${supplierName}`,
+            quantity: 1,
+            unitPrice: subtotalAmt,
+            unitCost: subtotalAmt,
+            totalAmount: subtotalAmt,
+          },
+        ],
+      });
 
-      setReturnsList((prev) => [newReturn, ...prev]);
       handleCloseCreate();
     },
-    [form, suppliers, currentReturnNumber, handleCloseCreate],
+    [
+      form,
+      suppliers,
+      projects,
+      currentReturnNumber,
+      createMutation,
+      handleCloseCreate,
+    ],
   );
 
   const handleToggleExpand = useCallback(
@@ -147,8 +252,8 @@ export default function PurchaseReturnsPage() {
             Purchase Returns (Debit Notes)
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Log rejected vendor supplies, process Accounts Payable debit notes,
-            and deduct supplier balances.
+            Log rejected vendor supplies, link active projects, process Accounts
+            Payable debit notes, and deduct supplier balances.
           </p>
         </div>
 
@@ -186,6 +291,7 @@ export default function PurchaseReturnsPage() {
           expandedReturnId={expandedReturnId}
           onToggleExpand={handleToggleExpand}
           onPrintReturn={handlePrintReturn}
+          isLoading={isLoading}
         />
       </div>
 
@@ -196,6 +302,9 @@ export default function PurchaseReturnsPage() {
         form={form}
         setField={setField}
         suppliers={suppliers}
+        projects={projects}
+        supplierBills={supplierBills}
+        isSubmitting={createMutation.isPending}
       />
 
       <div

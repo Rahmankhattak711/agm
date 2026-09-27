@@ -27,9 +27,12 @@ import {
   DashboardCardGrid,
 } from "@/components/ui";
 import { CheckIcon, CloseIcon, PlusIcon, TrashIcon } from "@/components/icons";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 
 export default function LeavesPage() {
   const { hasRole, canModify } = useAuth();
+  const { confirm } = useConfirm();
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [employeeFilter, setEmployeeFilter] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -238,8 +241,20 @@ export default function LeavesPage() {
                   variant="danger"
                   size="sm"
                   onClick={async () => {
-                    if (confirm("Delete this leave application?")) {
-                      await deleteLeave.mutateAsync(row.original.id);
+                    const isConfirmed = await confirm({
+                      title: "Delete Leave Application",
+                      message:
+                        "Are you sure you want to delete this leave application?",
+                      variant: "danger",
+                      confirmText: "Delete",
+                    });
+                    if (isConfirmed) {
+                      try {
+                        await deleteLeave.mutateAsync(row.original.id);
+                        toast.success("Leave application deleted");
+                      } catch (err: any) {
+                        toast.error(err.message || "Failed to delete leave");
+                      }
                     }
                   }}
                   icon={<TrashIcon size={13} />}

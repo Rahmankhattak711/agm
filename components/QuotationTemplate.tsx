@@ -6,6 +6,8 @@ import {
   useQuotations,
   useSaveQuotation,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   Check,
   ChevronDown,
@@ -52,7 +54,6 @@ export default function QuotationTemplate({
   hideOuterWrapper = false,
 }: QuotationTemplateProps) {
   const [selectedQuotationId, setSelectedQuotationId] = useState<string>("");
-  const [saveSuccessMsg, setSaveSuccessMsg] = useState<string>("");
   const [docType, setDocType] = useState<"QUOTATION" | "TAX_INVOICE">(
     "QUOTATION",
   );
@@ -60,6 +61,7 @@ export default function QuotationTemplate({
     "ACCEPTED",
   );
   const [isSavedDrawerOpen, setIsSavedDrawerOpen] = useState<boolean>(false);
+  const { confirm } = useConfirm();
 
   const { data: savedQuotations = [], isLoading: isLoadingSaved } =
     useQuotations();
@@ -68,8 +70,7 @@ export default function QuotationTemplate({
 
   const [meta, setMeta] = useState<QuotationMeta>({
     quotationNo:
-      initialMeta?.quotationNo ||
-      `AGM-QTN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
+      initialMeta?.quotationNo || `AGM-QTN-${new Date().getFullYear()}-01`,
     date: initialMeta?.date || new Date().toLocaleDateString("en-GB"),
     validUntil:
       initialMeta?.validUntil ||
@@ -212,8 +213,8 @@ export default function QuotationTemplate({
 
   const handleSaveToDb = async () => {
     if (!meta.customerId && (!meta.customer || !meta.customer.trim())) {
-      alert(
-        "Cannot generate quotation: Please select or create a registered customer profile first.\n\nQuotations cannot be generated without an existing customer.",
+      toast.warning(
+        "Cannot generate quotation: Please select or create a registered customer profile first.",
       );
       return;
     }
@@ -235,6 +236,8 @@ export default function QuotationTemplate({
         vatPct: Number(vatPct || 0),
         discount: Number(discount || 0),
         status,
+        terms: JSON.stringify(quotationTerms),
+        paymentTerms: JSON.stringify(paymentTerms),
         items: items.map((it, idx) => {
           const isFree = Boolean(
             it.isFree ||
@@ -256,11 +259,12 @@ export default function QuotationTemplate({
       const result = await saveQuotationMutation.mutateAsync(payload as any);
       if (result?.id) {
         setSelectedQuotationId(result.id);
-        setSaveSuccessMsg(`Saved successfully as ${result.quotationNo}!`);
-        setTimeout(() => setSaveSuccessMsg(""), 4000);
+        toast.success(`Saved successfully as ${result.quotationNo}!`);
       }
     } catch (err: any) {
-      alert("Error saving quotation: " + (err.message || "Unknown error"));
+      toast.error(
+        "Error saving quotation: " + (err.message || "Unknown error"),
+      );
     }
   };
 
@@ -284,6 +288,44 @@ export default function QuotationTemplate({
       contact: q.contact || "",
     });
 
+    if (q.terms) {
+      try {
+        const parsed = JSON.parse(q.terms);
+        if (Array.isArray(parsed)) {
+          setQuotationTerms(
+            parsed.map((item, idx) =>
+              typeof item === "string"
+                ? { id: idx + 1, title: "", text: item }
+                : {
+                    id: item.id || idx + 1,
+                    title: item.title || "",
+                    text: item.text || "",
+                  },
+            ),
+          );
+        }
+      } catch {
+        setQuotationTerms([{ id: 1, title: "Condition:", text: q.terms }]);
+      }
+    } else {
+      setQuotationTerms(DEFAULT_TERMS_AND_CONDITIONS);
+    }
+
+    if (q.paymentTerms) {
+      try {
+        const parsed = JSON.parse(q.paymentTerms);
+        if (Array.isArray(parsed)) {
+          setPaymentTerms(
+            parsed.map((p) => (typeof p === "string" ? p : String(p))),
+          );
+        }
+      } catch {
+        setPaymentTerms([q.paymentTerms]);
+      }
+    } else {
+      setPaymentTerms(DEFAULT_PAYMENT_TERMS);
+    }
+
     if (q.items && q.items.length > 0) {
       setItems(
         q.items.map((item, idx) => ({
@@ -298,13 +340,26 @@ export default function QuotationTemplate({
       );
     }
     setIsSavedDrawerOpen(false);
+    toast.info(`Loaded quotation ${q.quotationNo}`);
   };
 
   const handleNewQuotation = () => {
     setSelectedQuotationId("");
     setDocType("QUOTATION");
+
+    let nextNum = 1;
+    if (savedQuotations && savedQuotations.length > 0) {
+      const nums = savedQuotations.map((q: any) => {
+        const match = q.quotationNo?.match(/-(\d+)$/);
+        return match ? parseInt(match[1], 10) : 0;
+      });
+      nextNum = Math.max(...nums, 0) + 1;
+    }
+    const year = new Date().getFullYear();
+    const paddedNum = String(nextNum).padStart(2, "0");
+
     setMeta({
-      quotationNo: `AGM-QTN-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
+      quotationNo: `AGM-QTN-${year}-${paddedNum}`,
       date: new Date().toLocaleDateString("en-GB"),
       validUntil: new Date(
         Date.now() + 15 * 24 * 60 * 60 * 1000,
@@ -337,15 +392,21 @@ export default function QuotationTemplate({
 
   const handleDeleteQuotation = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this saved quotation?"))
-      return;
+    const isConfirmed = await confirm({
+      title: "Delete Quotation",
+      message: "Are you sure you want to delete this saved quotation?",
+      variant: "danger",
+      confirmText: "Delete",
+    });
+    if (!isConfirmed) return;
     try {
       await deleteQuotationMutation.mutateAsync(id);
+      toast.success("Quotation deleted successfully");
       if (selectedQuotationId === id) {
         handleNewQuotation();
       }
     } catch (err: any) {
-      alert("Error deleting: " + err.message);
+      toast.error("Error deleting: " + err.message);
     }
   };
 
@@ -445,7 +506,7 @@ export default function QuotationTemplate({
           type="button"
           onClick={() => {
             if (!meta.customerId && !meta.customer.trim()) {
-              alert(
+              toast.warning(
                 "Customer Required: Please select or create a customer profile before printing or generating this official quotation.",
               );
               return;
@@ -468,12 +529,6 @@ export default function QuotationTemplate({
         {selectedQuotationId && (
           <span className="px-2.5 py-1 rounded-full bg-agm-green-2 text-white border border-agm-green text-[11px] font-bold">
             Loaded: {meta.quotationNo}
-          </span>
-        )}
-
-        {saveSuccessMsg && (
-          <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 animate-fade-in">
-            <Check size={14} /> {saveSuccessMsg}
           </span>
         )}
       </div>
@@ -563,7 +618,21 @@ export default function QuotationTemplate({
               {docType === "TAX_INVOICE" ? (
                 <tr>
                   <td className="p-0 border-none align-top pb-6 print:pb-0">
-                    <SalesInvoiceTerms className="px-10 mt-4 print:px-0 print:mt-2" />
+                    <SalesInvoiceTerms
+                      className="px-10 mt-4 print:px-0 print:mt-2"
+                      terms={quotationTerms.map((t) =>
+                        t.title ? `${t.title} ${t.text}` : t.text,
+                      )}
+                      onUpdateTerm={(idx, val) =>
+                        updateQuotationTerm(idx, "text", val)
+                      }
+                      onAddTerm={addQuotationTerm}
+                      onRemoveTerm={removeQuotationTerm}
+                      paymentPlans={paymentTerms}
+                      onUpdatePaymentPlan={updatePaymentTerm}
+                      onAddPaymentPlan={addPaymentTerm}
+                      onRemovePaymentPlan={removePaymentTerm}
+                    />
                   </td>
                 </tr>
               ) : (

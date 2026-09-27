@@ -32,6 +32,8 @@ import {
   useSaveCustomLetter,
   useDeleteCustomLetter,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import { CustomLetterSavedModal } from "./CustomLetterSavedModal";
 
 interface CustomLetterTemplateProps {
@@ -46,7 +48,6 @@ export default function CustomLetterTemplate({
   const [data, setData] = useState<CustomLetterDocumentData>(
     initialData || DEFAULT_CUSTOM_LETTER,
   );
-  const [saveSuccess, setSaveSuccess] = useState<string>("");
   const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
   const [status, setStatus] = useState<"DRAFT" | "ACTIVE" | "ISSUED">(
     (data.status as any) || "ISSUED",
@@ -57,6 +58,7 @@ export default function CustomLetterTemplate({
     useCustomLetters();
   const saveMutation = useSaveCustomLetter();
   const deleteMutation = useDeleteCustomLetter();
+  const { confirm } = useConfirm();
 
   useEffect(() => {
     if (initialData) {
@@ -94,15 +96,13 @@ export default function CustomLetterTemplate({
     };
     setData(newDoc);
     setStatus("DRAFT");
-    setSaveSuccess("New blank document initialized");
-    setTimeout(() => setSaveSuccess(""), 3000);
+    toast.info("New blank document initialized");
   };
 
   const handleResetDefault = () => {
     setData(DEFAULT_CUSTOM_LETTER);
     setStatus("ISSUED");
-    setSaveSuccess("Reset to default experience certificate template");
-    setTimeout(() => setSaveSuccess(""), 3000);
+    toast.info("Reset to default experience certificate template");
   };
 
   const handleSave = async () => {
@@ -115,34 +115,39 @@ export default function CustomLetterTemplate({
       const result = await saveMutation.mutateAsync(payload);
       if (result) {
         setData((prev) => ({ ...prev, id: result.id }));
-        setSaveSuccess("Letter saved to database successfully!");
+        toast.success("Letter saved to database successfully!");
         if (onSave) onSave(result);
-        setTimeout(() => setSaveSuccess(""), 4000);
       }
     } catch (err: any) {
-      alert("Failed to save letter: " + (err.message || "Unknown error"));
+      toast.error("Failed to save letter: " + (err.message || "Unknown error"));
     }
   };
 
   const handleLoadLetter = (letter: CustomLetterDocumentData) => {
     setData(letter);
     setStatus((letter.status as any) || "ISSUED");
+    toast.info(`Loaded letter ${letter.refNumber}`);
   };
 
   const handleDeleteLetter = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (
-      !window.confirm("Are you sure you want to delete this custom letter?")
-    ) {
+    const isConfirmed = await confirm({
+      title: "Delete Custom Letter",
+      message: "Are you sure you want to delete this custom letter?",
+      variant: "danger",
+      confirmText: "Delete",
+    });
+    if (!isConfirmed) {
       return;
     }
     try {
       await deleteMutation.mutateAsync(id);
+      toast.success("Letter deleted successfully");
       if (data.id === id) {
         handleNewBlank();
       }
     } catch (err: any) {
-      alert("Error deleting letter: " + (err.message || "Unknown error"));
+      toast.error("Error deleting letter: " + (err.message || "Unknown error"));
     }
   };
 
@@ -323,13 +328,6 @@ export default function CustomLetterTemplate({
             </span>
           )}
         </div>
-
-        {saveSuccess && (
-          <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 animate-in fade-in">
-            <CheckIcon size={14} className="text-emerald-600 font-bold" />
-            <span>{saveSuccess}</span>
-          </div>
-        )}
 
         <div className="flex items-center flex-wrap gap-2">
           <Button

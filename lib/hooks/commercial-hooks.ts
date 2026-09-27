@@ -120,6 +120,7 @@ export function useConvertQuotationToSalesInvoice() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quotations"] });
       qc.invalidateQueries({ queryKey: ["sales-invoices"] });
+      qc.invalidateQueries({ queryKey: ["projects"] });
       qc.invalidateQueries({ queryKey: ["customers"] });
       qc.invalidateQueries({ queryKey: ["reports"] });
     },
@@ -301,6 +302,21 @@ export function useCreateSalesInvoice() {
     mutationFn: (data: any) =>
       fetchJson<SalesInvoice>("/api/commercial/sales-invoices", {
         method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sales-invoices"] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    },
+  });
+}
+
+export function useUpdateSalesInvoice() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<SalesInvoice> }) =>
+      fetchJson<SalesInvoice>(`/api/commercial/sales-invoices/${id}`, {
+        method: "PATCH",
         body: JSON.stringify(data),
       }),
     onSuccess: () => {

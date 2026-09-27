@@ -15,12 +15,12 @@ import {
   ReportsIcon,
 } from "@/components/icons";
 import Sidebar from "@/components/Sidebar";
-import { Button } from "@/components/ui";
+import { Button, GlobalLoading } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { getPageMeta } from "@/lib/navigation";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { RingLoader, PulseLoader } from "react-spinners";
+
 
 export default function WorkspaceLayout({ children }: { children: ReactNode }) {
   const { user, checkAuth, loading, logout } = useAuth();
@@ -55,36 +55,7 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-agm-bg select-none">
-        <div className="relative flex flex-col items-center bg-white/90 backdrop-blur-md border border-agm-box-border px-8 py-7 rounded-2xl shadow-sm space-y-4 max-w-xs w-full text-center">
-          <div className="relative flex items-center justify-center w-14 h-14">
-            <RingLoader color="#28633a" size={54} speedMultiplier={0.9} />
-            <div className="absolute inset-2 rounded-xl bg-gradient-to-br from-agm-green-2 via-agm-green to-agm-sidebar flex items-center justify-center shadow-xs">
-              <span className="text-white font-black text-[11px] tracking-wider">
-                AGM
-              </span>
-            </div>
-          </div>
-          <div className="space-y-1">
-            <div className="text-xs font-semibold text-agm-text">
-              Verifying Session
-            </div>
-            <p className="text-[11px] text-agm-muted">
-              Connecting to AGM workspace...
-            </p>
-          </div>
-          <div className="pt-1 flex items-center justify-center">
-            <PulseLoader
-              color="#28633a"
-              size={4}
-              margin={3}
-              speedMultiplier={0.8}
-            />
-          </div>
-        </div>
-      </div>
-    );
+    return <GlobalLoading fullScreen={true} />;
   }
 
   const userInitials = user?.fullName

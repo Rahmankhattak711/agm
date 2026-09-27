@@ -67,6 +67,64 @@ export async function POST(
       parseFloat(quotation.totalAmount?.toString() || "0") ||
       subtotal - discount + vatAmount;
 
+    let parsedTermsList: string[] = [];
+    let parsedPaymentPlans: string[] = [];
+
+    if (quotation.terms) {
+      try {
+        const parsed = JSON.parse(quotation.terms);
+        if (Array.isArray(parsed)) {
+          parsedTermsList = parsed.map((t: any) =>
+            typeof t === "string"
+              ? t
+              : `${t.title ? t.title + " " : ""}${t.text || ""}`,
+          );
+        }
+      } catch {
+        parsedTermsList = [quotation.terms];
+      }
+    }
+
+    if (quotation.paymentTerms) {
+      try {
+        const parsed = JSON.parse(quotation.paymentTerms);
+        if (Array.isArray(parsed)) {
+          parsedPaymentPlans = parsed.map((p: any) =>
+            typeof p === "string" ? p : String(p),
+          );
+        }
+      } catch {
+        parsedPaymentPlans = [quotation.paymentTerms];
+      }
+    }
+
+    if (parsedPaymentPlans.length === 0) {
+      parsedPaymentPlans = [
+        "40 % Advance",
+        "20% Floor work done at ground floor (whichever comes first)",
+        "20% Glass work at site (whichever comes first)",
+        "15% Wood work at site",
+        "5 % Upon handing over",
+      ];
+    }
+
+    if (parsedTermsList.length === 0) {
+      parsedTermsList = [
+        "Invoice Note: Please quote the invoice number when making payment.",
+        "All materials, specifications, quantities, and prices are as per the approved quotation.",
+        "Any additional or variation works requested by the Client shall be charged separately and shall be payable 100% as per the issued invoice.",
+        "This invoice is issued in accordance with the terms and conditions stated in the approved quotation.",
+        "Payment shall be made as per the payment schedule and terms mentioned in the approved quotation.",
+        "Payment Conditions: Variation works shall be paid as per the issued invoice. The quotation number mentioned is for source/reference purposes only and does not constitute the payment terms for the variation works.",
+      ];
+    }
+
+    const transferredTerms = JSON.stringify({
+      terms: parsedTermsList,
+      paymentPlans: parsedPaymentPlans,
+      paymentTerms: parsedPaymentPlans,
+    });
+
     const salesInvoice = await prisma.$transaction(async (tx) => {
       const inv = await tx.salesInvoice.create({
         data: {
@@ -91,7 +149,7 @@ export async function POST(
           paidAmount: 0,
           remainingBalance: totalAmount,
           notes: quotation.notes || null,
-          terms: quotation.terms || quotation.paymentTerms || null,
+          terms: transferredTerms,
           createdById: authUser.id,
           items: {
             create: formattedItems,
@@ -102,11 +160,38 @@ export async function POST(
         },
       });
 
-      await tx.quotationItem.deleteMany({
-        where: { quotationId: id },
+      const existingProject = await tx.project.findFirst({
+        where: { quotationId: quotation.id },
       });
-      await tx.quotation.delete({
+
+      if (!existingProject) {
+        const projectCount = await tx.project.count();
+        const year = new Date().getFullYear();
+        const projectCode = `PRJ-${year}-${String(projectCount + 1).padStart(4, "0")}`;
+        const projectName = quotation.project
+          ? `${quotation.project} (${quotation.quotationNo})`
+          : `Project ${quotation.quotationNo}`;
+
+        await tx.project.create({
+          data: {
+            projectCode,
+            name: projectName,
+            description: `Project initialized from Quotation ${quotation.quotationNo} and Tax Invoice ${invoiceNumber}`,
+            status: "PLANNING",
+            priority: "MEDIUM",
+            location: quotation.location || null,
+            contractValue: totalAmount,
+            budget: Math.round(totalAmount * 0.75),
+            customerId: quotation.customerId || null,
+            quotationId: quotation.id,
+            createdById: authUser.id,
+          },
+        });
+      }
+
+      await tx.quotation.update({
         where: { id },
+        data: { status: "ACCEPTED" },
       });
 
       return inv;

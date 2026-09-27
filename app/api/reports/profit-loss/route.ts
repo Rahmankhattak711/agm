@@ -1,162 +1,16 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { getStandardAccounts } from "@/lib/commercial-accounting";
+import { getAccountTransactionDetails } from "@/lib/report-helpers";
+import { ProfitLossItem } from "@/lib/hooks/types";
 
 type Account = Awaited<
   ReturnType<typeof prisma.chartOfAccount.findMany>
 >[number];
 
-type ProfitItem = {
-  id: string;
-  section: string;
-  accountCode: string;
-  accountName: string;
-  amount: number;
-  prevAmount?: number;
-  variance?: number;
-  variancePct?: number;
-};
-
-function calculateBalances(
-  lines: any[],
-  accounts: Account[],
-  prevLines: any[] = [],
-) {
-  const balanceMap = new Map<string, number>();
-  for (const l of lines) {
-    const type = l.account?.type;
-    const current = balanceMap.get(l.accountId) || 0;
-    if (type === "REVENUE") {
-      balanceMap.set(
-        l.accountId,
-        current + Number(l.credit || 0) - Number(l.debit || 0),
-      );
-    } else if (type === "EXPENSE") {
-      balanceMap.set(
-        l.accountId,
-        current + Number(l.debit || 0) - Number(l.credit || 0),
-      );
-    }
-  }
-
-  const prevBalanceMap = new Map<string, number>();
-  for (const l of prevLines) {
-    const type = l.account?.type;
-    const current = prevBalanceMap.get(l.accountId) || 0;
-    if (type === "REVENUE") {
-      prevBalanceMap.set(
-        l.accountId,
-        current + Number(l.credit || 0) - Number(l.debit || 0),
-      );
-    } else if (type === "EXPENSE") {
-      prevBalanceMap.set(
-        l.accountId,
-        current + Number(l.debit || 0) - Number(l.credit || 0),
-      );
-    }
-  }
-
-  const incomeAccounts = accounts.filter((a: Account) => a.type === "REVENUE");
-  const expenseAccounts = accounts.filter((a: Account) => a.type === "EXPENSE");
-
-  const isDirectExpense = (acc: {
-    accountCode: string;
-    accountName: string;
-  }) => {
-    const name = acc.accountName.toLowerCase();
-    return (
-      acc.accountCode === "5010" ||
-      name.includes("purchase material") ||
-      name.includes("direct material") ||
-      name.includes("direct expense") ||
-      name.includes("cogs") ||
-      name.includes("cost of goods")
-    );
-  };
-
-  const createItem = (acc: Account, section: string): ProfitItem => {
-    const amount = balanceMap.get(acc.id) || 0;
-    const prevAmount = prevBalanceMap.get(acc.id) || 0;
-    const variance = amount - prevAmount;
-    const variancePct =
-      prevAmount !== 0
-        ? ((amount - prevAmount) / Math.abs(prevAmount)) * 100
-        : 0;
-
-    return {
-      id: acc.id,
-      section,
-      accountCode: acc.accountCode,
-      accountName: acc.accountName,
-      amount,
-      prevAmount,
-      variance,
-      variancePct,
-    };
-  };
-
-  const incomeItems: ProfitItem[] = incomeAccounts.map((acc: Account) =>
-    createItem(acc, "Income"),
-  );
-
-  const directExpenseItems: ProfitItem[] = expenseAccounts
-    .filter(isDirectExpense)
-    .map((acc: Account) => createItem(acc, "Direct Material Expense"));
-
-  const operatingExpenseItems: ProfitItem[] = expenseAccounts
-    .filter((acc: Account) => !isDirectExpense(acc))
-    .map((acc: Account) => createItem(acc, "Operating Expense"));
-
-  const totalIncome = incomeItems.reduce((s, i) => s + i.amount, 0);
-  const totalDirectExpenses = directExpenseItems.reduce(
-    (s, i) => s + i.amount,
-    0,
-  );
-  const grossProfit = totalIncome - totalDirectExpenses;
-  const totalOperatingExpenses = operatingExpenseItems.reduce(
-    (s, i) => s + i.amount,
-    0,
-  );
-  const totalExpenses = totalOperatingExpenses;
-  const netProfit = grossProfit - totalOperatingExpenses;
-
-  const prevTotalIncome = incomeItems.reduce(
-    (s, i) => s + (i.prevAmount || 0),
-    0,
-  );
-  const prevTotalDirectExpenses = directExpenseItems.reduce(
-    (s, i) => s + (i.prevAmount || 0),
-    0,
-  );
-  const prevGrossProfit = prevTotalIncome - prevTotalDirectExpenses;
-  const prevTotalOperatingExpenses = operatingExpenseItems.reduce(
-    (s, i) => s + (i.prevAmount || 0),
-    0,
-  );
-  const prevNetProfit = prevGrossProfit - prevTotalOperatingExpenses;
-
-  return {
-    income: incomeItems,
-    totalIncome,
-    prevTotalIncome,
-    directExpenses: directExpenseItems,
-    totalDirectExpenses,
-    prevTotalDirectExpenses,
-    grossProfit,
-    prevGrossProfit,
-    operatingExpenses: operatingExpenseItems,
-    totalOperatingExpenses,
-    prevTotalOperatingExpenses,
-    totalExpenses,
-    netProfit,
-    prevNetProfit,
-    netIncome: netProfit,
-    revenue: totalIncome,
-    expenses: totalDirectExpenses + totalOperatingExpenses,
-  };
-}
-
 export async function GET(req: NextRequest) {
   try {
+    const std = await getStandardAccounts();
     const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") || "all";
     const customStart = searchParams.get("startDate");
@@ -304,7 +158,17 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    const [accounts, currentLines, prevLines] = await Promise.all([
+    const [
+      accounts,
+      currentLines,
+      prevLines,
+      invoices,
+      payments,
+      bills,
+      expenses,
+      projects,
+      customers,
+    ] = await Promise.all([
       prisma.chartOfAccount.findMany({
         orderBy: { accountCode: "asc" },
       }),
@@ -318,9 +182,410 @@ export async function GET(req: NextRequest) {
             include: { account: true, journalEntry: true },
           })
         : Promise.resolve([]),
+      prisma.salesInvoice.findMany({
+        include: {
+          customerRel: {
+            select: { id: true, name: true, companyName: true },
+          },
+        },
+        orderBy: { invoiceDate: "desc" },
+      }),
+      prisma.customerPayment.findMany({
+        include: {
+          customerRel: {
+            select: { id: true, name: true, companyName: true },
+          },
+        },
+        orderBy: { paymentDate: "desc" },
+      }),
+      prisma.supplierBill.findMany({
+        include: {
+          supplier: {
+            select: { id: true, name: true },
+          },
+        },
+        orderBy: { billDate: "desc" },
+      }),
+      prisma.expense.findMany({
+        select: {
+          id: true,
+          expenseNumber: true,
+          expenseDate: true,
+          category: true,
+          payee: true,
+          description: true,
+          amount: true,
+          taxAmount: true,
+          reference: true,
+        },
+        orderBy: { expenseDate: "desc" },
+      }),
+      prisma.project.findMany({
+        include: {
+          customer: {
+            select: { id: true, name: true, companyName: true },
+          },
+          manager: {
+            select: { id: true, fullName: true, email: true },
+          },
+          costs: {
+            orderBy: { date: "desc" },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.customer.findMany({
+        include: {
+          projects: {
+            select: {
+              id: true,
+              projectCode: true,
+              name: true,
+              status: true,
+              contractValue: true,
+            },
+          },
+          salesInvoices: {
+            select: {
+              id: true,
+              invoiceNumber: true,
+              invoiceDate: true,
+              totalAmount: true,
+              paidAmount: true,
+              status: true,
+            },
+            orderBy: { invoiceDate: "desc" },
+          },
+          customerPayments: {
+            select: {
+              id: true,
+              receiptNumber: true,
+              paymentDate: true,
+              amount: true,
+              paymentMethod: true,
+            },
+            orderBy: { paymentDate: "desc" },
+          },
+        },
+        orderBy: { name: "asc" },
+      }),
     ]);
 
-    const result = calculateBalances(currentLines, accounts, prevLines);
+    const balanceMap = new Map<string, number>();
+    let hasJournalEntries = false;
+
+    for (const l of currentLines) {
+      const type = l.account?.type;
+      const current = balanceMap.get(l.accountId) || 0;
+      const debit = Number(l.debit || 0);
+      const credit = Number(l.credit || 0);
+      if (debit > 0 || credit > 0) hasJournalEntries = true;
+
+      if (type === "REVENUE") {
+        balanceMap.set(l.accountId, current + credit - debit);
+      } else if (type === "EXPENSE") {
+        balanceMap.set(l.accountId, current + debit - credit);
+      }
+    }
+
+    const subtotalInvoiced = invoices.reduce(
+      (s, inv) => s + Number(inv.subtotal || 0),
+      0,
+    );
+    const subtotalBilled = bills.reduce(
+      (s, b) => s + Number(b.subtotal || 0),
+      0,
+    );
+    const totalExpenses = expenses.reduce(
+      (s, e) => s + Number(e.amount || 0),
+      0,
+    );
+
+    const totalProjectCosts = projects.reduce(
+      (s, p) =>
+        s +
+        Number(p.materialCost || 0) +
+        Number(p.laborCost || 0) +
+        Number(p.actualCost || 0) +
+        Number(p.otherExpenses || 0) +
+        (p.costs || []).reduce((cs, c) => cs + Number(c.amount || 0), 0),
+      0,
+    );
+
+    const totalDirectExpensesAmount = subtotalBilled + totalProjectCosts;
+
+    const expenseAccounts = accounts.filter(
+      (a: Account) => a.type === "EXPENSE",
+    );
+
+    if (!hasJournalEntries) {
+      if (!balanceMap.get(std.salesRevenue.id) && subtotalInvoiced > 0) {
+        balanceMap.set(std.salesRevenue.id, subtotalInvoiced);
+      }
+
+      if (
+        !balanceMap.get(std.materialCost.id) &&
+        totalDirectExpensesAmount > 0
+      ) {
+        balanceMap.set(std.materialCost.id, totalDirectExpensesAmount);
+      }
+
+      const opAccount =
+        expenseAccounts.find(
+          (a) =>
+            a.accountCode.startsWith("6") ||
+            a.accountName.toLowerCase().includes("operational") ||
+            a.accountName.toLowerCase().includes("administrative") ||
+            a.accountName.toLowerCase().includes("general"),
+        ) || expenseAccounts[0];
+
+      if (opAccount && totalExpenses > 0 && !balanceMap.get(opAccount.id)) {
+        balanceMap.set(opAccount.id, totalExpenses);
+      }
+    }
+
+    const prevBalanceMap = new Map<string, number>();
+    for (const l of prevLines) {
+      const type = l.account?.type;
+      const current = prevBalanceMap.get(l.accountId) || 0;
+      if (type === "REVENUE") {
+        prevBalanceMap.set(
+          l.accountId,
+          current + Number(l.credit || 0) - Number(l.debit || 0),
+        );
+      } else if (type === "EXPENSE") {
+        prevBalanceMap.set(
+          l.accountId,
+          current + Number(l.debit || 0) - Number(l.credit || 0),
+        );
+      }
+    }
+
+    const incomeAccounts = accounts.filter(
+      (a: Account) => a.type === "REVENUE",
+    );
+
+    const isDirectExpense = (acc: {
+      accountCode: string;
+      accountName: string;
+    }) => {
+      const name = acc.accountName.toLowerCase();
+      return (
+        acc.accountCode === "5010" ||
+        name.includes("purchase material") ||
+        name.includes("direct material") ||
+        name.includes("direct expense") ||
+        name.includes("cogs") ||
+        name.includes("cost of goods")
+      );
+    };
+
+    const createItem = (acc: Account, section: string): ProfitLossItem => {
+      const amount = Math.max(0, balanceMap.get(acc.id) || 0);
+      const prevAmount = Math.max(0, prevBalanceMap.get(acc.id) || 0);
+      const variance = amount - prevAmount;
+      const variancePct =
+        prevAmount !== 0
+          ? ((amount - prevAmount) / Math.abs(prevAmount)) * 100
+          : 0;
+
+      return {
+        id: acc.id,
+        section,
+        accountCode: acc.accountCode,
+        accountName: acc.accountName,
+        amount,
+        prevAmount,
+        variance,
+        variancePct,
+        details: getAccountTransactionDetails(
+          acc,
+          amount,
+          currentLines,
+          invoices,
+          payments,
+          bills,
+          expenses,
+          projects,
+          std,
+        ),
+      };
+    };
+
+    const incomeItems: ProfitLossItem[] = incomeAccounts
+      .map((acc: Account) => createItem(acc, "Income"))
+      .filter((i) => i.amount > 0 || i.accountCode === "4000");
+
+    const directExpenseItems: ProfitLossItem[] = expenseAccounts
+      .filter(isDirectExpense)
+      .map((acc: Account) => createItem(acc, "Direct Material Expense"))
+      .filter((i) => i.amount > 0 || i.accountCode === "5010");
+
+    const operatingExpenseItems: ProfitLossItem[] = expenseAccounts
+      .filter((acc: Account) => !isDirectExpense(acc))
+      .map((acc: Account) => createItem(acc, "Operating Expense"))
+      .filter((i) => i.amount > 0);
+
+    const totalIncome = incomeItems.reduce((s, i) => s + i.amount, 0);
+    const totalDirectExpenses = directExpenseItems.reduce(
+      (s, i) => s + i.amount,
+      0,
+    );
+    const grossProfit = totalIncome - totalDirectExpenses;
+    const totalOperatingExpenses = operatingExpenseItems.reduce(
+      (s, i) => s + i.amount,
+      0,
+    );
+    const totalExpensesCalc = totalDirectExpenses + totalOperatingExpenses;
+    const netProfit = grossProfit - totalOperatingExpenses;
+
+    const projectSummaries = projects.map((p) => {
+      const pInvoices = invoices.filter(
+        (inv) =>
+          inv.customerId === p.customerId ||
+          (inv.projectScope &&
+            inv.projectScope.toLowerCase().includes(p.name.toLowerCase())),
+      );
+
+      const invoicedAmount = pInvoices.reduce(
+        (s, inv) => s + Number(inv.totalAmount || 0),
+        0,
+      );
+      const paidAmount = pInvoices.reduce(
+        (s, inv) =>
+          inv.status === "PAID" ? s + Number(inv.totalAmount || 0) : s,
+        0,
+      );
+
+      const materialCost = Number(p.materialCost || 0);
+      const laborCost = Number(p.laborCost || 0);
+      const actualCost = Number(p.actualCost || 0);
+      const otherExpenses = Number(p.otherExpenses || 0);
+      const projectCostRecordsSum = p.costs.reduce(
+        (s, c) => s + Number(c.amount || 0),
+        0,
+      );
+
+      const directCost =
+        materialCost +
+        laborCost +
+        actualCost +
+        otherExpenses +
+        projectCostRecordsSum;
+
+      const contractVal = Number(p.contractValue || p.budget || 0);
+      const revenue = invoicedAmount > 0 ? invoicedAmount : contractVal;
+      const grossMargin = revenue - directCost;
+      const marginPercent =
+        revenue > 0 ? Math.round((grossMargin / revenue) * 100) : 0;
+
+      const costsList = p.costs.map((c) => ({
+        id: c.id,
+        description: c.description,
+        costType: c.costType,
+        amount: Number(c.amount || 0),
+        unitRate: c.unitRate ? Number(c.unitRate) : null,
+        quantity: c.quantity ? Number(c.quantity) : null,
+        date: c.date ? new Date(c.date).toISOString().split("T")[0] : "",
+        reference: c.reference,
+      }));
+
+      const invoicesList = pInvoices.map((inv) => ({
+        id: inv.id,
+        invoiceNumber: inv.invoiceNumber,
+        invoiceDate: inv.invoiceDate
+          ? new Date(inv.invoiceDate).toISOString().split("T")[0]
+          : "",
+        totalAmount: Number(inv.totalAmount || 0),
+        paidAmount: Number(inv.paidAmount || 0),
+        status: inv.status,
+      }));
+
+      return {
+        id: p.id,
+        code: p.projectCode,
+        name: p.name,
+        customerName:
+          p.customer?.companyName || p.customer?.name || "Private Client",
+        contractValue: contractVal,
+        budget: Number(p.budget || 0),
+        invoicedAmount,
+        paidAmount,
+        directCost,
+        materialCost,
+        laborCost,
+        actualCost,
+        otherExpenses,
+        grossMargin,
+        marginPercent,
+        status: p.status,
+        managerName: p.manager?.fullName || "Unassigned",
+        costs: costsList,
+        invoices: invoicesList,
+      };
+    });
+
+    const customerSummaries = customers.map((c) => {
+      const cInvoices = invoices.filter((inv) => inv.customerId === c.id);
+      const cPayments = payments.filter((p) => p.customerId === c.id);
+
+      const totalInvoicedAmount = cInvoices.reduce(
+        (s, inv) => s + Number(inv.totalAmount || 0),
+        0,
+      );
+      const totalPaidAmount = cPayments.reduce(
+        (s, p) => s + Number(p.amount || 0),
+        0,
+      );
+      const currentBalance =
+        totalInvoicedAmount > 0
+          ? totalInvoicedAmount - totalPaidAmount
+          : Number(c.currentBalance || 0);
+
+      const invoicesList = c.salesInvoices.map((inv) => ({
+        id: inv.id,
+        invoiceNumber: inv.invoiceNumber,
+        invoiceDate: inv.invoiceDate
+          ? new Date(inv.invoiceDate).toISOString().split("T")[0]
+          : "",
+        totalAmount: Number(inv.totalAmount || 0),
+        paidAmount: Number(inv.paidAmount || 0),
+        status: inv.status,
+      }));
+
+      const paymentsList = c.customerPayments.map((pay) => ({
+        id: pay.id,
+        receiptNumber: pay.receiptNumber,
+        paymentDate: pay.paymentDate
+          ? new Date(pay.paymentDate).toISOString().split("T")[0]
+          : "",
+        amount: Number(pay.amount || 0),
+        paymentMethod: pay.paymentMethod,
+      }));
+
+      const projectsList = c.projects.map((proj) => ({
+        id: proj.id,
+        code: proj.projectCode,
+        name: proj.name,
+        status: proj.status,
+        contractValue: Number(proj.contractValue || 0),
+      }));
+
+      return {
+        id: c.id,
+        name: c.name,
+        companyName: c.companyName || c.name,
+        phone: c.phone || "—",
+        email: c.email || "—",
+        totalInvoiced: totalInvoicedAmount,
+        totalPaid: totalPaidAmount,
+        currentBalance: Math.max(0, currentBalance),
+        activeProjectsCount: c.projects.length,
+        invoices: invoicesList,
+        payments: paymentsList,
+        projectsList,
+      };
+    });
 
     return NextResponse.json({
       companyName: "AGM FITOUT TECHNICAL SERVICES LLC",
@@ -334,7 +599,20 @@ export async function GET(req: NextRequest) {
         : null,
       prevEndDate: prevEndDate ? prevEndDate.toISOString().split("T")[0] : null,
       compare,
-      ...result,
+      income: incomeItems,
+      totalIncome,
+      directExpenses: directExpenseItems,
+      totalDirectExpenses,
+      grossProfit,
+      operatingExpenses: operatingExpenseItems,
+      totalOperatingExpenses,
+      totalExpenses: totalExpensesCalc,
+      netProfit,
+      netIncome: netProfit,
+      revenue: totalIncome,
+      expenses: totalExpensesCalc,
+      projects: projectSummaries,
+      customers: customerSummaries,
     });
   } catch (error: any) {
     console.error("GET /api/reports/profit-loss error:", error);

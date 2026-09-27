@@ -37,6 +37,8 @@ import {
   useDeleteAgreement,
   AgreementRecord,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import { AgreementSavedModal } from "./AgreementSavedModal";
 
 interface AgreementTemplateProps {
@@ -54,11 +56,11 @@ export default function AgreementTemplate({
     initialData || SAMPLE_RENOVATION_AGREEMENT,
   );
   const [isEditing, setIsEditing] = useState<boolean>(!readOnly);
-  const [saveSuccess, setSaveSuccess] = useState<string>("");
   const [isSavedModalOpen, setIsSavedModalOpen] = useState<boolean>(false);
   const [status, setStatus] = useState<"DRAFT" | "ACTIVE" | "COMPLETED">(
     (data.status as any) || "DRAFT",
   );
+  const { confirm } = useConfirm();
 
   const [contractorSignatureImg, setContractorSignatureImg] = useState<
     string | null
@@ -144,8 +146,7 @@ export default function AgreementTemplate({
     setContractorSignatureImg(null);
     setClientSignatureImg(null);
     setIsEditing(true);
-    setSaveSuccess("Initialized blank agreement template!");
-    setTimeout(() => setSaveSuccess(""), 3000);
+    toast.info("Initialized blank agreement template!");
   };
 
   const handleSaveToDb = async () => {
@@ -171,11 +172,12 @@ export default function AgreementTemplate({
           status: result.status || status,
         }));
         if (onSave) onSave(result as any);
-        setSaveSuccess(`Saved to DB as ${result.refNumber}!`);
-        setTimeout(() => setSaveSuccess(""), 4000);
+        toast.success(`Saved to DB as ${result.refNumber}!`);
       }
     } catch (err: any) {
-      alert("Error saving agreement: " + (err.message || "Unknown error"));
+      toast.error(
+        "Error saving agreement: " + (err.message || "Unknown error"),
+      );
     }
   };
 
@@ -215,26 +217,31 @@ export default function AgreementTemplate({
     setContractorSignatureImg(agr.contractorSignatory?.signatureUrl || null);
     setClientSignatureImg(agr.clientSignatory?.signatureUrl || null);
     setIsSavedModalOpen(false);
-    setSaveSuccess(`Loaded agreement ${agr.refNumber}!`);
-    setTimeout(() => setSaveSuccess(""), 3000);
+    toast.info(`Loaded agreement ${agr.refNumber}!`);
   };
 
   const handleDeleteAgreement = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (
-      !window.confirm(
+    const isConfirmed = await confirm({
+      title: "Delete Agreement",
+      message:
         "Are you sure you want to permanently delete this agreement record from the database?",
-      )
-    ) {
+      variant: "danger",
+      confirmText: "Delete",
+    });
+    if (!isConfirmed) {
       return;
     }
     try {
       await deleteAgreementMutation.mutateAsync(id);
+      toast.success("Agreement deleted successfully");
       if (data.id === id) {
         handleNewBlank();
       }
     } catch (err: any) {
-      alert("Error deleting agreement: " + (err.message || "Unknown error"));
+      toast.error(
+        "Error deleting agreement: " + (err.message || "Unknown error"),
+      );
     }
   };
 
@@ -243,8 +250,7 @@ export default function AgreementTemplate({
     setStatus("COMPLETED");
     setContractorSignatureImg(null);
     setClientSignatureImg(null);
-    setSaveSuccess("Loaded AGM Sulafa Tower Agreement Preset!");
-    setTimeout(() => setSaveSuccess(""), 3000);
+    toast.info("Loaded AGM Sulafa Tower Agreement Preset!");
   };
 
   const handleContractorUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -447,13 +453,6 @@ export default function AgreementTemplate({
             </span>
           )}
         </div>
-
-        {saveSuccess && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-agm-green-soft border border-agm-green/20 text-agm-green text-[11px] font-medium rounded-lg animate-fade-in">
-            <CheckIcon size={14} className="text-agm-green" />
-            <span>{saveSuccess}</span>
-          </div>
-        )}
 
         <div className="flex items-center flex-wrap gap-2">
           <Button

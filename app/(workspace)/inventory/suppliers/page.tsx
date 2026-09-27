@@ -25,12 +25,15 @@ import {
   FormInput,
   FormSubmit,
 } from "@/components/ui";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   ReportKpiCard,
   ReportKpiGrid,
 } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 
 export default function SuppliersPage() {
+  const { confirm } = useConfirm();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "TRN" | "NON_TRN">(
     "ALL",
@@ -251,8 +254,19 @@ export default function SuppliersPage() {
               variant="ghost"
               size="sm"
               onClick={async () => {
-                if (confirm(`Delete supplier "${row.original.name}"?`)) {
-                  await deleteSupplier.mutateAsync(row.original.id);
+                const isConfirmed = await confirm({
+                  title: "Delete Supplier",
+                  message: `Delete supplier "${row.original.name}"?`,
+                  variant: "danger",
+                  confirmText: "Delete",
+                });
+                if (isConfirmed) {
+                  try {
+                    await deleteSupplier.mutateAsync(row.original.id);
+                    toast.success(`Supplier "${row.original.name}" deleted`);
+                  } catch (err: any) {
+                    toast.error(err.message || "Failed to delete supplier");
+                  }
                 }
               }}
               className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer"

@@ -13,6 +13,8 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { Button } from "@/components/ui";
 import { PlusIcon, BuildingIcon } from "@/components/icons";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   ProjectsHeader,
   ProjectsKPIs,
@@ -24,6 +26,7 @@ import {
 
 export default function ProjectsPage() {
   const { canModify } = useAuth();
+  const { confirm } = useConfirm();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -137,12 +140,19 @@ export default function ProjectsPage() {
               canDelete={userCanDelete}
               onEdit={(proj) => setEditingProject(proj)}
               onDelete={async (proj) => {
-                if (
-                  confirm(
-                    `Delete "${proj.name}"? All associated costs will be removed.`,
-                  )
-                ) {
-                  await deleteProject.mutateAsync(proj.id);
+                const isConfirmed = await confirm({
+                  title: "Delete Project",
+                  message: `Delete "${proj.name}"? All associated costs will be removed.`,
+                  variant: "danger",
+                  confirmText: "Delete",
+                });
+                if (isConfirmed) {
+                  try {
+                    await deleteProject.mutateAsync(proj.id);
+                    toast.success(`Project "${proj.name}" deleted`);
+                  } catch (err: any) {
+                    toast.error(err.message || "Failed to delete project");
+                  }
                 }
               }}
             />

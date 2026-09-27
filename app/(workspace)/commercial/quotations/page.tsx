@@ -9,6 +9,8 @@ import {
   SearchIcon,
   ShoppingCartIcon,
 } from "@/components/icons";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import QuotationTemplate, {
   QuotationItem,
   QuotationMeta,
@@ -41,6 +43,7 @@ export default function CommercialQuotationsPage() {
   const convertToOrderMutation = useConvertQuotationToSalesOrder();
   const convertToInvoiceMutation = useConvertQuotationToSalesInvoice();
   const createProjectMutation = useCreateProject();
+  const { confirm } = useConfirm();
 
   const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("LIST");
   const [selectedQuotation, setSelectedQuotation] = useState<any | null>(null);
@@ -56,46 +59,57 @@ export default function CommercialQuotationsPage() {
     });
   };
 
-  const dynamicQuotationMeta: Partial<QuotationMeta> = useMemo(
-    () =>
-      selectedQuotation
-        ? {
-            quotationNo: selectedQuotation.quotationNo,
-            date: selectedQuotation.date,
-            validUntil: selectedQuotation.validUntil,
-            customerId: selectedQuotation.customerId || "",
-            customer: selectedQuotation.customer,
-            attention: selectedQuotation.attention,
-            address: selectedQuotation.address,
-            trn: selectedQuotation.trn,
-            mobile: selectedQuotation.mobile,
-            project: selectedQuotation.project,
-            location: selectedQuotation.location,
-            reference: selectedQuotation.reference,
-            preparedBy: selectedQuotation.preparedBy,
-            contact: selectedQuotation.contact,
-          }
-        : {
-            quotationNo: `AGM-QTN-2026-${Date.now().toString().slice(-4)}`,
-            date: new Date().toLocaleDateString("en-GB"),
-            validUntil: new Date(
-              Date.now() + 10 * 24 * 60 * 60 * 1000,
-            ).toLocaleDateString("en-GB"),
-            customerId: "",
-            customer: "",
-            attention: "",
-            address: "",
-            trn: "",
-            email: "",
-            mobile: "",
-            project: "",
-            location: "",
-            reference: "",
-            preparedBy: "",
-            contact: "",
-          },
-    [selectedQuotation],
-  );
+  const dynamicQuotationMeta: Partial<QuotationMeta> = useMemo(() => {
+    if (selectedQuotation) {
+      return {
+        quotationNo: selectedQuotation.quotationNo,
+        date: selectedQuotation.date,
+        validUntil: selectedQuotation.validUntil,
+        customerId: selectedQuotation.customerId || "",
+        customer: selectedQuotation.customer,
+        attention: selectedQuotation.attention,
+        address: selectedQuotation.address,
+        trn: selectedQuotation.trn,
+        mobile: selectedQuotation.mobile,
+        project: selectedQuotation.project,
+        location: selectedQuotation.location,
+        reference: selectedQuotation.reference,
+        preparedBy: selectedQuotation.preparedBy,
+        contact: selectedQuotation.contact,
+      };
+    }
+
+    let nextNum = 1;
+    if (quotationsList && quotationsList.length > 0) {
+      const nums = quotationsList.map((q: any) => {
+        const match = q.quotationNo?.match(/-(\d+)$/);
+        return match ? parseInt(match[1], 10) : 0;
+      });
+      nextNum = Math.max(...nums, 0) + 1;
+    }
+    const year = new Date().getFullYear();
+    const paddedNum = String(nextNum).padStart(2, "0");
+
+    return {
+      quotationNo: `AGM-QTN-${year}-${paddedNum}`,
+      date: new Date().toLocaleDateString("en-GB"),
+      validUntil: new Date(
+        Date.now() + 10 * 24 * 60 * 60 * 1000,
+      ).toLocaleDateString("en-GB"),
+      customerId: "",
+      customer: "",
+      attention: "",
+      address: "",
+      trn: "",
+      email: "",
+      mobile: "",
+      project: "",
+      location: "",
+      reference: "",
+      preparedBy: "",
+      contact: "",
+    };
+  }, [selectedQuotation, quotationsList]);
 
   const dynamicQuotationItems: QuotationItem[] = useMemo(() => {
     if (selectedQuotation?.items?.length) {
@@ -124,9 +138,9 @@ export default function CommercialQuotationsPage() {
       try {
         setConvertingId(qtnId);
         await convertToOrderMutation.mutateAsync(qtnId);
-        alert("Quotation successfully converted to Sales Order!");
+        toast.success("Quotation successfully converted to Sales Order!");
       } catch (err: any) {
-        alert(`Error converting quotation: ${err.message}`);
+        toast.error(`Error converting quotation: ${err.message}`);
       } finally {
         setConvertingId(null);
       }
@@ -136,9 +150,12 @@ export default function CommercialQuotationsPage() {
 
   const handleConvertToInvoice = useCallback(
     async (qtn: any) => {
-      const confirmed = window.confirm(
-        `Are you sure you want to convert Quotation "${qtn.quotationNo}" directly to a Tax Invoice? This will generate the Sales Invoice and remove the proposal from quotations.`,
-      );
+      const confirmed = await confirm({
+        title: "Convert to Tax Invoice & Initiate Project",
+        message: `Are you sure you want to convert Quotation "${qtn.quotationNo}" to a Tax Invoice? This will generate the official Tax Invoice with applied custom payment terms and automatically initialize the project under Planning status.`,
+        variant: "primary",
+        confirmText: "Convert to Invoice",
+      });
       if (!confirmed) return;
 
       try {
@@ -146,19 +163,16 @@ export default function CommercialQuotationsPage() {
         const newInvoice: any = await convertToInvoiceMutation.mutateAsync(
           qtn.id,
         );
-        const goToInvoice = window.confirm(
-          `Quotation converted successfully to Tax Invoice #${newInvoice?.invoiceNumber || ""}!\n\nClick OK to open Sales Invoices or Cancel to stay here.`,
+        toast.success(
+          `Quotation converted to Tax Invoice #${newInvoice?.invoiceNumber || ""} & Project created in Planning!`,
         );
-        if (goToInvoice) {
-          window.location.href = "/commercial/sales-invoices";
-        }
       } catch (err: any) {
-        alert(`Error converting quotation to tax invoice: ${err.message}`);
+        toast.error(`Error converting quotation: ${err.message}`);
       } finally {
         setConvertingId(null);
       }
     },
-    [convertToInvoiceMutation],
+    [confirm, convertToInvoiceMutation],
   );
 
   const handleConvertToProject = useCallback(
@@ -177,9 +191,10 @@ export default function CommercialQuotationsPage() {
           status: "PLANNING",
           priority: "MEDIUM",
         });
+        toast.success("Project initiated from quotation successfully!");
         window.location.href = "/operations/projects";
       } catch (err: any) {
-        alert(`Error initiating project from quotation: ${err.message}`);
+        toast.error(`Error initiating project from quotation: ${err.message}`);
       } finally {
         setConvertingId(null);
       }
@@ -481,52 +496,23 @@ export default function CommercialQuotationsPage() {
                               >
                                 <EyeIcon size={13} />
                               </Button>
-                              {q.status === "ACCEPTED" && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleConvertToProject(q)}
-                                  disabled={convertingId === q.id}
-                                  icon={
-                                    <BuildingIcon
-                                      size={12}
-                                      className="text-teal-700"
-                                    />
-                                  }
-                                  className="text-[10px] font-bold text-teal-800 hover:bg-teal-50 border-teal-300 bg-teal-50/50 cursor-pointer"
-                                  title="Initiate Project & Cost Tracking"
-                                >
-                                  {convertingId === q.id
-                                    ? "Starting..."
-                                    : "Start Project"}
-                                </Button>
-                              )}
                               <Button
-                                variant="outline"
+                                variant="primary"
                                 size="sm"
                                 onClick={() => handleConvertToInvoice(q)}
                                 disabled={convertingId === q.id}
                                 icon={
                                   <FileTextIcon
                                     size={12}
-                                    className="text-teal-700"
+                                    className="text-white"
                                   />
                                 }
-                                className="text-[10px] font-bold text-teal-900 hover:bg-teal-50 border-teal-300 cursor-pointer"
+                                className="text-[11px] font-bold bg-agm-green hover:bg-agm-green-2 text-white shadow-2xs cursor-pointer"
+                                title="Convert directly to Tax Invoice & initiate Project in Planning"
                               >
                                 {convertingId === q.id
                                   ? "Converting..."
                                   : "Convert to Invoice"}
-                              </Button>
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                onClick={() => handleConvert(q.id)}
-                                disabled={convertingId === q.id}
-                                icon={<ShoppingCartIcon size={12} />}
-                                className="text-[10px] font-bold bg-agm-green hover:bg-agm-green-2 text-white cursor-pointer"
-                              >
-                                Convert to SO
                               </Button>
                             </div>
                           </TableCell>

@@ -8,6 +8,8 @@ import {
   useSalaryCertificates,
   useDeleteSalaryCertificate,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   Button,
   DataTable,
@@ -32,6 +34,7 @@ import { SAMPLE_SALARY_CERTIFICATE } from "@/components/documents/salary-certifi
 export default function SalaryCertificatesPage() {
   const { data: recordsList = [], isLoading } = useSalaryCertificates();
   const deleteMutation = useDeleteSalaryCertificate();
+  const { confirm } = useConfirm();
 
   const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("LIST");
   const [selectedRecord, setSelectedRecord] =
@@ -91,26 +94,30 @@ export default function SalaryCertificatesPage() {
   const handleDelete = useCallback(
     async (id: string, e: React.MouseEvent) => {
       e.stopPropagation();
-      if (
-        !window.confirm(
+      const isConfirmed = await confirm({
+        title: "Delete Salary Certificate",
+        message:
           "Are you sure you want to delete this salary certificate from the database?",
-        )
-      ) {
+        variant: "danger",
+        confirmText: "Delete",
+      });
+      if (!isConfirmed) {
         return;
       }
       try {
         await deleteMutation.mutateAsync(id);
+        toast.success("Salary certificate deleted successfully");
         if (selectedRecord?.id === id) {
           setSelectedRecord(null);
         }
       } catch (err: any) {
-        alert(
+        toast.error(
           "Error deleting salary certificate: " +
             (err.message || "Unknown error"),
         );
       }
     },
-    [deleteMutation, selectedRecord?.id],
+    [confirm, deleteMutation, selectedRecord?.id],
   );
 
   const getStatusBadge = (status?: string) => {

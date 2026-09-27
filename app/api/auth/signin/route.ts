@@ -20,6 +20,17 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
+      const totalUsers = await prisma.user.count();
+      if (totalUsers === 0) {
+        return NextResponse.json(
+          {
+            error:
+              "Database is empty or was reset. Please sign up to create your initial administrator account.",
+            isDbEmpty: true,
+          },
+          { status: 404 },
+        );
+      }
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 

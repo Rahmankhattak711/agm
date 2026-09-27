@@ -10,6 +10,8 @@ import {
   useAddProjectCost,
   useDeleteProjectCost,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import { CATEGORIES } from "./types";
 
 import {
@@ -23,6 +25,7 @@ import {
 
 function CostTrackingInner() {
   const { canModify } = useAuth();
+  const { confirm } = useConfirm();
   const userCanModify = canModify(null, ["ADMIN", "SUPER_ADMIN", "MANAGER"]);
   const searchParams = useSearchParams();
   const qc = useQueryClient();
@@ -267,8 +270,13 @@ function CostTrackingInner() {
         canModify={canModify(null, ["ADMIN", "SUPER_ADMIN", "MANAGER"])}
         onDeleteCost={async (costId) => {
           if (!selectedProject) return;
-          if (!confirm("Are you sure you want to delete this cost entry?"))
-            return;
+          const isConfirmed = await confirm({
+            title: "Delete Cost Entry",
+            message: "Are you sure you want to delete this cost entry?",
+            variant: "danger",
+            confirmText: "Delete",
+          });
+          if (!isConfirmed) return;
           try {
             await deleteCost.mutateAsync({
               projectId: selectedProject.id,
@@ -277,8 +285,9 @@ function CostTrackingInner() {
             await Promise.all([refetchProject(), refetchProjects()]);
             qc.invalidateQueries({ queryKey: ["project", selectedProject.id] });
             qc.invalidateQueries({ queryKey: ["projects"] });
+            toast.success("Cost item deleted successfully");
           } catch (err: any) {
-            alert("Failed to delete cost item: " + err.message);
+            toast.error("Failed to delete cost item: " + err.message);
           }
         }}
       />

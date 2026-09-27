@@ -8,6 +8,8 @@ import {
   useAgreements,
   useDeleteAgreement,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   Button,
   DataTable,
@@ -31,6 +33,7 @@ import { SAMPLE_RENOVATION_AGREEMENT } from "@/components/documents/constants";
 export default function AgreementsAndDocumentsPage() {
   const { data: agreementsList = [], isLoading } = useAgreements();
   const deleteAgreementMutation = useDeleteAgreement();
+  const { confirm } = useConfirm();
 
   const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("LIST");
   const [selectedAgreement, setSelectedAgreement] =
@@ -96,23 +99,29 @@ export default function AgreementsAndDocumentsPage() {
   const handleDelete = useCallback(
     async (id: string, e: React.MouseEvent) => {
       e.stopPropagation();
-      if (
-        !window.confirm(
+      const isConfirmed = await confirm({
+        title: "Delete Agreement",
+        message:
           "Are you sure you want to delete this agreement from the database?",
-        )
-      ) {
+        variant: "danger",
+        confirmText: "Delete",
+      });
+      if (!isConfirmed) {
         return;
       }
       try {
         await deleteAgreementMutation.mutateAsync(id);
+        toast.success("Agreement deleted successfully");
         if (selectedAgreement?.id === id) {
           setSelectedAgreement(null);
         }
       } catch (err: any) {
-        alert("Error deleting agreement: " + (err.message || "Unknown error"));
+        toast.error(
+          "Error deleting agreement: " + (err.message || "Unknown error"),
+        );
       }
     },
-    [deleteAgreementMutation, selectedAgreement?.id],
+    [confirm, deleteAgreementMutation, selectedAgreement?.id],
   );
 
   const getStatusBadge = (status?: string) => {

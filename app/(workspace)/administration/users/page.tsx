@@ -10,7 +10,9 @@ import {
   useUsers,
   UserItem,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
 import { useAuth } from "@/context/AuthContext";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   Button,
   Input,
@@ -66,6 +68,7 @@ const ROLES = [
 export default function UsersPage() {
   const { data: usersData, isLoading, error } = useUsers();
   const { user: currentUser, isSuperAdmin, isAdmin } = useAuth();
+  const { confirm } = useConfirm();
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
   const deleteUserMutation = useDeleteUser();
@@ -199,26 +202,29 @@ export default function UsersPage() {
   const handleDeleteUser = useCallback(
     async (user: UserItem) => {
       if (user.id === currentUser?.id) {
-        alert("You cannot delete your own account.");
+        toast.warning("You cannot delete your own account.");
         return;
       }
 
-      if (
-        confirm(
-          `Are you sure you want to delete user account "${user.fullName}" (${user.email})?`,
-        )
-      ) {
+      const isConfirmed = await confirm({
+        title: "Delete User Account",
+        message: `Are you sure you want to delete user account "${user.fullName}" (${user.email})?`,
+        variant: "danger",
+        confirmText: "Delete",
+      });
+      if (isConfirmed) {
         try {
           const res = await deleteUserMutation.mutateAsync(user.id);
-          if (res?.message) {
-            alert(res.message);
-          }
+          toast.success(
+            res?.message ||
+              `User account "${user.fullName}" deleted successfully`,
+          );
         } catch (err: any) {
-          alert(err.message || "Failed to delete user");
+          toast.error(err.message || "Failed to delete user");
         }
       }
     },
-    [currentUser?.id, deleteUserMutation],
+    [confirm, currentUser?.id, deleteUserMutation],
   );
 
   const canManageTargetUser = useCallback(
@@ -242,20 +248,15 @@ export default function UsersPage() {
         accessorKey: "fullName",
         header: "User Details",
         cell: ({ row }) => (
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
-              {row.original.fullName.slice(0, 2).toUpperCase()}
-            </div>
-            <div>
-              <span className="font-bold text-slate-900 block text-xs">
-                {row.original.fullName}
+          <div className="flex flex-col items-start justify-center min-w-0">
+            <span className="font-bold text-slate-900 block text-[13px] truncate w-full">
+              {row.original.fullName}
+            </span>
+            {row.original.id === currentUser?.id && (
+              <span className="mt-1 text-[9px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200 whitespace-nowrap inline-flex items-center leading-none">
+                Current Session
               </span>
-              {row.original.id === currentUser?.id && (
-                <span className="text-[9px] font-bold text-teal-800 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
-                  Current Session
-                </span>
-              )}
-            </div>
+            )}
           </div>
         ),
       },
@@ -263,7 +264,7 @@ export default function UsersPage() {
         accessorKey: "email",
         header: "Email Address",
         cell: ({ row }) => (
-          <span className="font-mono text-slate-700 text-xs">
+          <span className="font-medium text-slate-600 text-xs">
             {row.original.email}
           </span>
         ),
@@ -276,7 +277,7 @@ export default function UsersPage() {
           return (
             <div className="text-center">
               <span
-                className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-bold border ${roleObj?.color || "bg-slate-100"}`}
+                className={`inline-block px-3 py-1 rounded-full text-[10.5px] font-bold border whitespace-nowrap ${roleObj?.color || "bg-slate-100"}`}
               >
                 {roleObj?.label || row.original.role}
               </span>
@@ -290,7 +291,7 @@ export default function UsersPage() {
         cell: ({ row }) => (
           <div className="text-center">
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-bold border whitespace-nowrap ${
                 row.original.isActive
                   ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                   : "bg-slate-100 text-slate-500 border-slate-200"
@@ -306,11 +307,15 @@ export default function UsersPage() {
       },
       {
         accessorKey: "createdAt",
-        header: "Registered Date",
+        header: () => <div className="text-center">Registered Date</div>,
         cell: ({ row }) => (
-          <span className="text-slate-600 text-xs font-mono">
-            {new Date(row.original.createdAt).toLocaleDateString("en-GB")}
-          </span>
+          <div className="text-center text-slate-500 text-xs font-medium whitespace-nowrap">
+            {new Date(row.original.createdAt).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
+          </div>
         ),
       },
       {
@@ -336,23 +341,25 @@ export default function UsersPage() {
           }
 
           return (
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center justify-center gap-2">
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 onClick={() => handleOpenEditModal(row.original)}
-                icon={<EditIcon size={13} />}
+                icon={<EditIcon size={13} className="text-slate-500" />}
                 title="Edit User"
+                className="whitespace-nowrap !rounded-lg text-[11px] font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-xs transition-all"
               >
-                Edit User
+                Edit
               </Button>
               {row.original.id !== currentUser?.id && allowed && (
                 <Button
-                  variant="danger"
+                  variant="ghost"
                   size="sm"
                   onClick={() => handleDeleteUser(row.original)}
-                  icon={<TrashIcon size={13} />}
+                  icon={<TrashIcon size={13} className="text-rose-500" />}
                   title="Delete User"
+                  className="whitespace-nowrap !rounded-lg text-[11px] font-semibold text-rose-600 hover:text-rose-700 bg-white border border-rose-100 hover:border-rose-200 hover:bg-rose-50 shadow-xs transition-all"
                 >
                   Delete
                 </Button>
@@ -431,42 +438,39 @@ export default function UsersPage() {
       </DashboardCardGrid>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1">
-              {[{ value: "ALL", label: "All Users" }, ...ROLES].map((tab) => {
-                const isActive = roleFilter === tab.value;
-                return (
-                  <button
-                    key={tab.value}
-                    type="button"
-                    onClick={() => setRoleFilter(tab.value)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-slate-900 shadow-xs border border-slate-200/80 text-emerald-800"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <Input
+              containerClassName="w-full sm:max-w-md"
+              placeholder="Search user name or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              leftIcon={<SearchIcon size={16} className="text-slate-400" />}
+              className="py-2 shadow-sm rounded-xl border-slate-200 focus:border-agm-green focus:ring-agm-green/20 bg-slate-50/50"
+            />
+            <span className="inline-flex items-center justify-center text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs">
               {filteredUsers.length} Accounts Listed
             </span>
           </div>
 
-          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <Input
-              containerClassName="w-full sm:w-80"
-              placeholder="Search user name or email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              leftIcon={<SearchIcon size={16} />}
-              className="py-1.5 shadow-2xs"
-            />
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 custom-scrollbar">
+            {[{ value: "ALL", label: "All Users" }, ...ROLES].map((tab) => {
+              const isActive = roleFilter === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setRoleFilter(tab.value)}
+                  className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[11.5px] font-bold transition-all duration-200 cursor-pointer border ${
+                    isActive
+                      ? "bg-slate-800 text-white border-slate-800 shadow-md"
+                      : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-2xs"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 

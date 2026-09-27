@@ -8,6 +8,8 @@ import {
   useRiskAssessments,
   useDeleteRiskAssessment,
 } from "@/lib/hooks/api-hooks";
+import { toast } from "@/lib/toast";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   Button,
   DataTable,
@@ -31,6 +33,7 @@ import { SAMPLE_RISK_ASSESSMENT } from "@/components/documents/risk-assessment-c
 export default function RiskAssessmentsPage() {
   const { data: recordsList = [], isLoading } = useRiskAssessments();
   const deleteMutation = useDeleteRiskAssessment();
+  const { confirm } = useConfirm();
 
   const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("LIST");
   const [selectedRecord, setSelectedRecord] =
@@ -82,25 +85,29 @@ export default function RiskAssessmentsPage() {
   const handleDelete = useCallback(
     async (id: string, e: React.MouseEvent) => {
       e.stopPropagation();
-      if (
-        !window.confirm(
+      const isConfirmed = await confirm({
+        title: "Delete Risk Assessment",
+        message:
           "Are you sure you want to delete this risk assessment from the database?",
-        )
-      ) {
+        variant: "danger",
+        confirmText: "Delete",
+      });
+      if (!isConfirmed) {
         return;
       }
       try {
         await deleteMutation.mutateAsync(id);
+        toast.success("Risk assessment deleted successfully");
         if (selectedRecord?.id === id) {
           setSelectedRecord(null);
         }
       } catch (err: any) {
-        alert(
+        toast.error(
           "Error deleting risk assessment: " + (err.message || "Unknown error"),
         );
       }
     },
-    [deleteMutation, selectedRecord?.id],
+    [confirm, deleteMutation, selectedRecord?.id],
   );
 
   const getStatusBadge = (status?: string) => {
