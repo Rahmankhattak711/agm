@@ -8,3 +8,4 @@ export * from "./DashboardCard";
 export * from "./DateRangePicker";
 export * from "./DatePicker";
 export * from "./GlobalLoading";
+export * from "./EmptyState";

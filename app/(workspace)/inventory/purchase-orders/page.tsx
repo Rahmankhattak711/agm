@@ -26,6 +26,9 @@ import {
   TrashIcon,
   CloseIcon,
   ChevronDownIcon,
+  TruckIcon,
+  PackageIcon,
+  FileTextIcon,
 } from "@/components/icons";
 import { PurchaseOrderPrintModal } from "./PurchaseOrderPrintModal";
 import {
@@ -48,6 +51,7 @@ import {
   FormSelect,
   FormTextarea,
   FormSubmit,
+  EmptyState,
 } from "@/components/ui";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -947,12 +951,42 @@ export default function PurchaseOrdersPage() {
                 {isLoading ? (
                   <TableLoading colSpan={8} rows={5} />
                 ) : filteredPOs.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="py-12 text-center text-slate-400 italic"
-                    >
-                      No purchase orders match your search criteria.
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={8} className="p-0 border-0">
+                      <EmptyState
+                        icon={
+                          <ShoppingCartIcon
+                            size={20}
+                            className="text-slate-400"
+                          />
+                        }
+                        title="No purchase orders found"
+                        description={
+                          search.trim() !== "" ||
+                          statusFilter !== "ALL" ||
+                          supplierFilter !== ""
+                            ? "No purchase orders matched your search criteria."
+                            : "No purchase orders in database. Click 'Create Purchase Order' to create one."
+                        }
+                        actionLabel={
+                          search.trim() !== "" ||
+                          statusFilter !== "ALL" ||
+                          supplierFilter !== ""
+                            ? "Reset Filters"
+                            : "Create Purchase Order"
+                        }
+                        onAction={
+                          search.trim() !== "" ||
+                          statusFilter !== "ALL" ||
+                          supplierFilter !== ""
+                            ? () => {
+                                setSearch("");
+                                setStatusFilter("ALL");
+                                setSupplierFilter("");
+                              }
+                            : handleOpenCreate
+                        }
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (

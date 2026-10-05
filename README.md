@@ -76,6 +76,9 @@ $$\text{Quotation} \longrightarrow \text{Sales Order} \longrightarrow \text{Sale
 - **Sales Returns & Credit Notes (`/commercial/credit-notes`)**:
   - Issues credit notes for project scope adjustments or material returns.
   - Automatically reverses Accounts Receivable and Output VAT liabilities with journal entries.
+- **Customer Statement of Account - SOA (`/commercial/statement-of-account`)**:
+  - Comprehensive customer financial statement with real-time balance calculations, date interval filtering, debit/credit invoice and receipt reconciliations, and aging summary.
+  - Generates official, branded print-ready Statement of Account PDF reports.
 
 ---
 
@@ -189,6 +192,8 @@ Designed specifically for commercial interior fit-out projects and contracting m
   - Complete historical movement audit trail: `PURCHASE_IN`, `SALE_OUT`, `ADJUSTMENT_IN`, `ADJUSTMENT_OUT`, `TRANSFER_IN`, `TRANSFER_OUT`, `RETURN_IN`, `RETURN_OUT`, and `PROJECT_CONSUMPTION`.
 - **Sales & Purchase Returns (`/inventory/sales-returns` & `/inventory/purchase-returns`)**:
   - Physical goods return logging synchronized with financial Credit & Debit notes.
+- **Sales Vouchers (`/inventory/sales-vouchers`)**:
+  - Warehouse dispatch vouchers coordinating goods delivery and inventory deductions with confirmed sales orders.
 - **Master Directories**:
   - **Customer Master (`/commercial/customers`)**: Complete client database with credit limits, TRN numbers, and live Statement of Account ledgers.
   - **Suppliers & Vendors (`/inventory/suppliers`)**: Vendor records with payment terms, contact details, and procurement histories.
@@ -208,6 +213,8 @@ Designed specifically for commercial interior fit-out projects and contracting m
 - **Bonuses & Performance Incentives (`/operations/bonuses`)**:
   - Performance, festival, project completion, and attendance bonus approvals.
   - Linkage to payroll accounts and disbursement tracking.
+- **Operations Command Dashboard (`/operations/dashboard`)**:
+  - Central operational command center displaying active project timelines, site workforce allocation, pending approvals, and equipment status.
 - **Fixed Asset Management (`/operations/fixed-assets`)**:
   - Registry for vehicles, site tools, heavy machinery, office equipment, and furniture.
   - Automated straight-line depreciation schedules linked to Chart of Accounts.
@@ -217,13 +224,12 @@ Designed specifically for commercial interior fit-out projects and contracting m
 ### 8. 🛡️ Role-Based Access Control & Security (`/administration`)
 
 - **Granular RBAC Hierarchy**:
-  - `SUPER_ADMIN`: Unrestricted global system access, audit logs, and user role assignment.
-  - `ADMIN`: Full operational and administrative access.
-  - `MANAGER`: Project supervision, approvals, and cost tracking.
-  - `ACCOUNTANT`: Finance, journal entries, commercial vouchers, billing, and tax reports.
-  - `HR`: Workforce management, attendance, leaves, bonuses, and payroll.
-  - `INVENTORY_MANAGER`: Products, warehouse stock, GRN, and procurement.
-  - `USER`: Read-only or restricted access to specific assigned workspaces.
+  - `SUPER_ADMIN` (Super Admin): Unrestricted global system access, audit logs, system configuration, and user role management.
+  - `ADMIN` (Admin): Comprehensive operational and administrative access across commercial, financial, and workforce modules.
+  - `ACCOUNTANT` (Accountant): Financial accounting, Chart of Accounts, journal entry posting, billing reconciliation, and UAE FTA VAT tax returns.
+  - `HR` (HR Specialist): Workforce management, employee directory, UAE Labor Law/WPS compliance, daily attendance, leaves, bonuses, and payroll.
+  - `INVENTORY_MANAGER` (Inventory Manager): Product catalog, multi-warehouse stock levels, physical stock movements, GRN receipts, and purchase orders.
+  - `USER` (Standard User): Baseline access to assigned projects, tasks, and operational views with restricted write permissions.
 - **Authentication**:
   - Dual-token JWT architecture (Short-lived Access Token in HTTP-only cookies/headers + Database-persisted Refresh Token rotation).
   - Protected API routes and route-guard middleware ([`middleware.ts`](middleware.ts)).
@@ -263,11 +269,11 @@ agm/
 │   ├── (auth)/                     # Unauthenticated auth routes (login, signup)
 │   ├── (workspace)/                # Authenticated application shell
 │   │   ├── administration/users/   # User provisioning & role management
-│   │   ├── commercial/             # Quotations, Sales Orders, Invoices, GRN, Bills, Technical Docs
+│   │   ├── commercial/             # Quotations, Sales Orders, Invoices, Payments, SOA, GRN, Bills, Technical Docs
 │   │   ├── dashboard/              # Executive KPI & Cash Flow dashboard
-│   │   ├── finance/                # Chart of Accounts, Journals, Reports
-│   │   ├── inventory/              # Products, Warehouses, Stock Movements
-│   │   ├── operations/             # Projects, Cost Tracking, Employees, Attendance, Leaves, Fixed Assets
+│   │   ├── finance/                # Chart of Accounts, Journals, Expenses, Reports
+│   │   ├── inventory/              # Products, Warehouses, Stock Movements, Sales Vouchers
+│   │   ├── operations/             # Operations Dashboard, Projects, Cost Tracking, Employees, Attendance, Leaves, Fixed Assets
 │   │   ├── projects/               # Project management shortcut route
 │   │   └── reports/                # Dedicated operational and tax reporting
 │   ├── api/                        # Next.js Route Handlers (REST API)
@@ -279,17 +285,19 @@ agm/
 │   │   ├── employees/              # HR, attendance, leaves, bonuses
 │   │   ├── finance/                # Journal entries & accounting logic
 │   │   ├── inventory/              # Products, stock, warehouses, suppliers
+│   │   ├── journal-entries/        # Dedicated journal entry posting & balancing
 │   │   ├── projects/               # Projects, milestones, and cost tracking endpoints
 │   │   ├── reports/                # Financial statements (P&L, BS, Aging, VAT)
 │   │   └── users/                  # User management & RBAC endpoints
 │   ├── docs/                       # Swagger UI documentation viewer
+│   ├── generated/prisma/           # Auto-generated Prisma client artifact
 │   ├── globals.css                 # Tailwind CSS v4 design tokens & print rules
 │   └── layout.tsx                  # Root layout & query client provider
 ├── components/
 │   ├── layout/WorkspaceLayout.tsx  # Workspace shell with topbar & responsive sidebar
-│   ├── documents/                  # Method statement, Risk assessment, Salary certificate templates
+│   ├── documents/                  # Method statements, Risk assessments, Salary certificates, SOA templates
 │   ├── quotation/                  # Modular quotation & sales invoice builder components
-│   ├── ui/                         # Reusable UI primitives (Button, Table, FormControls, DatePicker)
+│   ├── ui/                         # Reusable UI primitives (Button, Table, FormControls, DatePicker, Modals)
 │   ├── GlobalCreateMenu.tsx        # Fast-action modal for creating vouchers & records
 │   ├── Sidebar.tsx                 # Navigation sidebar with role-aware items
 │   ├── StatCard.tsx                # KPI statistic cards with sparkline & delta metrics
@@ -297,23 +305,28 @@ agm/
 │   ├── BarChart.tsx                # Chart.js bar chart component
 │   └── DoughnutChart.tsx           # Chart.js doughnut chart component
 ├── context/
-│   └── AuthContext.tsx             # Client authentication state & user profile
+│   ├── AuthContext.tsx             # Client authentication state & user profile
+│   └── ConfirmContext.tsx          # Programmatic confirmation dialog context
 ├── lib/
 │   ├── api-client.ts               # Authenticated client-side fetch client
 │   ├── auth-server.ts              # Server-side token validation & RBAC guards
 │   ├── auth-service.ts             # Browser token storage & session manager
 │   ├── commercial-accounting.ts    # Automated GL posting engine
-│   ├── hooks/                      # Centralized TanStack Query hooks library (commercial, finance, projects, HR)
+│   ├── hooks/                      # Centralized TanStack Query hooks library (commercial, finance, projects, HR, admin)
 │   ├── jwt.ts                      # JWT signing & verification utilities
 │   ├── navigation.ts               # Routing map & page metadata dictionary
 │   ├── prisma.ts                   # Prisma client singleton with Postgres adapter
+│   ├── report-helpers.ts           # Financial report calculations & ledger aggregation
 │   └── swagger.ts                  # OpenAPI definition schemas
 ├── prisma/
 │   ├── migrations/                 # PostgreSQL schema migrations
-│   └── schema.prisma               # Complete database schema definition
+│   └── schema.prisma               # Complete database schema definition (30+ models)
+├── scripts/
+│   └── remove-comments.mjs         # Codebase cleanup utility
 ├── docker-compose.yml              # PostgreSQL 16 Alpine local database container
 ├── middleware.ts                   # Edge route protection & token inspection
 ├── next.config.ts                  # Next.js configuration & API proxy rewrites
+├── prisma.config.ts                # Prisma CLI configuration
 └── package.json                    # Project dependencies & scripts
 ```
 
@@ -414,6 +427,7 @@ pnpm run prisma:studio
 | `pnpm run prisma:generate` | Regenerates Prisma Client based on `prisma/schema.prisma`    |
 | `pnpm run prisma:migrate`  | Applies pending database migrations in development           |
 | `pnpm run prisma:studio`   | Launches Prisma Studio GUI at `http://localhost:5555`        |
+| `pnpm run clean:comments`  | Cleans and strips legacy comment blocks across source files  |
 
 ---
 

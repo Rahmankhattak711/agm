@@ -152,6 +152,11 @@ export default function SalesInvoicesPage() {
             onPost={handlePostInvoice}
             onOpenPayment={(inv) => setPaymentModalInv(inv)}
             onOpenCreate={() => setIsCreateOpen(true)}
+            isFiltered={search.trim() !== "" || statusFilter !== "ALL"}
+            onClearFilters={() => {
+              setSearch("");
+              setStatusFilter("ALL");
+            }}
           />
         </div>
       </div>

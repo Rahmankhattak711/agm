@@ -9,6 +9,9 @@ import {
   PrintIcon,
   RotateCcwIcon,
   SearchIcon,
+  PackageIcon,
+  ScaleIcon,
+  FileTextIcon,
 } from "@/components/icons";
 import {
   Button,
@@ -21,6 +24,7 @@ import {
   Modal,
   Input,
   Textarea,
+  EmptyState,
 } from "@/components/ui";
 import {
   ReportKpiCard,
@@ -750,13 +754,32 @@ export default function SalesReturnsPage() {
                   </TableCell>
                 </TableRow>
               ) : filteredReturns.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={8}
-                    className="py-12 text-center text-slate-400 italic"
-                  >
-                    No sales returns found in database. Click &ldquo;Log Sales
-                    Return / Credit Note&rdquo; to create a new record.
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={8} className="p-0 border-0">
+                    <EmptyState
+                      icon={
+                        <RotateCcwIcon size={20} className="text-slate-400" />
+                      }
+                      title="No sales returns found"
+                      description={
+                        search.trim() !== "" || statusFilter !== "ALL"
+                          ? "No sales returns matched your search criteria."
+                          : "No sales returns in database. Click 'Log Sales Return / Credit Note' to create one."
+                      }
+                      actionLabel={
+                        search.trim() !== "" || statusFilter !== "ALL"
+                          ? "Reset Filters"
+                          : "Log Sales Return / Credit Note"
+                      }
+                      onAction={
+                        search.trim() !== "" || statusFilter !== "ALL"
+                          ? () => {
+                              setSearch("");
+                              setStatusFilter("ALL");
+                            }
+                          : () => setIsCreateOpen(true)
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ) : (

@@ -9,7 +9,14 @@ import {
   TableRow,
   TableCell,
   TableLoading,
+  EmptyState,
 } from "@/components/ui";
+import {
+  ReceiptIcon,
+  PercentIcon,
+  ScaleIcon,
+  PrintIcon,
+} from "@/components/icons";
 import { SalesInvoice } from "@/lib/hooks/api-hooks";
 import SalesInvoiceRow from "./SalesInvoiceRow";
 
@@ -23,6 +30,8 @@ export interface SalesInvoiceTableProps {
   onPost: (invId: string) => void;
   onOpenPayment: (inv: SalesInvoice) => void;
   onOpenCreate: () => void;
+  isFiltered?: boolean;
+  onClearFilters?: () => void;
 }
 
 export const SalesInvoiceTable: React.FC<SalesInvoiceTableProps> = ({
@@ -35,6 +44,8 @@ export const SalesInvoiceTable: React.FC<SalesInvoiceTableProps> = ({
   onPost,
   onOpenPayment,
   onOpenCreate,
+  isFiltered = false,
+  onClearFilters,
 }) => {
   if (error) {
     return (
@@ -93,13 +104,21 @@ export const SalesInvoiceTable: React.FC<SalesInvoiceTableProps> = ({
           {isLoading ? (
             <TableLoading colSpan={8} rows={5} />
           ) : invoices.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={8}
-                className="py-12 text-center text-slate-400 italic"
-              >
-                No sales invoices found. Click &quot;Create Sales Invoice&quot;
-                to issue a new commercial invoice.
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={8} className="p-0 border-0">
+                <EmptyState
+                  icon={<ReceiptIcon size={20} className="text-slate-400" />}
+                  title="No sales invoices found"
+                  description={
+                    isFiltered
+                      ? "No sales invoices matched your search criteria."
+                      : "No sales invoices in database. Click 'Create Sales Invoice' to issue one."
+                  }
+                  actionLabel={
+                    isFiltered ? "Reset Filters" : "Create Sales Invoice"
+                  }
+                  onAction={isFiltered ? onClearFilters : onOpenCreate}
+                />
               </TableCell>
             </TableRow>
           ) : (

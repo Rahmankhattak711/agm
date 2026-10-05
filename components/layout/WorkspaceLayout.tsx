@@ -21,7 +21,6 @@ import { getPageMeta } from "@/lib/navigation";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-
 export default function WorkspaceLayout({ children }: { children: ReactNode }) {
   const { user, checkAuth, loading, logout } = useAuth();
   const pathname = usePathname();
