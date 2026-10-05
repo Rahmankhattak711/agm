@@ -15,6 +15,8 @@ import {
   SearchIcon,
   ShieldCheckIcon,
   TrashIcon,
+  ScaleIcon,
+  PercentIcon,
 } from "@/components/icons";
 import {
   Button,
@@ -31,6 +33,7 @@ import {
   FormInput,
   FormSelect,
   FormSubmit,
+  EmptyState,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -808,12 +811,32 @@ export default function SupplierBillsPage() {
                 {isLoading ? (
                   <TableLoading colSpan={8} rows={5} />
                 ) : filteredBills.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="py-12 text-center text-slate-400 italic"
-                    >
-                      No supplier bills match your search criteria.
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={8} className="p-0 border-0">
+                      <EmptyState
+                        icon={
+                          <ReceiptIcon size={20} className="text-slate-400" />
+                        }
+                        title="No supplier bills found"
+                        description={
+                          search.trim() !== "" || statusFilter !== "ALL"
+                            ? "No supplier bills matched your search criteria."
+                            : "No supplier bills in database. Click 'Record Supplier Bill' to create one."
+                        }
+                        actionLabel={
+                          search.trim() !== "" || statusFilter !== "ALL"
+                            ? "Reset Filters"
+                            : "Record Supplier Bill"
+                        }
+                        onAction={
+                          search.trim() !== "" || statusFilter !== "ALL"
+                            ? () => {
+                                setSearch("");
+                                setStatusFilter("ALL");
+                              }
+                            : () => setIsCreateOpen(true)
+                        }
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (
