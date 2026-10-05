@@ -27,6 +27,7 @@ import {
   Modal,
   DashboardCard,
   DashboardCardGrid,
+  EmptyState,
 } from "@/components/ui";
 import {
   PlusIcon,
@@ -47,6 +48,7 @@ import {
   AlertTriangleIcon,
   CloseIcon,
   FileSpreadsheetIcon,
+  PercentIcon,
 } from "@/components/icons";
 
 const EXPENSE_CATEGORIES = [
@@ -405,13 +407,43 @@ export default function ExpensesPage() {
               {isLoading ? (
                 <TableLoading colSpan={8} rows={5} />
               ) : expenses.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={8}
-                    className="py-12 text-center text-slate-400 italic"
-                  >
-                    No operating expenses found. Click &quot;Record
-                    Expense&quot; above to create your first claim.
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={8} className="p-0 border-0">
+                    <EmptyState
+                      icon={
+                        <ReceiptIcon size={20} className="text-slate-400" />
+                      }
+                      title="No expenses found"
+                      description={
+                        search.trim() !== "" ||
+                        selectedCategory !== "ALL" ||
+                        selectedStatus !== "ALL" ||
+                        selectedMethod !== "ALL"
+                          ? "No expenses matched your search criteria."
+                          : "No expenses in database. Click 'Record Expense' to create one."
+                      }
+                      actionLabel={
+                        search.trim() !== "" ||
+                        selectedCategory !== "ALL" ||
+                        selectedStatus !== "ALL" ||
+                        selectedMethod !== "ALL"
+                          ? "Reset Filters"
+                          : "Record Expense"
+                      }
+                      onAction={
+                        search.trim() !== "" ||
+                        selectedCategory !== "ALL" ||
+                        selectedStatus !== "ALL" ||
+                        selectedMethod !== "ALL"
+                          ? () => {
+                              setSearch("");
+                              setSelectedCategory("ALL");
+                              setSelectedStatus("ALL");
+                              setSelectedMethod("ALL");
+                            }
+                          : () => setIsCreateOpen(true)
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
