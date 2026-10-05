@@ -7,6 +7,9 @@ import {
   PrintIcon,
   RotateCcwIcon,
   ShieldCheckIcon,
+  PackageIcon,
+  ScaleIcon,
+  FileTextIcon,
 } from "@/components/icons";
 import {
   Button,
@@ -16,6 +19,7 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  EmptyState,
 } from "@/components/ui";
 import {
   PurchaseReturnItem,
@@ -30,6 +34,9 @@ interface PurchaseReturnsTableProps {
   onToggleExpand: (id: string) => void;
   onPrintReturn: (item: PurchaseReturnItem) => void;
   isLoading?: boolean;
+  onOpenCreate?: () => void;
+  isFiltered?: boolean;
+  onClearFilters?: () => void;
 }
 
 const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
@@ -38,6 +45,9 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
   onToggleExpand,
   onPrintReturn,
   isLoading = false,
+  onOpenCreate,
+  isFiltered = false,
+  onClearFilters,
 }) => {
   return (
     <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
@@ -97,13 +107,21 @@ const PurchaseReturnsTable: React.FC<PurchaseReturnsTableProps> = ({
               </TableCell>
             </TableRow>
           ) : filteredReturns.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={8}
-                className="py-12 text-center text-slate-400 italic"
-              >
-                No purchase returns found in database. Click &ldquo;Log Purchase
-                Return&rdquo; to register a vendor material rejection.
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={8} className="p-0 border-0">
+                <EmptyState
+                  icon={<RotateCcwIcon size={20} className="text-slate-400" />}
+                  title="No purchase returns found"
+                  description={
+                    isFiltered
+                      ? "No purchase returns matched your search criteria."
+                      : "No purchase returns in database. Click 'Log Purchase Return' to create one."
+                  }
+                  actionLabel={
+                    isFiltered ? "Reset Filters" : "Log Purchase Return"
+                  }
+                  onAction={isFiltered ? onClearFilters : onOpenCreate}
+                />
               </TableCell>
             </TableRow>
           ) : (

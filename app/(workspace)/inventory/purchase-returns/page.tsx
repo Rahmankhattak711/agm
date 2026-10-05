@@ -292,6 +292,12 @@ export default function PurchaseReturnsPage() {
           onToggleExpand={handleToggleExpand}
           onPrintReturn={handlePrintReturn}
           isLoading={isLoading}
+          onOpenCreate={handleOpenCreate}
+          isFiltered={search.trim() !== "" || statusFilter !== "ALL"}
+          onClearFilters={() => {
+            setSearch("");
+            setStatusFilter("ALL");
+          }}
         />
       </div>
 
