@@ -34,6 +34,7 @@ import {
   ReportKpiGrid,
 } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 import { Building2, FileText, Mail, Phone, Clock } from "lucide-react";
+import { formatCurrency } from "@/lib/utils/format";
 
 export default function SupplierReportsPage() {
   const [search, setSearch] = useState("");
@@ -44,14 +45,6 @@ export default function SupplierReportsPage() {
 
   const { data: suppliers = [], isLoading, error } = useSuppliers();
   const { data: bills = [] } = useSupplierBills();
-
-  const formatCurrency = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return `AED ${num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  };
 
   const apAgingBuckets = useMemo<AgingBucket[]>(() => {
     const buckets = [

@@ -35,6 +35,7 @@ import {
   ReportKpiCard,
   ReportKpiGrid,
 } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
+import { formatNumber, formatCurrency } from "@/lib/utils/format";
 
 function parseDescriptionPoints(desc: string): string[] {
   if (!desc) return [];
@@ -96,22 +97,6 @@ export default function PurchaseReportsPage() {
 
   const { data: bills = [], isLoading, error } = useSupplierBills();
   const { data: suppliers = [] } = useSuppliers();
-
-  const formatCurrency = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return `AED ${num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  };
-
-  const formatNumber = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   const filteredBills = useMemo(() => {
     return bills.filter((b) => {

@@ -35,6 +35,7 @@ import { Expense, useAccounts, useExpenses } from "@/lib/hooks/api-hooks";
 import { ColumnDef } from "@tanstack/react-table";
 import { CreditCard } from "lucide-react";
 import { useMemo, useState } from "react";
+import { formatCurrency } from "@/lib/utils/format";
 
 export default function ExpenseReportsPage() {
   const [search, setSearch] = useState("");
@@ -54,14 +55,6 @@ export default function ExpenseReportsPage() {
 
   const expenses = useMemo(() => data?.expenses || [], [data?.expenses]);
   const { data: accounts = [] } = useAccounts();
-
-  const formatCurrency = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return `AED ${num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  };
 
   const periodTabs = [
     { key: "ALL", label: "All Time" },
