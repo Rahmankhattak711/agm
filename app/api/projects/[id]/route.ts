@@ -58,7 +58,82 @@ export async function GET(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    return NextResponse.json(project);
+    const salesInvoices = await prisma.salesInvoice.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        invoiceNumber: true,
+        customerId: true,
+        customerName: true,
+        quotationRef: true,
+        projectScope: true,
+        subtotal: true,
+        totalAmount: true,
+        items: {
+          select: {
+            totalAmount: true,
+          },
+        },
+      },
+    });
+
+    const cleanProjName = (name: string) =>
+      name.replace(/\s*\((AGM-QTN-[^)]+|QTN-[^)]+)\)\s*/i, "").trim().toLowerCase();
+
+    const sumCosts = project.costs?.reduce((sum, c) => sum + Number(c.amount || 0), 0) ?? 0;
+    const actualCost = project.costs && project.costs.length > 0 ? sumCosts : Number(project.actualCost || 0);
+
+    const pClean = cleanProjName(project.name);
+    const projNum = project.projectCode.match(/\d+$/)?.[0];
+
+    let matchingInv = salesInvoices.find((inv) => {
+      if (project.description && project.description.includes(inv.invoiceNumber)) return true;
+      const invNum = inv.invoiceNumber.match(/\d+$/)?.[0];
+      if (projNum && invNum && projNum === invNum) return true;
+      return false;
+    });
+
+    if (!matchingInv && pClean) {
+      matchingInv = salesInvoices.find((inv) => {
+        if (!inv.projectScope) return false;
+        return inv.projectScope.trim().toLowerCase() === pClean;
+      });
+    }
+
+    if (!matchingInv && pClean) {
+      matchingInv = salesInvoices.find((inv) => {
+        if (!inv.projectScope) return false;
+        const invScope = inv.projectScope.trim().toLowerCase();
+        const scopeMatch = invScope.includes(pClean) || pClean.includes(invScope);
+        const custMatch =
+          !project.customer?.name ||
+          (inv.customerName &&
+            inv.customerName.toLowerCase() === project.customer.name.toLowerCase());
+        return scopeMatch && custMatch;
+      });
+    }
+
+    if (!matchingInv && project.quotation?.quotationNo) {
+      matchingInv = salesInvoices.find(
+        (inv) =>
+          inv.quotationRef?.toLowerCase() ===
+          project.quotation?.quotationNo?.toLowerCase(),
+      );
+    }
+
+    const itemsSum = matchingInv?.items?.reduce(
+      (sum, item) => sum + Number(item.totalAmount || 0),
+      0,
+    );
+    const matchedInvAmount = itemsSum || (matchingInv ? Number(matchingInv.subtotal || matchingInv.totalAmount) : 0);
+    const contractValue = matchedInvAmount || Number(project.contractValue || project.budget || project.quotation?.totalAmount || 0);
+    const budget = matchedInvAmount || Number(project.budget || contractValue || 0);
+
+    return NextResponse.json({
+      ...project,
+      actualCost,
+      contractValue,
+      budget,
+    });
   } catch (error: any) {
     console.error("Error fetching project:", error);
     return NextResponse.json(

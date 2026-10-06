@@ -43,7 +43,7 @@ export function EditProjectModal({
       setEName(project.name);
       setELocation(project.location || "");
       setEDesc(project.description || "");
-      setEBudget(String(project.budget || ""));
+      setEBudget(String(project.contractValue || project.budget || ""));
       setEPriority((project.priority as ProjectPriority) || "MEDIUM");
       setEStatus(project.status as ProjectStatus);
       setEProgressPct(project.progressPct || 0);

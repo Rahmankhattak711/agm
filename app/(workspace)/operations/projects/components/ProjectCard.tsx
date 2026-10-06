@@ -31,12 +31,28 @@ export function ProjectCard({
 }: ProjectCardProps) {
   const router = useRouter();
 
-  const bud = Number(p.budget || 0);
-  const ac = Number(p.actualCost || 0);
+  const bud = Number(p.contractValue || p.budget || p.quotation?.totalAmount || 0);
+  const totalCostFromItems = p.costs?.reduce(
+    (sum, c) => sum + Number(c.amount || 0),
+    0,
+  );
+  const ac = Number(
+    p.actualCost || (totalCostFromItems !== undefined && totalCostFromItems > 0 ? totalCostFromItems : 0),
+  );
   const remaining = bud - ac;
   const isOver = ac > bud && bud > 0;
   const usedPct = bud > 0 ? Math.min(Math.round((ac / bud) * 100), 100) : 0;
   const priCfg = PRIORITY_CFG[p.priority || "MEDIUM"];
+
+  const quoteMatch =
+    p.name?.match(/\((AGM-QTN-[^)]+|QTN-[^)]+)\)/i) ||
+    p.description?.match(/(AGM-QTN-[\w-]+|QTN-[\w-]+)/i);
+  const quoteNo =
+    p.quotation?.quotationNo || (quoteMatch ? quoteMatch[1] : null);
+
+  const cleanTitle =
+    p.name?.replace(/\s*\((AGM-QTN-[^)]+|QTN-[^)]+)\)\s*/i, "").trim() ||
+    p.name;
 
   return (
     <div className="group relative bg-white rounded-2xl border border-slate-200/90 hover:border-agm-green/50 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden">
@@ -78,9 +94,9 @@ export function ProjectCard({
         <div>
           <h3
             className="font-bold text-slate-900 text-base leading-snug group-hover:text-agm-green transition-colors truncate"
-            title={p.name}
+            title={cleanTitle}
           >
-            {p.name}
+            {cleanTitle}
           </h3>
           <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 truncate">
             {p.customer?.name && (
@@ -112,14 +128,14 @@ export function ProjectCard({
               <span>{p.deadline.split("T")[0]}</span>
             </span>
           )}
-          {p.quotation && (
+          {quoteNo && (
             <span
               className="inline-flex items-center gap-1 text-agm-green bg-emerald-50/80 border border-emerald-200/80 px-2 py-0.5 rounded-md font-semibold shrink-0"
-              title={`Quotation ${p.quotation.quotationNo}`}
+              title={`Quotation ${quoteNo}`}
             >
               <FileSpreadsheetIcon size={11} className="shrink-0" />
               <span className="truncate max-w-[130px]">
-                {p.quotation.quotationNo}
+                {quoteNo}
               </span>
             </span>
           )}
@@ -129,7 +145,7 @@ export function ProjectCard({
           <div className="grid grid-cols-2 gap-3 items-end">
             <div className="min-w-0">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5 truncate">
-                Project Budget
+                Project Value
               </span>
               <span
                 className="font-mono font-bold text-sm text-slate-900 block truncate"
