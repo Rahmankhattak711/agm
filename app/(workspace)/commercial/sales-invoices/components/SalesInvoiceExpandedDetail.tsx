@@ -34,17 +34,23 @@ export const SalesInvoiceExpandedDetail: React.FC<
 > = ({ inv }) => {
   const updateInvoiceMutation = useUpdateSalesInvoice();
 
-  const projectTotalAmount = useMemo(() => {
-    if (!inv.items || inv.items.length === 0)
-      return Number(inv.totalAmount || 0);
-    const subtotal = inv.items.reduce(
-      (sum, item) => sum + Number(item.totalAmount || 0),
-      0,
-    );
-    return subtotal + subtotal * 0.05;
-  }, [inv.items, inv.totalAmount]);
+  const itemsSum = useMemo(() => {
+    if (inv.items && inv.items.length > 0) {
+      return inv.items.reduce(
+        (sum, item) => sum + Number(item.totalAmount || 0),
+        0,
+      );
+    }
+    return Number(inv.subtotal || 0);
+  }, [inv.items, inv.subtotal]);
 
-  const totalAmount = Number(inv.totalAmount || 0);
+  const discount = Number(inv.discount || 0);
+  const calculatedSubtotal = Math.max(0, itemsSum - discount);
+  const calculatedVat = 0;
+  const calculatedTotal = calculatedSubtotal;
+
+  const projectTotalAmount = itemsSum || Number(inv.subtotal) || Number(inv.totalAmount) || 0;
+  const totalAmount = calculatedTotal || Number(inv.totalAmount) || 0;
 
   const initialParsedData = useMemo(() => {
     let termsList: string[] = [];
@@ -185,7 +191,6 @@ export const SalesInvoiceExpandedDetail: React.FC<
           paymentPlans: formattedPaymentPlans,
           paymentTerms: formattedPaymentPlans,
         }),
-        totalAmount: totalMilestoneAmount,
       };
 
       await updateInvoiceMutation.mutateAsync({
@@ -212,18 +217,13 @@ export const SalesInvoiceExpandedDetail: React.FC<
     [milestones],
   );
 
-  const displayTotalAmount = isEditingTerms
-    ? totalMilestoneAmount
-    : totalAmount;
-  const displaySubtotal = isEditingTerms
-    ? totalMilestoneAmount / 1.05
-    : inv.subtotal;
-  const displayVatAmount = isEditingTerms
-    ? totalMilestoneAmount - totalMilestoneAmount / 1.05
-    : inv.vatAmount;
-  const displayRemainingBalance = isEditingTerms
-    ? totalMilestoneAmount - Number(inv.paidAmount || 0)
-    : inv.remainingBalance;
+  const displayTotalAmount = calculatedTotal;
+  const displaySubtotal = calculatedSubtotal;
+  const displayVatAmount = calculatedVat;
+  const displayRemainingBalance = Math.max(
+    0,
+    calculatedTotal - Number(inv.paidAmount || 0),
+  );
 
   return (
     <div className="px-5 py-4 space-y-4 border-l-4 border-l-emerald-600 bg-gradient-to-b from-white to-slate-50/40 shadow-inner">
@@ -521,7 +521,7 @@ export const SalesInvoiceExpandedDetail: React.FC<
               <div className="flex justify-between items-center text-[13px] text-slate-500">
                 <span>5% UAE Output VAT</span>
                 <span className="font-mono font-medium text-slate-700">
-                  {formatNumber(displayVatAmount)}{" "}
+                  {formatNumber(0)}{" "}
                   <span className="text-[10px] text-slate-400">AED</span>
                 </span>
               </div>

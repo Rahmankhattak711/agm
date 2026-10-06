@@ -56,6 +56,7 @@ import {
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
+import { formatNumber } from "@/lib/utils/format";
 
 interface PurchaseOrderDocumentProps {
   po: PurchaseOrder;
@@ -456,14 +457,6 @@ export default function PurchaseOrdersPage() {
   const formatCurrency = (val: number | string | undefined) => {
     const num = Number(val || 0);
     return `AED ${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
-
-  const formatNumber = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
   };
 
   const filteredPOs = useMemo(() => {

@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       ];
     }
 
-    if (status) {
+    if (status && status !== "ALL") {
       where.status = status;
     }
 

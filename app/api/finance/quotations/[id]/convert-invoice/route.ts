@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { round2 } from "@/lib/utils/math";
 
 export async function POST(
   request: Request,
@@ -59,13 +60,21 @@ export async function POST(
       };
     });
 
-    const subtotal = parseFloat(quotation.subtotal?.toString() || "0") || 0;
-    const discount = parseFloat(quotation.discount?.toString() || "0") || 0;
+    const itemsSubtotal = formattedItems.reduce(
+      (sum, i) => sum + i.totalAmount,
+      0,
+    );
+    const subtotal = round2(
+      itemsSubtotal ||
+        parseFloat(quotation.subtotal?.toString() || "0") ||
+        0,
+    );
+    const discount = round2(
+      parseFloat(quotation.discount?.toString() || "0") || 0,
+    );
     const vatRate = parseFloat(quotation.vatPct?.toString() || "5.00") || 5.0;
-    const vatAmount = parseFloat(quotation.vatAmount?.toString() || "0") || 0;
-    const totalAmount =
-      parseFloat(quotation.totalAmount?.toString() || "0") ||
-      subtotal - discount + vatAmount;
+    const vatAmount = round2(((subtotal - discount) * vatRate) / 100);
+    const totalAmount = round2(subtotal - discount + vatAmount);
 
     let parsedTermsList: string[] = [];
     let parsedPaymentPlans: string[] = [];
@@ -181,17 +190,25 @@ export async function POST(
             priority: "MEDIUM",
             location: quotation.location || null,
             contractValue: totalAmount,
-            budget: Math.round(totalAmount * 0.75),
+            budget: totalAmount,
             customerId: quotation.customerId || null,
-            quotationId: quotation.id,
+            quotationId: null,
             createdById: authUser.id,
+          },
+        });
+      } else {
+        await tx.project.update({
+          where: { id: existingProject.id },
+          data: {
+            contractValue: totalAmount,
+            budget: totalAmount,
+            quotationId: null,
           },
         });
       }
 
-      await tx.quotation.update({
+      await tx.quotation.delete({
         where: { id },
-        data: { status: "ACCEPTED" },
       });
 
       return inv;
@@ -199,7 +216,7 @@ export async function POST(
 
     return NextResponse.json(salesInvoice, { status: 201 });
   } catch (error: any) {
-    console.error("POST convert quotation to sales invoice error:", error);
+    console.error("POST convert quotation to sales invoice error:", error); 
     return NextResponse.json(
       {
         error: error.message || "Failed to convert quotation to sales invoice",

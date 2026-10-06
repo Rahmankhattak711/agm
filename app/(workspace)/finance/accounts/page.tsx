@@ -20,6 +20,7 @@ import {
   AccountsFilterToolbar,
   AccountsHierarchyView,
 } from "./components";
+import { formatNumber, formatCurrency } from "@/lib/utils/format";
 
 export default function AccountsPage() {
   const { data: accounts = [], isLoading, error } = useAccounts();
@@ -73,22 +74,6 @@ export default function AccountsPage() {
       [accId]: !prev[accId],
     }));
   }, []);
-
-  const formatCurrency = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return `AED ${num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  };
-
-  const formatNumber = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   const filteredAccounts = useMemo(() => {
     return (accounts || []).filter((acc) => {

@@ -24,6 +24,7 @@ import {
   FormSelect,
   FormTextarea,
   FormSubmit,
+  Badge,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -123,9 +124,9 @@ export default function DebitNotesPage() {
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
               Debit Notes
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+            <Badge tone="amber" size="md">
               Procurement Cycle — Adjustments
-            </span>
+            </Badge>
           </div>
           <p className="text-xs text-slate-500">
             Issue supplier debit notes, record rejected materials, and reduce

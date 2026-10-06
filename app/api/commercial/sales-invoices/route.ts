@@ -7,6 +7,7 @@ import {
 import prisma from "@/lib/prisma";
 import { postSalesInvoiceJournalEntry } from "@/lib/commercial-accounting";
 import { NextResponse } from "next/server";
+import { round2 } from "@/lib/utils/math";
 
 export async function GET(request: Request) {
   try {
@@ -63,7 +64,38 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(invoices);
+    const mappedInvoices = invoices.map((inv) => {
+      const itemsSum = inv.items?.reduce(
+        (sum, item) => sum + Number(item.totalAmount || 0),
+        0,
+      );
+
+      let subtotal = Number(inv.subtotal || 0);
+      let vatAmount = Number(inv.vatAmount || 0);
+      let totalAmount = Number(inv.totalAmount || 0);
+      const discount = Number(inv.discount || 0);
+      const vatRate = inv.vatRate !== undefined && inv.vatRate !== null ? Number(inv.vatRate) : 0;
+
+      if (itemsSum && itemsSum > 0) {
+        subtotal = round2(itemsSum);
+        const net = Math.max(0, subtotal - discount);
+        vatAmount = 0;
+        totalAmount = round2(net);
+      }
+
+      const paidAmount = Number(inv.paidAmount || 0);
+      const remainingBalance = Math.max(0, round2(totalAmount - paidAmount));
+
+      return {
+        ...inv,
+        subtotal,
+        vatAmount,
+        totalAmount,
+        remainingBalance,
+      };
+    });
+
+    return NextResponse.json(mappedInvoices);
   } catch (error: any) {
     console.error("GET /api/commercial/sales-invoices error:", error);
     return NextResponse.json(
@@ -214,6 +246,50 @@ export async function POST(request: Request) {
           where: { id: customerId },
           data: {
             currentBalance: { increment: totalAmount },
+          },
+        });
+      }
+    }
+
+    if (quotationRef || projectScope) {
+      const matchedProject = await prisma.project.findFirst({
+        where: {
+          OR: [
+            ...(quotationRef
+              ? [
+                  {
+                    name: {
+                      contains: quotationRef,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                ]
+              : []),
+            ...(projectScope
+              ? [
+                  {
+                    name: {
+                      equals: projectScope,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                ]
+              : []),
+          ],
+        },
+      });
+
+      if (
+        matchedProject &&
+        (!matchedProject.contractValue ||
+          Number(matchedProject.contractValue) === 0 ||
+          Number(matchedProject.contractValue) !== totalAmount)
+      ) {
+        await prisma.project.update({
+          where: { id: matchedProject.id },
+          data: {
+            contractValue: totalAmount,
+            budget: totalAmount,
           },
         });
       }

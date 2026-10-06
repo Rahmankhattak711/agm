@@ -1,4 +1,6 @@
 export * from "./Button";
+export * from "./Badge";
+export * from "./RegisterTable";
 export * from "./Input";
 export * from "./Table";
 export * from "./DataTable";

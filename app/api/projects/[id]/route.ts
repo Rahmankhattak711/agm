@@ -1,6 +1,11 @@
 import prisma from "@/lib/prisma";
 import { getAuthUser, unauthorized } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
+import { sumBy } from "@/lib/utils/math";
+import {
+  INVOICE_MATCH_SELECT,
+  resolveProjectValues,
+} from "@/lib/project-invoice-match";
 
 export async function GET(
   request: Request,
@@ -58,7 +63,28 @@ export async function GET(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    return NextResponse.json(project);
+    const salesInvoices = await prisma.salesInvoice.findMany({
+      orderBy: { createdAt: "desc" },
+      select: INVOICE_MATCH_SELECT,
+    });
+
+    const sumCosts = sumBy(project.costs, (c) => c.amount);
+    const actualCost =
+      project.costs && project.costs.length > 0
+        ? sumCosts
+        : Number(project.actualCost || 0);
+
+    const { contractValue, budget } = resolveProjectValues(
+      project,
+      salesInvoices,
+    );
+
+    return NextResponse.json({
+      ...project,
+      actualCost,
+      contractValue,
+      budget,
+    });
   } catch (error: any) {
     console.error("Error fetching project:", error);
     return NextResponse.json(

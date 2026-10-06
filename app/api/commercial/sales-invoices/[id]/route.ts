@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { round2 } from "@/lib/utils/math";
 
 export async function GET(
   request: Request,
@@ -40,7 +41,34 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(invoice);
+    const itemsSum = invoice.items?.reduce(
+      (sum, item) => sum + Number(item.totalAmount || 0),
+      0,
+    );
+
+    let subtotal = Number(invoice.subtotal || 0);
+    let vatAmount = Number(invoice.vatAmount || 0);
+    let totalAmount = Number(invoice.totalAmount || 0);
+    const discount = Number(invoice.discount || 0);
+    const vatRate = invoice.vatRate !== undefined && invoice.vatRate !== null ? Number(invoice.vatRate) : 0;
+
+    if (itemsSum && itemsSum > 0) {
+      subtotal = round2(itemsSum);
+      const net = Math.max(0, subtotal - discount);
+      vatAmount = 0;
+      totalAmount = round2(net);
+    }
+
+    const paidAmount = Number(invoice.paidAmount || 0);
+    const remainingBalance = Math.max(0, round2(totalAmount - paidAmount));
+
+    return NextResponse.json({
+      ...invoice,
+      subtotal,
+      vatAmount,
+      totalAmount,
+      remainingBalance,
+    });
   } catch (error: any) {
     console.error("GET /api/commercial/sales-invoices/[id] error:", error);
     return NextResponse.json(
@@ -89,7 +117,7 @@ export async function PATCH(
       customerTrn: customerTrn !== undefined ? customerTrn : undefined,
     };
 
-    if (totalAmount !== undefined) {
+    if (totalAmount !== undefined && terms === undefined) {
       dataToUpdate.totalAmount = Number(totalAmount);
       dataToUpdate.subtotal = Number(totalAmount) / 1.05;
       dataToUpdate.vatAmount = Number(totalAmount) - dataToUpdate.subtotal;

@@ -11,7 +11,6 @@ import { useConfirm } from "@/context/ConfirmContext";
 import {
   Check,
   ChevronDown,
-  FileCheck,
   FileText,
   FolderOpen,
   Plus,
@@ -419,33 +418,6 @@ export default function QuotationTemplate({
       }
     >
       <div className="max-w-full mx-auto mb-4 bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 print:hidden">
-        <div className="inline-flex items-center p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80">
-          <button
-            type="button"
-            onClick={() => setDocType("QUOTATION")}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-              docType === "QUOTATION"
-                ? "bg-white text-slate-800 shadow-xs"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5 text-slate-600" />
-            <span>Quotation</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDocType("TAX_INVOICE")}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-              docType === "TAX_INVOICE"
-                ? "bg-white text-slate-800 shadow-xs"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            <FileCheck className="w-3.5 h-3.5 text-slate-600" />
-            <span>Tax Invoice</span>
-          </button>
-        </div>
-
         <button
           type="button"
           onClick={handleNewQuotation}

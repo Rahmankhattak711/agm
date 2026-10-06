@@ -20,6 +20,7 @@ import {
   FormSelect,
   FormTextarea,
   FormSubmit,
+  Badge,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -249,9 +250,9 @@ export default function CustomerPaymentsPage() {
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">
               Customer Payments
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+            <Badge tone="amber" size="md">
               Double-Entry Synced
-            </span>
+            </Badge>
           </div>
           <p className="text-xs text-slate-500">
             Record customer receipts, reconcile outstanding invoice balances,

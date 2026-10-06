@@ -35,6 +35,7 @@ import {
 } from "@/components/ui";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
+import { formatCurrency } from "@/lib/utils/format";
 
 export default function EmployeesPage() {
   const { hasRole, isAdmin } = useAuth();
@@ -213,14 +214,6 @@ export default function EmployeesPage() {
     },
     [form],
   );
-
-  const formatCurrency = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return `AED ${num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  };
 
   const getStatusBadge = (status: EmploymentStatus) => {
     switch (status) {

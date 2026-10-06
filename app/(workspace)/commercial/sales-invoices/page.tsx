@@ -79,14 +79,20 @@ export default function SalesInvoicesPage() {
     [filteredInvoices],
   );
 
-  const totalOutstanding = useMemo(
-    () =>
-      filteredInvoices.reduce((s, i) => s + Number(i.remainingBalance || 0), 0),
+  const totalSettled = useMemo(
+    () => filteredInvoices.reduce((s, i) => s + Number(i.paidAmount || 0), 0),
     [filteredInvoices],
   );
 
-  const totalSettled = useMemo(
-    () => filteredInvoices.reduce((s, i) => s + Number(i.paidAmount || 0), 0),
+  const totalOutstanding = useMemo(
+    () =>
+      filteredInvoices.reduce((s, i) => {
+        const bal = Math.max(
+          0,
+          Number(i.totalAmount || 0) - Number(i.paidAmount || 0),
+        );
+        return s + bal;
+      }, 0),
     [filteredInvoices],
   );
 

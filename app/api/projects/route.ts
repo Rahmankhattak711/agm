@@ -1,6 +1,11 @@
 import prisma from "@/lib/prisma";
 import { getAuthUser, unauthorized } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
+import { sumBy } from "@/lib/utils/math";
+import {
+  INVOICE_MATCH_SELECT,
+  resolveProjectValues,
+} from "@/lib/project-invoice-match";
 
 export async function GET(request: Request) {
   try {
@@ -83,7 +88,27 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.json(projects);
+    const salesInvoices = await prisma.salesInvoice.findMany({
+      orderBy: { createdAt: "desc" },
+      select: INVOICE_MATCH_SELECT,
+    });
+
+    const mappedProjects = projects.map((p) => {
+      const sumCosts = sumBy(p.costs, (c) => c.amount);
+      const actualCost =
+        p.costs && p.costs.length > 0 ? sumCosts : Number(p.actualCost || 0);
+
+      const { contractValue, budget } = resolveProjectValues(p, salesInvoices);
+
+      return {
+        ...p,
+        actualCost,
+        contractValue,
+        budget,
+      };
+    });
+
+    return NextResponse.json(mappedProjects);
   } catch (error: any) {
     console.error("Error fetching projects:", error);
     return NextResponse.json(
@@ -139,10 +164,20 @@ export async function POST(request: Request) {
         if (!contractValue && quotation.totalAmount) {
           finalContractValue = Number(quotation.totalAmount);
         }
+        if (!finalBudget && quotation.totalAmount) {
+          finalBudget = Number(quotation.totalAmount);
+        }
         if (!finalCustomerId && quotation.customerId) {
           finalCustomerId = quotation.customerId;
         }
       }
+    }
+
+    if (!finalBudget && finalContractValue) {
+      finalBudget = finalContractValue;
+    }
+    if (!finalContractValue && finalBudget) {
+      finalContractValue = finalBudget;
     }
 
     if (!finalName || !finalName.trim()) {

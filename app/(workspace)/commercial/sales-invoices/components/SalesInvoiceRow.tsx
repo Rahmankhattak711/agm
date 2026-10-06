@@ -1,7 +1,8 @@
 "use client";
 
 import React, { Fragment } from "react";
-import { TableRow, TableCell, Button } from "@/components/ui";
+import { TableRow, TableCell, Button, Badge } from "@/components/ui";
+import { getInvoiceStatus } from "@/lib/utils/status";
 import {
   ChevronDownIcon,
   CreditCardIcon,
@@ -30,6 +31,7 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
   onPost,
   onOpenPayment,
 }) => {
+  const status = getInvoiceStatus(inv.status);
   return (
     <Fragment>
       <TableRow
@@ -43,6 +45,11 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
             <FileTextIcon size={13} className="text-emerald-700 shrink-0" />
             <span>{inv.invoiceNumber}</span>
           </div>
+          {inv.quotationRef && (
+            <div className="text-[10.5px] text-teal-700 font-mono font-bold mt-0.5 inline-flex items-center gap-1">
+              <span className="text-slate-400 font-normal">Quote:</span> {inv.quotationRef}
+            </div>
+          )}
         </TableCell>
         <TableCell className="py-3 px-4 font-bold text-slate-900">
           <div>{inv.customerName}</div>
@@ -65,9 +72,6 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
           className="py-3 px-3 text-right font-mono font-black text-slate-900"
         >
           {formatNumber(inv.totalAmount)}
-          <span className="text-[10px] text-slate-400 font-normal block">
-            Incl. 5% VAT: {formatNumber(inv.vatAmount)}
-          </span>
         </TableCell>
         <TableCell
           align="right"
@@ -80,25 +84,7 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
           {formatNumber(inv.remainingBalance)}
         </TableCell>
         <TableCell className="py-3 px-3 text-center">
-          <span
-            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-              inv.status === "PAID"
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : inv.status === "POSTED"
-                  ? "bg-sky-50 text-sky-800 border-sky-200"
-                  : inv.status === "PARTIALLY_PAID"
-                    ? "bg-amber-50 text-amber-800 border-amber-200"
-                    : "bg-slate-100 text-slate-700 border-slate-200"
-            }`}
-          >
-            {inv.status === "PAID"
-              ? "Paid"
-              : inv.status === "POSTED"
-                ? "Posted"
-                : inv.status === "PARTIALLY_PAID"
-                  ? "Partial"
-                  : "Draft"}
-          </span>
+          <Badge tone={status.tone}>{status.label}</Badge>
         </TableCell>
         <TableCell className="py-3 px-3 text-center print:hidden">
           <div className="flex items-center justify-center gap-1.5">

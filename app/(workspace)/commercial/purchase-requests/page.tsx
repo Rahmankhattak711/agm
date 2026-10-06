@@ -27,6 +27,7 @@ import {
   FormInput,
   FormSelect,
   FormSubmit,
+  Badge,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -200,9 +201,9 @@ export default function PurchaseRequestsPage() {
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
               Purchase Requests
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-purple-50 text-purple-800 border border-purple-200">
+            <Badge tone="purple" size="md">
               Procurement Cycle — Step 1
-            </span>
+            </Badge>
           </div>
           <p className="text-xs text-slate-500">
             Manage site material requisitions, track approvals, and convert

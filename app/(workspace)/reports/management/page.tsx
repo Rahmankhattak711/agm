@@ -12,14 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
-
-function formatNumber(val: number | string | undefined): string {
-  const num = Number(val || 0);
-  return num.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
+import { formatNumber } from "@/lib/utils/format";
 
 export default function ManagementReportsPage() {
   const router = useRouter();

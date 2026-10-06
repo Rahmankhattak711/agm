@@ -8,16 +8,9 @@ import {
   PrintIcon,
   ShieldCheckIcon,
 } from "@/components/icons";
-import { Button, TableRow, TableCell } from "@/components/ui";
+import { Button, Badge, TableRow, TableCell } from "@/components/ui";
 import { Customer, useCustomerStatement } from "@/lib/hooks/api-hooks";
-
-function formatNumber(val: number | string | undefined): string {
-  const num = Number(val || 0);
-  return num.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
+import { formatNumber } from "@/lib/utils/format";
 
 export interface CustomerExpandedRowProps {
   customer: Customer;
@@ -66,17 +59,11 @@ export function CustomerExpandedRow({
                   {customer.phone}
                 </span>
               )}
-              <span
-                className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                  outstanding > 0
-                    ? "bg-rose-50 text-rose-800 border-rose-200"
-                    : "bg-emerald-50 text-emerald-800 border-emerald-200"
-                }`}
-              >
+              <Badge tone={outstanding > 0 ? "rose" : "emerald"}>
                 {outstanding > 0
                   ? `Outstanding: AED ${formatNumber(outstanding)}`
                   : "Account Settled"}
-              </span>
+              </Badge>
             </div>
 
             <div className="flex items-center gap-2">
