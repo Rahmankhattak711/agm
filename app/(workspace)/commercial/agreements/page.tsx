@@ -29,6 +29,7 @@ import {
   CalendarIcon,
 } from "@/components/icons";
 import { SAMPLE_RENOVATION_AGREEMENT } from "@/components/documents/constants";
+import { formatNumber } from "@/lib/utils/format";
 
 export default function AgreementsAndDocumentsPage() {
   const { data: agreementsList = [], isLoading } = useAgreements();
@@ -40,14 +41,6 @@ export default function AgreementsAndDocumentsPage() {
     useState<AgreementRecord | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-
-  const formatNumber = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   const filteredAgreements = useMemo(() => {
     const q = search.toLowerCase().trim();

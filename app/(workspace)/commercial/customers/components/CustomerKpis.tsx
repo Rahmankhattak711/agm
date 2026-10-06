@@ -2,14 +2,7 @@
 
 import React from "react";
 import { DashboardCard, DashboardCardGrid } from "@/components/ui";
-
-function formatNumber(val: number | string | undefined): string {
-  const num = Number(val || 0);
-  return num.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
+import { formatNumber } from "@/lib/utils/format";
 
 export interface CustomerKpisProps {
   totalClients: number;

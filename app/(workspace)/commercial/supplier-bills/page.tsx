@@ -50,6 +50,7 @@ import {
   ReportKpiGrid,
 } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
+import { formatNumber } from "@/lib/utils/format";
 
 interface SupplierBillDocumentProps {
   bill: SupplierBill;
@@ -553,14 +554,6 @@ export default function SupplierBillsPage() {
   const handleClosePayment = () => {
     setPaymentModalBill(null);
     paymentForm.reset();
-  };
-
-  const formatNumber = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
   };
 
   const addItem = () => {

@@ -2,9 +2,9 @@
 
 import React from "react";
 import {
-  Table,
-  TableHead,
-  TableHeaderCell,
+  RegisterTable,
+  RegisterColumn,
+  Badge,
   TableBody,
   TableRow,
   TableCell,
@@ -12,12 +12,23 @@ import {
   EmptyState,
   Button,
 } from "@/components/ui";
+import { getQuotationStatus } from "@/lib/utils/status";
 import {
   FileSpreadsheetIcon,
   FileTextIcon,
   EyeIcon,
   SearchIcon,
 } from "@/components/icons";
+
+const COLUMNS: RegisterColumn[] = [
+  { label: "Quotation No" },
+  { label: "Customer / Client" },
+  { label: "Project Scope & Ref" },
+  { label: "Date", compact: true },
+  { label: "Total (AED)", align: "right" },
+  { label: "Status", align: "center", compact: true },
+  { label: "Actions", align: "center", compact: true },
+];
 
 export interface QuotationTableProps {
   quotations: any[];
@@ -51,44 +62,11 @@ export const QuotationTable: React.FC<QuotationTableProps> = ({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs min-w-0 max-w-full">
-      <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-        <h4 className="font-black text-xs uppercase tracking-wider text-white">
-          Master Commercial Quotations Register
-        </h4>
-        <span className="text-[11px] font-mono text-emerald-300 font-bold">
-          {quotations.length} Proposals
-        </span>
-      </div>
-
-      <Table className="w-full text-xs text-left">
-        <TableHead className="bg-slate-50 border-b border-slate-200">
-          <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-            Quotation No
-          </TableHeaderCell>
-          <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-            Customer / Client
-          </TableHeaderCell>
-          <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-            Project Scope &amp; Ref
-          </TableHeaderCell>
-          <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-            Date
-          </TableHeaderCell>
-          <TableHeaderCell
-            align="right"
-            className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-          >
-            Total (AED)
-          </TableHeaderCell>
-          <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-            Status
-          </TableHeaderCell>
-          <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-            Actions
-          </TableHeaderCell>
-        </TableHead>
-
+    <RegisterTable
+      title="Master Commercial Quotations Register"
+      countLabel={`${quotations.length} Proposals`}
+      columns={COLUMNS}
+    >
         <TableBody className="divide-y divide-slate-100 font-medium">
           {isLoading ? (
             <TableLoading colSpan={7} rows={5} />
@@ -158,25 +136,9 @@ export const QuotationTable: React.FC<QuotationTableProps> = ({
                   AED {formatNumber(q.totalAmount)}
                 </TableCell>
                 <TableCell className="py-3 px-3 text-center">
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                      q.status === "ACCEPTED"
-                        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                        : q.status === "REJECTED"
-                          ? "bg-rose-50 text-rose-800 border-rose-200"
-                          : q.status === "SENT"
-                            ? "bg-sky-50 text-sky-800 border-sky-200"
-                            : "bg-slate-100 text-slate-700 border-slate-200"
-                    }`}
-                  >
-                    {q.status === "ACCEPTED"
-                      ? "Accepted"
-                      : q.status === "REJECTED"
-                        ? "Declined"
-                        : q.status === "SENT"
-                          ? "Sent"
-                          : "Draft"}
-                  </span>
+                  <Badge tone={getQuotationStatus(q.status).tone}>
+                    {getQuotationStatus(q.status).label}
+                  </Badge>
                 </TableCell>
                 <TableCell className="py-3 px-3 text-center">
                   <div className="flex items-center justify-center gap-1.5">
@@ -214,8 +176,7 @@ export const QuotationTable: React.FC<QuotationTableProps> = ({
             ))
           )}
         </TableBody>
-      </Table>
-    </div>
+    </RegisterTable>
   );
 };
 

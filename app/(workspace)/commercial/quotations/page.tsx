@@ -22,6 +22,7 @@ import {
   QuotationFilters,
   QuotationTable,
 } from "./components";
+import { formatNumber } from "@/lib/utils/format";
 
 export default function CommercialQuotationsPage() {
   const router = useRouter();
@@ -37,14 +38,6 @@ export default function CommercialQuotationsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [convertingId, setConvertingId] = useState<string | null>(null);
-
-  const formatNumber = (val: number | string | undefined) => {
-    const num = Number(val || 0);
-    return num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  };
 
   const dynamicQuotationMeta: Partial<QuotationMeta> = useMemo(() => {
     if (selectedQuotation) {

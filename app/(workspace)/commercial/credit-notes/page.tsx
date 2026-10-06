@@ -24,6 +24,7 @@ import {
   FormSelect,
   FormTextarea,
   FormSubmit,
+  Badge,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -123,9 +124,9 @@ export default function CreditNotesPage() {
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
               Credit Notes
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
+            <Badge tone="rose" size="md">
               Sales Cycle — Adjustments
-            </span>
+            </Badge>
           </div>
           <p className="text-xs text-slate-500">
             Issue customer credit notes, process sales returns, adjust accounts

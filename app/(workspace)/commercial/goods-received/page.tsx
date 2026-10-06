@@ -25,6 +25,7 @@ import {
   FormSelect,
   FormTextarea,
   FormSubmit,
+  Badge,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -179,9 +180,9 @@ export default function GoodsReceivedPage() {
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
               Goods Received Notes (GRN)
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-teal-50 text-teal-800 border border-teal-200">
+            <Badge tone="teal" size="md">
               Procurement Cycle — Step 2
-            </span>
+            </Badge>
           </div>
           <p className="text-xs text-slate-500">
             Verify warehouse shipments against purchase orders, record received

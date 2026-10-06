@@ -10,9 +10,8 @@ import {
 import {
   Button,
   Input,
-  Table,
-  TableHead,
-  TableHeaderCell,
+  RegisterTable,
+  RegisterColumn,
   TableBody,
   TableRow,
   TableCell,
@@ -20,14 +19,17 @@ import {
 } from "@/components/ui";
 import { Customer } from "@/lib/hooks/api-hooks";
 import { CustomerExpandedRow } from "./CustomerExpandedRow";
+import { formatNumber } from "@/lib/utils/format";
 
-function formatNumber(val: number | string | undefined): string {
-  const num = Number(val || 0);
-  return num.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
+const COLUMNS: RegisterColumn[] = [
+  { label: "Customer Code" },
+  { label: "Customer / Company" },
+  { label: "Phone / Mobile" },
+  { label: "Email / Address" },
+  { label: "Credit Limit (AED)", align: "right" },
+  { label: "Outstanding (AED)", align: "right" },
+  { label: "Actions", align: "center", hideOnPrint: true },
+];
 
 export type CustomerFilterTab = "ALL" | "OUTSTANDING" | "SETTLED" | "TRN";
 
@@ -111,48 +113,11 @@ export function CustomerTable({
           Error loading customer directory: {(error as any).message}
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-          <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-            <h4 className="font-black text-xs uppercase tracking-wider text-white">
-              Master Customer Directory &amp; Ledger
-            </h4>
-            <span className="text-[11px] font-mono text-emerald-300 font-bold">
-              {customers.length} Clients
-            </span>
-          </div>
-
-          <Table className="w-full text-xs text-left">
-            <TableHead className="bg-slate-50 border-b border-slate-200">
-              <TableRow>
-                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Customer Code
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Customer / Company
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Phone / Mobile
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                  Email / Address
-                </TableHeaderCell>
-                <TableHeaderCell
-                  align="right"
-                  className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-                >
-                  Credit Limit (AED)
-                </TableHeaderCell>
-                <TableHeaderCell
-                  align="right"
-                  className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-                >
-                  Outstanding (AED)
-                </TableHeaderCell>
-                <TableHeaderCell className="py-3 px-4 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider print:hidden">
-                  Actions
-                </TableHeaderCell>
-              </TableRow>
-            </TableHead>
+        <RegisterTable
+          title="Master Customer Directory & Ledger"
+          countLabel={`${customers.length} Clients`}
+          columns={COLUMNS}
+        >
 
             <TableBody className="divide-y divide-slate-100 font-medium">
               {isLoading ? (
@@ -308,8 +273,7 @@ export function CustomerTable({
                 })
               )}
             </TableBody>
-          </Table>
-        </div>
+          </RegisterTable>
       )}
     </div>
   );

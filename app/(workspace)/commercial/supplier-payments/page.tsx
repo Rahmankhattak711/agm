@@ -20,6 +20,7 @@ import {
   FormSelect,
   FormTextarea,
   FormSubmit,
+  Badge,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -141,9 +142,9 @@ export default function SupplierPaymentsPage() {
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
               Supplier Payments
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+            <Badge tone="emerald" size="md">
               Procurement Cycle — Step 4
-            </span>
+            </Badge>
           </div>
           <p className="text-xs text-slate-500">
             Disburse payments to vendors, settle open purchase bills, and track

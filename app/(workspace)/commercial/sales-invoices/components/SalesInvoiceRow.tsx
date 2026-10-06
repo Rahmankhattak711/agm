@@ -1,7 +1,8 @@
 "use client";
 
 import React, { Fragment } from "react";
-import { TableRow, TableCell, Button } from "@/components/ui";
+import { TableRow, TableCell, Button, Badge } from "@/components/ui";
+import { getInvoiceStatus } from "@/lib/utils/status";
 import {
   ChevronDownIcon,
   CreditCardIcon,
@@ -30,6 +31,7 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
   onPost,
   onOpenPayment,
 }) => {
+  const status = getInvoiceStatus(inv.status);
   return (
     <Fragment>
       <TableRow
@@ -82,25 +84,7 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
           {formatNumber(inv.remainingBalance)}
         </TableCell>
         <TableCell className="py-3 px-3 text-center">
-          <span
-            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-              inv.status === "PAID"
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : inv.status === "POSTED"
-                  ? "bg-sky-50 text-sky-800 border-sky-200"
-                  : inv.status === "PARTIALLY_PAID"
-                    ? "bg-amber-50 text-amber-800 border-amber-200"
-                    : "bg-slate-100 text-slate-700 border-slate-200"
-            }`}
-          >
-            {inv.status === "PAID"
-              ? "Paid"
-              : inv.status === "POSTED"
-                ? "Posted"
-                : inv.status === "PARTIALLY_PAID"
-                  ? "Partial"
-                  : "Draft"}
-          </span>
+          <Badge tone={status.tone}>{status.label}</Badge>
         </TableCell>
         <TableCell className="py-3 px-3 text-center print:hidden">
           <div className="flex items-center justify-center gap-1.5">

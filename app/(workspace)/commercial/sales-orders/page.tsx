@@ -27,6 +27,7 @@ import {
   TableCell,
   TableLoading,
   Modal,
+  Badge,
 } from "@/components/ui";
 import {
   useSalesOrders,
@@ -171,9 +172,9 @@ export default function SalesOrdersPage() {
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
               Sales Orders
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+            <Badge tone="blue" size="md">
               Sales Cycle — Step 2
-            </span>
+            </Badge>
           </div>
           <p className="text-xs text-slate-500">
             Track confirmed customer orders, delivery timelines, and convert
