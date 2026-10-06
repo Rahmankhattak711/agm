@@ -1,14 +1,9 @@
 "use client";
 
-import {
-  BuildingIcon,
-  EyeIcon,
-  FileSpreadsheetIcon,
-  FileTextIcon,
-  PlusIcon,
-  SearchIcon,
-  ShoppingCartIcon,
-} from "@/components/icons";
+import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { PlusIcon, ChevronLeftIcon } from "@/components/icons";
+import { Button } from "@/components/ui";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
 import QuotationTemplate, {
@@ -16,33 +11,25 @@ import QuotationTemplate, {
   QuotationMeta,
 } from "@/components/QuotationTemplate";
 import {
-  Button,
-  DashboardCard,
-  DashboardCardGrid,
-  Input,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeaderCell,
-  TableLoading,
-  TableRow,
-} from "@/components/ui";
-import {
   useConvertQuotationToSalesInvoice,
   useConvertQuotationToSalesOrder,
-  useCreateProject,
   useProducts,
   useQuotations,
+  useSalesInvoices,
 } from "@/lib/hooks/api-hooks";
-import { useCallback, useMemo, useState } from "react";
+import {
+  QuotationKPIs,
+  QuotationFilters,
+  QuotationTable,
+} from "./components";
 
 export default function CommercialQuotationsPage() {
+  const router = useRouter();
   const { data: products = [] } = useProducts();
   const { data: quotationsList = [], isLoading, error } = useQuotations();
+  const { data: salesInvoices = [] } = useSalesInvoices();
   const convertToOrderMutation = useConvertQuotationToSalesOrder();
   const convertToInvoiceMutation = useConvertQuotationToSalesInvoice();
-  const createProjectMutation = useCreateProject();
   const { confirm } = useConfirm();
 
   const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("LIST");
@@ -80,9 +67,13 @@ export default function CommercialQuotationsPage() {
     }
 
     let nextNum = 1;
-    if (quotationsList && quotationsList.length > 0) {
-      const nums = quotationsList.map((q: any) => {
-        const match = q.quotationNo?.match(/-(\d+)$/);
+    const allRefs: string[] = [
+      ...quotationsList.map((q: any) => q.quotationNo),
+      ...salesInvoices.map((inv: any) => inv.quotationRef).filter(Boolean),
+    ];
+    if (allRefs.length > 0) {
+      const nums = allRefs.map((ref: string) => {
+        const match = ref?.match(/-(\d+)$/);
         return match ? parseInt(match[1], 10) : 0;
       });
       nextNum = Math.max(...nums, 0) + 1;
@@ -109,7 +100,7 @@ export default function CommercialQuotationsPage() {
       preparedBy: "",
       contact: "",
     };
-  }, [selectedQuotation, quotationsList]);
+  }, [selectedQuotation, quotationsList, salesInvoices]);
 
   const dynamicQuotationItems: QuotationItem[] = useMemo(() => {
     if (selectedQuotation?.items?.length) {
@@ -133,21 +124,6 @@ export default function CommercialQuotationsPage() {
     ];
   }, [selectedQuotation]);
 
-  const handleConvert = useCallback(
-    async (qtnId: string) => {
-      try {
-        setConvertingId(qtnId);
-        await convertToOrderMutation.mutateAsync(qtnId);
-        toast.success("Quotation successfully converted to Sales Order!");
-      } catch (err: any) {
-        toast.error(`Error converting quotation: ${err.message}`);
-      } finally {
-        setConvertingId(null);
-      }
-    },
-    [convertToOrderMutation],
-  );
-
   const handleConvertToInvoice = useCallback(
     async (qtn: any) => {
       const confirmed = await confirm({
@@ -166,120 +142,94 @@ export default function CommercialQuotationsPage() {
         toast.success(
           `Quotation converted to Tax Invoice #${newInvoice?.invoiceNumber || ""} & Project created in Planning!`,
         );
+        router.push("/commercial/sales-invoices");
       } catch (err: any) {
         toast.error(`Error converting quotation: ${err.message}`);
       } finally {
         setConvertingId(null);
       }
     },
-    [confirm, convertToInvoiceMutation],
-  );
-
-  const handleConvertToProject = useCallback(
-    async (q: any) => {
-      try {
-        setConvertingId(q.id);
-        await createProjectMutation.mutateAsync({
-          quotationId: q.id,
-          name: q.project
-            ? `${q.project} (${q.quotationNo})`
-            : `Project ${q.quotationNo}`,
-          contractValue: Number(q.totalAmount || 0),
-          budget: Math.round(Number(q.totalAmount || 0) * 0.75),
-          customerId: q.customerId || undefined,
-          location: q.location || undefined,
-          status: "PLANNING",
-          priority: "MEDIUM",
-        });
-        toast.success("Project initiated from quotation successfully!");
-        window.location.href = "/operations/projects";
-      } catch (err: any) {
-        toast.error(`Error initiating project from quotation: ${err.message}`);
-      } finally {
-        setConvertingId(null);
-      }
-    },
-    [createProjectMutation],
+    [confirm, convertToInvoiceMutation, router],
   );
 
   const filteredQuotations = useMemo(() => {
-    const q = search.toLowerCase();
-    return quotationsList.filter((item) => {
+    const q = search.toLowerCase().trim();
+    return quotationsList.filter((item: any) => {
       const matchesSearch =
+        !q ||
         item.quotationNo.toLowerCase().includes(q) ||
         (item.customer && item.customer.toLowerCase().includes(q)) ||
-        (item.project && item.project.toLowerCase().includes(q));
+        (item.project && item.project.toLowerCase().includes(q)) ||
+        (item.reference && item.reference.toLowerCase().includes(q));
+
       const matchesStatus =
         statusFilter === "ALL" || item.status === statusFilter;
+
       return matchesSearch && matchesStatus;
     });
   }, [quotationsList, search, statusFilter]);
 
   const totalQuotedVolume = useMemo(
-    () => quotationsList.reduce((s, q) => s + Number(q.totalAmount || 0), 0),
+    () => quotationsList.reduce((s: number, q: any) => s + Number(q.totalAmount || 0), 0),
     [quotationsList],
   );
 
   const acceptedCount = useMemo(
-    () => quotationsList.filter((q) => q.status === "ACCEPTED").length,
+    () => quotationsList.filter((q: any) => q.status === "ACCEPTED").length,
     [quotationsList],
   );
 
   const rejectedCount = useMemo(
-    () => quotationsList.filter((q) => q.status === "REJECTED").length,
+    () => quotationsList.filter((q: any) => q.status === "REJECTED").length,
     [quotationsList],
   );
 
+  const isFiltered = search.trim().length > 0 || statusFilter !== "ALL";
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-agm-box-border pb-4 print:hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-            Commercial Quotations
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            {activeView === "EDITOR"
+              ? "Quotation Editor"
+              : "Commercial Quotations"}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Create commercial proposals, generate itemized BOQs, and convert
-            accepted quotes into sales orders.
+          <p className="text-xs text-slate-500 mt-0.5">
+            {activeView === "EDITOR"
+              ? "Draft, edit, and print official commercial proposals with custom payment milestones."
+              : "Create commercial proposals, generate itemized BOQs, and convert accepted quotes into sales invoices."}
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div className="flex items-center bg-[#f0f4f8] p-1 rounded-2xl border border-slate-200/80 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => setActiveView("LIST")}
-              className={`px-4 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
-                activeView === "LIST"
-                  ? "bg-white text-agm-green shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
+        <div className="flex items-center gap-2">
+          {activeView === "EDITOR" ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedQuotation(null);
+                setActiveView("LIST");
+              }}
+              icon={<ChevronLeftIcon size={14} />}
+              className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border-slate-200 shadow-xs cursor-pointer"
             >
-              Saved ({quotationsList.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveView("EDITOR")}
-              className={`px-4 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
-                activeView === "EDITOR"
-                  ? "bg-white text-agm-green shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
+              Back to Proposals
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setSelectedQuotation(null);
+                setActiveView("EDITOR");
+              }}
+              icon={<PlusIcon size={14} strokeWidth={2.5} />}
+              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
             >
-              Editor
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedQuotation(null);
-              setActiveView("EDITOR");
-            }}
-            className="text-xs bg-agm-green hover:bg-agm-green-2 active:bg-agm-green-dark text-white flex items-center gap-1.5 shadow-xs cursor-pointer font-semibold rounded-full px-4.5 py-2 whitespace-nowrap shrink-0 transition-all"
-          >
-            <PlusIcon size={15} />
-            <span>New Quotation</span>
-          </button>
+              New Quotation
+            </Button>
+          )}
         </div>
       </div>
 
@@ -293,236 +243,40 @@ export default function CommercialQuotationsPage() {
         </div>
       ) : (
         <div className="space-y-6 print:hidden">
-          <DashboardCardGrid cols={4} className="print:hidden">
-            <DashboardCard
-              title="Total Proposal Pipeline"
-              value={`AED ${formatNumber(totalQuotedVolume)}`}
-              subtitle="Cumulative quotation value"
-              variant="default"
-            />
-            <DashboardCard
-              title="Total Proposals Issued"
-              value={quotationsList.length}
-              subtitle={`${quotationsList.length} commercial proposals`}
-              variant="default"
-            />
-            <DashboardCard
-              title="Accepted Deals"
-              value={acceptedCount}
-              subtitle="Converted proposals"
-              variant="success"
-            />
-            <DashboardCard
-              title="Rejected Deals"
-              value={rejectedCount}
-              subtitle="Declined proposals"
-              variant="warning"
-            />
-          </DashboardCardGrid>
+          <QuotationKPIs
+            totalQuotedVolume={totalQuotedVolume}
+            totalCount={quotationsList.length}
+            acceptedCount={acceptedCount}
+            rejectedCount={rejectedCount}
+            formatNumber={formatNumber}
+          />
 
           <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-            <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
-                  {[
-                    { id: "ALL", label: "All Quotations" },
-                    { id: "ACCEPTED", label: "Accepted Deals" },
-                    { id: "REJECTED", label: "Rejected Deals" },
-                    { id: "DRAFT", label: "Drafts" },
-                  ].map((tab) => {
-                    const isActive = statusFilter === tab.id;
-                    return (
-                      <Button
-                        key={tab.id}
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setStatusFilter(tab.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                          isActive
-                            ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                            : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                        }`}
-                      >
-                        {tab.label}
-                      </Button>
-                    );
-                  })}
-                </div>
+            <QuotationFilters
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              search={search}
+              onSearchChange={setSearch}
+              totalCount={filteredQuotations.length}
+            />
 
-                <span className="text-[11px] font-bold text-slate-500 font-mono">
-                  {filteredQuotations.length} Proposals Listed
-                </span>
-              </div>
-
-              <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-                <Input
-                  leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-                  placeholder="Search quotation number, customer, project..."
-                  containerClassName="w-full sm:w-96"
-                  className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {error ? (
-              <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
-                Error loading quotations: {(error as any).message}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-                <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-                  <h4 className="font-black text-xs uppercase tracking-wider text-white">
-                    Master Commercial Quotations Register
-                  </h4>
-                  <span className="text-[11px] font-mono text-emerald-300 font-bold">
-                    {filteredQuotations.length} Proposals
-                  </span>
-                </div>
-
-                <Table className="w-full text-xs text-left">
-                  <TableHead className="bg-slate-50 border-b border-slate-200">
-                    <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Quotation No
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Customer / Client
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Project Scope &amp; Ref
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Date
-                    </TableHeaderCell>
-                    <TableHeaderCell
-                      align="right"
-                      className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
-                    >
-                      Total (AED)
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Status
-                    </TableHeaderCell>
-                    <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
-                      Actions
-                    </TableHeaderCell>
-                  </TableHead>
-
-                  <TableBody className="divide-y divide-slate-100 font-medium">
-                    {isLoading ? (
-                      <TableLoading colSpan={7} rows={5} />
-                    ) : filteredQuotations.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={7}
-                          className="py-12 text-center text-slate-400 italic"
-                        >
-                          No saved quotations found. Switch to &quot;Quotation
-                          Editor&quot; tab to build a new proposal.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredQuotations.map((q) => (
-                        <TableRow
-                          key={q.id}
-                          className="hover:bg-slate-50/60 text-slate-700 transition"
-                        >
-                          <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
-                            <div className="flex items-center gap-1.5">
-                              <FileSpreadsheetIcon
-                                size={13}
-                                className="text-teal-700 shrink-0"
-                              />
-                              <span>{q.quotationNo}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-3 px-4 font-bold text-slate-900">
-                            <div className="flex flex-col">
-                              <span>{q.customer || "—"}</span>
-                              {q.customerRel?.customerCode && (
-                                <span className="text-[10px] text-emerald-700 font-mono font-medium">
-                                  [{q.customerRel.customerCode}]
-                                </span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-3 px-4 text-slate-600 max-w-xs truncate">
-                            {q.project || "—"}
-                          </TableCell>
-                          <TableCell className="py-3 px-3 font-mono text-slate-600 text-xs">
-                            {q.date}
-                          </TableCell>
-                          <TableCell
-                            align="right"
-                            className="py-3 px-4 text-right font-mono font-black text-slate-900"
-                          >
-                            AED {formatNumber(q.totalAmount)}
-                          </TableCell>
-                          <TableCell className="py-3 px-3 text-center">
-                            <span
-                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                                q.status === "ACCEPTED"
-                                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                  : q.status === "REJECTED"
-                                    ? "bg-rose-50 text-rose-800 border-rose-200"
-                                    : q.status === "SENT"
-                                      ? "bg-sky-50 text-sky-800 border-sky-200"
-                                      : "bg-slate-100 text-slate-700 border-slate-200"
-                              }`}
-                            >
-                              {q.status === "ACCEPTED"
-                                ? "Accepted"
-                                : q.status === "REJECTED"
-                                  ? "Rejected"
-                                  : q.status === "SENT"
-                                    ? "Sent"
-                                    : "Draft"}
-                            </span>
-                          </TableCell>
-                          <TableCell className="py-3 px-3 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedQuotation(q);
-                                  setActiveView("EDITOR");
-                                }}
-                                className="p-1.5 text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
-                                title="Edit / View in Editor"
-                              >
-                                <EyeIcon size={13} />
-                              </Button>
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                onClick={() => handleConvertToInvoice(q)}
-                                disabled={convertingId === q.id}
-                                icon={
-                                  <FileTextIcon
-                                    size={12}
-                                    className="text-white"
-                                  />
-                                }
-                                className="text-[11px] font-bold bg-agm-green hover:bg-agm-green-2 text-white shadow-2xs cursor-pointer"
-                                title="Convert directly to Tax Invoice & initiate Project in Planning"
-                              >
-                                {convertingId === q.id
-                                  ? "Converting..."
-                                  : "Convert to Invoice"}
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
+            <QuotationTable
+              quotations={filteredQuotations}
+              isLoading={isLoading}
+              error={error}
+              isFiltered={isFiltered}
+              convertingId={convertingId}
+              onClearFilters={() => {
+                setSearch("");
+                setStatusFilter("ALL");
+              }}
+              onOpenEditor={(q) => {
+                setSelectedQuotation(q || null);
+                setActiveView("EDITOR");
+              }}
+              onConvertToInvoice={handleConvertToInvoice}
+              formatNumber={formatNumber}
+            />
           </div>
         </div>
       )}

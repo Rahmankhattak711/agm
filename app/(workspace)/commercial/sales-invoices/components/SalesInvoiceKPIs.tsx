@@ -20,7 +20,7 @@ export const SalesInvoiceKPIs: React.FC<SalesInvoiceKPIsProps> = ({
   return (
     <DashboardCardGrid cols={4}>
       <DashboardCard
-        title="Total Invoiced (Incl. VAT)"
+        title="Total Invoiced"
         value={`AED ${formatNumber(totalBilled)}`}
         subtitle="Gross sales billings"
         variant="default"
