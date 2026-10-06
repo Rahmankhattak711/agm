@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { round2 } from "@/lib/utils/math";
 
 export async function POST(
   request: Request,
@@ -59,7 +60,6 @@ export async function POST(
       };
     });
 
-    const round2 = (n: number) => Math.round(n * 100) / 100;
     const itemsSubtotal = formattedItems.reduce(
       (sum, i) => sum + i.totalAmount,
       0,
