@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { round2 } from "@/lib/utils/math";
 
 export async function GET(
   request: Request,
@@ -40,7 +41,6 @@ export async function GET(
       );
     }
 
-    const round2 = (n: number) => Math.round(n * 100) / 100;
     const itemsSum = invoice.items?.reduce(
       (sum, item) => sum + Number(item.totalAmount || 0),
       0,

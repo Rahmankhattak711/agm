@@ -1,6 +1,11 @@
 import prisma from "@/lib/prisma";
 import { getAuthUser, unauthorized } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
+import { sumBy } from "@/lib/utils/math";
+import {
+  INVOICE_MATCH_SELECT,
+  resolveProjectValues,
+} from "@/lib/project-invoice-match";
 
 export async function GET(request: Request) {
   try {
@@ -85,75 +90,15 @@ export async function GET(request: Request) {
 
     const salesInvoices = await prisma.salesInvoice.findMany({
       orderBy: { createdAt: "desc" },
-      select: {
-        invoiceNumber: true,
-        customerId: true,
-        customerName: true,
-        quotationRef: true,
-        projectScope: true,
-        subtotal: true,
-        totalAmount: true,
-        items: {
-          select: {
-            totalAmount: true,
-          },
-        },
-      },
+      select: INVOICE_MATCH_SELECT,
     });
 
-    const cleanProjName = (name: string) =>
-      name.replace(/\s*\((AGM-QTN-[^)]+|QTN-[^)]+)\)\s*/i, "").trim().toLowerCase();
-
     const mappedProjects = projects.map((p) => {
-      const sumCosts = p.costs?.reduce((sum, c) => sum + Number(c.amount || 0), 0) ?? 0;
-      const actualCost = p.costs && p.costs.length > 0 ? sumCosts : Number(p.actualCost || 0);
+      const sumCosts = sumBy(p.costs, (c) => c.amount);
+      const actualCost =
+        p.costs && p.costs.length > 0 ? sumCosts : Number(p.actualCost || 0);
 
-      const pClean = cleanProjName(p.name);
-      const projNum = p.projectCode.match(/\d+$/)?.[0];
-
-      let matchingInv = salesInvoices.find((inv) => {
-        if (p.description && p.description.includes(inv.invoiceNumber)) return true;
-        const invNum = inv.invoiceNumber.match(/\d+$/)?.[0];
-        if (projNum && invNum && projNum === invNum) return true;
-        return false;
-      });
-
-      if (!matchingInv && pClean) {
-        matchingInv = salesInvoices.find((inv) => {
-          if (!inv.projectScope) return false;
-          const invScope = inv.projectScope.trim().toLowerCase();
-          return invScope === pClean;
-        });
-      }
-
-      if (!matchingInv && pClean) {
-        matchingInv = salesInvoices.find((inv) => {
-          if (!inv.projectScope) return false;
-          const invScope = inv.projectScope.trim().toLowerCase();
-          const scopeMatch = invScope.includes(pClean) || pClean.includes(invScope);
-          const custMatch =
-            !p.customer?.name ||
-            (inv.customerName &&
-              inv.customerName.toLowerCase() === p.customer.name.toLowerCase());
-          return scopeMatch && custMatch;
-        });
-      }
-
-      if (!matchingInv && p.quotation?.quotationNo) {
-        matchingInv = salesInvoices.find(
-          (inv) =>
-            inv.quotationRef?.toLowerCase() ===
-            p.quotation?.quotationNo?.toLowerCase(),
-        );
-      }
-
-      const itemsSum = matchingInv?.items?.reduce(
-        (sum, item) => sum + Number(item.totalAmount || 0),
-        0,
-      );
-      const matchedInvAmount = itemsSum || (matchingInv ? Number(matchingInv.subtotal || matchingInv.totalAmount) : 0);
-      const contractValue = matchedInvAmount || Number(p.contractValue || p.budget || p.quotation?.totalAmount || 0);
-      const budget = matchedInvAmount || Number(p.budget || contractValue || 0);
+      const { contractValue, budget } = resolveProjectValues(p, salesInvoices);
 
       return {
         ...p,

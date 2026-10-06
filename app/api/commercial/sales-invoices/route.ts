@@ -7,6 +7,7 @@ import {
 import prisma from "@/lib/prisma";
 import { postSalesInvoiceJournalEntry } from "@/lib/commercial-accounting";
 import { NextResponse } from "next/server";
+import { round2 } from "@/lib/utils/math";
 
 export async function GET(request: Request) {
   try {
@@ -62,8 +63,6 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: "desc" },
     });
-
-    const round2 = (n: number) => Math.round(n * 100) / 100;
 
     const mappedInvoices = invoices.map((inv) => {
       const itemsSum = inv.items?.reduce(

@@ -1,10 +1,18 @@
-export function formatAed(val: number | string | undefined | null): string {
+export function formatNumber(
+  val: number | string | undefined | null,
+): string {
   const num = Number(val || 0);
-  return `AED ${num.toLocaleString(undefined, {
+  return num.toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  });
 }
+
+export function formatAed(val: number | string | undefined | null): string {
+  return `AED ${formatNumber(val)}`;
+}
+
+export const formatCurrency = formatAed;
 
 export function formatDate(dateStr: string | undefined | null): string {
   if (!dateStr) return "—";

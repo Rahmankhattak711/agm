@@ -38,6 +38,7 @@ import {
   useCustomers,
   CreditNote,
 } from "@/lib/hooks/commercial-hooks";
+import { formatNumber } from "@/lib/utils/format";
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
   POSTED: "bg-emerald-50 text-emerald-800 border-emerald-200",
@@ -55,14 +56,6 @@ const STATUS_FILTERS = [
   { id: "DRAFT", label: "Drafts" },
   { id: "CANCELLED", label: "Cancelled" },
 ] as const;
-
-function formatNumber(val: number | string | undefined): string {
-  const num = Number(val || 0);
-  return num.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
 
 function formatAed(amount: number | string | undefined): string {
   return `AED ${formatNumber(amount)}`;
