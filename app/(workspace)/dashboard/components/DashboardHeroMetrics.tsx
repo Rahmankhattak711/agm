@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { formatCurrency } from "@/lib/utils/format";
 
 interface DashboardHeroMetricsProps {
   salesOrderValue: number;
@@ -11,13 +12,6 @@ interface DashboardHeroMetricsProps {
   netIncome: number;
   revenue: number;
 }
-
-const formatCurrency = (val: number) => {
-  return `AED ${val.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-};
 
 export default function DashboardHeroMetrics({
   salesOrderValue,

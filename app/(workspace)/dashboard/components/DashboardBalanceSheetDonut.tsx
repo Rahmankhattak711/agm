@@ -9,6 +9,7 @@ import {
   type ChartOptions,
 } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
+import { formatCurrency } from "@/lib/utils/format";
 
 ChartJS.register(ArcElement, Tooltip);
 
@@ -17,13 +18,6 @@ interface DashboardBalanceSheetDonutProps {
   totalLiabilities: number;
   totalEquity: number;
 }
-
-const formatCurrency = (val: number) => {
-  return `AED ${val.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-};
 
 export default function DashboardBalanceSheetDonut({
   totalAssets,
