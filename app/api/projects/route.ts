@@ -59,6 +59,8 @@ export async function GET(request: Request) {
             id: true,
             quotationNo: true,
             customer: true,
+            vatPct: true,
+            vatAmount: true,
             totalAmount: true,
             status: true,
           },
@@ -98,13 +100,17 @@ export async function GET(request: Request) {
       const actualCost =
         p.costs && p.costs.length > 0 ? sumCosts : Number(p.actualCost || 0);
 
-      const { contractValue, budget } = resolveProjectValues(p, salesInvoices);
+      const { contractValue, budget, vatRate, vatAmount, invoiceNumber } =
+        resolveProjectValues(p, salesInvoices);
 
       return {
         ...p,
         actualCost,
         contractValue,
         budget,
+        vatRate,
+        vatAmount,
+        invoiceNumber,
       };
     });
 

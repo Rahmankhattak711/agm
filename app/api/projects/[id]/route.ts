@@ -74,16 +74,17 @@ export async function GET(
         ? sumCosts
         : Number(project.actualCost || 0);
 
-    const { contractValue, budget } = resolveProjectValues(
-      project,
-      salesInvoices,
-    );
+    const { contractValue, budget, vatRate, vatAmount, invoiceNumber } =
+      resolveProjectValues(project, salesInvoices);
 
     return NextResponse.json({
       ...project,
       actualCost,
       contractValue,
       budget,
+      vatRate,
+      vatAmount,
+      invoiceNumber,
     });
   } catch (error: any) {
     console.error("Error fetching project:", error);

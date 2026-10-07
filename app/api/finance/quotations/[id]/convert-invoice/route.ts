@@ -1,12 +1,13 @@
 import {
-  getAuthUser,
-  unauthorized,
   forbidden,
+  getAuthUser,
   hasRole,
+  unauthorized,
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
 import { round2 } from "@/lib/utils/math";
+import { getNextInvoiceNumber, getNextProjectCode } from "@/lib/utils/sequence";
+import { NextResponse } from "next/server";
 
 export async function POST(
   request: Request,
@@ -40,9 +41,6 @@ export async function POST(
       );
     }
 
-    const count = await prisma.salesInvoice.count();
-    const invoiceNumber = `INV-2026-${(count + 1).toString().padStart(4, "0")}`;
-
     const formattedItems = quotation.items.map((item) => {
       const qty = parseFloat(item.quantity?.toString() || "1") || 1;
       const rate = parseFloat(item.unitRate?.toString() || "0") || 0;
@@ -65,16 +63,46 @@ export async function POST(
       0,
     );
     const subtotal = round2(
-      itemsSubtotal ||
-        parseFloat(quotation.subtotal?.toString() || "0") ||
-        0,
+      itemsSubtotal || parseFloat(quotation.subtotal?.toString() || "0") || 0,
     );
     const discount = round2(
       parseFloat(quotation.discount?.toString() || "0") || 0,
     );
-    const vatRate = parseFloat(quotation.vatPct?.toString() || "5.00") || 5.0;
-    const vatAmount = round2(((subtotal - discount) * vatRate) / 100);
-    const totalAmount = round2(subtotal - discount + vatAmount);
+    const rawVatAmount =
+      quotation.vatAmount !== null && quotation.vatAmount !== undefined
+        ? parseFloat(quotation.vatAmount.toString())
+        : 0;
+    const rawVatPct =
+      quotation.vatPct !== null && quotation.vatPct !== undefined
+        ? parseFloat(quotation.vatPct.toString())
+        : 0;
+    const rawTotalAmount =
+      quotation.totalAmount !== null && quotation.totalAmount !== undefined
+        ? parseFloat(quotation.totalAmount.toString())
+        : 0;
+
+    const net = Math.max(0, subtotal - discount);
+
+    let vatRate = 0;
+    let vatAmount = 0;
+
+    if (rawVatAmount > 0) {
+      vatAmount = round2(rawVatAmount);
+      vatRate =
+        rawVatPct > 0
+          ? rawVatPct
+          : net > 0
+            ? round2((vatAmount / net) * 100)
+            : 0;
+    } else if (rawVatPct > 0 && rawTotalAmount > net) {
+      vatRate = rawVatPct;
+      vatAmount = round2((net * vatRate) / 100);
+    } else {
+      vatRate = 0;
+      vatAmount = 0;
+    }
+
+    const totalAmount = round2(net + vatAmount);
 
     let parsedTermsList: string[] = [];
     let parsedPaymentPlans: string[] = [];
@@ -135,6 +163,8 @@ export async function POST(
     });
 
     const salesInvoice = await prisma.$transaction(async (tx) => {
+      const invoiceNumber = await getNextInvoiceNumber(tx);
+
       const inv = await tx.salesInvoice.create({
         data: {
           invoiceNumber,
@@ -174,9 +204,7 @@ export async function POST(
       });
 
       if (!existingProject) {
-        const projectCount = await tx.project.count();
-        const year = new Date().getFullYear();
-        const projectCode = `PRJ-${year}-${String(projectCount + 1).padStart(4, "0")}`;
+        const projectCode = await getNextProjectCode(tx);
         const projectName = quotation.project
           ? `${quotation.project} (${quotation.quotationNo})`
           : `Project ${quotation.quotationNo}`;
@@ -216,7 +244,7 @@ export async function POST(
 
     return NextResponse.json(salesInvoice, { status: 201 });
   } catch (error: any) {
-    console.error("POST convert quotation to sales invoice error:", error); 
+    console.error("POST convert quotation to sales invoice error:", error);
     return NextResponse.json(
       {
         error: error.message || "Failed to convert quotation to sales invoice",
