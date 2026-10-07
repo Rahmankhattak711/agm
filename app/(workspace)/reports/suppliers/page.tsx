@@ -26,6 +26,8 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import { AgingBucketCard, AgingBucket } from "../components";
@@ -363,46 +365,25 @@ export default function SupplierReportsPage() {
   return (
     <>
       <div className="space-y-6 print:hidden pb-8">
-        <div className="space-y-3 pb-3 border-b border-slate-200">
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-            <button
-              type="button"
-              onClick={() => router.push("/finance/reports")}
-              className="hover:text-emerald-700 transition-colors flex items-center gap-1 cursor-pointer font-semibold"
+        <PageHeader
+          backButton={{
+            label: "Reports Hub",
+            onClick: () => router.push("/finance/reports"),
+          }}
+          title="Supplier & Vendor Payable Reports"
+          description="Vendor accounts payable ledgers, procurement history, payment terms, and outstanding liability balances."
+          actions={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 shadow-2xs cursor-pointer"
+              icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
             >
-              <ChevronLeftIcon size={12} />
-              <span>Reports Hub</span>
-            </button>
-            <span className="text-slate-300">/</span>
-            <span className="text-slate-800 font-bold">
-              Suppliers &amp; Payables
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-                Supplier &amp; Vendor Payable Reports
-              </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Vendor accounts payable ledgers, procurement history, payment
-                terms, and outstanding liability balances.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.print()}
-                className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 shadow-2xs cursor-pointer"
-                icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
-              >
-                Print Statement
-              </Button>
-            </div>
-          </div>
-        </div>
+              Print Statement
+            </Button>
+          }
+        />
 
         <ReportKpiGrid cols={4}>
           <ReportKpiCard
@@ -454,26 +435,18 @@ export default function SupplierReportsPage() {
         />
 
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-            <div className="w-full sm:w-80">
-              <Input
-                placeholder="Search supplier, code, contact, TRN..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                leftIcon={
-                  <SearchIcon
-                    className="w-4 h-4 text-slate-400"
-                    strokeWidth={2}
-                  />
-                }
-              />
-            </div>
-
-            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <FilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search supplier, code, contact, TRN..."
+            totalCount={filteredSuppliers.length}
+            countLabel="Suppliers"
+            rightAction={
               <Select
                 value={balanceFilter}
                 onChange={(e) => setBalanceFilter(e.target.value)}
-                containerClassName="w-full sm:w-48"
+                containerClassName="w-48"
+                className="bg-white text-xs py-1.5"
               >
                 <option value="ALL">All Payable Statuses</option>
                 <option value="HAS_BALANCE">Has Outstanding A/P</option>
@@ -482,8 +455,8 @@ export default function SupplierReportsPage() {
                 </option>
                 <option value="SETTLED">Fully Settled (0.00 AED)</option>
               </Select>
-            </div>
-          </div>
+            }
+          />
 
           {error ? (
             <div className="py-8 text-center text-xs text-red-500">
