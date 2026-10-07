@@ -17,6 +17,7 @@ import {
   Input,
   Select,
   Textarea,
+  Badge,
   Table,
   TableHead,
   TableHeaderCell,
@@ -30,27 +31,16 @@ import {
   EmptyState,
   PageHeader,
   FilterBar,
+  DatePicker,
+  DateRangePicker,
 } from "@/components/ui";
 import {
   PlusIcon,
-  SearchIcon,
   ReceiptIcon,
-  FileTextIcon,
   CreditCardIcon,
-  BuildingIcon,
-  CheckCircle2Icon,
-  ClockIcon,
   TrashIcon,
-  EyeIcon,
-  DollarSignIcon,
-  TrendingUpIcon,
-  TagIcon,
-  ScaleIcon,
-  CalendarIcon,
-  AlertTriangleIcon,
-  CloseIcon,
+  EditIcon,
   FileSpreadsheetIcon,
-  PercentIcon,
 } from "@/components/icons";
 import { formatNumber, formatCurrency } from "@/lib/utils/format";
 
@@ -74,7 +64,10 @@ export default function ExpensesPage() {
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [selectedMethod, setSelectedMethod] = useState("ALL");
+  const [selectedStartDate, setSelectedStartDate] = useState("");
+  const [selectedEndDate, setSelectedEndDate] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   const [formCategory, setFormCategory] = useState(EXPENSE_CATEGORIES[0]);
   const [formPayee, setFormPayee] = useState("");
@@ -84,6 +77,9 @@ export default function ExpensesPage() {
   const [formPaymentMethod, setFormPaymentMethod] = useState<
     "BANK_TRANSFER" | "CREDIT_CARD" | "CASH" | "CHEQUE"
   >("BANK_TRANSFER");
+  const [formStatus, setFormStatus] = useState<
+    "DRAFT" | "APPROVED" | "PAID" | "CANCELLED"
+  >("PAID");
   const [formReference, setFormReference] = useState("");
   const [formExpenseAccountId, setFormExpenseAccountId] = useState("");
   const [formPaymentAccountId, setFormPaymentAccountId] = useState("");
@@ -97,6 +93,8 @@ export default function ExpensesPage() {
     category: selectedCategory !== "ALL" ? selectedCategory : undefined,
     status: selectedStatus !== "ALL" ? selectedStatus : undefined,
     paymentMethod: selectedMethod !== "ALL" ? selectedMethod : undefined,
+    startDate: selectedStartDate || undefined,
+    endDate: selectedEndDate || undefined,
     search: search || undefined,
   });
 
@@ -130,12 +128,14 @@ export default function ExpensesPage() {
   }, [formAmount, calculatedTax]);
 
   const handleOpenCreate = () => {
+    setEditingExpense(null);
     setFormCategory(EXPENSE_CATEGORIES[0]);
     setFormPayee("");
     setFormDescription("");
     setFormAmount("");
     setFormTaxRate("5");
     setFormPaymentMethod("BANK_TRANSFER");
+    setFormStatus("PAID");
     setFormReference("");
     setFormDate(new Date().toISOString().slice(0, 10));
     setFormCreateJournal(true);
@@ -143,12 +143,52 @@ export default function ExpensesPage() {
 
     if (expenseAccounts.length > 0) {
       setFormExpenseAccountId(expenseAccounts[0].id);
+    } else {
+      setFormExpenseAccountId("");
     }
     if (paymentAccounts.length > 0) {
       setFormPaymentAccountId(paymentAccounts[0].id);
+    } else {
+      setFormPaymentAccountId("");
     }
 
     setIsCreateOpen(true);
+  };
+
+  const handleOpenEdit = (exp: Expense) => {
+    setEditingExpense(exp);
+    setFormCategory(exp.category || EXPENSE_CATEGORIES[0]);
+    setFormPayee(exp.payee || "");
+    setFormDescription(exp.description || "");
+    setFormAmount(String(exp.amount ?? ""));
+    const amt = Number(exp.amount) || 0;
+    const tax = Number(exp.taxAmount) || 0;
+    if (amt > 0 && tax > 0) {
+      const calculatedRate = Math.round((tax / amt) * 100);
+      setFormTaxRate(calculatedRate === 5 ? "5" : "0");
+    } else {
+      setFormTaxRate("0");
+    }
+    setFormPaymentMethod(exp.paymentMethod || "BANK_TRANSFER");
+    setFormStatus(exp.status || "PAID");
+    setFormReference(exp.reference || "");
+    const rawDate = exp.expenseDate
+      ? typeof exp.expenseDate === "string"
+        ? exp.expenseDate.slice(0, 10)
+        : new Date(exp.expenseDate).toISOString().slice(0, 10)
+      : new Date().toISOString().slice(0, 10);
+    setFormDate(rawDate);
+    setFormExpenseAccountId(exp.expenseAccountId || "");
+    setFormPaymentAccountId(exp.paymentAccountId || "");
+    setFormCreateJournal(false);
+    setFormError("");
+    setIsCreateOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsCreateOpen(false);
+    setEditingExpense(null);
+    setFormError("");
   };
 
   const handleSaveExpense = async (e: React.FormEvent) => {
@@ -162,26 +202,55 @@ export default function ExpensesPage() {
     }
 
     try {
-      await createMutation.mutateAsync({
-        expenseDate: formDate,
-        category: formCategory,
-        payee: formPayee || undefined,
-        description: formDescription || undefined,
-        amount: numAmount,
-        taxAmount: calculatedTax,
-        paymentMethod: formPaymentMethod,
-        reference: formReference || undefined,
-        status: "PAID",
-        expenseAccountId: formExpenseAccountId || undefined,
-        paymentAccountId: formPaymentAccountId || undefined,
-        createJournal: formCreateJournal,
-      });
+      if (editingExpense) {
+        await updateMutation.mutateAsync({
+          id: editingExpense.id,
+          expenseDate: formDate,
+          category: formCategory,
+          payee: formPayee || undefined,
+          description: formDescription || undefined,
+          amount: numAmount,
+          taxAmount: calculatedTax,
+          paymentMethod: formPaymentMethod,
+          status: formStatus,
+          reference: formReference || undefined,
+          expenseAccountId: formExpenseAccountId || undefined,
+          paymentAccountId: formPaymentAccountId || undefined,
+        });
+        toast.success("Expense updated successfully!");
+      } else {
+        await createMutation.mutateAsync({
+          expenseDate: formDate,
+          category: formCategory,
+          payee: formPayee || undefined,
+          description: formDescription || undefined,
+          amount: numAmount,
+          taxAmount: calculatedTax,
+          paymentMethod: formPaymentMethod,
+          reference: formReference || undefined,
+          status: "PAID",
+          expenseAccountId: formExpenseAccountId || undefined,
+          paymentAccountId: formPaymentAccountId || undefined,
+          createJournal: formCreateJournal,
+        });
+        toast.success("Expense recorded successfully!");
+      }
 
       setIsCreateOpen(false);
-      toast.success("Expense recorded successfully!");
+      setEditingExpense(null);
     } catch (err: any) {
-      setFormError(err.message || "Failed to record expense");
-      toast.error(err.message || "Failed to record expense");
+      setFormError(
+        err.message ||
+          (editingExpense
+            ? "Failed to update expense"
+            : "Failed to record expense"),
+      );
+      toast.error(
+        err.message ||
+          (editingExpense
+            ? "Failed to update expense"
+            : "Failed to record expense"),
+      );
     }
   };
 
@@ -226,7 +295,6 @@ export default function ExpensesPage() {
             size="sm"
             onClick={handleOpenCreate}
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
             Record Expense
           </Button>
@@ -257,9 +325,9 @@ export default function ExpensesPage() {
           value="100% Balanced"
           subtitle="Real-time Journal balancing"
           badge={
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200">
+            <Badge tone="teal" size="xs">
               Auto Sync
-            </span>
+            </Badge>
           }
           variant="default"
         />
@@ -282,9 +350,19 @@ export default function ExpensesPage() {
           countLabel="Records Found"
           rightAction={
             <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+              <DateRangePicker
+                startDate={selectedStartDate}
+                endDate={selectedEndDate}
+                placeholder="Filter Date"
+                align="right"
+                onChange={({ startDate, endDate }) => {
+                  setSelectedStartDate(startDate);
+                  setSelectedEndDate(endDate);
+                }}
+              />
+
               <Select
-                containerClassName="w-full sm:w-56"
-                className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
+                containerClassName="w-full sm:w-48"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
@@ -297,12 +375,11 @@ export default function ExpensesPage() {
               </Select>
 
               <Select
-                containerClassName="w-full sm:w-44"
-                className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
+                containerClassName="w-full sm:w-40"
                 value={selectedMethod}
                 onChange={(e) => setSelectedMethod(e.target.value)}
               >
-                <option value="ALL">All Payment Methods</option>
+                <option value="ALL">All Methods</option>
                 <option value="BANK_TRANSFER">Bank Transfer</option>
                 <option value="CREDIT_CARD">Credit Card</option>
                 <option value="CASH">Cash</option>
@@ -312,45 +389,35 @@ export default function ExpensesPage() {
           }
         />
 
-        <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-          <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-            <h4 className="font-black text-xs uppercase tracking-wider text-white">
-              Operating Expenses &amp; Claims Register
-            </h4>
-            <span className="text-[11px] font-mono text-emerald-300 font-bold">
-              {expenses.length} Records
-            </span>
-          </div>
-
-          <Table className="w-full text-xs text-left">
-            <TableHead className="bg-slate-50/95 border-b border-slate-200">
-              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
-                Expense No
-              </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
-                Date
-              </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
-                Category &amp; Payee
-              </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
-                Description &amp; Ref
-              </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
-                Payment Method
-              </TableHeaderCell>
-              <TableHeaderCell
-                align="right"
-                className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10px] tracking-wider"
-              >
-                Total (AED)
-              </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
-                Status
-              </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10px] tracking-wider">
-                Actions
-              </TableHeaderCell>
+        <div className="rounded-xl border border-slate-200/80 bg-white shadow-2xs overflow-hidden">
+          <Table>
+            <TableHead className="bg-slate-50/80 border-b border-slate-200">
+              <TableRow>
+                <TableHeaderCell className="min-w-[150px]">
+                  Expense No
+                </TableHeaderCell>
+                <TableHeaderCell className="min-w-[100px]">
+                  Date
+                </TableHeaderCell>
+                <TableHeaderCell className="min-w-[180px]">
+                  Category & Payee
+                </TableHeaderCell>
+                <TableHeaderCell className="min-w-[180px]">
+                  Description & Ref
+                </TableHeaderCell>
+                <TableHeaderCell className="min-w-[160px]">
+                  Payment Method
+                </TableHeaderCell>
+                <TableHeaderCell align="right" className="min-w-[130px]">
+                  Total (AED)
+                </TableHeaderCell>
+                <TableHeaderCell align="center" className="min-w-[90px]">
+                  Status
+                </TableHeaderCell>
+                <TableHeaderCell align="right" className="min-w-[80px]">
+                  Actions
+                </TableHeaderCell>
+              </TableRow>
             </TableHead>
 
             <TableBody className="divide-y divide-slate-100 font-medium">
@@ -368,7 +435,9 @@ export default function ExpensesPage() {
                         search.trim() !== "" ||
                         selectedCategory !== "ALL" ||
                         selectedStatus !== "ALL" ||
-                        selectedMethod !== "ALL"
+                        selectedMethod !== "ALL" ||
+                        selectedStartDate !== "" ||
+                        selectedEndDate !== ""
                           ? "No expenses matched your search criteria."
                           : "No expenses in database. Click 'Record Expense' to create one."
                       }
@@ -376,7 +445,9 @@ export default function ExpensesPage() {
                         search.trim() !== "" ||
                         selectedCategory !== "ALL" ||
                         selectedStatus !== "ALL" ||
-                        selectedMethod !== "ALL"
+                        selectedMethod !== "ALL" ||
+                        selectedStartDate !== "" ||
+                        selectedEndDate !== ""
                           ? "Reset Filters"
                           : "Record Expense"
                       }
@@ -384,14 +455,18 @@ export default function ExpensesPage() {
                         search.trim() !== "" ||
                         selectedCategory !== "ALL" ||
                         selectedStatus !== "ALL" ||
-                        selectedMethod !== "ALL"
+                        selectedMethod !== "ALL" ||
+                        selectedStartDate !== "" ||
+                        selectedEndDate !== ""
                           ? () => {
                               setSearch("");
                               setSelectedCategory("ALL");
                               setSelectedStatus("ALL");
                               setSelectedMethod("ALL");
+                              setSelectedStartDate("");
+                              setSelectedEndDate("");
                             }
-                          : () => setIsCreateOpen(true)
+                          : handleOpenCreate
                       }
                     />
                   </TableCell>
@@ -400,83 +475,110 @@ export default function ExpensesPage() {
                 expenses.map((exp) => (
                   <TableRow
                     key={exp.id}
-                    className="hover:bg-slate-50/60 transition-colors"
+                    className="hover:bg-slate-50/70 transition-colors"
                   >
-                    <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
-                      <span className="flex items-center gap-1.5">
-                        <FileSpreadsheetIcon
-                          size={13}
-                          className="text-emerald-700 shrink-0"
-                        />
-                        {exp.expenseNumber}
-                      </span>
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span className="p-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 shrink-0">
+                          <FileSpreadsheetIcon size={13} />
+                        </span>
+                        <span className="font-mono font-bold text-xs text-slate-900 tracking-tight">
+                          {exp.expenseNumber}
+                        </span>
+                      </div>
                     </TableCell>
 
-                    <TableCell className="py-3 px-4 text-slate-700 font-mono text-[11px]">
+                    <TableCell className="text-slate-600 font-mono text-xs whitespace-nowrap">
                       {new Date(exp.expenseDate).toLocaleDateString("en-GB")}
                     </TableCell>
 
-                    <TableCell className="py-3 px-4">
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                    <TableCell className="min-w-[180px]">
+                      <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200/70 whitespace-nowrap">
                         {exp.category}
                       </span>
                       {exp.payee && (
-                        <p className="text-xs font-bold text-slate-900 mt-0.5">
+                        <p className="text-xs font-semibold text-slate-800 mt-1 truncate max-w-[200px]">
                           {exp.payee}
                         </p>
                       )}
                     </TableCell>
 
-                    <TableCell className="py-3 px-4 text-slate-600 max-w-xs truncate">
-                      <p className="truncate font-medium text-slate-800">
+                    <TableCell className="min-w-[180px] max-w-xs">
+                      <p
+                        className="truncate text-xs font-medium text-slate-700"
+                        title={exp.description || undefined}
+                      >
                         {exp.description || "—"}
                       </p>
                       {exp.reference && (
-                        <p className="text-[10px] text-slate-400 font-mono">
+                        <p className="text-[10px] text-slate-400 font-mono mt-0.5">
                           Ref: {exp.reference}
                         </p>
                       )}
                     </TableCell>
 
-                    <TableCell className="py-3 px-4">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700">
-                        <CreditCardIcon size={12} className="text-slate-400" />
-                        {exp.paymentMethod.replace("_", " ")}
-                      </span>
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700">
+                        <CreditCardIcon
+                          size={13}
+                          className="text-slate-400 shrink-0"
+                        />
+                        <span>{exp.paymentMethod.replace(/_/g, " ")}</span>
+                      </div>
                       {exp.paymentAccount && (
-                        <p className="text-[10px] text-slate-400 truncate">
+                        <p className="text-[11px] text-slate-400 mt-0.5 truncate max-w-[180px]">
                           {exp.paymentAccount.accountName}
                         </p>
                       )}
                     </TableCell>
 
-                    <TableCell align="right" className="py-3 px-4 text-right">
-                      <span className="font-mono font-black text-slate-900">
+                    <TableCell
+                      align="right"
+                      className="text-right whitespace-nowrap"
+                    >
+                      <div className="font-mono font-bold text-xs text-slate-900">
                         {formatCurrency(exp.totalAmount)}
-                      </span>
+                      </div>
                       {Number(exp.taxAmount) > 0 && (
-                        <p className="text-[10px] text-slate-400 font-mono">
+                        <p className="text-[10px] text-slate-400 font-mono mt-0.5">
                           (Incl. VAT {formatCurrency(exp.taxAmount)})
                         </p>
                       )}
                     </TableCell>
 
-                    <TableCell className="py-3 px-3">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    <TableCell
+                      align="center"
+                      className="text-center whitespace-nowrap"
+                    >
+                      <Badge
+                        tone={
                           exp.status === "PAID"
-                            ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                            ? "emerald"
                             : exp.status === "APPROVED"
-                              ? "bg-sky-50 text-sky-800 border border-sky-200"
-                              : "bg-slate-50 text-slate-700 border border-slate-200"
-                        }`}
+                              ? "sky"
+                              : "slate"
+                        }
+                        uppercase
                       >
                         {exp.status}
-                      </span>
+                      </Badge>
                     </TableCell>
 
-                    <TableCell className="py-3 px-3 text-center">
-                      <div className="flex items-center justify-center gap-1">
+                    <TableCell
+                      align="right"
+                      className="text-right whitespace-nowrap"
+                    >
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenEdit(exp)}
+                          className="p-1.5 text-slate-400 hover:text-agm-green hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                          title="Edit Expense"
+                        >
+                          <EditIcon size={14} />
+                        </Button>
                         <Button
                           type="button"
                           variant="ghost"
@@ -501,8 +603,12 @@ export default function ExpensesPage() {
 
       <Modal
         isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        title="Record Direct Operating Expense"
+        onClose={handleCloseModal}
+        title={
+          editingExpense
+            ? `Edit Expense (${editingExpense.expenseNumber})`
+            : "Record Direct Operating Expense"
+        }
       >
         <form onSubmit={handleSaveExpense} className="space-y-4 text-xs">
           {formError && (
@@ -512,203 +618,177 @@ export default function ExpensesPage() {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Expense Date *
-              </label>
-              <Input
-                type="date"
-                required
-                value={formDate}
-                onChange={(e) => setFormDate(e.target.value)}
-              />
-            </div>
+            <DatePicker
+              label="Expense Date"
+              required
+              format="iso"
+              value={formDate}
+              onChange={setFormDate}
+            />
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Category *
-              </label>
-              <Select
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-                value={formCategory}
-                onChange={(e) => setFormCategory(e.target.value)}
-                required
-              >
-                {EXPENSE_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Payee / Beneficiary
-              </label>
-              <Input
-                placeholder="e.g. DEWA, Etisalat, Landlord, Petrol Station"
-                value={formPayee}
-                onChange={(e) => setFormPayee(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Reference / Bill #
-              </label>
-              <Input
-                placeholder="e.g. INV-98721, REC-403"
-                value={formReference}
-                onChange={(e) => setFormReference(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Net Amount (AED) *
-              </label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0.01"
-                placeholder="0.00"
-                required
-                value={formAmount}
-                onChange={(e) => setFormAmount(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                VAT Rate
-              </label>
-              <Select
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-                value={formTaxRate}
-                onChange={(e) => setFormTaxRate(e.target.value)}
-              >
-                <option value="5">5% Standard VAT</option>
-                <option value="0">0% / Zero-rated</option>
-                <option value="0">Exempt</option>
-              </Select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Total with VAT
-              </label>
-              <div className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-bold text-slate-900">
-                {formatCurrency(calculatedTotal)}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Payment Method
-              </label>
-              <Select
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-                value={formPaymentMethod}
-                onChange={(e) => setFormPaymentMethod(e.target.value as any)}
-              >
-                <option value="BANK_TRANSFER">Bank Transfer</option>
-                <option value="CREDIT_CARD">Company Credit Card</option>
-                <option value="CASH">Cash on Hand</option>
-                <option value="CHEQUE">Cheque</option>
-              </Select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Paid From (Asset Account)
-              </label>
-              <Select
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-                value={formPaymentAccountId}
-                onChange={(e) => setFormPaymentAccountId(e.target.value)}
-              >
-                <option value="">Select Bank / Cash Account...</option>
-                {paymentAccounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
-                    {acc.accountCode} - {acc.accountName}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Expense Account (Chart of Accounts)
-            </label>
             <Select
-              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 outline-none"
-              value={formExpenseAccountId}
-              onChange={(e) => setFormExpenseAccountId(e.target.value)}
+              label="Category *"
+              value={formCategory}
+              onChange={(e) => setFormCategory(e.target.value)}
+              required
             >
-              <option value="">Select Expense Account...</option>
-              {expenseAccounts.map((acc) => (
-                <option key={acc.id} value={acc.id}>
-                  {acc.accountCode} - {acc.accountName}
+              {EXPENSE_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
                 </option>
               ))}
             </Select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Description / Business Purpose
-            </label>
-            <Textarea
-              className="w-full text-xs p-3 rounded-xl border border-slate-200 bg-white outline-none focus:border-emerald-600 transition"
-              rows={2}
-              placeholder="e.g. Monthly office internet subscription and landline bill"
-              value={formDescription}
-              onChange={(e) => setFormDescription(e.target.value)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Payee / Beneficiary"
+              placeholder="e.g. DEWA, Etisalat, Landlord, Petrol Station"
+              value={formPayee}
+              onChange={(e) => setFormPayee(e.target.value)}
+            />
+
+            <Input
+              label="Reference / Bill #"
+              placeholder="e.g. INV-98721, REC-403"
+              value={formReference}
+              onChange={(e) => setFormReference(e.target.value)}
             />
           </div>
 
-          <div className="flex items-center gap-2 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100 text-xs">
-            <input
-              type="checkbox"
-              id="auto-je"
-              checked={formCreateJournal}
-              onChange={(e) => setFormCreateJournal(e.target.checked)}
-              className="rounded text-emerald-600 focus:ring-emerald-500"
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Input
+              label="Net Amount (AED) *"
+              type="number"
+              step="0.01"
+              min="0.01"
+              placeholder="0.00"
+              required
+              value={formAmount}
+              onChange={(e) => setFormAmount(e.target.value)}
             />
-            <label
-              htmlFor="auto-je"
-              className="text-slate-700 font-semibold cursor-pointer"
+
+            <Select
+              label="VAT Rate"
+              value={formTaxRate}
+              onChange={(e) => setFormTaxRate(e.target.value)}
             >
-              Automatically post balanced General Ledger journal entry for this
-              expense
-            </label>
+              <option value="5">5% Standard VAT</option>
+              <option value="0">0% / Zero-rated</option>
+              <option value="0">Exempt</option>
+            </Select>
+
+            <div>
+              <label className="block text-xs font-bold text-agm-text mb-1">
+                Total with VAT
+              </label>
+              <div className="px-3 py-2 rounded-xl bg-slate-50 border border-agm-box-border text-xs font-mono font-bold text-slate-900">
+                {formatCurrency(calculatedTotal)}
+              </div>
+            </div>
           </div>
+
+          <div
+            className={`grid grid-cols-1 ${
+              editingExpense ? "sm:grid-cols-3" : "sm:grid-cols-2"
+            } gap-4`}
+          >
+            <Select
+              label="Payment Method"
+              value={formPaymentMethod}
+              onChange={(e) => setFormPaymentMethod(e.target.value as any)}
+            >
+              <option value="BANK_TRANSFER">Bank Transfer</option>
+              <option value="CREDIT_CARD">Company Credit Card</option>
+              <option value="CASH">Cash on Hand</option>
+              <option value="CHEQUE">Cheque</option>
+            </Select>
+
+            <Select
+              label="Paid From (Asset Account)"
+              value={formPaymentAccountId}
+              onChange={(e) => setFormPaymentAccountId(e.target.value)}
+            >
+              <option value="">Select Bank / Cash Account...</option>
+              {paymentAccounts.map((acc) => (
+                <option key={acc.id} value={acc.id}>
+                  {acc.accountCode} - {acc.accountName}
+                </option>
+              ))}
+            </Select>
+
+            {editingExpense && (
+              <Select
+                label="Status"
+                value={formStatus}
+                onChange={(e) => setFormStatus(e.target.value as any)}
+              >
+                <option value="PAID">Paid</option>
+                <option value="APPROVED">Approved</option>
+                <option value="DRAFT">Draft</option>
+                <option value="CANCELLED">Cancelled</option>
+              </Select>
+            )}
+          </div>
+
+          <Select
+            label="Expense Account (Chart of Accounts)"
+            value={formExpenseAccountId}
+            onChange={(e) => setFormExpenseAccountId(e.target.value)}
+          >
+            <option value="">Select Expense Account...</option>
+            {expenseAccounts.map((acc) => (
+              <option key={acc.id} value={acc.id}>
+                {acc.accountCode} - {acc.accountName}
+              </option>
+            ))}
+          </Select>
+
+          <Textarea
+            label="Description / Business Purpose"
+            rows={2}
+            placeholder="e.g. Monthly office internet subscription and landline bill"
+            value={formDescription}
+            onChange={(e) => setFormDescription(e.target.value)}
+          />
+
+          {!editingExpense && (
+            <div className="flex items-center gap-2 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100 text-xs">
+              <input
+                type="checkbox"
+                id="auto-je"
+                checked={formCreateJournal}
+                onChange={(e) => setFormCreateJournal(e.target.checked)}
+                className="rounded text-emerald-600 focus:ring-emerald-500"
+              />
+              <label
+                htmlFor="auto-je"
+                className="text-slate-700 font-semibold cursor-pointer"
+              >
+                Automatically post balanced General Ledger journal entry for this
+                expense
+              </label>
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsCreateOpen(false)}
+              onClick={handleCloseModal}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="primary"
-              disabled={createMutation.isPending}
-              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
+              loading={
+                editingExpense
+                  ? updateMutation.isPending
+                  : createMutation.isPending
+              }
             >
-              {createMutation.isPending
-                ? "Recording..."
-                : "Record & Post Expense"}
+              {editingExpense ? "Update Expense" : "Record & Post Expense"}
             </Button>
           </div>
         </form>
