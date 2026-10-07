@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { DashboardCard, DashboardCardGrid } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils/format";
 
 interface OperationsSecondaryMetricsProps {
@@ -19,46 +20,41 @@ export default function OperationsSecondaryMetrics({
   expiringDocsCount,
 }: OperationsSecondaryMetricsProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="p-4 border border-agm-box-border bg-transparent rounded-[12px] space-y-1">
-        <span className="text-[12px] font-normal text-agm-muted block">
-          Present today
-        </span>
-        <span className="text-[17px] font-medium text-agm-text block">
-          {presentCount}{" "}
-          <span className="text-xs text-agm-muted font-normal">
-            ({attendanceRate.toFixed(0)}%)
-          </span>
-        </span>
-      </div>
+    <DashboardCardGrid cols={4}>
+      <DashboardCard
+        title="Present today"
+        value={presentCount}
+        subtitle={`${attendanceRate.toFixed(0)}% attendance rate`}
+        accentColor="emerald"
+      />
 
-      <div className="p-4 border border-agm-box-border bg-transparent rounded-[12px] space-y-1">
-        <span className="text-[12px] font-normal text-agm-muted block">
-          On approved leave
-        </span>
-        <span className="text-[17px] font-medium text-agm-text block">
-          {onLeaveCount} {onLeaveCount === 1 ? "staff" : "staff"}
-        </span>
-      </div>
+      <DashboardCard
+        title="On approved leave"
+        value={onLeaveCount}
+        subtitle={
+          onLeaveCount === 1
+            ? "1 staff member"
+            : `${onLeaveCount} staff members`
+        }
+        accentColor="amber"
+      />
 
-      <div className="p-4 border border-agm-box-border bg-transparent rounded-[12px] space-y-1">
-        <span className="text-[12px] font-normal text-agm-muted block">
-          Fixed assets valuation
-        </span>
-        <span className="text-[17px] font-medium text-agm-text block">
-          {formatCurrency(totalAssetsValue)}
-        </span>
-      </div>
+      <DashboardCard
+        title="Fixed assets valuation"
+        value={formatCurrency(totalAssetsValue)}
+        accentColor="blue"
+      />
 
-      <div className="p-4 border border-agm-box-border bg-transparent rounded-[12px] space-y-1">
-        <span className="text-[12px] font-normal text-agm-muted block">
-          Visa / ID expiries (30d)
-        </span>
-        <span className="text-[17px] font-medium text-agm-text block">
-          {expiringDocsCount}{" "}
-          {expiringDocsCount === 1 ? "document" : "documents"}
-        </span>
-      </div>
-    </div>
+      <DashboardCard
+        title="Visa / ID expiries (30d)"
+        value={expiringDocsCount}
+        subtitle={
+          expiringDocsCount === 1
+            ? "1 document requiring action"
+            : `${expiringDocsCount} documents`
+        }
+        accentColor={expiringDocsCount > 0 ? "rose" : "slate"}
+      />
+    </DashboardCardGrid>
   );
 }

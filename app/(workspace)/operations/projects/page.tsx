@@ -67,13 +67,18 @@ export default function ProjectsPage() {
       active = 0,
       done = 0;
     for (const p of projects) {
-      const pBud = Number(p.contractValue || p.budget || p.quotation?.totalAmount || 0);
+      const pBud = Number(
+        p.contractValue || p.budget || p.quotation?.totalAmount || 0,
+      );
       const totalCostFromItems = p.costs?.reduce(
         (sum: number, c: any) => sum + Number(c.amount || 0),
         0,
       );
       const pCost = Number(
-        p.actualCost || (totalCostFromItems !== undefined && totalCostFromItems > 0 ? totalCostFromItems : 0),
+        p.actualCost ||
+          (totalCostFromItems !== undefined && totalCostFromItems > 0
+            ? totalCostFromItems
+            : 0),
       );
       bud += pBud;
       ac += pCost;
