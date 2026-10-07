@@ -590,17 +590,17 @@ export default function SalesReturnsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Sales Returns & Credit Notes"
-        description="Process client returned goods, track credit adjustments, and post automated accounting GL reversals."
+        title="Sales Returns"
+        description="Process customer returned goods, issue credit notes, and manage inventory restocks."
         actions={
           <Button
             variant="primary"
             size="sm"
             onClick={() => setIsCreateOpen(true)}
             icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
+            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs rounded-lg px-3.5 py-1.5 cursor-pointer transition-colors"
           >
-            Log Sales Return / Credit Note
+            New Sales Return
           </Button>
         }
       />
@@ -657,42 +657,42 @@ export default function SalesReturnsPage() {
         />
 
         <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-          <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-            <h4 className="font-black text-xs uppercase tracking-wider text-white">
-              Sales Returns &amp; Client Credit Notes Register
+          <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white py-2.5 px-4 sm:px-5 flex items-center justify-between">
+            <h4 className="font-bold text-xs uppercase tracking-wider text-white">
+              Sales Returns Register
             </h4>
             <span className="text-[11px] font-mono text-emerald-300 font-bold">
-              {filteredReturns.length} Live Database Records
+              {filteredReturns.length} Returns Listed
             </span>
           </div>
 
           <Table className="w-full text-xs text-left">
             <TableHead className="bg-slate-50 border-b border-slate-200">
-              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+              <TableHeaderCell className="py-2 px-2.5 sm:px-3 font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
                 Credit Note Voucher
               </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+              <TableHeaderCell className="py-2 px-2.5 sm:px-3 font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
                 Invoice Ref
               </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+              <TableHeaderCell className="py-2 px-2.5 sm:px-3 font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
                 Customer / Entity
               </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+              <TableHeaderCell className="py-2 px-2 text-center font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
                 Date
               </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+              <TableHeaderCell className="py-2 px-2.5 sm:px-3 font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
                 Return Reason
               </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+              <TableHeaderCell className="py-2 px-2 text-center font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
                 Status
               </TableHeaderCell>
               <TableHeaderCell
                 align="right"
-                className="py-3 px-4 text-right font-bold text-slate-600 uppercase text-[10.5px] tracking-wider"
+                className="py-2 px-2.5 text-right font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap"
               >
                 Amount (AED)
               </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-3 text-center font-bold text-slate-600 uppercase text-[10.5px] tracking-wider">
+              <TableHeaderCell className="py-2 px-2 sm:pr-3 text-right font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
                 Actions
               </TableHeaderCell>
             </TableHead>
@@ -721,12 +721,12 @@ export default function SalesReturnsPage() {
                       description={
                         search.trim() !== "" || statusFilter !== "ALL"
                           ? "No sales returns matched your search criteria."
-                          : "No sales returns in database. Click 'Log Sales Return / Credit Note' to create one."
+                          : "No sales returns recorded yet. Click 'New Sales Return' to create one."
                       }
                       actionLabel={
                         search.trim() !== "" || statusFilter !== "ALL"
                           ? "Reset Filters"
-                          : "Log Sales Return / Credit Note"
+                          : "New Sales Return"
                       }
                       onAction={
                         search.trim() !== "" || statusFilter !== "ALL"
@@ -767,24 +767,16 @@ export default function SalesReturnsPage() {
                         onClick={() =>
                           setExpandedReturnId(isExpanded ? null : item.id)
                         }
-                        className={`hover:bg-emerald-50/40 cursor-pointer transition-colors ${
+                        className={`hover:bg-slate-50/80 cursor-pointer transition-colors ${
                           isExpanded
-                            ? "bg-emerald-50/50 font-semibold"
+                            ? "bg-slate-50/90 font-medium"
                             : "text-slate-700"
                         }`}
                       >
-                        <TableCell className="py-3 px-4 font-mono font-bold text-teal-800">
-                          <div className="flex items-center gap-2">
-                            <ChevronDownIcon
-                              size={15}
-                              className={`shrink-0 transition-transform duration-200 ${
-                                isExpanded
-                                  ? "rotate-180 text-emerald-800"
-                                  : "text-slate-400"
-                              }`}
-                            />
+                        <TableCell className="py-2 px-2.5 sm:px-3 font-mono font-bold text-teal-800 whitespace-nowrap text-xs">
+                          <div className="flex items-center gap-1.5 whitespace-nowrap">
                             <RotateCcwIcon
-                              size={13}
+                              size={14}
                               className="text-teal-700 shrink-0"
                             />
                             <span className="hover:text-emerald-800 transition-colors">
@@ -792,84 +784,94 @@ export default function SalesReturnsPage() {
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell className="py-3 px-4 font-mono font-semibold text-slate-800">
+                        <TableCell className="py-2 px-2.5 sm:px-3 font-mono font-semibold text-slate-800 whitespace-nowrap text-xs">
                           {invoiceRefDisplay}
                         </TableCell>
-                        <TableCell className="py-3 px-4 font-bold text-slate-900">
-                          <div>{customerDisplay}</div>
+                        <TableCell className="py-2 px-2.5 sm:px-3 text-slate-900 text-xs">
+                          <div
+                            className="font-bold text-slate-900 truncate max-w-[140px] sm:max-w-[180px]"
+                            title={customerDisplay}
+                          >
+                            {customerDisplay}
+                          </div>
                           {scopeDisplay && (
-                            <div className="text-[10px] text-slate-400 font-normal">
+                            <div className="text-[10px] text-slate-400 font-normal truncate max-w-[140px]">
                               {scopeDisplay}
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
+                        <TableCell className="py-2 px-2 text-center text-slate-600 font-mono text-[11px] whitespace-nowrap">
                           {dateDisplay}
                         </TableCell>
-                        <TableCell className="py-3 px-4 max-w-xs truncate text-slate-600">
-                          {item.reason || "Credit adjustment"}
+                        <TableCell className="py-2 px-2.5 sm:px-3 text-slate-600 text-xs">
+                          <div
+                            className="truncate max-w-[120px] sm:max-w-[160px]"
+                            title={item.reason || ""}
+                          >
+                            {item.reason || "Credit adjustment"}
+                          </div>
                         </TableCell>
-                        <TableCell className="py-3 px-3 text-center">
+                        <TableCell className="py-2 px-2 text-center whitespace-nowrap">
                           <span
-                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status] || STATUS_BADGE_CLASSES.DRAFT}`}
+                            className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status] || STATUS_BADGE_CLASSES.DRAFT}`}
                           >
                             {item.status}
                           </span>
                         </TableCell>
                         <TableCell
                           align="right"
-                          className="py-3 px-4 text-right font-mono font-black text-rose-700 text-xs"
+                          className="py-2 px-2.5 text-right font-mono font-bold text-rose-700 text-xs whitespace-nowrap"
                         >
-                          {formatAed(totalAmt)}
+                          {formatNumber(totalAmt)}
                         </TableCell>
-                        <TableCell className="py-3 px-3 text-center">
-                          <div className="flex items-center justify-center gap-1">
+                        <TableCell className="py-2 px-2 sm:pr-3 text-right print:hidden whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1">
                             <Button
                               type="button"
-                              variant="secondary"
+                              variant="ghost"
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handlePrintRow(item);
                               }}
-                              className="px-3 py-1.5 text-[11px] font-bold rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 transition cursor-pointer flex items-center gap-1.5 border border-slate-200/80 shadow-2xs"
-                              icon={
-                                <PrintIcon
-                                  size={14}
-                                  className="text-emerald-700"
-                                />
-                              }
+                              className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
+                              title="Print Credit Note Voucher"
                             >
-                              Print
+                              <PrintIcon
+                                size={18}
+                                className="w-[18px] h-[18px]"
+                              />
                             </Button>
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setExpandedReturnId(
                                   isExpanded ? null : item.id,
                                 );
                               }}
-                              className={`p-1.5 rounded-lg transition cursor-pointer ${
+                              className={`h-8 w-8 p-0 flex items-center justify-center rounded-lg transition cursor-pointer ${
                                 isExpanded
                                   ? "text-emerald-800 bg-emerald-100"
-                                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
                               }`}
                               title={
                                 isExpanded
-                                  ? "Collapse preview"
-                                  : "Expand preview"
+                                  ? "Collapse details"
+                                  : "View credit note details"
                               }
                             >
                               <ChevronDownIcon
-                                size={14}
-                                className={`transition-transform duration-200 ${
+                                size={18}
+                                className={`w-[18px] h-[18px] transition-transform duration-200 ${
                                   isExpanded
                                     ? "rotate-180 text-emerald-800"
                                     : ""
                                 }`}
                               />
-                            </button>
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -900,7 +902,7 @@ export default function SalesReturnsPage() {
       <Modal
         isOpen={isCreateOpen}
         onClose={handleCloseCreate}
-        title="Create Sales Return (Credit Note)"
+        title="Record New Sales Return"
         maxWidth="md"
       >
         <form onSubmit={handleCreateReturn} className="space-y-3.5 text-xs">
@@ -1016,7 +1018,7 @@ export default function SalesReturnsPage() {
               disabled={createMutation.isPending}
               className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
             >
-              {createMutation.isPending ? "Creating..." : "Submit Sales Return"}
+              {createMutation.isPending ? "Saving..." : "Save Sales Return"}
             </Button>
           </div>
         </form>

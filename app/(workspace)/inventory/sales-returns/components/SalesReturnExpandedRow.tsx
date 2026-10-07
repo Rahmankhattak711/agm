@@ -88,7 +88,7 @@ export function SalesReturnExpandedRow({
         </Button>
       }
     >
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
         <Card
           id="total-credit-amount"
           title="Total Credit Amount"
@@ -114,7 +114,7 @@ export function SalesReturnExpandedRow({
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 sm:gap-3">
         <ExpandedRowSection
           title="Client & Scope Details"
           icon={<PackageIcon size={14} />}
