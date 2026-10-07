@@ -1,7 +1,7 @@
 import React from "react";
 import { Project, ProjectCost } from "@/lib/hooks/api-hooks";
-import { Input } from "@/components/ui";
-import { SearchIcon, TrashIcon } from "@/components/icons";
+import { FilterBar } from "@/components/ui";
+import { TrashIcon } from "@/components/icons";
 import { CATEGORIES, fmt } from "../types";
 
 interface CostTrackingDetailedListProps {
@@ -23,27 +23,23 @@ export function CostTrackingDetailedList({
 }: CostTrackingDetailedListProps) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-bold text-slate-900">
-            Recorded Cost Entries ({filteredCosts.length})
-          </h3>
-          <p className="text-[11px] text-slate-400">
-            Every single cost recorded for {selectedProject?.name}. Delete any
-            mistake with one click.
-          </p>
-        </div>
-
-        <div className="w-full sm:w-64 print:hidden">
-          <Input
-            leftIcon={<SearchIcon size={13} className="text-slate-400" />}
-            placeholder="Search entries…"
-            className="py-1.5 text-xs rounded-xl"
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-          />
-        </div>
+      <div className="flex flex-col gap-1">
+        <h3 className="text-sm font-bold text-slate-900">
+          Recorded Cost Entries
+        </h3>
+        <p className="text-[11px] text-slate-400">
+          Every single cost recorded for {selectedProject?.name}. Delete any
+          mistake with one click.
+        </p>
       </div>
+
+      <FilterBar
+        search={search}
+        onSearchChange={onSearchChange}
+        searchPlaceholder="Search entries…"
+        totalCount={filteredCosts.length}
+        countLabel="Entries"
+      />
 
       {filteredCosts.length === 0 ? (
         <div className="py-8 text-center border-2 border-dashed border-slate-200 rounded-xl">

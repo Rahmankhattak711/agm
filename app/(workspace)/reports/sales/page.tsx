@@ -15,7 +15,14 @@ import {
   ReceiptIcon,
   SearchIcon,
 } from "@/components/icons";
-import { Button, Input, Select, DateRangePicker } from "@/components/ui";
+import {
+  Button,
+  Input,
+  Select,
+  DateRangePicker,
+  PageHeader,
+  FilterBar,
+} from "@/components/ui";
 import { QuotationHeader, QuotationFooter } from "@/components/quotation";
 import {
   ReportKpiCard,
@@ -266,45 +273,25 @@ export default function SalesReportsPage() {
   return (
     <>
       <div className="space-y-6 print:hidden pb-8">
-        <div className="space-y-3 pb-3 border-b border-slate-200">
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-            <button
-              type="button"
-              onClick={() => router.push("/finance/reports")}
-              className="hover:text-emerald-700 transition-colors flex items-center gap-1 cursor-pointer font-semibold"
+        <PageHeader
+          backButton={{
+            label: "Reports Hub",
+            onClick: () => router.push("/finance/reports"),
+          }}
+          title="Sales & Revenue"
+          description="Sales invoices, payment collections, and receivables."
+          actions={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 shadow-2xs cursor-pointer"
+              icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
             >
-              <ChevronLeftIcon size={12} />
-              <span>Reports Hub</span>
-            </button>
-            <span className="text-slate-300">/</span>
-            <span className="text-slate-800 font-bold">
-              Sales &amp; Revenue
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-                Sales &amp; Revenue
-              </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Sales invoices, payment collections, and receivables.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.print()}
-                className="text-xs font-bold text-slate-700 border-slate-200 hover:bg-slate-50 shadow-2xs cursor-pointer"
-                icon={<PrintIcon className="w-3.5 h-3.5" strokeWidth={2} />}
-              >
-                Print Statement
-              </Button>
-            </div>
-          </div>
-        </div>
+              Print Statement
+            </Button>
+          }
+        />
 
         <ReportKpiGrid cols={4}>
           <ReportKpiCard
@@ -340,66 +327,39 @@ export default function SalesReportsPage() {
         </ReportKpiGrid>
 
         <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
-          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-1.5">
-                {periodTabs.map((tab) => {
-                  const isActive = periodFilter === tab.key;
-                  return (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      onClick={() => {
-                        setPeriodFilter(tab.key);
-                        if (tab.key !== "CUSTOM") {
-                          setStartDate("");
-                          setEndDate("");
-                        }
-                      }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        isActive
-                          ? "bg-white text-emerald-950 shadow-xs border border-slate-200"
-                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {periodFilter === "CUSTOM" && (
-                <DateRangePicker
-                  startDate={startDate}
-                  endDate={endDate}
-                  placeholder="Select Date Range"
-                  align="right"
-                  onChange={({ startDate: s, endDate: e }) => {
-                    setStartDate(s);
-                    setEndDate(e);
-                  }}
-                />
-              )}
-            </div>
-
-            <div className="flex flex-col lg:flex-row gap-3 items-center justify-between pt-2 border-t border-slate-200/80">
-              <div className="w-full lg:w-80">
-                <Input
-                  type="text"
-                  placeholder="Search invoice #, client, TRN, or project..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  leftIcon={<SearchIcon className="w-4 h-4 text-slate-400" />}
-                  className="bg-white text-xs py-1.5"
-                  containerClassName="w-full"
-                />
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          <FilterBar
+            tabs={periodTabs.map((t) => ({ id: t.key, label: t.label }))}
+            activeTab={periodFilter}
+            onTabChange={(k) => {
+              setPeriodFilter(k);
+              if (k !== "CUSTOM") {
+                setStartDate("");
+                setEndDate("");
+              }
+            }}
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search invoice #, client, TRN, or project..."
+            totalCount={filteredInvoices.length}
+            countLabel="Invoices"
+            rightAction={
+              <div className="flex flex-wrap items-center gap-2">
+                {periodFilter === "CUSTOM" && (
+                  <DateRangePicker
+                    startDate={startDate}
+                    endDate={endDate}
+                    placeholder="Select Date Range"
+                    align="right"
+                    onChange={({ startDate: s, endDate: e }) => {
+                      setStartDate(s);
+                      setEndDate(e);
+                    }}
+                  />
+                )}
                 <Select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  containerClassName="w-full sm:w-40"
+                  containerClassName="w-36"
                   className="bg-white text-xs py-1.5"
                 >
                   <option value="ALL">All Statuses</option>
@@ -413,7 +373,7 @@ export default function SalesReportsPage() {
                 <Select
                   value={customerFilter}
                   onChange={(e) => setCustomerFilter(e.target.value)}
-                  containerClassName="w-full sm:w-56"
+                  containerClassName="w-48"
                   className="bg-white text-xs py-1.5"
                 >
                   <option value="">All Customers</option>
@@ -424,8 +384,8 @@ export default function SalesReportsPage() {
                   ))}
                 </Select>
               </div>
-            </div>
-          </div>
+            }
+          />
 
           {error ? (
             <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">

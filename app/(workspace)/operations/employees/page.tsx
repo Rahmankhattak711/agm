@@ -32,6 +32,8 @@ import {
   FormSubmit,
   DashboardCard,
   DashboardCardGrid,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -397,17 +399,10 @@ export default function EmployeesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Employees Directory
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage employee master profiles, UAE labor contracts, visa statuses,
-            and department records.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Employees Directory"
+        description="Manage employee master profiles, UAE labor contracts, visa statuses, and department records."
+      />
 
       <DashboardCardGrid cols={4}>
         <DashboardCard
@@ -445,51 +440,22 @@ export default function EmployeesPage() {
       </DashboardCardGrid>
 
       <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
-              {[
-                { id: "ALL", label: "All Personnel" },
-                { id: "ACTIVE", label: "Active Staff" },
-                { id: "ON_LEAVE", label: "On Leave" },
-                { id: "SUSPENDED", label: "Suspended" },
-                { id: "TERMINATED", label: "Terminated" },
-              ].map((tab) => {
-                const isActive = statusFilter === tab.id;
-                return (
-                  <Button
-                    key={tab.id}
-                    type="button"
-                    variant={isActive ? "outline" : "ghost"}
-                    size="sm"
-                    onClick={() => setStatusFilter(tab.id)}
-                    className={`text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                    }`}
-                  >
-                    {tab.label}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
-              {employees.length} Personnel Listed
-            </span>
-          </div>
-
-          <div className="pt-1 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <Input
-              containerClassName="w-full sm:w-80"
-              placeholder="Search code, name, phone, Emirates ID..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              leftIcon={<SearchIcon size={16} />}
-              className="py-1.5 shadow-2xs"
-            />
-
+        <FilterBar
+          tabs={[
+            { id: "ALL", label: "All Personnel" },
+            { id: "ACTIVE", label: "Active Staff" },
+            { id: "ON_LEAVE", label: "On Leave" },
+            { id: "SUSPENDED", label: "Suspended" },
+            { id: "TERMINATED", label: "Terminated" },
+          ]}
+          activeTab={statusFilter}
+          onTabChange={setStatusFilter}
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search code, name, phone, Emirates ID..."
+          totalCount={employees.length}
+          countLabel="Personnel Listed"
+          rightAction={
             <div className="w-full sm:w-48">
               <Select
                 value={departmentFilter}
@@ -504,8 +470,8 @@ export default function EmployeesPage() {
                 ]}
               />
             </div>
-          </div>
-        </div>
+          }
+        />
 
         {error ? (
           <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">

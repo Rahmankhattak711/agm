@@ -20,6 +20,11 @@ import {
 } from "@/components/icons";
 import {
   Button,
+  PageHeader,
+  FilterBar,
+  DashboardCard,
+  CustomRowExpand,
+  ExpandedRowSection,
   Table,
   TableHead,
   TableHeaderCell,
@@ -642,18 +647,10 @@ export default function SupplierBillsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Supplier Bills
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Log vendor invoices, claim 5% input tax, track settlement
-            disbursements, and post to General Ledger.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Supplier Bills"
+        description="Log vendor invoices, claim 5% input tax, track settlement disbursements, and post to General Ledger."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -663,8 +660,8 @@ export default function SupplierBillsPage() {
           >
             Record Supplier Bill
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <ReportKpiGrid cols={4}>
         <ReportKpiCard
@@ -702,52 +699,22 @@ export default function SupplierBillsPage() {
       </ReportKpiGrid>
 
       <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
-              {[
-                { id: "ALL", label: "All Bills" },
-                { id: "POSTED", label: "Posted to GL" },
-                { id: "PARTIALLY_PAID", label: "Partially Paid" },
-                { id: "PAID", label: "Fully Paid" },
-                { id: "DRAFT", label: "Drafts" },
-              ].map((tab) => {
-                const isActive = statusFilter === tab.id;
-                return (
-                  <Button
-                    key={tab.id}
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setStatusFilter(tab.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                    }`}
-                  >
-                    {tab.label}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
-              {filteredBills.length} Invoices Found
-            </span>
-          </div>
-
-          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <Input
-              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-              placeholder="Search bill number, vendor, TRN..."
-              containerClassName="w-full sm:w-80"
-              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
+        <FilterBar
+          tabs={[
+            { id: "ALL", label: "All Bills" },
+            { id: "POSTED", label: "Posted to GL" },
+            { id: "PARTIALLY_PAID", label: "Partially Paid" },
+            { id: "PAID", label: "Fully Paid" },
+            { id: "DRAFT", label: "Drafts" },
+          ]}
+          activeTab={statusFilter}
+          onTabChange={(id) => setStatusFilter(id)}
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search bill number, vendor, TRN..."
+          totalCount={filteredBills.length}
+          countLabel="Invoices Found"
+        />
 
         {error ? (
           <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
@@ -1005,124 +972,139 @@ export default function SupplierBillsPage() {
                         </TableRow>
 
                         {isExpanded && (
-                          <TableRow className="hover:bg-transparent bg-slate-50/70">
-                            <TableCell
-                              colSpan={8}
-                              className="p-0 border-b-2 border-emerald-600/40"
-                            >
-                              <div className="px-6 py-5 space-y-4 border-l-4 border-l-emerald-600 bg-gradient-to-b from-white via-slate-50/40 to-slate-100/40 shadow-inner">
-                                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
-                                  <div className="flex flex-wrap items-center gap-2.5">
-                                    <span className="px-2.5 py-1 rounded-lg bg-teal-900 text-teal-200 font-mono font-bold text-xs shadow-2xs">
-                                      {b.billNumber}
+                          <CustomRowExpand
+                            colSpan={8}
+                            onClose={() => setExpandedBillId(null)}
+                            headerLeft={
+                              <>
+                                <span className="px-2.5 py-1 rounded-lg bg-teal-900 text-teal-200 font-mono font-bold text-xs shadow-2xs">
+                                  {b.billNumber}
+                                </span>
+                                <span className="text-xs font-bold text-slate-900">
+                                  {b.supplierName}
+                                </span>
+                                {b.supplierTrn && (
+                                  <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-bold flex items-center gap-1">
+                                    <ShieldCheckIcon
+                                      size={12}
+                                      className="text-emerald-700"
+                                    />
+                                    TRN: {b.supplierTrn}
+                                  </span>
+                                )}
+                                <span
+                                  className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                                    b.status === "PAID"
+                                      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                      : b.status === "POSTED"
+                                        ? "bg-sky-50 text-sky-800 border-sky-200"
+                                        : "bg-amber-50 text-amber-800 border-amber-200"
+                                  }`}
+                                >
+                                  {b.status}
+                                </span>
+                              </>
+                            }
+                            headerRight={
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePrintBill(b)}
+                                icon={
+                                  <PrintIcon
+                                    size={13}
+                                    className="text-emerald-700"
+                                  />
+                                }
+                                className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs"
+                              >
+                                Print Voucher (PDF)
+                              </Button>
+                            }
+                          >
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                              <DashboardCard
+                                title="Total Bill Value"
+                                value={`AED ${formatNumber(b.totalAmount)}`}
+                                subtitle="Gross payable amount"
+                                accentColor="blue"
+                              />
+
+                              <DashboardCard
+                                title="Remaining Balance Due"
+                                value={`AED ${formatNumber(b.remainingBalance)}`}
+                                subtitle={
+                                  Number(b.remainingBalance) > 0
+                                    ? "Awaiting payment settlement"
+                                    : "Fully settled"
+                                }
+                                accentColor={
+                                  Number(b.remainingBalance) > 0
+                                    ? "rose"
+                                    : "emerald"
+                                }
+                              />
+
+                              <DashboardCard
+                                title="Recoverable VAT (5%)"
+                                value={`AED ${formatNumber(
+                                  b.vatAmount ||
+                                    b.totalAmount - b.totalAmount / 1.05,
+                                )}`}
+                                subtitle="FTA Input Tax credit"
+                                accentColor="purple"
+                              />
+
+                              <DashboardCard
+                                title="Payment Due Date"
+                                value={
+                                  b.dueDate
+                                    ? new Date(b.dueDate).toLocaleDateString(
+                                        "en-GB",
+                                      )
+                                    : "Immediate"
+                                }
+                                subtitle={`Bill Date: ${
+                                  b.billDate
+                                    ? new Date(b.billDate).toLocaleDateString(
+                                        "en-GB",
+                                      )
+                                    : "-"
+                                }`}
+                                accentColor="slate"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                              <ExpandedRowSection
+                                title="Vendor & Invoice Information"
+                                icon={<ReceiptIcon size={14} />}
+                                badge="AP Ledger Record"
+                              >
+                                <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
+                                  <div>
+                                    <span className="text-[10px] font-semibold text-slate-400 block">
+                                      Vendor / Supplier
                                     </span>
-                                    <span className="text-xs font-bold text-slate-900">
+                                    <span className="font-bold text-slate-800">
                                       {b.supplierName}
                                     </span>
-                                    {b.supplierTrn && (
-                                      <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-bold flex items-center gap-1">
-                                        <ShieldCheckIcon
-                                          size={12}
-                                          className="text-emerald-700"
-                                        />
-                                        TRN: {b.supplierTrn}
-                                      </span>
-                                    )}
-                                    <span
-                                      className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                                        b.status === "PAID"
-                                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                                          : b.status === "POSTED"
-                                            ? "bg-sky-50 text-sky-800 border-sky-200"
-                                            : "bg-amber-50 text-amber-800 border-amber-200"
-                                      }`}
-                                    >
-                                      {b.status}
+                                  </div>
+
+                                  <div>
+                                    <span className="text-[10px] font-semibold text-slate-400 block">
+                                      UAE VAT TRN
+                                    </span>
+                                    <span className="font-mono font-bold text-emerald-800">
+                                      {b.supplierTrn || "Not Registered"}
                                     </span>
                                   </div>
 
-                                  <div className="flex items-center gap-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handlePrintBill(b)}
-                                      icon={
-                                        <PrintIcon
-                                          size={13}
-                                          className="text-emerald-700"
-                                        />
-                                      }
-                                      className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs"
-                                    >
-                                      Print Voucher (PDF)
-                                    </Button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setExpandedBillId(null)}
-                                      className="text-xs text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 transition cursor-pointer"
-                                      title="Collapse preview"
-                                    >
-                                      <CloseIcon size={15} />
-                                    </button>
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                  <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-0.5 shadow-2xs">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                                      Total Bill Value
+                                  <div>
+                                    <span className="text-[10px] font-semibold text-slate-400 block">
+                                      Invoice Issue Date
                                     </span>
-                                    <span className="text-base font-black font-mono text-slate-900 block">
-                                      AED {formatNumber(b.totalAmount)}
-                                    </span>
-                                    <span className="text-[10px] text-slate-500 block">
-                                      Gross payable amount
-                                    </span>
-                                  </div>
-
-                                  <div className="p-3 bg-rose-50/90 border border-rose-200/80 rounded-xl space-y-0.5">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block">
-                                      Remaining Balance Due
-                                    </span>
-                                    <span className="text-base font-black font-mono text-rose-800 block">
-                                      AED {formatNumber(b.remainingBalance)}
-                                    </span>
-                                    <span className="text-[10px] text-rose-600/90 font-medium block">
-                                      {Number(b.remainingBalance) > 0
-                                        ? "Awaiting payment settlement"
-                                        : "Fully settled"}
-                                    </span>
-                                  </div>
-
-                                  <div className="p-3 bg-purple-50/80 border border-purple-200/80 rounded-xl space-y-0.5">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 block">
-                                      Recoverable VAT (5%)
-                                    </span>
-                                    <span className="text-base font-black font-mono text-purple-800 block">
-                                      AED{" "}
-                                      {formatNumber(
-                                        b.vatAmount ||
-                                          b.totalAmount - b.totalAmount / 1.05,
-                                      )}
-                                    </span>
-                                    <span className="text-[10px] text-purple-600 block">
-                                      FTA Input Tax credit
-                                    </span>
-                                  </div>
-
-                                  <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-0.5 shadow-2xs">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                                      Payment Due Date
-                                    </span>
-                                    <span className="text-xs font-bold text-slate-900 block font-mono">
-                                      {b.dueDate
-                                        ? new Date(
-                                            b.dueDate,
-                                          ).toLocaleDateString("en-GB")
-                                        : "Immediate"}
-                                    </span>
-                                    <span className="text-[10px] text-slate-500 block">
-                                      Bill Date:{" "}
+                                    <span className="font-mono text-slate-700">
                                       {b.billDate
                                         ? new Date(
                                             b.billDate,
@@ -1130,181 +1112,119 @@ export default function SupplierBillsPage() {
                                         : "-"}
                                     </span>
                                   </div>
-                                </div>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                  <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs space-y-2.5">
-                                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                                      <span className="font-bold text-xs uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
-                                        <ReceiptIcon
-                                          size={14}
-                                          className="text-teal-700"
-                                        />
-                                        Vendor &amp; Invoice Information
-                                      </span>
-                                      <span className="text-[10px] font-bold text-slate-400 uppercase font-mono">
-                                        AP Ledger Record
-                                      </span>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
-                                      <div>
-                                        <span className="text-[10px] font-semibold text-slate-400 block">
-                                          Vendor / Supplier
-                                        </span>
-                                        <span className="font-bold text-slate-800">
-                                          {b.supplierName}
-                                        </span>
-                                      </div>
-
-                                      <div>
-                                        <span className="text-[10px] font-semibold text-slate-400 block">
-                                          UAE VAT TRN
-                                        </span>
-                                        <span className="font-mono font-bold text-emerald-800">
-                                          {b.supplierTrn || "Not Registered"}
-                                        </span>
-                                      </div>
-
-                                      <div>
-                                        <span className="text-[10px] font-semibold text-slate-400 block">
-                                          Invoice Issue Date
-                                        </span>
-                                        <span className="font-mono text-slate-700">
-                                          {b.billDate
-                                            ? new Date(
-                                                b.billDate,
-                                              ).toLocaleDateString("en-GB")
-                                            : "-"}
-                                        </span>
-                                      </div>
-
-                                      <div>
-                                        <span className="text-[10px] font-semibold text-slate-400 block">
-                                          Payment Maturity
-                                        </span>
-                                        <span className="font-mono text-slate-700">
-                                          {b.dueDate
-                                            ? new Date(
-                                                b.dueDate,
-                                              ).toLocaleDateString("en-GB")
-                                            : "-"}
-                                        </span>
-                                      </div>
-
-                                      <div>
-                                        <span className="text-[10px] font-semibold text-slate-400 block">
-                                          Paid Disbursal
-                                        </span>
-                                        <span className="font-mono font-bold text-emerald-700">
-                                          AED {formatNumber(b.paidAmount || 0)}
-                                        </span>
-                                      </div>
-
-                                      <div>
-                                        <span className="text-[10px] font-semibold text-slate-400 block">
-                                          GL Ledger Status
-                                        </span>
-                                        <span className="font-bold text-slate-800">
-                                          {b.status === "POSTED" ||
-                                          b.status === "PAID"
-                                            ? "Posted to Ledger"
-                                            : "Draft Entry"}
-                                        </span>
-                                      </div>
-                                    </div>
+                                  <div>
+                                    <span className="text-[10px] font-semibold text-slate-400 block">
+                                      Payment Maturity
+                                    </span>
+                                    <span className="font-mono text-slate-700">
+                                      {b.dueDate
+                                        ? new Date(
+                                            b.dueDate,
+                                          ).toLocaleDateString("en-GB")
+                                        : "-"}
+                                    </span>
                                   </div>
 
-                                  <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs space-y-2.5 flex flex-col justify-between">
-                                    <div>
-                                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                                        <span className="font-bold text-xs uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
-                                          <BanknoteIcon
-                                            size={14}
-                                            className="text-teal-700"
-                                          />
-                                          Line Items &amp; Accounting Scope
-                                        </span>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase font-mono">
-                                          {b.items?.length || 1} Item(s)
+                                  <div>
+                                    <span className="text-[10px] font-semibold text-slate-400 block">
+                                      Paid Disbursal
+                                    </span>
+                                    <span className="font-mono font-bold text-emerald-700">
+                                      AED {formatNumber(b.paidAmount || 0)}
+                                    </span>
+                                  </div>
+
+                                  <div>
+                                    <span className="text-[10px] font-semibold text-slate-400 block">
+                                      GL Ledger Status
+                                    </span>
+                                    <span className="font-bold text-slate-800">
+                                      {b.status === "POSTED" ||
+                                      b.status === "PAID"
+                                        ? "Posted to Ledger"
+                                        : "Draft Entry"}
+                                    </span>
+                                  </div>
+                                </div>
+                              </ExpandedRowSection>
+
+                              <ExpandedRowSection
+                                title="Line Items & Accounting Scope"
+                                icon={<BanknoteIcon size={14} />}
+                                badge={`${b.items?.length || 1} Item(s)`}
+                                className="flex flex-col justify-between"
+                              >
+                                <div>
+                                  <div className="space-y-1.5 pt-2">
+                                    {!b.items || b.items.length === 0 ? (
+                                      <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                                        <div>
+                                          <span className="font-bold text-slate-800 block">
+                                            Direct Procurement / Site Supply
+                                          </span>
+                                          <span className="text-[10px] text-slate-400">
+                                            Direct material supplies
+                                          </span>
+                                        </div>
+                                        <span className="font-mono font-bold text-slate-900">
+                                          AED {formatNumber(b.totalAmount)}
                                         </span>
                                       </div>
-
-                                      <div className="space-y-1.5 pt-2">
-                                        {!b.items || b.items.length === 0 ? (
-                                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
-                                            <div>
-                                              <span className="font-bold text-slate-800 block">
-                                                Direct Procurement / Site Supply
-                                              </span>
-                                              <span className="text-[10px] text-slate-400">
-                                                Direct material supplies
-                                              </span>
-                                            </div>
-                                            <span className="font-mono font-bold text-slate-900">
-                                              AED {formatNumber(b.totalAmount)}
+                                    ) : (
+                                      b.items.map((it: any, idx: number) => (
+                                        <div
+                                          key={idx}
+                                          className="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between text-xs"
+                                        >
+                                          <div>
+                                            <span className="font-bold text-slate-800 block">
+                                              {it.description ||
+                                                it.product?.name ||
+                                                "Material line"}
+                                            </span>
+                                            <span className="text-[10px] text-slate-400 font-mono">
+                                              Qty: {it.quantity || 1} • Unit:
+                                              AED{" "}
+                                              {formatNumber(it.unitCost || 0)}
                                             </span>
                                           </div>
-                                        ) : (
-                                          b.items.map(
-                                            (it: any, idx: number) => (
-                                              <div
-                                                key={idx}
-                                                className="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between text-xs"
-                                              >
-                                                <div>
-                                                  <span className="font-bold text-slate-800 block">
-                                                    {it.description ||
-                                                      it.product?.name ||
-                                                      "Material line"}
-                                                  </span>
-                                                  <span className="text-[10px] text-slate-400 font-mono">
-                                                    Qty: {it.quantity || 1} •
-                                                    Unit: AED{" "}
-                                                    {formatNumber(
-                                                      it.unitCost || 0,
-                                                    )}
-                                                  </span>
-                                                </div>
-                                                <span className="font-mono font-bold text-slate-900">
-                                                  AED{" "}
-                                                  {formatNumber(
-                                                    Number(it.quantity || 1) *
-                                                      Number(it.unitCost || 0),
-                                                  )}
-                                                </span>
-                                              </div>
-                                            ),
-                                          )
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                                      <span className="text-[10.5px] text-slate-500 font-mono">
-                                        GL Impact: Dr. 5000 Purchases • Dr. 2220
-                                        Input VAT • Cr. 2000 AP
-                                      </span>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handlePrintBill(b)}
-                                        icon={
-                                          <PrintIcon
-                                            size={12}
-                                            className="text-emerald-700"
-                                          />
-                                        }
-                                        className="text-xs font-bold text-teal-800 hover:text-teal-900 cursor-pointer p-0 h-auto flex items-center gap-1"
-                                      >
-                                        Print Full Voucher →
-                                      </Button>
-                                    </div>
+                                          <span className="font-mono font-bold text-slate-900">
+                                            AED{" "}
+                                            {formatNumber(
+                                              Number(it.quantity || 1) *
+                                                Number(it.unitCost || 0),
+                                            )}
+                                          </span>
+                                        </div>
+                                      ))
+                                    )}
                                   </div>
                                 </div>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+
+                                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                                  <span className="text-[10.5px] text-slate-500 font-mono">
+                                    GL Impact: Dr. 5000 Purchases • Dr. 2220
+                                    Input VAT • Cr. 2000 AP
+                                  </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handlePrintBill(b)}
+                                    icon={
+                                      <PrintIcon
+                                        size={12}
+                                        className="text-emerald-700"
+                                      />
+                                    }
+                                    className="text-xs font-bold text-teal-800 hover:text-teal-900 cursor-pointer p-0 h-auto flex items-center gap-1"
+                                  >
+                                    Print Full Voucher →
+                                  </Button>
+                                </div>
+                              </ExpandedRowSection>
+                            </div>
+                          </CustomRowExpand>
                         )}
                       </Fragment>
                     );

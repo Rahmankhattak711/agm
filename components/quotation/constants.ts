@@ -31,6 +31,8 @@ export interface QuotationItem {
 export interface QuotationTemplateProps {
   initialMeta?: Partial<QuotationMeta>;
   initialItems?: QuotationItem[];
+  initialVatPct?: number | string;
+  initialDiscount?: number | string;
   availableProducts?: any[];
   onPrint?: () => void;
   hideOuterWrapper?: boolean;

@@ -25,6 +25,8 @@ import {
   FormSubmit,
   DashboardCard,
   DashboardCardGrid,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { CheckIcon, CloseIcon, PlusIcon, TrashIcon } from "@/components/icons";
 import { toast } from "@/lib/toast";
@@ -273,18 +275,10 @@ export default function LeavesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Leave Management
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Review leave applications, manage annual and sick leave approvals,
-            and track time-off balances.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Leave Management"
+        description="Review leave applications, manage annual and sick leave approvals, and track time-off balances."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -294,8 +288,8 @@ export default function LeavesPage() {
           >
             Apply for Leave
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <DashboardCardGrid cols={4}>
         <DashboardCard
@@ -325,41 +319,18 @@ export default function LeavesPage() {
       </DashboardCardGrid>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1">
-              {[
-                { id: "ALL", label: "All Requests" },
-                { id: "PENDING", label: "Pending" },
-                { id: "APPROVED", label: "Approved" },
-                { id: "REJECTED", label: "Rejected" },
-              ].map((tab) => {
-                const isActive = statusFilter === tab.id;
-                return (
-                  <Button
-                    key={tab.id}
-                    type="button"
-                    variant={isActive ? "outline" : "ghost"}
-                    size="sm"
-                    onClick={() => setStatusFilter(tab.id)}
-                    className={`text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                    }`}
-                  >
-                    {tab.label}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
-              {leaves.length} Requests Listed
-            </span>
-          </div>
-
-          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
+        <FilterBar
+          tabs={[
+            { id: "ALL", label: "All Requests" },
+            { id: "PENDING", label: "Pending" },
+            { id: "APPROVED", label: "Approved" },
+            { id: "REJECTED", label: "Rejected" },
+          ]}
+          activeTab={statusFilter}
+          onTabChange={setStatusFilter}
+          totalCount={leaves.length}
+          countLabel="Requests Listed"
+          rightAction={
             <div className="w-full sm:w-80">
               <Select
                 value={employeeFilter}
@@ -374,8 +345,8 @@ export default function LeavesPage() {
                 ]}
               />
             </div>
-          </div>
-        </div>
+          }
+        />
 
         {error ? (
           <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">

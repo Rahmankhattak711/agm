@@ -8,7 +8,7 @@ import {
 } from "@/lib/hooks/api-hooks";
 import { toast } from "@/lib/toast";
 import { PlusIcon } from "@/components/icons";
-import { Button } from "@/components/ui";
+import { Button, PageHeader } from "@/components/ui";
 import {
   ACCOUNT_TYPES,
   HierarchicalAccount,
@@ -197,18 +197,10 @@ export default function AccountsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Chart of Accounts
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage your master chart of accounts, view real-time balances, and
-            organize account structures.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Chart of Accounts"
+        description="Manage your master chart of accounts, view real-time balances, and organize account structures."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -218,8 +210,8 @@ export default function AccountsPage() {
           >
             Add Account
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <AccountsSummaryCards
         selectedType={selectedType}

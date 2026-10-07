@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { DashboardCard, DashboardCardGrid } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils/format";
 
 interface DashboardSecondaryMetricsProps {
@@ -17,42 +18,30 @@ export default function DashboardSecondaryMetrics({
   debtToEquity,
 }: DashboardSecondaryMetricsProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div className="p-4 border border-agm-box-border bg-transparent rounded-[12px] space-y-1">
-        <span className="text-[12px] font-normal text-agm-muted block">
-          Total receivables
-        </span>
-        <span className="text-[17px] font-medium text-agm-text block">
-          {formatCurrency(totalReceivables)}
-        </span>
-      </div>
+    <DashboardCardGrid cols={4}>
+      <DashboardCard
+        title="Total receivables"
+        value={formatCurrency(totalReceivables)}
+        accentColor="blue"
+      />
 
-      <div className="p-4 border border-agm-box-border bg-transparent rounded-[12px] space-y-1">
-        <span className="text-[12px] font-normal text-agm-muted block">
-          Total payables
-        </span>
-        <span className="text-[17px] font-medium text-agm-text block">
-          {formatCurrency(totalPayables)}
-        </span>
-      </div>
+      <DashboardCard
+        title="Total payables"
+        value={formatCurrency(totalPayables)}
+        accentColor="amber"
+      />
 
-      <div className="p-4 border border-agm-box-border bg-transparent rounded-[12px] space-y-1">
-        <span className="text-[12px] font-normal text-agm-muted block">
-          Operating spend
-        </span>
-        <span className="text-[17px] font-medium text-agm-text block">
-          {formatCurrency(operatingSpend)}
-        </span>
-      </div>
+      <DashboardCard
+        title="Operating spend"
+        value={formatCurrency(operatingSpend)}
+        accentColor="indigo"
+      />
 
-      <div className="p-4 border border-agm-box-border bg-transparent rounded-[12px] space-y-1">
-        <span className="text-[12px] font-normal text-agm-muted block">
-          Debt to equity
-        </span>
-        <span className="text-[17px] font-medium text-agm-text block">
-          {debtToEquity.toFixed(2)}
-        </span>
-      </div>
-    </div>
+      <DashboardCard
+        title="Debt to equity"
+        value={debtToEquity.toFixed(2)}
+        accentColor="slate"
+      />
+    </DashboardCardGrid>
   );
 }

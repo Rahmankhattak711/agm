@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useCustomers, useStatementOfAccount } from "@/lib/hooks/api-hooks";
 import { StatementOfAccountDocument } from "@/components/documents";
 import { PrintIcon, RefreshIcon, ReceiptIcon } from "@/components/icons";
-import { Button, DatePicker, Select } from "@/components/ui";
+import { Button, DatePicker, Select, PageHeader } from "@/components/ui";
 import { useSearchParams } from "next/navigation";
 
 function formatAmount(val: number | string | undefined): string {
@@ -66,47 +66,38 @@ export const StatementOfAccountReport: React.FC<
   return (
     <div className="space-y-6">
       <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs print:hidden space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-black text-slate-900 tracking-tight uppercase">
-                Customer Statement of Account (SOA)
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Official client account ledger reconciling opening balances, tax
-              invoices, <br /> receipts, credit notes, and outstanding
-              receivables.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => refetch()}
-              icon={
-                <RefreshIcon
-                  size={13}
-                  className={soaFetching ? "animate-spin" : ""}
-                />
-              }
-              className="text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border-slate-200 px-3.5 py-2"
-            >
-              <span>Refresh</span>
-            </Button>
-            <Button
-              type="button"
-              variant="primary"
-              onClick={handlePrint}
-              disabled={!soaData}
-              icon={<PrintIcon size={14} />}
-              className="text-xs font-bold bg-agm-green text-white hover:bg-agm-green/90 shadow-xs px-4 py-2"
-            >
-              <span>Print SOA</span>
-            </Button>
-          </div>
-        </div>
+        <PageHeader
+          title="Customer Statement of Account (SOA)"
+          description="Official client account ledger reconciling opening balances, tax invoices, receipts, credit notes, and outstanding receivables."
+          actions={
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => refetch()}
+                icon={
+                  <RefreshIcon
+                    size={13}
+                    className={soaFetching ? "animate-spin" : ""}
+                  />
+                }
+                className="text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border-slate-200 px-3.5 py-2"
+              >
+                <span>Refresh</span>
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handlePrint}
+                disabled={!soaData}
+                icon={<PrintIcon size={14} />}
+                className="text-xs font-bold bg-agm-green text-white hover:bg-agm-green/90 shadow-xs px-4 py-2"
+              >
+                <span>Print SOA</span>
+              </Button>
+            </>
+          }
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
           <div className="md:col-span-6 space-y-1.5">

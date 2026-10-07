@@ -16,6 +16,8 @@ import {
   Input,
   DashboardCard,
   DashboardCardGrid,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import {
   SearchIcon,
@@ -233,54 +235,49 @@ export default function RiskAssessmentsPage() {
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-agm-box-border pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-            Project Risk Assessments
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Manage, evaluate, and print project risk mitigation procedures.
-          </p>
-        </div>
+      <PageHeader
+        title="Project Risk Assessments"
+        description="Manage, evaluate, and print project risk mitigation procedures."
+        actions={
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setActiveView("LIST")}
+                className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  activeView === "LIST"
+                    ? "bg-white text-agm-green shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Saved ({recordsList.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveView("EDITOR")}
+                className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  activeView === "EDITOR"
+                    ? "bg-white text-agm-green shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Editor
+              </button>
+            </div>
 
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button
+            <Button
               type="button"
-              onClick={() => setActiveView("LIST")}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                activeView === "LIST"
-                  ? "bg-white text-agm-green shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
+              variant="primary"
+              size="sm"
+              onClick={handleCreateNew}
+              className="text-xs bg-agm-green hover:bg-agm-green-2 text-white flex items-center gap-1.5 shadow-xs cursor-pointer font-semibold"
             >
-              Saved ({recordsList.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveView("EDITOR")}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                activeView === "EDITOR"
-                  ? "bg-white text-agm-green shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Editor
-            </button>
+              <PlusIcon size={14} />
+              <span>New Assessment</span>
+            </Button>
           </div>
-
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={handleCreateNew}
-            className="text-xs bg-agm-green hover:bg-agm-green-2 text-white flex items-center gap-1.5 shadow-xs cursor-pointer font-semibold"
-          >
-            <PlusIcon size={14} />
-            <span>New Assessment</span>
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       {activeView === "LIST" ? (
         <div className="space-y-6">
@@ -308,40 +305,21 @@ export default function RiskAssessmentsPage() {
             />
           </DashboardCardGrid>
 
-          <div className="bg-white p-3 rounded-xl border border-agm-box-border shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
-            <div className="relative w-full md:w-80">
-              <Input
-                placeholder="Search ref, customer, project, location..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                leftIcon={<SearchIcon className="w-4 h-4 text-agm-muted" />}
-                className="text-xs bg-slate-50/50 border-agm-box-border"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
-              <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
-                {["ALL", "COMPLETED", "ACTIVE", "DRAFT"].map((st) => (
-                  <button
-                    key={st}
-                    type="button"
-                    onClick={() => setStatusFilter(st)}
-                    className={`px-2.5 py-1 text-xs rounded-md font-medium transition cursor-pointer ${
-                      statusFilter === st
-                        ? "bg-white text-slate-900 shadow-2xs font-semibold"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    {st === "ALL"
-                      ? `All (${recordsList.length})`
-                      : st === "COMPLETED"
-                        ? `Approved (${completedCount})`
-                        : st}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          <FilterBar
+            tabs={[
+              { id: "ALL", label: `All (${recordsList.length})` },
+              { id: "COMPLETED", label: `Approved (${completedCount})` },
+              { id: "ACTIVE", label: `Active (${activeCount})` },
+              { id: "DRAFT", label: `Draft (${draftCount})` },
+            ]}
+            activeTab={statusFilter}
+            onTabChange={(st) => setStatusFilter(st)}
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search ref, customer, project, location..."
+            totalCount={filteredRecords.length}
+            countLabel="Assessments"
+          />
 
           <DataTable
             columns={columns}

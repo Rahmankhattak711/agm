@@ -103,7 +103,7 @@ export async function PUT(
       reference,
       preparedBy,
       contact,
-      vatPct = 5,
+      vatPct = 0,
       discount = 0,
       notes,
       terms,

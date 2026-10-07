@@ -8,4 +8,3 @@ export function parseDescriptionPoints(desc: string): string[] {
     .filter(Boolean);
   return parts.length > 0 ? parts : [desc];
 }
-

@@ -52,6 +52,8 @@ import {
   FormTextarea,
   FormSubmit,
   EmptyState,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -729,18 +731,10 @@ export default function PurchaseOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Purchase Orders
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Create supplier purchase orders, track delivery milestones, and
-            manage material procurement.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Purchase Orders"
+        description="Create supplier purchase orders, track delivery milestones, and manage material procurement."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -750,8 +744,8 @@ export default function PurchaseOrdersPage() {
           >
             Create Purchase Order
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <ReportKpiGrid cols={4}>
         <ReportKpiCard
@@ -829,54 +823,25 @@ export default function PurchaseOrdersPage() {
       </div>
 
       <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
-              {[
-                { id: "ALL", label: "All POs" },
-                { id: "DRAFT", label: "Draft" },
-                { id: "ORDERED", label: "Ordered" },
-                { id: "RECEIVED", label: "Received" },
-                { id: "CANCELLED", label: "Cancelled" },
-              ].map((tab) => {
-                const isActive = statusFilter === tab.id;
-                return (
-                  <Button
-                    key={tab.id}
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setStatusFilter(tab.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                    }`}
-                  >
-                    {tab.label}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
-              {filteredPOs.length} Orders Listed
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-2.5 items-center justify-between pt-1 border-t border-slate-200/60">
-            <Input
-              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-              placeholder="Search PO #, supplier, shop, quote ref..."
-              containerClassName="w-full sm:w-80"
-              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+        <FilterBar
+          tabs={[
+            { id: "ALL", label: "All POs" },
+            { id: "DRAFT", label: "Draft" },
+            { id: "ORDERED", label: "Ordered" },
+            { id: "RECEIVED", label: "Received" },
+            { id: "CANCELLED", label: "Cancelled" },
+          ]}
+          activeTab={statusFilter}
+          onTabChange={(id) => setStatusFilter(id)}
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search PO #, supplier, shop, quote ref..."
+          totalCount={filteredPOs.length}
+          countLabel="Orders Listed"
+          rightAction={
+            <div className="w-full sm:w-56">
               <Select
-                containerClassName="w-full sm:w-56"
+                containerClassName="w-full"
                 className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
                 value={supplierFilter}
                 onChange={(e) => setSupplierFilter(e.target.value)}
@@ -889,8 +854,8 @@ export default function PurchaseOrdersPage() {
                 ))}
               </Select>
             </div>
-          </div>
-        </div>
+          }
+        />
 
         {error ? (
           <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">

@@ -918,9 +918,15 @@ export interface Project {
     id: string;
     quotationNo: string;
     customer: string;
+    vatPct?: number | string | null;
+    vatAmount?: number | string | null;
     totalAmount: number | string;
     status: string;
   } | null;
+
+  vatRate?: number | string | null;
+  vatAmount?: number | string | null;
+  invoiceNumber?: string | null;
 
   customerId?: string | null;
   customer?: {

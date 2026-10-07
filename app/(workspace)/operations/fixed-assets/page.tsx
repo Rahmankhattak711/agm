@@ -20,6 +20,8 @@ import {
   FormSubmit,
   DashboardCard,
   DashboardCardGrid,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { BuildingIcon, PlusIcon, SearchIcon } from "@/components/icons";
 
@@ -198,18 +200,10 @@ export default function FixedAssetsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Fixed Assets
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Track capital equipment, machinery, company vehicles, and automated
-            depreciation schedules.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Fixed Assets"
+        description="Track capital equipment, machinery, company vehicles, and automated depreciation schedules."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -219,8 +213,8 @@ export default function FixedAssetsPage() {
           >
             Register New Asset
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <DashboardCardGrid cols={4}>
         <DashboardCard
@@ -258,48 +252,19 @@ export default function FixedAssetsPage() {
       </DashboardCardGrid>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1">
-              {[{ value: "ALL", label: "All Assets" }, ...ASSET_CATEGORIES].map(
-                (tab) => {
-                  const isActive = selectedCategory === tab.value;
-                  return (
-                    <Button
-                      key={tab.value}
-                      type="button"
-                      variant={isActive ? "outline" : "ghost"}
-                      size="sm"
-                      onClick={() => setSelectedCategory(tab.value)}
-                      className={`text-xs font-bold transition-all cursor-pointer ${
-                        isActive
-                          ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                          : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                      }`}
-                    >
-                      {tab.label}
-                    </Button>
-                  );
-                },
-              )}
-            </div>
-
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
-              {filteredAssets.length} Assets Listed
-            </span>
-          </div>
-
-          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <Input
-              containerClassName="w-full sm:w-80"
-              placeholder="Search asset code, name, category..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              leftIcon={<SearchIcon size={16} />}
-              className="py-1.5 shadow-2xs"
-            />
-          </div>
-        </div>
+        <FilterBar
+          tabs={[
+            { id: "ALL", label: "All Assets" },
+            ...ASSET_CATEGORIES.map((c) => ({ id: c.value, label: c.label })),
+          ]}
+          activeTab={selectedCategory}
+          onTabChange={setSelectedCategory}
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search asset code, name, category..."
+          totalCount={filteredAssets.length}
+          countLabel="Assets Listed"
+        />
 
         {error ? (
           <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">

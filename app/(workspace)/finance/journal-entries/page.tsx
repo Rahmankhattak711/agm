@@ -21,6 +21,8 @@ import {
   Select,
   DashboardCard,
   DashboardCardGrid,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import {
   ChevronDownIcon,
@@ -372,18 +374,10 @@ export default function JournalEntriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Journal Entries
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Record double-entry transactions, link active project scopes, make
-            ledger adjustments, and track financial movements.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Journal Entries"
+        description="Record double-entry transactions, link active project scopes, make ledger adjustments, and track financial movements."
+        actions={
           <Button
             onClick={handleOpenAddModal}
             variant="primary"
@@ -393,8 +387,8 @@ export default function JournalEntriesPage() {
           >
             New Journal Entry
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <DashboardCardGrid cols={4}>
         <DashboardCard
@@ -432,50 +426,20 @@ export default function JournalEntriesPage() {
         />
       </DashboardCardGrid>
 
-      <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar py-0.5 max-w-full">
-            {[
-              { id: "ALL", label: "All Entries" },
-              { id: "POSTED", label: "Posted to GL" },
-              { id: "DRAFT", label: "Drafts" },
-            ].map((tab) => {
-              const isActive = statusFilter === tab.id;
-              return (
-                <Button
-                  key={tab.id}
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setStatusFilter(tab.id as any)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                  }`}
-                >
-                  {tab.label}
-                </Button>
-              );
-            })}
-          </div>
-
-          <span className="text-[11px] font-bold text-slate-500 font-mono">
-            {filteredEntries.length} Vouchers Listed
-          </span>
-        </div>
-
-        <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-          <Input
-            leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-            placeholder="Search entry #, project, reference, memo..."
-            containerClassName="w-full sm:w-80"
-            className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-      </div>
+      <FilterBar
+        tabs={[
+          { id: "ALL", label: "All Entries" },
+          { id: "POSTED", label: "Posted to GL" },
+          { id: "DRAFT", label: "Drafts" },
+        ]}
+        activeTab={statusFilter}
+        onTabChange={(id) => setStatusFilter(id as any)}
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search entry #, project, reference, memo..."
+        totalCount={filteredEntries.length}
+        countLabel="Vouchers Listed"
+      />
 
       <div className="space-y-3">
         {isLoading ? (

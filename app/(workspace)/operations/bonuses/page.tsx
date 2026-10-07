@@ -25,6 +25,8 @@ import {
   FormSubmit,
   DashboardCard,
   DashboardCardGrid,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { CheckIcon, PlusIcon, TrashIcon } from "@/components/icons";
 import { toast } from "@/lib/toast";
@@ -281,19 +283,11 @@ export default function BonusesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Bonuses &amp; Payroll
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage performance bonuses, commission allocations, milestone
-            rewards, and approval statuses.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {isHR && (
+      <PageHeader
+        title="Bonuses & Payroll"
+        description="Manage performance bonuses, commission allocations, milestone rewards, and approval statuses."
+        actions={
+          isHR ? (
             <Button
               variant="primary"
               size="sm"
@@ -303,9 +297,9 @@ export default function BonusesPage() {
             >
               Award Bonus
             </Button>
-          )}
-        </div>
-      </div>
+          ) : undefined
+        }
+      />
 
       <DashboardCardGrid cols={4}>
         <DashboardCard
@@ -341,42 +335,19 @@ export default function BonusesPage() {
       </DashboardCardGrid>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1">
-              {[
-                { id: "ALL", label: "All Grants" },
-                { id: "APPROVED", label: "Approved" },
-                { id: "PENDING", label: "Pending" },
-                { id: "PAID", label: "Paid" },
-              ].map((tab) => {
-                const isActive = statusFilter === tab.id;
-                return (
-                  <Button
-                    key={tab.id}
-                    type="button"
-                    variant={isActive ? "outline" : "ghost"}
-                    size="sm"
-                    onClick={() => setStatusFilter(tab.id)}
-                    className={`text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                    }`}
-                  >
-                    {tab.label}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
-              {filteredBonuses.length} Grants Listed
-            </span>
-          </div>
-
-          <div className="pt-1 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
+        <FilterBar
+          tabs={[
+            { id: "ALL", label: "All Grants" },
+            { id: "APPROVED", label: "Approved" },
+            { id: "PENDING", label: "Pending" },
+            { id: "PAID", label: "Paid" },
+          ]}
+          activeTab={statusFilter}
+          onTabChange={setStatusFilter}
+          totalCount={filteredBonuses.length}
+          countLabel="Grants Listed"
+          rightAction={
+            <div className="flex flex-wrap items-center gap-2">
               <Select
                 containerClassName="w-auto"
                 value={selectedMonth}
@@ -400,23 +371,23 @@ export default function BonusesPage() {
                   label: y.toString(),
                 }))}
               />
-            </div>
 
-            <Select
-              containerClassName="w-full sm:w-64"
-              value={employeeFilter}
-              onChange={(e) => setEmployeeFilter(e.target.value)}
-              className="py-1.5 shadow-2xs cursor-pointer"
-              options={[
-                { value: "", label: "All Employees" },
-                ...employees.map((emp) => ({
-                  value: emp.id,
-                  label: `${emp.firstName} ${emp.lastName} (${emp.employeeCode})`,
-                })),
-              ]}
-            />
-          </div>
-        </div>
+              <Select
+                containerClassName="w-full sm:w-64"
+                value={employeeFilter}
+                onChange={(e) => setEmployeeFilter(e.target.value)}
+                className="py-1.5 shadow-2xs cursor-pointer"
+                options={[
+                  { value: "", label: "All Employees" },
+                  ...employees.map((emp) => ({
+                    value: emp.id,
+                    label: `${emp.firstName} ${emp.lastName} (${emp.employeeCode})`,
+                  })),
+                ]}
+              />
+            </div>
+          }
+        />
 
         {error ? (
           <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">

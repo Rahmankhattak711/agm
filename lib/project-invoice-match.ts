@@ -6,6 +6,8 @@ export interface MatchableInvoice {
   quotationRef: string | null;
   projectScope: string | null;
   subtotal: unknown;
+  vatRate?: unknown;
+  vatAmount?: unknown;
   totalAmount: unknown;
   items?: { totalAmount: unknown }[];
 }
@@ -17,7 +19,12 @@ export interface MatchableProject {
   contractValue: unknown;
   budget: unknown;
   customer?: { name: string } | null;
-  quotation?: { quotationNo?: string | null; totalAmount?: unknown } | null;
+  quotation?: {
+    quotationNo?: string | null;
+    totalAmount?: unknown;
+    vatPct?: unknown;
+    vatAmount?: unknown;
+  } | null;
 }
 
 export const INVOICE_MATCH_SELECT = {
@@ -27,6 +34,8 @@ export const INVOICE_MATCH_SELECT = {
   quotationRef: true,
   projectScope: true,
   subtotal: true,
+  vatRate: true,
+  vatAmount: true,
   totalAmount: true,
   items: { select: { totalAmount: true } },
 } as const;
@@ -53,7 +62,8 @@ export function findMatchingInvoice<I extends MatchableInvoice>(
 
   if (!match && pClean) {
     match = invoices.find(
-      (inv) => inv.projectScope && inv.projectScope.trim().toLowerCase() === pClean,
+      (inv) =>
+        inv.projectScope && inv.projectScope.trim().toLowerCase() === pClean,
     );
   }
 
@@ -65,14 +75,25 @@ export function findMatchingInvoice<I extends MatchableInvoice>(
       const custMatch =
         !project.customer?.name ||
         (inv.customerName &&
-          inv.customerName.toLowerCase() === project.customer.name.toLowerCase());
+          inv.customerName.toLowerCase() ===
+            project.customer.name.toLowerCase());
       return scopeMatch && custMatch;
     });
   }
 
   const quoteNo = project.quotation?.quotationNo?.toLowerCase();
-  if (!match && quoteNo) {
-    match = invoices.find((inv) => inv.quotationRef?.toLowerCase() === quoteNo);
+  const quoteRefMatch =
+    project.name.match(/\((AGM-QTN-[^)]+|QTN-[^)]+)\)/i) ||
+    project.description?.match(/(AGM-QTN-[\w-]+|QTN-[\w-]+)/i);
+  const extractedQuoteRef = quoteRefMatch
+    ? quoteRefMatch[1].toLowerCase()
+    : null;
+
+  if (!match && (quoteNo || extractedQuoteRef)) {
+    const targetRef = quoteNo || extractedQuoteRef;
+    match = invoices.find(
+      (inv) => inv.quotationRef && inv.quotationRef.toLowerCase() === targetRef,
+    );
   }
 
   return match;
@@ -83,17 +104,51 @@ export function resolveProjectValues(
   invoices: MatchableInvoice[],
 ) {
   const inv = findMatchingInvoice(project, invoices);
+  const invTotal =
+    inv && Number(inv.totalAmount || 0) > 0 ? Number(inv.totalAmount) : 0;
   const itemsSum = inv ? sumBy(inv.items, (i) => i.totalAmount) : 0;
   const matchedInvAmount =
-    itemsSum || (inv ? Number(inv.subtotal || inv.totalAmount) : 0);
+    invTotal ||
+    (inv && Number(inv.subtotal || 0) > 0 ? Number(inv.subtotal) : 0) ||
+    itemsSum;
+
   const contractValue =
     matchedInvAmount ||
-    Number(
-      project.contractValue ||
-        project.budget ||
-        project.quotation?.totalAmount ||
-        0,
-    );
-  const budget = matchedInvAmount || Number(project.budget || contractValue || 0);
-  return { contractValue, budget };
+    (project.contractValue !== undefined &&
+    project.contractValue !== null &&
+    Number(project.contractValue) > 0
+      ? Number(project.contractValue)
+      : 0) ||
+    Number(project.budget || project.quotation?.totalAmount || 0);
+
+  const budget =
+    matchedInvAmount ||
+    (project.budget !== undefined &&
+    project.budget !== null &&
+    Number(project.budget) > 0
+      ? Number(project.budget)
+      : 0) ||
+    contractValue;
+
+  const vatRate =
+    inv?.vatRate !== undefined && inv?.vatRate !== null
+      ? Number(inv.vatRate)
+      : project.quotation?.vatPct !== undefined &&
+          project.quotation?.vatPct !== null
+        ? Number(project.quotation.vatPct)
+        : inv && Number(inv.vatAmount || 0) > 0
+          ? 5
+          : 0;
+
+  const vatAmount =
+    inv?.vatAmount !== undefined && inv?.vatAmount !== null
+      ? Number(inv.vatAmount)
+      : project.quotation?.vatAmount !== undefined &&
+          project.quotation?.vatAmount !== null
+        ? Number(project.quotation.vatAmount)
+        : 0;
+
+  const invoiceNumber = inv?.invoiceNumber || null;
+
+  return { contractValue, budget, vatRate, vatAmount, invoiceNumber };
 }

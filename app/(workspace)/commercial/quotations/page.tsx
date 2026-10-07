@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PlusIcon, ChevronLeftIcon } from "@/components/icons";
-import { Button } from "@/components/ui";
+import { Button, PageHeader } from "@/components/ui";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
 import QuotationTemplate, {
@@ -17,11 +17,7 @@ import {
   useQuotations,
   useSalesInvoices,
 } from "@/lib/hooks/api-hooks";
-import {
-  QuotationKPIs,
-  QuotationFilters,
-  QuotationTable,
-} from "./components";
+import { QuotationKPIs, QuotationFilters, QuotationTable } from "./components";
 import { formatNumber } from "@/lib/utils/format";
 
 export default function CommercialQuotationsPage() {
@@ -163,7 +159,11 @@ export default function CommercialQuotationsPage() {
   }, [quotationsList, search, statusFilter]);
 
   const totalQuotedVolume = useMemo(
-    () => quotationsList.reduce((s: number, q: any) => s + Number(q.totalAmount || 0), 0),
+    () =>
+      quotationsList.reduce(
+        (s: number, q: any) => s + Number(q.totalAmount || 0),
+        0,
+      ),
     [quotationsList],
   );
 
@@ -181,22 +181,17 @@ export default function CommercialQuotationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            {activeView === "EDITOR"
-              ? "Quotation Editor"
-              : "Commercial Quotations"}
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {activeView === "EDITOR"
-              ? "Draft, edit, and print official commercial proposals with custom payment milestones."
-              : "Create commercial proposals, generate itemized BOQs, and convert accepted quotes into sales invoices."}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {activeView === "EDITOR" ? (
+      <PageHeader
+        title={
+          activeView === "EDITOR" ? "Quotation Editor" : "Commercial Quotations"
+        }
+        description={
+          activeView === "EDITOR"
+            ? "Draft, edit, and print official commercial proposals with custom payment milestones."
+            : "Create commercial proposals, generate itemized BOQs, and convert accepted quotes into sales invoices."
+        }
+        actions={
+          activeView === "EDITOR" ? (
             <Button
               variant="outline"
               size="sm"
@@ -222,15 +217,27 @@ export default function CommercialQuotationsPage() {
             >
               New Quotation
             </Button>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       {activeView === "EDITOR" ? (
         <div className="overflow-visible">
           <QuotationTemplate
             initialMeta={dynamicQuotationMeta}
             initialItems={dynamicQuotationItems}
+            initialVatPct={
+              selectedQuotation?.vatPct !== undefined &&
+              selectedQuotation?.vatPct !== null
+                ? Number(selectedQuotation.vatPct)
+                : 0
+            }
+            initialDiscount={
+              selectedQuotation?.discount !== undefined &&
+              selectedQuotation?.discount !== null
+                ? Number(selectedQuotation.discount)
+                : 0
+            }
             availableProducts={products}
           />
         </div>

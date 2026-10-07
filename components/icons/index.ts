@@ -88,3 +88,4 @@ export * from "./DoorIcon";
 export * from "./PaintbrushIcon";
 export * from "./ZapIcon";
 export * from "./WrenchIcon";
+export * from "./UserPlusIcon";

@@ -28,6 +28,8 @@ import {
   FormSelect,
   FormSubmit,
   Badge,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -195,23 +197,15 @@ export default function PurchaseRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Purchase Requests
-            </h2>
-            <Badge tone="purple" size="md">
-              Procurement Cycle — Step 1
-            </Badge>
-          </div>
-          <p className="text-xs text-slate-500">
-            Manage site material requisitions, track approvals, and convert
-            requisitions to purchase orders.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Purchase Requests"
+        badge={
+          <Badge tone="purple" size="md">
+            Procurement Cycle — Step 1
+          </Badge>
+        }
+        description="Manage site material requisitions, track approvals, and convert requisitions to purchase orders."
+        actions={
           <Button
             variant="dark"
             size="sm"
@@ -221,8 +215,8 @@ export default function PurchaseRequestsPage() {
           >
             Create Purchase Request
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 flex flex-col justify-between space-y-2">
@@ -259,40 +253,22 @@ export default function PurchaseRequestsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
-        <div className="relative flex-1 max-w-md">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-          <input
-            type="text"
-            placeholder="Search request number, requester, department, reason..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:border-purple-500"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        <div className="flex items-center gap-1.5 text-xs">
-          {["ALL", "PENDING_APPROVAL", "APPROVED", "CONVERTED", "REJECTED"].map(
-            (st) => (
-              <button
-                key={st}
-                type="button"
-                onClick={() => setStatusFilter(st)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                  statusFilter === st
-                    ? "bg-slate-900 text-white shadow-2xs"
-                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
-                }`}
-              >
-                {st}
-              </button>
-            ),
-          )}
-        </div>
-      </div>
+      <FilterBar
+        tabs={[
+          { id: "ALL", label: "All Requests" },
+          { id: "PENDING_APPROVAL", label: "Pending" },
+          { id: "APPROVED", label: "Approved" },
+          { id: "CONVERTED", label: "Converted" },
+          { id: "REJECTED", label: "Rejected" },
+        ]}
+        activeTab={statusFilter}
+        onTabChange={(st) => setStatusFilter(st)}
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search request number, requester, department, reason..."
+        totalCount={filteredRequests.length}
+        countLabel="Requests Listed"
+      />
 
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">

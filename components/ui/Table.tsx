@@ -57,8 +57,14 @@ export const TableHeaderCell: React.FC<
       : align === "right"
         ? "text-right"
         : "text-left";
+  const cleanClassName = className
+    .replace(/\bpy-3\.5\b/g, "py-2")
+    .replace(/\bpy-3\b/g, "py-2");
   return (
-    <th className={`pb-3 px-3 ${alignClass} ${className}`} {...props}>
+    <th
+      className={`py-2 px-3 text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider text-slate-600 whitespace-nowrap ${alignClass} ${cleanClassName}`}
+      {...props}
+    >
       {children}
     </th>
   );

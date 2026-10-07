@@ -342,6 +342,23 @@ export function usePostSalesInvoice() {
   });
 }
 
+export function useDeleteSalesInvoice() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ success: boolean }>(`/api/commercial/sales-invoices/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sales-invoices"] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["journal-entries"] });
+      qc.invalidateQueries({ queryKey: ["profit-loss"] });
+      qc.invalidateQueries({ queryKey: ["reports"] });
+    },
+  });
+}
+
 export interface CustomerPayment {
   id: string;
   receiptNumber: string;

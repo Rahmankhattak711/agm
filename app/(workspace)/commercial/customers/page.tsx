@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon } from "@/components/icons";
-import { Button } from "@/components/ui";
+import { Button, PageHeader } from "@/components/ui";
 import { toast } from "@/lib/toast";
 import { useCustomers, Customer } from "@/lib/hooks/api-hooks";
 import {
@@ -114,18 +114,10 @@ export default function CustomersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Customers
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage client profiles, credit limits, contact information, and
-            real-time statements of account.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+      <PageHeader
+        title="Customers"
+        description="Manage client profiles, credit limits, contact information, and real-time statements of account."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -135,8 +127,8 @@ export default function CustomersPage() {
           >
             Add New Customer
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <CustomerKpis
         totalClients={customers.length}

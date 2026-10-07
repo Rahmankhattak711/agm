@@ -1,10 +1,8 @@
-export function formatNumber(
-  val: number | string | undefined | null,
-): string {
+export function formatNumber(val: number | string | undefined | null): string {
   const num = Number(val || 0);
   return num.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   });
 }
 

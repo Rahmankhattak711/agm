@@ -25,6 +25,8 @@ import {
   FormTextarea,
   FormSubmit,
   Badge,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -118,23 +120,15 @@ export default function DebitNotesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Debit Notes
-            </h2>
-            <Badge tone="amber" size="md">
-              Procurement Cycle — Adjustments
-            </Badge>
-          </div>
-          <p className="text-xs text-slate-500">
-            Issue supplier debit notes, record rejected materials, and reduce
-            accounts payable liabilities.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Debit Notes"
+        badge={
+          <Badge tone="amber" size="md">
+            Procurement Cycle — Adjustments
+          </Badge>
+        }
+        description="Issue supplier debit notes, record rejected materials, and reduce accounts payable liabilities."
+        actions={
           <Button
             variant="dark"
             size="sm"
@@ -144,8 +138,8 @@ export default function DebitNotesPage() {
           >
             Create Debit Note
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-100 flex flex-col justify-between space-y-2">
@@ -179,16 +173,13 @@ export default function DebitNotesPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
-        <Search size={14} className="text-slate-400 ml-2" />
-        <input
-          type="text"
-          placeholder="Search debit note number, supplier, reason..."
-          className="w-full text-xs bg-transparent outline-none text-slate-800"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search debit note number, supplier, reason..."
+        totalCount={filteredNotes.length}
+        countLabel="Debit Notes Listed"
+      />
 
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">

@@ -21,6 +21,8 @@ import {
   FormTextarea,
   FormSubmit,
   Badge,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -244,32 +246,26 @@ export default function CustomerPaymentsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5 print:hidden">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-              Customer Payments
-            </h2>
-            <Badge tone="amber" size="md">
-              Double-Entry Synced
-            </Badge>
-          </div>
-          <p className="text-xs text-slate-500">
-            Record customer receipts, reconcile outstanding invoice balances,
-            and update accounts receivable.
-          </p>
-        </div>
-
-        <Button
-          variant="dark"
-          size="sm"
-          onClick={handleOpenCreate}
-          icon={<Plus size={14} />}
-          className="text-xs font-bold bg-slate-900 text-white hover:bg-slate-800"
-        >
-          Record Customer Receipt
-        </Button>
-      </div>
+      <PageHeader
+        title="Customer Payments"
+        badge={
+          <Badge tone="amber" size="md">
+            Double-Entry Synced
+          </Badge>
+        }
+        description="Record customer receipts, reconcile outstanding invoice balances, and update accounts receivable."
+        actions={
+          <Button
+            variant="dark"
+            size="sm"
+            onClick={handleOpenCreate}
+            icon={<Plus size={14} />}
+            className="text-xs font-bold bg-slate-900 text-white hover:bg-slate-800"
+          >
+            Record Customer Receipt
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:grid-cols-3">
         <KpiCard
@@ -294,15 +290,13 @@ export default function CustomerPaymentsPage() {
         </div>
       </div>
 
-      <div className="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm print:hidden">
-        <Input
-          leftIcon={<Search size={15} />}
-          placeholder="Search receipt number, customer name, or transaction reference..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border-none bg-slate-50 focus:bg-white"
-        />
-      </div>
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search receipt number, customer name, or transaction reference..."
+        totalCount={filteredPayments.length}
+        countLabel="Receipts Listed"
+      />
 
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm bg-white">
         <Table>

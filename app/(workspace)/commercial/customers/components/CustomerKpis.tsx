@@ -2,6 +2,12 @@
 
 import React from "react";
 import { DashboardCard, DashboardCardGrid } from "@/components/ui";
+import {
+  BuildingIcon,
+  CreditCardIcon,
+  AlertCircleIcon,
+  UserIcon,
+} from "@/components/icons";
 import { formatNumber } from "@/lib/utils/format";
 
 export interface CustomerKpisProps {
@@ -23,28 +29,32 @@ export function CustomerKpis({
         title="Total Active Clients"
         value={totalClients}
         subtitle={`${totalClients} registered client accounts`}
-        variant="default"
+        icon={<UserIcon size={16} />}
+        accentColor="blue"
       />
 
       <DashboardCard
         title="Outstanding Receivables"
         value={`AED ${formatNumber(totalReceivables)}`}
         subtitle="Open invoices due for collection"
-        variant={totalReceivables > 0 ? "danger" : "default"}
+        icon={<AlertCircleIcon size={16} />}
+        accentColor={totalReceivables > 0 ? "rose" : "slate"}
       />
 
       <DashboardCard
         title="Total Credit Facility"
         value={`AED ${formatNumber(totalCreditLimits)}`}
         subtitle="Extended credit limits"
-        variant="default"
+        icon={<CreditCardIcon size={16} />}
+        accentColor="indigo"
       />
 
       <DashboardCard
         title="Corporate Accounts"
         value={corporateCount}
         subtitle="Registered company entities"
-        variant="default"
+        icon={<BuildingIcon size={16} />}
+        accentColor="emerald"
       />
     </DashboardCardGrid>
   );

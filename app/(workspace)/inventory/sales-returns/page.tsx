@@ -4,7 +4,6 @@ import React, { Fragment, useCallback, useMemo, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import {
   ChevronDownIcon,
-  CloseIcon,
   PlusIcon,
   PrintIcon,
   RotateCcwIcon,
@@ -25,6 +24,8 @@ import {
   Input,
   Textarea,
   EmptyState,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import {
   ReportKpiCard,
@@ -39,6 +40,7 @@ import {
   CreditNote,
 } from "@/lib/hooks/commercial-hooks";
 import { formatNumber } from "@/lib/utils/format";
+import { SalesReturnExpandedRow } from "./components/SalesReturnExpandedRow";
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
   POSTED: "bg-emerald-50 text-emerald-800 border-emerald-200",
@@ -587,18 +589,10 @@ export default function SalesReturnsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Sales Returns &amp; Credit Notes
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Process client returned goods, track credit adjustments, and post
-            automated accounting GL reversals.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Sales Returns & Credit Notes"
+        description="Process client returned goods, track credit adjustments, and post automated accounting GL reversals."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -608,8 +602,8 @@ export default function SalesReturnsPage() {
           >
             Log Sales Return / Credit Note
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="print:hidden">
         <ReportKpiGrid cols={4}>
@@ -651,46 +645,16 @@ export default function SalesReturnsPage() {
       </div>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 print:hidden">
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1">
-              {STATUS_FILTERS.map((tab) => {
-                const isActive = statusFilter === tab.id;
-                return (
-                  <Button
-                    key={tab.id}
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setStatusFilter(tab.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                    }`}
-                  >
-                    {tab.label}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
-              {filteredReturns.length} Vouchers Listed
-            </span>
-          </div>
-
-          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <Input
-              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-              placeholder="Search return number, invoice ref, client..."
-              containerClassName="w-full sm:w-96"
-              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
+        <FilterBar
+          tabs={STATUS_FILTERS as any}
+          activeTab={statusFilter}
+          onTabChange={(id) => setStatusFilter(id as any)}
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search return number, invoice ref, client..."
+          totalCount={filteredReturns.length}
+          countLabel="Vouchers Listed"
+        />
 
         <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
           <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
@@ -911,190 +875,18 @@ export default function SalesReturnsPage() {
                       </TableRow>
 
                       {isExpanded && (
-                        <TableRow className="hover:bg-transparent bg-slate-50/70">
-                          <TableCell
-                            colSpan={8}
-                            className="p-0 border-b-2 border-emerald-600/40"
-                          >
-                            <div className="px-6 py-5 space-y-4 border-l-4 border-l-emerald-600 bg-gradient-to-b from-white via-slate-50/40 to-slate-100/40 shadow-inner">
-                              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
-                                <div className="flex flex-wrap items-center gap-2.5">
-                                  <span className="px-2.5 py-1 rounded-lg bg-teal-900 text-teal-200 font-mono font-bold text-xs shadow-2xs">
-                                    {item.creditNoteNumber}
-                                  </span>
-                                  <span className="text-xs font-bold text-slate-900">
-                                    {customerDisplay}
-                                  </span>
-                                  {invoiceRefDisplay !== "—" && (
-                                    <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-bold">
-                                      Invoice #{invoiceRefDisplay}
-                                    </span>
-                                  )}
-                                  <span
-                                    className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status] || STATUS_BADGE_CLASSES.DRAFT}`}
-                                  >
-                                    {item.status}
-                                  </span>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handlePrintRow(item)}
-                                    icon={
-                                      <PrintIcon
-                                        size={13}
-                                        className="text-emerald-700"
-                                      />
-                                    }
-                                    className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs"
-                                  >
-                                    Print Voucher (PDF)
-                                  </Button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setExpandedReturnId(null)}
-                                    className="text-xs text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 transition cursor-pointer"
-                                    title="Close preview"
-                                  >
-                                    <CloseIcon size={15} />
-                                  </button>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                <div className="p-3 bg-rose-50/90 border border-rose-200/80 rounded-xl space-y-0.5">
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block">
-                                    Total Credit Amount
-                                  </span>
-                                  <span className="text-base font-black font-mono text-rose-800 block">
-                                    {formatAed(totalAmt)}
-                                  </span>
-                                  <span className="text-[10px] text-rose-600/90 font-medium block">
-                                    Receivable deduction
-                                  </span>
-                                </div>
-
-                                <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-0.5 shadow-2xs">
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                                    Net Scope (Excl. VAT)
-                                  </span>
-                                  <span className="text-base font-black font-mono text-slate-900 block">
-                                    AED {formatNumber(subtotalAmt)}
-                                  </span>
-                                  <span className="text-[10px] text-slate-500 block">
-                                    Direct revenue deduction
-                                  </span>
-                                </div>
-
-                                <div className="p-3 bg-emerald-50/90 border border-emerald-200/80 rounded-xl space-y-0.5">
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">
-                                    Output VAT Adjustment (5%)
-                                  </span>
-                                  <span className="text-base font-black font-mono text-emerald-800 block">
-                                    AED {formatNumber(vatAmt)}
-                                  </span>
-                                  <span className="text-[10px] text-emerald-600/90 block">
-                                    UAE FTA standard rated (5%)
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="p-4 bg-white rounded-xl border border-slate-200/90 space-y-2.5 shadow-2xs">
-                                  <div className="flex items-center gap-1.5 pb-2 border-b border-slate-100 text-slate-900 font-bold text-[11px] uppercase tracking-wider">
-                                    <span className="w-2 h-2 rounded-full bg-teal-600"></span>
-                                    Client &amp; Scope Details
-                                  </div>
-                                  <div className="space-y-1.5 text-xs">
-                                    <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">
-                                        Customer:
-                                      </span>
-                                      <span className="font-bold text-slate-900 text-right">
-                                        {customerDisplay}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">
-                                        Project Scope:
-                                      </span>
-                                      <span className="font-semibold text-slate-800 text-right">
-                                        {scopeDisplay}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">
-                                        Linked Invoice:
-                                      </span>
-                                      <span className="font-mono text-teal-800 font-bold text-right">
-                                        {invoiceRefDisplay !== "—"
-                                          ? `#${invoiceRefDisplay}`
-                                          : "Direct Adjustment"}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">
-                                        Return Date:
-                                      </span>
-                                      <span className="font-mono text-slate-700 text-right">
-                                        {dateDisplay}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="p-4 bg-white rounded-xl border border-slate-200/90 space-y-2.5 shadow-2xs">
-                                  <div className="flex items-center gap-1.5 pb-2 border-b border-slate-100 text-slate-900 font-bold text-[11px] uppercase tracking-wider">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-                                    Accounting &amp; Ledger Audit
-                                  </div>
-                                  <div className="space-y-1.5 text-xs">
-                                    <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">
-                                        Type:
-                                      </span>
-                                      <span className="font-bold text-slate-800 text-right">
-                                        Sales Credit Note
-                                      </span>
-                                    </div>
-                                    <div>
-                                      <span className="text-slate-500 font-medium block">
-                                        Double-Entry Posting:
-                                      </span>
-                                      <span className="font-mono text-[11px] text-slate-700 block mt-0.5">
-                                        Dr. Service Income (4000) • Dr. VAT
-                                        Output (2210) • Cr. AR (1200)
-                                      </span>
-                                    </div>
-                                    <div className="flex items-start justify-between">
-                                      <span className="text-slate-500 font-medium">
-                                        Status:
-                                      </span>
-                                      <span className="font-bold text-emerald-800 text-right">
-                                        {item.status === "POSTED"
-                                          ? "Automated GL Reversal"
-                                          : "Draft / Pending Posting"}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="p-3.5 bg-amber-50/80 rounded-xl border border-amber-200/90 space-y-1">
-                                <span className="text-[10.5px] font-bold uppercase tracking-wider text-amber-900 block">
-                                  Credit Adjustment Reason / Client Return Note
-                                </span>
-                                <p className="text-xs font-medium text-slate-800 pl-3 border-l-2 border-amber-400 mt-1">
-                                  &ldquo;
-                                  {item.reason || "No custom note provided"}
-                                  &rdquo;
-                                </p>
-                              </div>
-                            </div>
-                          </TableCell>
-                        </TableRow>
+                        <SalesReturnExpandedRow
+                          item={item}
+                          customerDisplay={customerDisplay}
+                          invoiceRefDisplay={invoiceRefDisplay}
+                          scopeDisplay={scopeDisplay}
+                          dateDisplay={dateDisplay}
+                          totalAmt={totalAmt}
+                          subtotalAmt={subtotalAmt}
+                          vatAmt={vatAmt}
+                          onPrint={handlePrintRow}
+                          onClose={() => setExpandedReturnId(null)}
+                        />
                       )}
                     </Fragment>
                   );

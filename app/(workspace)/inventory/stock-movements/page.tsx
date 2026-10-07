@@ -22,6 +22,8 @@ import {
   FormSelect,
   FormTextarea,
   FormSubmit,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import {
   ReportKpiCard,
@@ -254,18 +256,10 @@ export default function StockMovementsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Stock Movements
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Track inventory adjustments, warehouse transfers, site dispatches,
-            and physical audit logs.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Stock Movements"
+        description="Track inventory adjustments, warehouse transfers, site dispatches, and physical audit logs."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -275,8 +269,8 @@ export default function StockMovementsPage() {
           >
             Record Stock Movement
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <ReportKpiGrid cols={3}>
         <ReportKpiCard
@@ -335,66 +329,59 @@ export default function StockMovementsPage() {
       </div>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between print:hidden">
-          <div className="w-full lg:w-80">
-            <Input
-              placeholder="Search product, SKU, reference..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              leftIcon={
-                <SearchIcon
-                  className="w-4 h-4 text-slate-400"
-                  strokeWidth={2}
-                />
-              }
-            />
-          </div>
+        <FilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search product, SKU, reference..."
+          totalCount={filteredMovements.length}
+          countLabel="Movements Listed"
+          rightAction={
+            <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+              <Select
+                value={selectedProduct}
+                onChange={(e) => setSelectedProduct(e.target.value)}
+                containerClassName="w-full sm:w-48"
+              >
+                <option value="">All Products</option>
+                {products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.sku})
+                  </option>
+                ))}
+              </Select>
 
-          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-            <Select
-              value={selectedProduct}
-              onChange={(e) => setSelectedProduct(e.target.value)}
-              containerClassName="w-full sm:w-48"
-            >
-              <option value="">All Products</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} ({p.sku})
+              <Select
+                value={selectedWarehouse}
+                onChange={(e) => setSelectedWarehouse(e.target.value)}
+                containerClassName="w-full sm:w-44"
+              >
+                <option value="">All Warehouses</option>
+                {warehouses.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </Select>
+
+              <Select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                containerClassName="w-full sm:w-44"
+              >
+                <option value="ALL">All Types</option>
+                <option value="PURCHASE_IN">Purchase In (+)</option>
+                <option value="PROJECT_CONSUMPTION">
+                  Project Consumption (-)
                 </option>
-              ))}
-            </Select>
-
-            <Select
-              value={selectedWarehouse}
-              onChange={(e) => setSelectedWarehouse(e.target.value)}
-              containerClassName="w-full sm:w-44"
-            >
-              <option value="">All Warehouses</option>
-              {warehouses.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name}
-                </option>
-              ))}
-            </Select>
-
-            <Select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              containerClassName="w-full sm:w-44"
-            >
-              <option value="ALL">All Types</option>
-              <option value="PURCHASE_IN">Purchase In (+)</option>
-              <option value="PROJECT_CONSUMPTION">
-                Project Consumption (-)
-              </option>
-              <option value="SALE_OUT">Sale Out (-)</option>
-              <option value="ADJUSTMENT_IN">Adjustment In (+)</option>
-              <option value="ADJUSTMENT_OUT">Adjustment Out (-)</option>
-              <option value="TRANSFER_IN">Transfer In (+)</option>
-              <option value="TRANSFER_OUT">Transfer Out (-)</option>
-            </Select>
-          </div>
-        </div>
+                <option value="SALE_OUT">Sale Out (-)</option>
+                <option value="ADJUSTMENT_IN">Adjustment In (+)</option>
+                <option value="ADJUSTMENT_OUT">Adjustment Out (-)</option>
+                <option value="TRANSFER_IN">Transfer In (+)</option>
+                <option value="TRANSFER_OUT">Transfer Out (-)</option>
+              </Select>
+            </div>
+          }
+        />
 
         {error ? (
           <div className="py-8 text-center text-xs text-red-500">

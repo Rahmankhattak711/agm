@@ -2,12 +2,15 @@
 
 import {
   AlertCircleIcon,
+  ClockIcon,
   EyeIcon,
   EyeOffIcon,
   LockIcon,
   MailIcon,
-  SpinnerIcon,
+  RefreshIcon,
+  UserPlusIcon,
 } from "@/components/icons";
+import { Button, Input } from "@/components/ui";
 import AgmLogo from "@/components/AgmLogo";
 import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/lib/auth-service";
@@ -16,7 +19,6 @@ import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { Clock, RefreshCw, UserPlus } from "lucide-react";
 
 function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -180,7 +182,7 @@ function LoginForm() {
 
           {isDbReset && (
             <div className="mb-4 rounded-xl bg-teal-50 p-3.5 text-xs font-semibold text-teal-900 border border-teal-200 flex items-start gap-2.5 animate-in fade-in shadow-2xs">
-              <RefreshCw className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
+              <RefreshIcon className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold">Database Reset Detected</p>
                 <p className="text-[11px] text-teal-800 font-normal mt-0.5">
@@ -193,7 +195,7 @@ function LoginForm() {
 
           {isExpired && !isDbReset && (
             <div className="mb-4 rounded-xl bg-amber-50 p-3.5 text-xs font-semibold text-amber-800 border border-amber-200 flex items-center gap-2.5 animate-in fade-in">
-              <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+              <ClockIcon className="w-4 h-4 text-amber-600 shrink-0" />
               <span>
                 Your session has expired. Please sign in again to continue.
               </span>
@@ -216,10 +218,10 @@ function LoginForm() {
                   </span>
                   <Link
                     href="/signup"
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-agm-green hover:bg-agm-green-2 px-2.5 py-1 rounded-lg transition"
+                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-agm-green hover:bg-agm-green-2 px-2.5 py-1 rounded-lg transition"
                   >
-                    <UserPlus className="w-3 h-3" />
-                    Sign Up Admin
+                    <UserPlusIcon size={12} />
+                    <span>Sign Up Admin</span>
                   </Link>
                 </div>
               )}
@@ -249,39 +251,20 @@ function LoginForm() {
                 const isTouched = field.state.meta.isTouched;
                 const error = isTouched && field.state.meta.errors[0];
                 return (
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
-                    >
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                        <MailIcon className="w-4 h-4" />
-                      </span>
-                      <input
-                        id="email"
-                        name={field.name}
-                        type="email"
-                        placeholder="admin@agm.ae"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        disabled={mutation.isPending}
-                        className={`w-full rounded-xl border ${
-                          error
-                            ? "border-rose-400 bg-rose-50/30"
-                            : "border-slate-200 bg-slate-50/50"
-                        } pl-10 pr-3.5 py-2.5 text-xs font-medium text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition`}
-                      />
-                    </div>
-                    {error && (
-                      <p className="text-[11px] text-rose-600 mt-1 font-medium">
-                        {String(error)}
-                      </p>
-                    )}
-                  </div>
+                  <Input
+                    id="email"
+                    name={field.name}
+                    type="email"
+                    label="Email Address"
+                    labelClassName="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
+                    placeholder="admin@agm.ae"
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    disabled={mutation.isPending}
+                    error={error ? String(error) : undefined}
+                    leftIcon={<MailIcon size={16} />}
+                  />
                 );
               }}
             </form.Field>
@@ -297,52 +280,36 @@ function LoginForm() {
                 const isTouched = field.state.meta.isTouched;
                 const error = isTouched && field.state.meta.errors[0];
                 return (
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label
-                        htmlFor="password"
-                        className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
-                      >
-                        Password
-                      </label>
-                    </div>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
-                        <LockIcon className="w-4 h-4" />
-                      </span>
-                      <input
-                        id="password"
-                        name={field.name}
-                        type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        disabled={mutation.isPending}
-                        className={`w-full rounded-xl border ${
-                          error
-                            ? "border-rose-400 bg-rose-50/30"
-                            : "border-slate-200 bg-slate-50/50"
-                        } pl-10 pr-10 py-2.5 text-xs font-medium text-slate-900 focus:bg-white focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 transition`}
-                      />
+                  <Input
+                    id="password"
+                    name={field.name}
+                    type={showPassword ? "text" : "password"}
+                    label="Password"
+                    labelClassName="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
+                    placeholder="••••••••"
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    disabled={mutation.isPending}
+                    error={error ? String(error) : undefined}
+                    leftIcon={<LockIcon size={16} />}
+                    rightElement={
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        className="text-slate-400 hover:text-slate-600 cursor-pointer p-1 transition-colors"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
                       >
                         {showPassword ? (
-                          <EyeOffIcon className="w-4 h-4" />
+                          <EyeOffIcon size={16} />
                         ) : (
-                          <EyeIcon className="w-4 h-4" />
+                          <EyeIcon size={16} />
                         )}
                       </button>
-                    </div>
-                    {error && (
-                      <p className="text-[11px] text-rose-600 mt-1 font-medium">
-                        {String(error)}
-                      </p>
-                    )}
-                  </div>
+                    }
+                  />
                 );
               }}
             </form.Field>
@@ -351,20 +318,16 @@ function LoginForm() {
               selector={(state) => [state.canSubmit, state.isSubmitting]}
             >
               {([canSubmit, isSubmitting]) => (
-                <button
+                <Button
                   type="submit"
+                  variant="primary"
+                  size="lg"
+                  loading={mutation.isPending || isSubmitting}
                   disabled={!canSubmit || mutation.isPending || isSubmitting}
-                  className="w-full rounded-xl bg-agm-green hover:bg-agm-green-2 py-3 text-xs font-bold text-white shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-agm-green/30 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 mt-2"
+                  className="w-full mt-2"
                 >
-                  {mutation.isPending || isSubmitting ? (
-                    <>
-                      <SpinnerIcon className="w-4 h-4 animate-spin" />
-                      Signing In...
-                    </>
-                  ) : (
-                    "Sign In"
-                  )}
-                </button>
+                  Sign In
+                </Button>
               )}
             </form.Subscribe>
           </form>

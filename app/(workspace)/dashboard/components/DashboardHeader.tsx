@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { PageHeader } from "@/components/ui";
 
 export type PeriodOption = "THIS_MONTH" | "THIS_QUARTER" | "THIS_YEAR";
 
@@ -16,29 +17,24 @@ export default function DashboardHeader({
   lastUpdatedTime,
 }: DashboardHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-1">
-      <div>
-        <h1 className="text-xl font-medium text-agm-text tracking-tight">
-          Finance overview
-        </h1>
-        <p className="text-xs font-normal text-agm-muted mt-0.5">
-          {lastUpdatedTime
-            ? `Last updated today at ${lastUpdatedTime}`
-            : "Real-time ledger overview"}
-        </p>
-      </div>
-
-      <div>
+    <PageHeader
+      title="Finance overview"
+      description={
+        lastUpdatedTime
+          ? `Last updated today at ${lastUpdatedTime}`
+          : "Real-time ledger overview"
+      }
+      actions={
         <select
           value={period}
           onChange={(e) => onPeriodChange(e.target.value as PeriodOption)}
-          className="bg-white border border-agm-box-border rounded-[12px] px-3 py-1.5 text-xs font-normal text-agm-text focus:outline-none focus:border-agm-navy cursor-pointer"
+          className="bg-white border border-slate-200/90 rounded-xl px-3 py-1.5 text-xs font-medium text-slate-700 focus:outline-none focus:border-agm-navy shadow-2xs cursor-pointer"
         >
           <option value="THIS_MONTH">This month</option>
           <option value="THIS_QUARTER">This quarter</option>
           <option value="THIS_YEAR">This year</option>
         </select>
-      </div>
-    </div>
+      }
+    />
   );
 }
