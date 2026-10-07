@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Input,
   InputProps,
@@ -8,6 +7,7 @@ import {
   TextareaProps,
 } from "../Input";
 import { Button, ButtonProps } from "../Button";
+import { DatePicker, DatePickerProps } from "../DatePicker";
 
 export interface FormInputProps extends Omit<
   InputProps,
@@ -156,5 +156,44 @@ export function FormSubmit({
         </Button>
       )}
     </form.Subscribe>
+  );
+}
+
+export interface FormDatePickerProps extends Omit<
+  DatePickerProps,
+  "value" | "onChange"
+> {
+  field: any;
+  onChange?: (val: string) => void;
+}
+
+export function FormDatePicker({
+  field,
+  onChange,
+  ...props
+}: FormDatePickerProps) {
+  const isTouched = field.state.meta.isTouched;
+  const errors = field.state.meta.errors;
+  const errorMessage =
+    isTouched && errors && errors.length > 0
+      ? errors
+          .map((err: any) =>
+            typeof err === "object" && err !== null && "message" in err
+              ? err.message
+              : String(err),
+          )
+          .join(", ")
+      : undefined;
+
+  return (
+    <DatePicker
+      value={field.state.value ?? ""}
+      onChange={(val) => {
+        field.handleChange(val);
+        if (onChange) onChange(val);
+      }}
+      error={errorMessage}
+      {...props}
+    />
   );
 }

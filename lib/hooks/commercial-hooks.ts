@@ -188,6 +188,37 @@ export function useCreateCustomer() {
   });
 }
 
+export function useUpdateCustomer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Customer> }) =>
+      fetchJson<Customer>(`/api/commercial/customers/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["customer-statement", variables.id] });
+    },
+  });
+}
+
+export function useDeleteCustomer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ success: boolean; message?: string }>(
+        `/api/commercial/customers/${id}`,
+        {
+          method: "DELETE",
+        },
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    },
+  });
+}
+
 export interface SalesOrder {
   id: string;
   orderNumber: string;
