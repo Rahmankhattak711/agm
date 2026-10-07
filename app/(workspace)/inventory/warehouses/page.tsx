@@ -10,7 +10,13 @@ import {
   Warehouse,
 } from "@/lib/hooks/api-hooks";
 import { PlusIcon } from "@/components/icons";
-import { Button, Modal, FormInput, FormSubmit } from "@/components/ui";
+import {
+  Button,
+  Modal,
+  FormInput,
+  FormSubmit,
+  PageHeader,
+} from "@/components/ui";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
 import {
@@ -85,18 +91,10 @@ export default function WarehousesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Warehouses
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage storage facilities, bin locations, warehouse managers, and
-            stock allocations.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Warehouses"
+        description="Manage storage facilities, bin locations, warehouse managers, and stock allocations."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -106,8 +104,8 @@ export default function WarehousesPage() {
           >
             Add Warehouse
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <ReportKpiGrid cols={3}>
         <ReportKpiCard

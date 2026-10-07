@@ -24,6 +24,8 @@ import {
   Modal,
   FormInput,
   FormSubmit,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -283,18 +285,10 @@ export default function SuppliersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Suppliers
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage vendor profiles, tax registration numbers (TRN), payment
-            terms, and procurement records.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Suppliers"
+        description="Manage vendor profiles, tax registration numbers (TRN), payment terms, and procurement records."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -304,8 +298,8 @@ export default function SuppliersPage() {
           >
             Add New Supplier
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <ReportKpiGrid cols={4}>
         <ReportKpiCard
@@ -383,50 +377,20 @@ export default function SuppliersPage() {
       </div>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 print:hidden">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1">
-              {[
-                { id: "ALL", label: "All Suppliers" },
-                { id: "TRN", label: "Tax Registered (TRN)" },
-                { id: "NON_TRN", label: "General Vendors" },
-              ].map((tab) => {
-                const isActive = statusFilter === tab.id;
-                return (
-                  <Button
-                    key={tab.id}
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setStatusFilter(tab.id as any)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                    }`}
-                  >
-                    {tab.label}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
-              {filteredSuppliers.length} Vendors Listed
-            </span>
-          </div>
-
-          <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between">
-            <Input
-              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-              placeholder="Search code, company name, TRN, contact..."
-              containerClassName="w-full sm:w-80"
-              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
+        <FilterBar
+          tabs={[
+            { id: "ALL", label: "All Suppliers" },
+            { id: "TRN", label: "Tax Registered (TRN)" },
+            { id: "NON_TRN", label: "General Vendors" },
+          ]}
+          activeTab={statusFilter}
+          onTabChange={(id) => setStatusFilter(id as any)}
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search code, company name, TRN, contact..."
+          totalCount={filteredSuppliers.length}
+          countLabel="Vendors Listed"
+        />
 
         {error ? (
           <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">

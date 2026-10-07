@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo, useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon } from "@/components/icons";
-import { Button } from "@/components/ui";
+import { Button, PageHeader } from "@/components/ui";
 import { useSuppliers } from "@/lib/hooks/api-hooks";
 import { useProjects } from "@/lib/hooks/projects-hooks";
 import {
@@ -246,18 +246,10 @@ export default function PurchaseReturnsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Purchase Returns (Debit Notes)
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Log rejected vendor supplies, link active projects, process Accounts
-            Payable debit notes, and deduct supplier balances.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Purchase Returns (Debit Notes)"
+        description="Log rejected vendor supplies, link active projects, process Accounts Payable debit notes, and deduct supplier balances."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -267,8 +259,8 @@ export default function PurchaseReturnsPage() {
           >
             Log Purchase Return
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <PurchaseReturnsKpis
         totalReturnVal={totalReturnVal}

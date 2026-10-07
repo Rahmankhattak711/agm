@@ -18,6 +18,8 @@ import {
   TableRow,
   TableCell,
   Modal,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import {
   ReportKpiCard,
@@ -240,23 +242,15 @@ export default function SalesVouchersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-              Sales Vouchers
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-              Direct Sales
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Record direct point-of-sale vouchers, counter sales, and immediate
-            inventory deductions.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Sales Vouchers"
+        badge={
+          <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+            Direct Sales
+          </span>
+        }
+        description="Record direct point-of-sale vouchers, counter sales, and immediate inventory deductions."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -266,8 +260,8 @@ export default function SalesVouchersPage() {
           >
             Create Sales Voucher
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <ReportKpiGrid cols={3}>
         <ReportKpiCard
@@ -333,35 +327,21 @@ export default function SalesVouchersPage() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70 print:hidden">
-        <div className="flex-1 max-w-md">
-          <Input
-            placeholder="Search voucher number, client, project..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-          />
-        </div>
-
-        <div className="flex items-center gap-1.5 text-xs">
-          {["ALL", "POSTED", "PAID", "DRAFT"].map((st) => (
-            <Button
-              key={st}
-              type="button"
-              variant={statusFilter === st ? "primary" : "secondary"}
-              size="sm"
-              onClick={() => setStatusFilter(st)}
-              className={
-                statusFilter === st
-                  ? "bg-slate-900 text-white shadow-2xs font-bold"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 font-bold"
-              }
-            >
-              {st}
-            </Button>
-          ))}
-        </div>
-      </div>
+      <FilterBar
+        tabs={[
+          { id: "ALL", label: "All Vouchers" },
+          { id: "POSTED", label: "Posted" },
+          { id: "PAID", label: "Paid" },
+          { id: "DRAFT", label: "Draft" },
+        ]}
+        activeTab={statusFilter}
+        onTabChange={(id) => setStatusFilter(id)}
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search voucher number, client, project..."
+        totalCount={filteredVouchers.length}
+        countLabel="Vouchers Listed"
+      />
 
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">

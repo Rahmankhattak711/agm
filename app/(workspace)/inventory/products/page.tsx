@@ -33,6 +33,8 @@ import {
   FormSelect,
   FormTextarea,
   FormSubmit,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 
 export default function ProductsPage() {
@@ -450,19 +452,11 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Products &amp; Materials
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage product inventory, material specifications, SKU codes, and
-            stock reorder levels.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {canManageInventory && (
+      <PageHeader
+        title="Products & Materials"
+        description="Manage product inventory, material specifications, SKU codes, and stock reorder levels."
+        actions={
+          canManageInventory && (
             <Button
               variant="primary"
               size="sm"
@@ -472,9 +466,9 @@ export default function ProductsPage() {
             >
               Add Product / SKU
             </Button>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       <ReportKpiGrid cols={3}>
         <ReportKpiCard
@@ -548,58 +542,51 @@ export default function ProductsPage() {
       </div>
 
       <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col lg:flex-row gap-3 items-center justify-between print:hidden">
-          <div className="w-full lg:w-80">
-            <Input
-              placeholder="Search product, brand, shop code, SKU..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              leftIcon={
-                <SearchIcon
-                  className="w-4 h-4 text-slate-400"
-                  strokeWidth={2}
-                />
-              }
-            />
-          </div>
+        <FilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search product, brand, shop code, SKU..."
+          totalCount={filteredProducts.length}
+          countLabel="Products Listed"
+          rightAction={
+            <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+              <Select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                containerClassName="w-full sm:w-44"
+              >
+                <option value="ALL">All Categories</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
 
-          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-            <Select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              containerClassName="w-full sm:w-44"
-            >
-              <option value="ALL">All Categories</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
+              <Select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                containerClassName="w-full sm:w-40"
+              >
+                <option value="ALL">All Types</option>
+                <option value="RAW_MATERIAL">Raw Material</option>
+                <option value="FINISHED_GOOD">Finished Good</option>
+                <option value="CONSUMABLE">Consumable</option>
+                <option value="TOOL_EQUIPMENT">Tool & Equipment</option>
+              </Select>
 
-            <Select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              containerClassName="w-full sm:w-40"
-            >
-              <option value="ALL">All Types</option>
-              <option value="RAW_MATERIAL">Raw Material</option>
-              <option value="FINISHED_GOOD">Finished Good</option>
-              <option value="CONSUMABLE">Consumable</option>
-              <option value="TOOL_EQUIPMENT">Tool & Equipment</option>
-            </Select>
-
-            <Select
-              value={selectedOrigin}
-              onChange={(e) => setSelectedOrigin(e.target.value)}
-              containerClassName="w-full sm:w-44"
-            >
-              <option value="ALL">All Origins</option>
-              <option value="PURCHASED_EXTERNAL">Purchased External</option>
-              <option value="INTERNAL">Internal Product</option>
-            </Select>
-          </div>
-        </div>
+              <Select
+                value={selectedOrigin}
+                onChange={(e) => setSelectedOrigin(e.target.value)}
+                containerClassName="w-full sm:w-44"
+              >
+                <option value="ALL">All Origins</option>
+                <option value="PURCHASED_EXTERNAL">Purchased External</option>
+                <option value="INTERNAL">Internal Product</option>
+              </Select>
+            </div>
+          }
+        />
 
         {error ? (
           <div className="py-8 text-center text-xs text-red-500">
