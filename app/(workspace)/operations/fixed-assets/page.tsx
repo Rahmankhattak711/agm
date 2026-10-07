@@ -271,24 +271,15 @@ export default function FixedAssetsPage() {
             Error loading assets: {(error as any).message}
           </div>
         ) : (
-          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white">
-                Fixed Assets &amp; Property Plant Register
-              </h4>
-              <span className="text-[11px] font-mono text-emerald-300 font-bold">
-                {filteredAssets.length} Assets
-              </span>
-            </div>
-
-            <DataTable
-              columns={columns}
-              data={filteredAssets}
-              isLoading={isLoading}
-              emptyTitle="No fixed assets registered"
-              emptyMessage="Click 'Register New Asset' to record capital machinery, vehicles, and tools."
-            />
-          </div>
+          <DataTable
+            title="Fixed Assets & Property Plant Register"
+            countLabel={`${filteredAssets.length} Assets`}
+            columns={columns}
+            data={filteredAssets}
+            isLoading={isLoading}
+            emptyTitle="No fixed assets registered"
+            emptyMessage="Click 'Register New Asset' to record capital machinery, vehicles, and tools."
+          />
         )}
       </div>
 

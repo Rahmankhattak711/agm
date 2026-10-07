@@ -228,10 +228,11 @@ export default function BonusesPage() {
           }
 
           return (
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center justify-center gap-1">
               {!isApproved && (
                 <Button
-                  variant="outline"
+                  type="button"
+                  variant="ghost"
                   size="sm"
                   onClick={async () => {
                     await updateBonus.mutateAsync({
@@ -239,15 +240,15 @@ export default function BonusesPage() {
                       isApproved: true,
                     });
                   }}
-                  icon={<CheckIcon size={12} strokeWidth={2.5} />}
-                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200 cursor-pointer"
+                  className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
                   title="Approve Bonus"
                 >
-                  Approve
+                  <CheckIcon size={18} className="w-[18px] h-[18px]" />
                 </Button>
               )}
               <Button
-                variant="danger"
+                type="button"
+                variant="ghost"
                 size="sm"
                 onClick={async () => {
                   const isConfirmed = await confirm({
@@ -268,10 +269,10 @@ export default function BonusesPage() {
                     }
                   }
                 }}
-                icon={<TrashIcon size={13} />}
+                className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
                 title="Delete Grant"
               >
-                Delete
+                <TrashIcon size={18} className="w-[18px] h-[18px]" />
               </Button>
             </div>
           );
@@ -394,24 +395,15 @@ export default function BonusesPage() {
             Error loading bonuses: {(error as any).message}
           </div>
         ) : (
-          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white">
-                Master Bonuses &amp; Incentives Register
-              </h4>
-              <span className="text-[11px] font-mono text-emerald-300 font-bold">
-                {filteredBonuses.length} Records
-              </span>
-            </div>
-
-            <DataTable
-              columns={columns}
-              data={filteredBonuses}
-              isLoading={isLoading}
-              emptyTitle="No bonuses recorded for this period"
-              emptyMessage="Click 'Award Bonus / Incentive' to grant rewards to team members."
-            />
-          </div>
+          <DataTable
+            title="Master Bonuses & Incentives Register"
+            countLabel={`${filteredBonuses.length} Records`}
+            columns={columns}
+            data={filteredBonuses}
+            isLoading={isLoading}
+            emptyTitle="No bonuses recorded for this period"
+            emptyMessage="Click 'Award Bonus / Incentive' to grant rewards to team members."
+          />
         )}
       </div>
 

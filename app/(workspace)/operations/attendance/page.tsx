@@ -416,20 +416,21 @@ export default function AttendancePage() {
           if (!canModify(row.original.employeeId, ["HR"])) return null;
           const isPersisted = !row.original.id.startsWith("default-");
           return (
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center justify-center gap-1">
               <Button
-                variant="outline"
+                type="button"
+                variant="ghost"
                 size="sm"
                 onClick={() => handleEditRecord(row.original)}
-                icon={<EditIcon size={12} />}
-                className="text-xs py-1 px-2.5 h-auto cursor-pointer"
+                className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
                 title="Edit / Update Attendance"
               >
-                Edit
+                <EditIcon size={18} className="w-[18px] h-[18px]" />
               </Button>
               {isPersisted && (
                 <Button
-                  variant="danger"
+                  type="button"
+                  variant="ghost"
                   size="sm"
                   onClick={async () => {
                     const isConfirmed = await confirm({
@@ -450,11 +451,10 @@ export default function AttendancePage() {
                       }
                     }
                   }}
-                  icon={<TrashIcon size={12} />}
-                  className="text-xs py-1 px-2 h-auto cursor-pointer"
+                  className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-amber-700 rounded-lg hover:bg-amber-50 transition cursor-pointer"
                   title="Reset to Present"
                 >
-                  Reset
+                  <TrashIcon size={18} className="w-[18px] h-[18px]" />
                 </Button>
               )}
             </div>
@@ -574,24 +574,15 @@ export default function AttendancePage() {
             Error loading attendance records: {(error as any).message}
           </div>
         ) : (
-          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white">
-                Daily Attendance &amp; Site Activity Log
-              </h4>
-              <span className="text-[11px] font-mono text-emerald-300 font-bold">
-                {filteredRecords.length} Active Records
-              </span>
-            </div>
-
-            <DataTable
-              columns={columns}
-              data={filteredRecords}
-              isLoading={isLoading || isEmployeesLoading}
-              emptyTitle="No attendance records found for this date"
-              emptyMessage="Click 'Record Attendance' to add check-in logs."
-            />
-          </div>
+          <DataTable
+            title="Daily Attendance & Site Activity Log"
+            countLabel={`${filteredRecords.length} Active Records`}
+            columns={columns}
+            data={filteredRecords}
+            isLoading={isLoading || isEmployeesLoading}
+            emptyTitle="No attendance records found for this date"
+            emptyMessage="Click 'Record Attendance' to add check-in logs."
+          />
         )}
       </div>
 
