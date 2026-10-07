@@ -25,12 +25,15 @@ ERP and financial management system for **AGM Aesthetic House Fitout Technical S
 ## Getting Started
 
 ### 1. Install dependencies
+
 ```bash
 pnpm install
 ```
 
 ### 2. Configure environment
+
 Create a `.env` file in the root directory:
+
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/agm_db?schema=public"
 JWT_SECRET="your-jwt-secret"
@@ -39,6 +42,7 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
 ### 3. Run migrations & start server
+
 ```bash
 pnpm run prisma:generate
 pnpm run prisma:migrate

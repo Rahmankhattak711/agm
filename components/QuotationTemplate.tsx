@@ -49,6 +49,8 @@ export type { QuotationItem, QuotationMeta, QuotationTemplateProps };
 export default function QuotationTemplate({
   initialMeta,
   initialItems,
+  initialVatPct,
+  initialDiscount,
   availableProducts = [],
   hideOuterWrapper = false,
 }: QuotationTemplateProps) {
@@ -98,8 +100,12 @@ export default function QuotationTemplate({
   const [quotationTerms, setQuotationTerms] = useState<
     { id: number | string; title: string; text: string }[]
   >(DEFAULT_TERMS_AND_CONDITIONS);
-  const [vatPct, setVatPct] = useState<number | string>(5);
-  const [discount, setDiscount] = useState<number | string>(0);
+  const [vatPct, setVatPct] = useState<number | string>(
+    initialVatPct !== undefined ? Number(initialVatPct) : 0,
+  );
+  const [discount, setDiscount] = useState<number | string>(
+    initialDiscount !== undefined ? Number(initialDiscount) : 0,
+  );
 
   useEffect(() => {
     if (initialMeta?.quotationNo && !selectedQuotationId) {
@@ -109,6 +115,18 @@ export default function QuotationTemplate({
       }));
     }
   }, [initialMeta, selectedQuotationId]);
+
+  useEffect(() => {
+    if (initialVatPct !== undefined && !selectedQuotationId) {
+      setVatPct(Number(initialVatPct));
+    }
+  }, [initialVatPct, selectedQuotationId]);
+
+  useEffect(() => {
+    if (initialDiscount !== undefined && !selectedQuotationId) {
+      setDiscount(Number(initialDiscount));
+    }
+  }, [initialDiscount, selectedQuotationId]);
 
   const updateMeta = (k: MetaKey, v: string) =>
     setMeta((m) => ({ ...m, [k]: v }));
@@ -270,7 +288,9 @@ export default function QuotationTemplate({
   const handleLoadQuotation = (q: QuotationRecord) => {
     setSelectedQuotationId(q.id);
     setStatus(q.status as any);
-    setVatPct(Number(q.vatPct || 5));
+    setVatPct(
+      q.vatPct !== undefined && q.vatPct !== null ? Number(q.vatPct) : 0,
+    );
     setDiscount(Number(q.discount || 0));
     setMeta({
       quotationNo: q.quotationNo,
@@ -385,7 +405,7 @@ export default function QuotationTemplate({
     setPaymentTerms(DEFAULT_PAYMENT_TERMS);
     setQuotationTerms(DEFAULT_TERMS_AND_CONDITIONS);
     setDiscount(0);
-    setVatPct(5);
+    setVatPct(0);
     setStatus("DRAFT");
   };
 

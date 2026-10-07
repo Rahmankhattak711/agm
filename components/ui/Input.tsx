@@ -34,10 +34,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={containerClassName}>
         {label && (
-          <label
-            htmlFor={id || props.name}
-            className={labelClassName}
-          >
+          <label htmlFor={id || props.name} className={labelClassName}>
             {label}
           </label>
         )}

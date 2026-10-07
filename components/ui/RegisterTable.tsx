@@ -8,6 +8,7 @@ export interface RegisterColumn {
   align?: "left" | "center" | "right";
   compact?: boolean;
   hideOnPrint?: boolean;
+  className?: string;
 }
 
 export interface RegisterTableProps {
@@ -19,7 +20,7 @@ export interface RegisterTableProps {
 }
 
 const HEADER_CELL =
-  "py-3 font-bold text-slate-600 uppercase text-[10.5px] tracking-wider";
+  "py-2 font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap";
 
 export const RegisterTable: React.FC<RegisterTableProps> = ({
   title,
@@ -31,8 +32,8 @@ export const RegisterTable: React.FC<RegisterTableProps> = ({
   <div
     className={`rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs min-w-0 max-w-full ${wrapperClassName}`}
   >
-    <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-      <h4 className="font-black text-xs uppercase tracking-wider text-white">
+    <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white py-2.5 px-4 sm:px-5 flex items-center justify-between">
+      <h4 className="font-bold text-xs uppercase tracking-wider text-white">
         {title}
       </h4>
       {countLabel !== undefined && (
@@ -51,9 +52,9 @@ export const RegisterTable: React.FC<RegisterTableProps> = ({
               <TableHeaderCell
                 key={i}
                 align={align}
-                className={`${HEADER_CELL} ${col.compact ? "px-3" : "px-4"} ${
+                className={`${HEADER_CELL} ${col.compact ? "px-2.5" : "px-3"} ${
                   col.hideOnPrint ? "print:hidden" : ""
-                }`}
+                } ${col.className ?? ""}`}
               >
                 {col.label}
               </TableHeaderCell>

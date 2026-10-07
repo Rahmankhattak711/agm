@@ -131,23 +131,49 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
                 <span className="font-semibold text-slate-600 print:text-slate-700 print:text-[12.5px]">
                   VAT{" "}
                   <span className="hidden print:inline font-bold text-emerald-800">
-                    ({vatPct}%)
+                    ({Number(vatPct) > 0 ? `${vatPct}%` : "0%"})
                   </span>
                 </span>
-                <div className="flex items-center bg-emerald-50 print:hidden border border-emerald-200 rounded px-1 py-0.2">
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    className="w-7 text-center font-bold text-emerald-800 bg-transparent outline-none"
-                    value={vatPct}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      onUpdateVatPct(e.target.value)
-                    }
-                  />
-                  <span className="text-emerald-800 font-bold text-[10px]">
-                    %
-                  </span>
+                <div className="flex items-center gap-1 print:hidden">
+                  <div className="inline-flex rounded-md bg-slate-100 p-0.5 text-[10px] font-bold">
+                    <button
+                      type="button"
+                      onClick={() => onUpdateVatPct("0")}
+                      className={`px-1.5 py-0.5 rounded cursor-pointer transition ${
+                        Number(vatPct) === 0
+                          ? "bg-white text-slate-900 shadow-2xs font-extrabold"
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      0% (No VAT)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateVatPct("5")}
+                      className={`px-1.5 py-0.5 rounded cursor-pointer transition ${
+                        Number(vatPct) === 5
+                          ? "bg-emerald-700 text-white shadow-2xs font-extrabold"
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      5% VAT
+                    </button>
+                  </div>
+                  <div className="flex items-center bg-emerald-50 border border-emerald-200 rounded px-1 py-0.2">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      className="w-7 text-center font-bold text-emerald-800 bg-transparent outline-none"
+                      value={vatPct}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        onUpdateVatPct(e.target.value)
+                      }
+                    />
+                    <span className="text-emerald-800 font-bold text-[10px]">
+                      %
+                    </span>
+                  </div>
                 </div>
               </div>
               <span className="font-mono font-semibold text-slate-800 print:text-[12.5px]">
