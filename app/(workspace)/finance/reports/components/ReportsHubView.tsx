@@ -18,7 +18,7 @@ import {
   UserIcon,
   WalletIcon,
 } from "@/components/icons";
-import { Input } from "@/components/ui";
+import { Input, PageHeader } from "@/components/ui";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import { ReportTab } from "./types";
@@ -243,27 +243,22 @@ export function ReportsHubView({ onSelectReport }: ReportsHubViewProps) {
 
   return (
     <div className="space-y-6 pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Reports Hub
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Financial statements, commercial sales, payables, and VAT returns.
-          </p>
-        </div>
-
-        <div className="w-full sm:w-72">
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search reports..."
-            leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-            className="text-xs py-1.5 bg-white border-slate-200"
-          />
-        </div>
-      </div>
+      <PageHeader
+        title="Reports Hub"
+        description="Financial statements, commercial sales, payables, and VAT returns."
+        actions={
+          <div className="w-full sm:w-72">
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search reports..."
+              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
+              className="text-xs py-1.5 bg-white border-slate-200"
+            />
+          </div>
+        }
+      />
 
       {filteredGroups.length === 0 ? (
         <div className="py-12 text-center text-xs text-slate-400 bg-white rounded-xl border border-slate-200">

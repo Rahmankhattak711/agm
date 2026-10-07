@@ -6,6 +6,7 @@ import QuotationTemplate, {
   QuotationMeta,
 } from "@/components/QuotationTemplate";
 import { useProducts } from "@/lib/hooks/api-hooks";
+import { PageHeader } from "@/components/ui";
 
 export default function QuotationsPage() {
   const { data: products = [], isLoading } = useProducts();
@@ -49,17 +50,10 @@ export default function QuotationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
-        <div>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight">
-            Commercial Quotations & Invoices
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Create, manage, and print official commercial proposals, multi-point
-            scope bundles, and client invoices.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Commercial Quotations & Invoices"
+        description="Create, manage, and print official commercial proposals, multi-point scope bundles, and client invoices."
+      />
 
       <div className="overflow-visible">
         <QuotationTemplate

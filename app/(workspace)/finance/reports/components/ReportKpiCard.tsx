@@ -1,10 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  DashboardCard,
-  DashboardCardVariant,
-} from "@/components/ui/DashboardCard";
+import { Card, CardVariant } from "@/components/ui/Card";
 
 export type KpiAccentColor =
   | "emerald"
@@ -41,17 +38,13 @@ export const ReportKpiCard: React.FC<ReportKpiCardProps> = ({
   footerText,
   className = "",
 }) => {
-  let variant: DashboardCardVariant = "default";
-  if (accentColor === "rose") variant = "danger";
-  else if (accentColor === "amber") variant = "warning";
-
   return (
-    <DashboardCard
+    <Card
       title={title}
       value={value}
       subtitle={subtitle || footerText}
       currency={currency}
-      variant={variant}
+      accentColor={accentColor}
       badge={badge}
       icon={icon}
       className={className}

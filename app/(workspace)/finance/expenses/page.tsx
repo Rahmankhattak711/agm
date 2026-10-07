@@ -28,6 +28,8 @@ import {
   DashboardCard,
   DashboardCardGrid,
   EmptyState,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import {
   PlusIcon,
@@ -215,18 +217,10 @@ export default function ExpensesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Purchase Expenses
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Record and manage operational expenses, vendor bills, and company
-            expenditure claims.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Purchase Expenses"
+        description="Record and manage operational expenses, vendor bills, and company expenditure claims."
+        actions={
           <Button
             variant="primary"
             size="sm"
@@ -236,8 +230,8 @@ export default function ExpensesPage() {
           >
             Record Expense
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <DashboardCardGrid cols={4}>
         <DashboardCard
@@ -272,50 +266,21 @@ export default function ExpensesPage() {
       </DashboardCardGrid>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="p-3 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1">
-              {[
-                { id: "ALL", label: "All Expenses" },
-                { id: "PAID", label: "Paid" },
-                { id: "APPROVED", label: "Approved" },
-                { id: "DRAFT", label: "Draft" },
-              ].map((tab) => {
-                const isActive = selectedStatus === tab.id;
-                return (
-                  <Button
-                    key={tab.id}
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedStatus(tab.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-emerald-800 shadow-xs border border-slate-200/80"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                    }`}
-                  >
-                    {tab.label}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <span className="text-[11px] font-bold text-slate-500 font-mono">
-              {expenses.length} Records Found
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-2.5 items-center justify-between pt-1 border-t border-slate-200/60">
-            <Input
-              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-              placeholder="Search expense #, payee, description..."
-              containerClassName="w-full sm:w-80"
-              className="py-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
+        <FilterBar
+          tabs={[
+            { id: "ALL", label: "All Expenses" },
+            { id: "PAID", label: "Paid" },
+            { id: "APPROVED", label: "Approved" },
+            { id: "DRAFT", label: "Draft" },
+          ]}
+          activeTab={selectedStatus}
+          onTabChange={setSelectedStatus}
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search expense #, payee, description..."
+          totalCount={expenses.length}
+          countLabel="Records Found"
+          rightAction={
             <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
               <Select
                 containerClassName="w-full sm:w-56"
@@ -344,8 +309,8 @@ export default function ExpensesPage() {
                 <option value="CHEQUE">Cheque</option>
               </Select>
             </div>
-          </div>
-        </div>
+          }
+        />
 
         <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
           <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
