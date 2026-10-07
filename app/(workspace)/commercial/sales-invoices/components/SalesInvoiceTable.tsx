@@ -15,10 +15,15 @@ import { SalesInvoice } from "@/lib/hooks/api-hooks";
 import SalesInvoiceRow from "./SalesInvoiceRow";
 
 const COLUMNS: RegisterColumn[] = [
-  { label: "Invoice No", className: "whitespace-nowrap min-w-[175px]" },
-  { label: "Customer / Client", className: "min-w-[170px]" },
-  { label: "Project Scope", className: "min-w-[150px]" },
-  { label: "Date", compact: true, className: "whitespace-nowrap" },
+  { label: "Invoice No", compact: true, className: "whitespace-nowrap" },
+  { label: "Customer / Client", compact: true },
+  { label: "Project Scope", compact: true },
+  {
+    label: "Date",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
   {
     label: "Total (AED)",
     align: "right",
@@ -39,10 +44,10 @@ const COLUMNS: RegisterColumn[] = [
   },
   {
     label: "Actions",
-    align: "center",
+    align: "right",
     compact: true,
     hideOnPrint: true,
-    className: "whitespace-nowrap",
+    className: "whitespace-nowrap pr-3",
   },
 ];
 

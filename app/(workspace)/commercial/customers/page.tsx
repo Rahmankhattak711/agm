@@ -4,22 +4,32 @@ import React, { useState, useMemo, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon } from "@/components/icons";
 import { Button, PageHeader } from "@/components/ui";
+import { useConfirm } from "@/context/ConfirmContext";
 import { toast } from "@/lib/toast";
-import { useCustomers, Customer } from "@/lib/hooks/api-hooks";
+import {
+  useCustomers,
+  useDeleteCustomer,
+  Customer,
+} from "@/lib/hooks/api-hooks";
 import {
   CustomerKpis,
   CustomerTable,
   CustomerFilterTab,
   CustomerCreateModal,
+  CustomerEditModal,
   CustomerStatementDocument,
 } from "./components";
 
 export default function CustomersPage() {
+  const { confirm } = useConfirm();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<CustomerFilterTab>("ALL");
   const { data: customers = [], isLoading, error } = useCustomers(search);
+  const deleteCustomerMutation = useDeleteCustomer();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [customerToEdit, setCustomerToEdit] = useState<Customer | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [expandedCustomerId, setExpandedCustomerId] = useState<string | null>(
     null,
   );
@@ -76,6 +86,33 @@ export default function CustomersPage() {
       }, 100);
     } catch (err: any) {
       toast.error(`Unable to print statement: ${err.message}`);
+    }
+  };
+
+  const handleOpenEdit = (customer: Customer) => {
+    setCustomerToEdit(customer);
+    setIsEditOpen(true);
+  };
+
+  const handleDeleteCustomer = async (customer: Customer) => {
+    const isConfirmed = await confirm({
+      title: "Delete Customer",
+      message: `Are you sure you want to delete customer "${customer.name}" (${customer.customerCode})?`,
+      variant: "danger",
+      confirmText: "Delete Customer",
+    });
+    if (isConfirmed) {
+      try {
+        const res = await deleteCustomerMutation.mutateAsync(customer.id);
+        toast.success(
+          res.message || `Customer "${customer.name}" deleted successfully.`,
+        );
+        if (expandedCustomerId === customer.id) {
+          setExpandedCustomerId(null);
+        }
+      } catch (err: any) {
+        toast.error(err.message || "Failed to delete customer");
+      }
     }
   };
 
@@ -150,11 +187,22 @@ export default function CustomersPage() {
           setExpandedCustomerId((prev) => (prev === id ? null : id))
         }
         onPrintCustomer={handlePrintCustomer}
+        onEditCustomer={handleOpenEdit}
+        onDeleteCustomer={handleDeleteCustomer}
       />
 
       <CustomerCreateModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
+      />
+
+      <CustomerEditModal
+        isOpen={isEditOpen}
+        customer={customerToEdit}
+        onClose={() => {
+          setIsEditOpen(false);
+          setCustomerToEdit(null);
+        }}
       />
 
       <div

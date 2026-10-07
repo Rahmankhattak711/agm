@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
-import { ColumnDef } from "@tanstack/react-table";
 import SalaryCertificateTemplate from "@/components/documents/SalaryCertificateTemplate";
 import {
   SalaryCertificateRecord,
@@ -12,26 +11,59 @@ import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
 import {
   Button,
-  DataTable,
-  Input,
+  RegisterTable,
+  RegisterColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableLoading,
+  EmptyState,
   DashboardCard,
   DashboardCardGrid,
   PageHeader,
   FilterBar,
 } from "@/components/ui";
 import {
-  SearchIcon,
   PlusIcon,
   TrashIcon,
   EditIcon,
-  UserIcon,
   DollarSignIcon,
   CalendarIcon,
   FileCheckIcon,
   ShieldCheckIcon,
-  BriefcaseIcon,
 } from "@/components/icons";
 import { SAMPLE_SALARY_CERTIFICATE } from "@/components/documents/salary-certificate-constants";
+
+const COLUMNS: RegisterColumn[] = [
+  { label: "Ref Number", compact: true, className: "whitespace-nowrap" },
+  { label: "Employee & Emirates ID", compact: true },
+  { label: "Designation / Position", compact: true },
+  {
+    label: "Monthly Salary",
+    align: "right",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Issue Date",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Status",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Actions",
+    align: "right",
+    compact: true,
+    hideOnPrint: true,
+    className: "whitespace-nowrap pr-3 sm:pr-4",
+  },
+];
 
 export default function SalaryCertificatesPage() {
   const { data: recordsList = [], isLoading } = useSalaryCertificates();
@@ -126,7 +158,7 @@ export default function SalaryCertificatesPage() {
     const isIssued = status === "ISSUED" || status === "COMPLETED";
     if (isIssued) {
       return (
-        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
           ISSUED
         </span>
@@ -134,116 +166,19 @@ export default function SalaryCertificatesPage() {
     }
     if (status === "ACTIVE") {
       return (
-        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
           ACTIVE
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap">
         <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
         DRAFT
       </span>
     );
   };
-
-  const columns: ColumnDef<SalaryCertificateRecord>[] = useMemo(
-    () => [
-      {
-        accessorKey: "refNumber",
-        header: "Ref Number",
-        cell: ({ row }) => (
-          <span className="font-mono font-bold text-xs text-slate-900 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 whitespace-nowrap inline-block">
-            {row.original.refNumber}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "employeeName",
-        header: "Employee & Emirates ID",
-        cell: ({ row }) => (
-          <div className="flex flex-col">
-            <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
-              <UserIcon size={12} className="text-slate-400" />
-              {row.original.employeePrefix || "Mr."}{" "}
-              {row.original.employeeName || "—"}
-            </span>
-            <span className="text-[11px] text-slate-500 font-mono mt-0.5">
-              EID: {row.original.emiratesId || "N/A"}
-            </span>
-          </div>
-        ),
-      },
-      {
-        accessorKey: "position",
-        header: "Designation / Position",
-        cell: ({ row }) => (
-          <span className="text-slate-700 text-xs font-medium flex items-center gap-1.5">
-            <BriefcaseIcon size={12} className="text-slate-400 shrink-0" />
-            {row.original.position || "—"}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "monthlySalaryNum",
-        header: "Monthly Salary",
-        cell: ({ row }) => (
-          <span className="font-bold text-slate-900 text-xs flex items-center gap-1 bg-emerald-50/70 text-emerald-800 px-2 py-0.5 rounded border border-emerald-100">
-            <DollarSignIcon size={11} className="text-agm-green" />
-            AED {Number(row.original.monthlySalaryNum || 0).toLocaleString()}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "date",
-        header: "Issue Date",
-        cell: ({ row }) => (
-          <span className="text-slate-600 text-xs flex items-center gap-1.5 whitespace-nowrap">
-            <CalendarIcon size={12} className="text-slate-400 shrink-0" />
-            {row.original.date || "—"}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => getStatusBadge(row.original.status),
-      },
-      {
-        id: "actions",
-        header: "Actions",
-        cell: ({ row }) => (
-          <div
-            className="flex items-center justify-end gap-1.5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenInEditor(row.original)}
-              className="text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-100 px-2.5 py-1 flex items-center gap-1 cursor-pointer"
-            >
-              <EditIcon size={12} />
-              <span>Edit</span>
-            </Button>
-            <Button
-              type="button"
-              variant="danger"
-              size="sm"
-              onClick={(e) => handleDelete(row.original.id, e)}
-              className="text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 border-rose-200 px-2 py-1 flex items-center gap-1 cursor-pointer"
-              title="Delete"
-            >
-              <TrashIcon size={12} />
-            </Button>
-          </div>
-        ),
-      },
-    ],
-    [handleDelete, handleOpenInEditor],
-  );
 
   return (
     <div className="w-full space-y-6">
@@ -341,18 +276,113 @@ export default function SalaryCertificatesPage() {
             countLabel="Certificates"
           />
 
-          <DataTable
-            columns={columns}
-            data={filteredRecords}
-            isLoading={isLoading}
-            onRowClick={(row) => handleOpenInEditor(row)}
-            emptyTitle="No salary certificates found"
-            emptyMessage={
-              search
-                ? "No salary certificates matched your search criteria."
-                : "No salary certificates in database. Click 'New Certificate' to create one."
-            }
-          />
+          <RegisterTable
+            title="Salary Certificates Register"
+            countLabel={`${filteredRecords.length} Active Records`}
+            columns={COLUMNS}
+          >
+            <TableBody className="divide-y divide-slate-100 font-medium">
+              {isLoading ? (
+                <TableLoading colSpan={7} rows={5} />
+              ) : filteredRecords.length === 0 ? (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={7} className="p-0 border-0">
+                    <EmptyState
+                      icon={
+                        <FileCheckIcon size={20} className="text-slate-400" />
+                      }
+                      title="No salary certificates found"
+                      description={
+                        search
+                          ? "No salary certificates matched your search criteria."
+                          : "No salary certificates in database. Click 'New Certificate' to create one."
+                      }
+                      actionLabel={search ? undefined : "New Certificate"}
+                      onAction={search ? undefined : handleCreateNew}
+                    />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredRecords.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    onClick={() => handleOpenInEditor(row)}
+                    className="hover:bg-slate-50/80 transition-colors cursor-pointer"
+                  >
+                    <TableCell className="py-2 px-2.5 sm:px-3 font-mono font-bold text-xs text-slate-900 whitespace-nowrap">
+                      <span className="bg-slate-100 text-slate-800 px-2.5 py-1 rounded-md border border-slate-200">
+                        {row.refNumber}
+                      </span>
+                    </TableCell>
+
+                    <TableCell className="py-2 px-2.5 sm:px-3 text-xs">
+                      <div
+                        className="font-bold text-slate-900 truncate max-w-[200px] sm:max-w-[260px]"
+                        title={`${row.employeePrefix || "Mr."} ${row.employeeName || ""}`}
+                      >
+                        {row.employeePrefix || "Mr."} {row.employeeName || "—"}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5 truncate max-w-[200px]">
+                        EID: {row.emiratesId || "N/A"}
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="py-2 px-2.5 sm:px-3 text-slate-700 text-xs">
+                      <div
+                        className="font-medium text-slate-800 truncate max-w-[140px] sm:max-w-[200px]"
+                        title={row.position}
+                      >
+                        {row.position || "—"}
+                      </div>
+                    </TableCell>
+
+                    <TableCell
+                      align="right"
+                      className="py-2 px-2.5 sm:px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap text-xs"
+                    >
+                      AED {Number(row.monthlySalaryNum || 0).toLocaleString()}
+                    </TableCell>
+
+                    <TableCell className="py-2 px-2 text-center text-slate-600 font-mono text-[11px] whitespace-nowrap">
+                      {row.date || "—"}
+                    </TableCell>
+
+                    <TableCell className="py-2 px-2 text-center whitespace-nowrap">
+                      {getStatusBadge(row.status)}
+                    </TableCell>
+
+                    <TableCell className="py-2 px-2 sm:pr-4 text-right print:hidden whitespace-nowrap">
+                      <div
+                        className="flex items-center justify-end gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenInEditor(row)}
+                          className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
+                          title="Edit Certificate"
+                        >
+                          <EditIcon size={18} className="w-[18px] h-[18px]" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleDelete(row.id, e)}
+                          className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                          title="Delete Certificate"
+                        >
+                          <TrashIcon size={18} className="w-[18px] h-[18px]" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </RegisterTable>
         </div>
       ) : (
         <div>
