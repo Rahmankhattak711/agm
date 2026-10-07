@@ -6,4 +6,5 @@ export * from "./SalesInvoiceRow";
 export * from "./SalesInvoiceTable";
 export * from "./CreateSalesInvoiceModal";
 export * from "./RecordPaymentModal";
+export * from "./EditSalesInvoiceModal";
 export * from "./PrintableTaxInvoice";

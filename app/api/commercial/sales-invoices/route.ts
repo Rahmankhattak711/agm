@@ -8,6 +8,7 @@ import prisma from "@/lib/prisma";
 import { postSalesInvoiceJournalEntry } from "@/lib/commercial-accounting";
 import { NextResponse } from "next/server";
 import { round2 } from "@/lib/utils/math";
+import { getNextInvoiceNumber } from "@/lib/utils/sequence";
 
 export async function GET(request: Request) {
   try {
@@ -71,16 +72,37 @@ export async function GET(request: Request) {
       );
 
       let subtotal = Number(inv.subtotal || 0);
-      let vatAmount = Number(inv.vatAmount || 0);
-      let totalAmount = Number(inv.totalAmount || 0);
       const discount = Number(inv.discount || 0);
-      const vatRate = inv.vatRate !== undefined && inv.vatRate !== null ? Number(inv.vatRate) : 0;
-
       if (itemsSum && itemsSum > 0) {
         subtotal = round2(itemsSum);
-        const net = Math.max(0, subtotal - discount);
+      }
+      const net = Math.max(0, subtotal - discount);
+
+      const dbVatRate =
+        inv.vatRate !== undefined && inv.vatRate !== null
+          ? Number(inv.vatRate)
+          : 0;
+      const dbVatAmount = Number(inv.vatAmount || 0);
+      const dbTotalAmount = Number(inv.totalAmount || 0);
+
+      let vatRate = 0;
+      let vatAmount = 0;
+      let totalAmount = 0;
+
+      if (dbVatRate > 0 && dbVatAmount > 0) {
+        vatRate = dbVatRate;
+        vatAmount = round2(dbVatAmount);
+        totalAmount =
+          dbTotalAmount > 0 ? dbTotalAmount : round2(net + vatAmount);
+      } else if (dbVatRate > 0 && dbTotalAmount > net) {
+        vatRate = dbVatRate;
+        vatAmount = round2((net * vatRate) / 100);
+        totalAmount =
+          dbTotalAmount > 0 ? dbTotalAmount : round2(net + vatAmount);
+      } else {
+        vatRate = 0;
         vatAmount = 0;
-        totalAmount = round2(net);
+        totalAmount = dbTotalAmount > 0 ? dbTotalAmount : round2(net);
       }
 
       const paidAmount = Number(inv.paidAmount || 0);
@@ -89,6 +111,7 @@ export async function GET(request: Request) {
       return {
         ...inv,
         subtotal,
+        vatRate,
         vatAmount,
         totalAmount,
         remainingBalance,
@@ -156,8 +179,7 @@ export async function POST(request: Request) {
 
     let invNo = invoiceNumber;
     if (!invNo) {
-      const count = await prisma.salesInvoice.count();
-      invNo = `INV-2026-${(count + 1).toString().padStart(4, "0")}`;
+      invNo = await getNextInvoiceNumber();
     }
 
     let subtotal = 0;
@@ -181,8 +203,20 @@ export async function POST(request: Request) {
 
     const discTotal = parseFloat(discount) || 0;
     const netSubtotal = Math.max(0, subtotal - discTotal);
-    const vatRate = 5.0;
-    const vatAmount = (netSubtotal * vatRate) / 100;
+    const vatRate =
+      body.vatRate !== undefined && body.vatRate !== null
+        ? parseFloat(body.vatRate)
+        : body.vatAmount !== undefined
+          ? parseFloat(body.vatAmount) > 0
+            ? 5.0
+            : 0
+          : 0;
+    const vatAmount =
+      body.vatAmount !== undefined
+        ? parseFloat(body.vatAmount)
+        : vatRate > 0
+          ? (netSubtotal * vatRate) / 100
+          : 0;
     const totalAmount = netSubtotal + vatAmount;
 
     const invDate = invoiceDate ? new Date(invoiceDate) : new Date();

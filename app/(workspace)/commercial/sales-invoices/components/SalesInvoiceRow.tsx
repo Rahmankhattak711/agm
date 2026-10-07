@@ -9,6 +9,8 @@ import {
   FileCheck2Icon,
   FileTextIcon,
   PrintIcon,
+  EditIcon,
+  TrashIcon,
 } from "@/components/icons";
 import { SalesInvoice } from "@/lib/hooks/api-hooks";
 import { formatNumber } from "./types";
@@ -21,6 +23,8 @@ export interface SalesInvoiceRowProps {
   onPrint: (inv: SalesInvoice) => void;
   onPost: (invId: string) => void;
   onOpenPayment: (inv: SalesInvoice) => void;
+  onEdit: (inv: SalesInvoice) => void;
+  onDelete: (inv: SalesInvoice) => void;
 }
 
 export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
@@ -30,6 +34,8 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
   onPrint,
   onPost,
   onOpenPayment,
+  onEdit,
+  onDelete,
 }) => {
   const status = getInvoiceStatus(inv.status);
   return (
@@ -40,42 +46,43 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
           isExpanded ? "bg-slate-50/90 font-medium" : ""
         }`}
       >
-        <TableCell className="py-3 px-4 font-mono font-bold text-slate-900">
-          <div className="flex items-center gap-1.5">
+        <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900 whitespace-nowrap min-w-[175px]">
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
             <FileTextIcon size={13} className="text-emerald-700 shrink-0" />
-            <span>{inv.invoiceNumber}</span>
+            <span className="whitespace-nowrap">{inv.invoiceNumber}</span>
           </div>
           {inv.quotationRef && (
-            <div className="text-[10.5px] text-teal-700 font-mono font-bold mt-0.5 inline-flex items-center gap-1">
-              <span className="text-slate-400 font-normal">Quote:</span> {inv.quotationRef}
+            <div className="text-[10.5px] text-teal-700 font-mono font-bold mt-0.5 flex items-center gap-1 whitespace-nowrap">
+              <span className="text-slate-400 font-normal">Quote:</span>
+              <span className="whitespace-nowrap">{inv.quotationRef}</span>
             </div>
           )}
         </TableCell>
-        <TableCell className="py-3 px-4 font-bold text-slate-900">
+        <TableCell className="py-2.5 px-4 font-bold text-slate-900 min-w-[170px]">
           <div>{inv.customerName}</div>
           {inv.customerTrn && (
-            <div className="text-[10px] text-slate-400 font-mono font-normal">
+            <div className="text-[10px] text-slate-400 font-mono font-normal whitespace-nowrap">
               TRN: {inv.customerTrn}
             </div>
           )}
         </TableCell>
-        <TableCell className="py-3 px-4 max-w-xs truncate text-slate-700">
+        <TableCell className="py-2.5 px-4 text-slate-700 min-w-[150px]">
           {inv.projectScope || "—"}
         </TableCell>
-        <TableCell className="py-3 px-3 text-slate-600 font-mono text-xs">
+        <TableCell className="py-2.5 px-3 text-slate-600 font-mono text-xs whitespace-nowrap">
           {inv.invoiceDate
             ? new Date(inv.invoiceDate).toLocaleDateString("en-GB")
             : "—"}
         </TableCell>
         <TableCell
           align="right"
-          className="py-3 px-3 text-right font-mono font-black text-slate-900"
+          className="py-2.5 px-3 text-right font-mono font-black text-slate-900 whitespace-nowrap"
         >
           {formatNumber(inv.totalAmount)}
         </TableCell>
         <TableCell
           align="right"
-          className={`py-3 px-3 text-right font-mono font-bold ${
+          className={`py-2.5 px-3 text-right font-mono font-bold whitespace-nowrap ${
             Number(inv.remainingBalance) > 0
               ? "text-rose-700"
               : "text-emerald-700"
@@ -83,10 +90,10 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
         >
           {formatNumber(inv.remainingBalance)}
         </TableCell>
-        <TableCell className="py-3 px-3 text-center">
+        <TableCell className="py-2.5 px-3 text-center whitespace-nowrap">
           <Badge tone={status.tone}>{status.label}</Badge>
         </TableCell>
-        <TableCell className="py-3 px-3 text-center print:hidden">
+        <TableCell className="py-2.5 px-3 text-center print:hidden whitespace-nowrap">
           <div className="flex items-center justify-center gap-1.5">
             <Button
               type="button"
@@ -100,6 +107,19 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
               title="Print Tax Invoice"
             >
               <PrintIcon size={13} />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(inv);
+              }}
+              className="p-1.5 text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
+              title="Edit Invoice"
+            >
+              <EditIcon size={13} />
             </Button>
             {inv.status === "DRAFT" && (
               <Button
@@ -129,6 +149,19 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
                 Receive
               </Button>
             )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(inv);
+              }}
+              className="p-1.5 text-slate-400 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+              title="Delete Invoice"
+            >
+              <TrashIcon size={13} />
+            </Button>
             <Button
               type="button"
               variant="ghost"
@@ -166,6 +199,8 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
               onPrint={onPrint}
               onPost={onPost}
               onOpenPayment={onOpenPayment}
+              onEdit={() => onEdit(inv)}
+              onDelete={() => onDelete(inv)}
               onClose={onToggleExpand}
             />
           </TableCell>

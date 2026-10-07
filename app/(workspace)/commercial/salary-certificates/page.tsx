@@ -16,6 +16,8 @@ import {
   Input,
   DashboardCard,
   DashboardCardGrid,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import {
   SearchIcon,
@@ -245,57 +247,51 @@ export default function SalaryCertificatesPage() {
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-agm-box-border pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-            Salary Certificates
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Official employee salary certificates with UAE Embassy &amp; Bank
-            compliance.
-          </p>
-        </div>
+      <PageHeader
+        title="Salary Certificates"
+        description="Official employee salary certificates with UAE Embassy & Bank compliance."
+        actions={
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setActiveView("LIST")}
+                className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  activeView === "LIST"
+                    ? "bg-white text-agm-green shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Saved Records ({recordsList.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveView("EDITOR")}
+                className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  activeView === "EDITOR"
+                    ? "bg-white text-agm-green shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Editor
+              </button>
+            </div>
 
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-            <button
-              type="button"
-              onClick={() => setActiveView("LIST")}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                activeView === "LIST"
-                  ? "bg-white text-agm-green shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Saved Records ({recordsList.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveView("EDITOR")}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                activeView === "EDITOR"
-                  ? "bg-white text-agm-green shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Editor
-            </button>
+            {activeView === "LIST" && (
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={handleCreateNew}
+                className="text-xs bg-agm-green hover:bg-agm-green-2 text-white flex items-center gap-1.5 shadow-xs cursor-pointer font-semibold"
+              >
+                <PlusIcon size={14} />
+                <span>New Certificate</span>
+              </Button>
+            )}
           </div>
-
-          {activeView === "LIST" && (
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={handleCreateNew}
-              className="text-xs bg-agm-green hover:bg-agm-green-2 text-white flex items-center gap-1.5 shadow-xs cursor-pointer font-semibold"
-            >
-              <PlusIcon size={14} />
-              <span>New Certificate</span>
-            </Button>
-          )}
-        </div>
-      </div>
+        }
+      />
 
       {activeView === "LIST" ? (
         <div className="space-y-6">
@@ -329,39 +325,21 @@ export default function SalaryCertificatesPage() {
             />
           </DashboardCardGrid>
 
-          <div className="bg-white p-3.5 rounded-xl border border-agm-box-border shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
-            <div className="relative w-full md:w-96">
-              <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <Input
-                placeholder="Search by ref, employee name, designation, or Emirates ID..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 text-xs"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 w-full md:w-auto">
-              <span className="text-xs text-slate-500 font-medium">
-                Status:
-              </span>
-              <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
-                {(["ALL", "ISSUED", "ACTIVE", "DRAFT"] as const).map((st) => (
-                  <button
-                    key={st}
-                    type="button"
-                    onClick={() => setStatusFilter(st)}
-                    className={`px-2.5 py-1 text-xs rounded font-semibold transition-all cursor-pointer ${
-                      statusFilter === st
-                        ? "bg-white text-agm-green shadow-xs border border-slate-200"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    {st === "ALL" ? `All (${recordsList.length})` : st}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          <FilterBar
+            tabs={[
+              { id: "ALL", label: `All (${recordsList.length})` },
+              { id: "ISSUED", label: `Issued (${issuedCount})` },
+              { id: "ACTIVE", label: `Active (${activeCount})` },
+              { id: "DRAFT", label: `Draft (${draftCount})` },
+            ]}
+            activeTab={statusFilter}
+            onTabChange={(st) => setStatusFilter(st)}
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by ref, employee name, designation, or Emirates ID..."
+            totalCount={filteredRecords.length}
+            countLabel="Certificates"
+          />
 
           <DataTable
             columns={columns}

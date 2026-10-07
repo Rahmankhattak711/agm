@@ -91,7 +91,7 @@ export async function POST(request: Request) {
       reference,
       preparedBy,
       contact,
-      vatPct = 5,
+      vatPct = 0,
       discount = 0,
       notes,
       terms,

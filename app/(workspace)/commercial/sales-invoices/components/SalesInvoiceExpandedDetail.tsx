@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   FileTextIcon,
   PlusIcon,
@@ -19,6 +19,8 @@ export interface SalesInvoiceExpandedDetailProps {
   onPrint?: (inv: SalesInvoice) => void;
   onPost?: (invId: string) => void;
   onOpenPayment?: (inv: SalesInvoice) => void;
+  onEdit?: (inv: SalesInvoice) => void;
+  onDelete?: (inv: SalesInvoice) => void;
   onClose?: () => void;
 }
 
@@ -31,7 +33,7 @@ interface PaymentMilestoneItem {
 
 export const SalesInvoiceExpandedDetail: React.FC<
   SalesInvoiceExpandedDetailProps
-> = ({ inv }) => {
+> = ({ inv, onEdit, onDelete }) => {
   const updateInvoiceMutation = useUpdateSalesInvoice();
 
   const itemsSum = useMemo(() => {
@@ -46,11 +48,24 @@ export const SalesInvoiceExpandedDetail: React.FC<
 
   const discount = Number(inv.discount || 0);
   const calculatedSubtotal = Math.max(0, itemsSum - discount);
-  const calculatedVat = 0;
-  const calculatedTotal = calculatedSubtotal;
+  const dbVatRate =
+    inv.vatRate !== undefined && inv.vatRate !== null ? Number(inv.vatRate) : 0;
+  const dbVatAmount = Number(inv.vatAmount || 0);
+  const dbTotalAmount = Number(inv.totalAmount || 0);
 
-  const projectTotalAmount = itemsSum || Number(inv.subtotal) || Number(inv.totalAmount) || 0;
-  const totalAmount = calculatedTotal || Number(inv.totalAmount) || 0;
+  const calculatedVat =
+    dbVatAmount > 0
+      ? dbVatAmount
+      : dbVatRate > 0 && dbTotalAmount > calculatedSubtotal
+        ? Math.round(((calculatedSubtotal * dbVatRate) / 100) * 100) / 100
+        : 0;
+  const calculatedTotal =
+    dbTotalAmount > 0
+      ? dbTotalAmount
+      : Math.round((calculatedSubtotal + calculatedVat) * 100) / 100;
+
+  const projectTotalAmount = calculatedTotal;
+  const totalAmount = calculatedTotal;
 
   const initialParsedData = useMemo(() => {
     let termsList: string[] = [];
@@ -122,6 +137,39 @@ export const SalesInvoiceExpandedDetail: React.FC<
   const [termsList, setTermsList] = useState<string[]>(
     initialParsedData.termsList,
   );
+
+  useEffect(() => {
+    if (!isEditingTerms) {
+      setMilestones(
+        initialParsedData.paymentList.map((plan, idx) => {
+          const match = plan.match(/(\d+(?:\.\d+)?)\s*%/);
+          const pct = match
+            ? parseFloat(match[1])
+            : Math.round(100 / (initialParsedData.paymentList.length || 1));
+          const cleanLabel =
+            plan
+              .replace(/^\d+(?:\.\d+)?\s*%\s*/, "")
+              .replace(/^[-•*]\s*/, "")
+              .trim() || `Milestone ${idx + 1}`;
+          const amount =
+            Math.round(((projectTotalAmount * pct) / 100) * 100) / 100;
+          return {
+            id: `ms-${idx}-${Date.now()}`,
+            label: cleanLabel,
+            pct,
+            amount,
+          };
+        }),
+      );
+      setTermsList(initialParsedData.termsList);
+    }
+  }, [
+    inv.id,
+    inv.terms,
+    projectTotalAmount,
+    isEditingTerms,
+    initialParsedData,
+  ]);
 
   const handleUpdateMilestonePct = (idx: number, newPct: number) => {
     setMilestones((prev) => {
@@ -233,9 +281,33 @@ export const SalesInvoiceExpandedDetail: React.FC<
             <FileTextIcon size={13} />
             <span>Description of Work / Services (Scope Breakdown)</span>
           </div>
-          <span className="text-[11px] font-normal opacity-90 font-mono">
-            {inv.items?.length || 0} Scope Item(s)
-          </span>
+          <div className="flex items-center gap-2">
+            {onEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(inv)}
+                className="bg-white/10 hover:bg-white/20 text-white rounded px-2 py-0.5 text-[11px] font-semibold flex items-center gap-1 transition cursor-pointer"
+                title="Edit invoice"
+              >
+                <EditIcon size={11} />
+                <span>Edit</span>
+              </button>
+            )}
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(inv)}
+                className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 hover:text-white rounded px-2 py-0.5 text-[11px] font-semibold flex items-center gap-1 transition cursor-pointer"
+                title="Delete invoice"
+              >
+                <TrashIcon size={11} />
+                <span>Delete</span>
+              </button>
+            )}
+            <span className="text-[11px] font-normal opacity-90 font-mono">
+              {inv.items?.length || 0} Scope Item(s)
+            </span>
+          </div>
         </div>
 
         <table className="w-full text-xs border-collapse">
@@ -518,13 +590,22 @@ export const SalesInvoiceExpandedDetail: React.FC<
                   <span className="text-[10px] text-slate-400">AED</span>
                 </span>
               </div>
-              <div className="flex justify-between items-center text-[13px] text-slate-500">
-                <span>5% UAE Output VAT</span>
-                <span className="font-mono font-medium text-slate-700">
-                  {formatNumber(0)}{" "}
-                  <span className="text-[10px] text-slate-400">AED</span>
-                </span>
-              </div>
+              {displayVatAmount > 0 && (
+                <div className="flex justify-between items-center text-[13px] text-slate-500">
+                  <span>
+                    {dbVatRate > 0
+                      ? dbVatRate
+                      : displaySubtotal > 0
+                        ? Math.round((displayVatAmount / displaySubtotal) * 100)
+                        : 5}
+                    % UAE Output VAT
+                  </span>
+                  <span className="font-mono font-medium text-slate-700">
+                    {formatNumber(displayVatAmount)}{" "}
+                    <span className="text-[10px] text-slate-400">AED</span>
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="bg-slate-50/50 p-4 border-t border-slate-100/80 space-y-3">

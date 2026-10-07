@@ -25,6 +25,8 @@ import {
   FormTextarea,
   FormSubmit,
   Badge,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -118,23 +120,15 @@ export default function CreditNotesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Credit Notes
-            </h2>
-            <Badge tone="rose" size="md">
-              Sales Cycle — Adjustments
-            </Badge>
-          </div>
-          <p className="text-xs text-slate-500">
-            Issue customer credit notes, process sales returns, adjust accounts
-            receivable, and update output VAT.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Credit Notes"
+        badge={
+          <Badge tone="rose" size="md">
+            Sales Cycle — Adjustments
+          </Badge>
+        }
+        description="Issue customer credit notes, process sales returns, adjust accounts receivable, and update output VAT."
+        actions={
           <Button
             variant="dark"
             size="sm"
@@ -144,8 +138,8 @@ export default function CreditNotesPage() {
           >
             Create Credit Note
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-rose-50/60 border border-rose-100 flex flex-col justify-between space-y-2">
@@ -179,16 +173,13 @@ export default function CreditNotesPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
-        <Search size={14} className="text-slate-400 ml-2" />
-        <input
-          type="text"
-          placeholder="Search credit note number, client, reason..."
-          className="w-full text-xs bg-transparent outline-none text-slate-800"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search credit note number, client, reason..."
+        totalCount={filteredNotes.length}
+        countLabel="Credit Notes Listed"
+      />
 
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">

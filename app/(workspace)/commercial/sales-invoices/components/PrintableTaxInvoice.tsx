@@ -339,14 +339,16 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between px-4 py-2 print:py-1">
-                        <span className="font-semibold text-slate-600">
-                          Output VAT (5%)
-                        </span>
-                        <span className="font-mono font-semibold text-emerald-800">
-                          AED {formatNumber(invoice.vatAmount)}
-                        </span>
-                      </div>
+                      {Number(invoice.vatAmount || 0) > 0 && (
+                        <div className="flex items-center justify-between px-4 py-2 print:py-1">
+                          <span className="font-semibold text-slate-600">
+                            Output VAT ({Number(invoice.vatRate || 0)}%)
+                          </span>
+                          <span className="font-mono font-semibold text-emerald-800">
+                            AED {formatNumber(invoice.vatAmount)}
+                          </span>
+                        </div>
+                      )}
 
                       <div className="flex items-center justify-between px-4 py-2.5 print:py-1.5 bg-agm-green text-white">
                         <span className="font-black tracking-wide text-white text-[12px] print:text-[10.5px] uppercase">

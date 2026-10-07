@@ -23,6 +23,8 @@ import {
   FormSubmit,
   DashboardCard,
   DashboardCardGrid,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import {
   EditIcon,
@@ -379,19 +381,11 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Users &amp; Access Management
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage system user accounts, role-based access permissions, and
-            security credentials.
-          </p>
-        </div>
-
-        {isAdmin && (
-          <div className="flex items-center gap-2">
+      <PageHeader
+        title="Users & Access Management"
+        description="Manage system user accounts, role-based access permissions, and security credentials."
+        actions={
+          isAdmin ? (
             <Button
               variant="primary"
               size="sm"
@@ -401,9 +395,9 @@ export default function UsersPage() {
             >
               Add New User
             </Button>
-          </div>
-        )}
-      </div>
+          ) : undefined
+        }
+      />
 
       <DashboardCardGrid cols={4}>
         <DashboardCard
@@ -438,41 +432,19 @@ export default function UsersPage() {
       </DashboardCardGrid>
 
       <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <Input
-              containerClassName="w-full sm:max-w-md"
-              placeholder="Search user name or email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              leftIcon={<SearchIcon size={16} className="text-slate-400" />}
-              className="py-2 shadow-sm rounded-xl border-slate-200 focus:border-agm-green focus:ring-agm-green/20 bg-slate-50/50"
-            />
-            <span className="inline-flex items-center justify-center text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs">
-              {filteredUsers.length} Accounts Listed
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 custom-scrollbar">
-            {[{ value: "ALL", label: "All Users" }, ...ROLES].map((tab) => {
-              const isActive = roleFilter === tab.value;
-              return (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => setRoleFilter(tab.value)}
-                  className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[11.5px] font-bold transition-all duration-200 cursor-pointer border ${
-                    isActive
-                      ? "bg-slate-800 text-white border-slate-800 shadow-md"
-                      : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-2xs"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <FilterBar
+          tabs={[
+            { id: "ALL", label: "All Users" },
+            ...ROLES.map((r) => ({ id: r.value, label: r.label })),
+          ]}
+          activeTab={roleFilter}
+          onTabChange={(val) => setRoleFilter(val)}
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search user name or email..."
+          totalCount={filteredUsers.length}
+          countLabel="Accounts Listed"
+        />
 
         {error ? (
           <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">

@@ -1,43 +1,44 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Button } from "@/components/ui";
-import { PlusIcon } from "@/components/icons";
 import { toast } from "@/lib/toast";
 import {
   useSalesInvoices,
-  useCreateSalesInvoice,
   usePostSalesInvoice,
   useCreateCustomerPayment,
-  useCustomers,
-  useProducts,
+  useUpdateSalesInvoice,
+  useDeleteSalesInvoice,
   SalesInvoice,
 } from "@/lib/hooks/api-hooks";
+import { useConfirm } from "@/context/ConfirmContext";
+import { PageHeader } from "@/components/ui";
 import {
   SalesInvoiceKPIs,
   SalesInvoiceFilters,
   SalesInvoiceTable,
-  CreateSalesInvoiceModal,
   RecordPaymentModal,
   PrintableTaxInvoice,
+  EditSalesInvoiceModal,
 } from "@/app/(workspace)/commercial/sales-invoices/components";
 
 export default function SalesInvoicesPage() {
   const { data: invoices = [], isLoading, error } = useSalesInvoices();
-  const { data: customers = [] } = useCustomers();
-  const { data: products = [] } = useProducts();
 
-  const createInvoiceMutation = useCreateSalesInvoice();
   const postInvoiceMutation = usePostSalesInvoice();
   const paymentMutation = useCreateCustomerPayment();
+  const updateInvoiceMutation = useUpdateSalesInvoice();
+  const deleteInvoiceMutation = useDeleteSalesInvoice();
+  const { confirm } = useConfirm();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(
     null,
   );
   const [paymentModalInv, setPaymentModalInv] = useState<SalesInvoice | null>(
+    null,
+  );
+  const [editingInvoice, setEditingInvoice] = useState<SalesInvoice | null>(
     null,
   );
   const [expandedInvoiceId, setExpandedInvoiceId] = useState<string | null>(
@@ -58,6 +59,40 @@ export default function SalesInvoicesPage() {
     setTimeout(() => {
       window.print();
     }, 50);
+  };
+
+  const handleEditInvoice = (inv: SalesInvoice) => {
+    setEditingInvoice(inv);
+  };
+
+  const handleSaveInvoiceEdit = async (id: string, updatedData: any) => {
+    try {
+      await updateInvoiceMutation.mutateAsync({ id, data: updatedData });
+      toast.success("Sales invoice updated successfully!");
+    } catch (err: any) {
+      toast.error(`Error updating invoice: ${err.message}`);
+      throw err;
+    }
+  };
+
+  const handleDeleteInvoice = async (inv: SalesInvoice) => {
+    const confirmed = await confirm({
+      title: "Delete Sales Invoice",
+      message: `Are you sure you want to delete invoice ${inv.invoiceNumber} for ${inv.customerName}? This action cannot be undone.`,
+      variant: "danger",
+      confirmText: "Delete Invoice",
+    });
+    if (!confirmed) return;
+
+    try {
+      await deleteInvoiceMutation.mutateAsync(inv.id);
+      toast.success(`Invoice ${inv.invoiceNumber} deleted successfully.`);
+      if (expandedInvoiceId === inv.id) {
+        setExpandedInvoiceId(null);
+      }
+    } catch (err: any) {
+      toast.error(`Error deleting invoice: ${err.message}`);
+    }
   };
 
   const filteredInvoices = useMemo(() => {
@@ -108,29 +143,10 @@ export default function SalesInvoicesPage() {
   return (
     <div className="space-y-6">
       <div className={`space-y-6 ${selectedInvoice ? "print:hidden" : ""}`}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4 print:hidden">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-              Sales Invoices
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Issue tax-compliant sales invoices, calculate 5% output VAT, and
-              track customer receivables.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setIsCreateOpen(true)}
-              icon={<PlusIcon size={14} strokeWidth={2.5} />}
-              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial"
-            >
-              Create Sales Invoice
-            </Button>
-          </div>
-        </div>
+        <PageHeader
+          title="Sales Invoices"
+          description="Issue tax-compliant sales invoices, calculate 5% output VAT, and track customer receivables."
+        />
 
         <SalesInvoiceKPIs
           totalBilled={totalBilled}
@@ -157,7 +173,8 @@ export default function SalesInvoicesPage() {
             onPrint={handlePrintTaxInvoice}
             onPost={handlePostInvoice}
             onOpenPayment={(inv) => setPaymentModalInv(inv)}
-            onOpenCreate={() => setIsCreateOpen(true)}
+            onEdit={handleEditInvoice}
+            onDelete={handleDeleteInvoice}
             isFiltered={search.trim() !== "" || statusFilter !== "ALL"}
             onClearFilters={() => {
               setSearch("");
@@ -167,22 +184,19 @@ export default function SalesInvoicesPage() {
         </div>
       </div>
 
-      <CreateSalesInvoiceModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        customers={customers}
-        products={products}
-        onSubmitInvoice={async (invoiceData) => {
-          await createInvoiceMutation.mutateAsync(invoiceData);
-        }}
-      />
-
       <RecordPaymentModal
         invoice={paymentModalInv}
         onClose={() => setPaymentModalInv(null)}
         onSubmitPayment={async (paymentData) => {
           await paymentMutation.mutateAsync(paymentData);
         }}
+      />
+
+      <EditSalesInvoiceModal
+        isOpen={Boolean(editingInvoice)}
+        invoice={editingInvoice}
+        onClose={() => setEditingInvoice(null)}
+        onSaveInvoice={handleSaveInvoiceEdit}
       />
 
       <PrintableTaxInvoice invoice={selectedInvoice} />

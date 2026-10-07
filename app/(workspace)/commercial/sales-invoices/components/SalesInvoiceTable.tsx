@@ -15,14 +15,35 @@ import { SalesInvoice } from "@/lib/hooks/api-hooks";
 import SalesInvoiceRow from "./SalesInvoiceRow";
 
 const COLUMNS: RegisterColumn[] = [
-  { label: "Invoice No" },
-  { label: "Customer / Client" },
-  { label: "Project Scope" },
-  { label: "Date", compact: true },
-  { label: "Total (AED)", align: "right", compact: true },
-  { label: "Balance Due", align: "right", compact: true },
-  { label: "Status", align: "center", compact: true },
-  { label: "Actions", align: "center", compact: true, hideOnPrint: true },
+  { label: "Invoice No", className: "whitespace-nowrap min-w-[175px]" },
+  { label: "Customer / Client", className: "min-w-[170px]" },
+  { label: "Project Scope", className: "min-w-[150px]" },
+  { label: "Date", compact: true, className: "whitespace-nowrap" },
+  {
+    label: "Total (AED)",
+    align: "right",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Balance Due",
+    align: "right",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Status",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Actions",
+    align: "center",
+    compact: true,
+    hideOnPrint: true,
+    className: "whitespace-nowrap",
+  },
 ];
 
 export interface SalesInvoiceTableProps {
@@ -34,7 +55,9 @@ export interface SalesInvoiceTableProps {
   onPrint: (inv: SalesInvoice) => void;
   onPost: (invId: string) => void;
   onOpenPayment: (inv: SalesInvoice) => void;
-  onOpenCreate: () => void;
+  onEdit: (inv: SalesInvoice) => void;
+  onDelete: (inv: SalesInvoice) => void;
+  onOpenCreate?: () => void;
   isFiltered?: boolean;
   onClearFilters?: () => void;
 }
@@ -48,6 +71,8 @@ export const SalesInvoiceTable: React.FC<SalesInvoiceTableProps> = ({
   onPrint,
   onPost,
   onOpenPayment,
+  onEdit,
+  onDelete,
   onOpenCreate,
   isFiltered = false,
   onClearFilters,
@@ -78,10 +103,10 @@ export const SalesInvoiceTable: React.FC<SalesInvoiceTableProps> = ({
                 description={
                   isFiltered
                     ? "No sales invoices matched your search criteria."
-                    : "No sales invoices in database. Click 'Create Sales Invoice' to issue one."
+                    : "No sales invoices recorded in the system yet."
                 }
-                actionLabel={isFiltered ? "Reset Filters" : "Create Sales Invoice"}
-                onAction={isFiltered ? onClearFilters : onOpenCreate}
+                actionLabel={isFiltered ? "Reset Filters" : undefined}
+                onAction={isFiltered ? onClearFilters : undefined}
               />
             </TableCell>
           </TableRow>
@@ -95,6 +120,8 @@ export const SalesInvoiceTable: React.FC<SalesInvoiceTableProps> = ({
               onPrint={onPrint}
               onPost={onPost}
               onOpenPayment={onOpenPayment}
+              onEdit={onEdit}
+              onDelete={onDelete}
             />
           ))
         )}

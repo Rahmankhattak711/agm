@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getNextInvoiceNumber } from "@/lib/utils/sequence";
 
 export async function POST(
   request: Request,
@@ -35,8 +36,7 @@ export async function POST(
       );
     }
 
-    const count = await prisma.salesInvoice.count();
-    const invoiceNumber = `INV-2026-${(count + 1).toString().padStart(4, "0")}`;
+    const invoiceNumber = await getNextInvoiceNumber();
 
     const invoice = await prisma.salesInvoice.create({
       data: {

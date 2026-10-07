@@ -21,6 +21,8 @@ import {
   FormTextarea,
   FormSubmit,
   Badge,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -136,23 +138,15 @@ export default function SupplierPaymentsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5 print:hidden">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Supplier Payments
-            </h2>
-            <Badge tone="emerald" size="md">
-              Procurement Cycle — Step 4
-            </Badge>
-          </div>
-          <p className="text-xs text-slate-500">
-            Disburse payments to vendors, settle open purchase bills, and track
-            bank disbursements.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Supplier Payments"
+        badge={
+          <Badge tone="emerald" size="md">
+            Procurement Cycle — Step 4
+          </Badge>
+        }
+        description="Disburse payments to vendors, settle open purchase bills, and track bank disbursements."
+        actions={
           <Button
             variant="dark"
             size="sm"
@@ -162,8 +156,8 @@ export default function SupplierPaymentsPage() {
           >
             Disburse Supplier Payment
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:grid-cols-3">
         <div className="p-4 rounded-2xl bg-slate-900 text-white flex flex-col justify-between space-y-2">
@@ -197,15 +191,13 @@ export default function SupplierPaymentsPage() {
         </div>
       </div>
 
-      <div className="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm print:hidden">
-        <Input
-          leftIcon={<Search size={15} />}
-          placeholder="Search payment number, supplier name, reference number..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border-none bg-slate-50 focus:bg-white"
-        />
-      </div>
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search payment number, supplier name, reference number..."
+        totalCount={filteredPayments.length}
+        countLabel="Payments Found"
+      />
 
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm bg-white">
         <Table>

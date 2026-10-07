@@ -28,6 +28,8 @@ import {
   TableLoading,
   Modal,
   Badge,
+  PageHeader,
+  FilterBar,
 } from "@/components/ui";
 import {
   useSalesOrders,
@@ -166,23 +168,15 @@ export default function SalesOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Sales Orders
-            </h2>
-            <Badge tone="blue" size="md">
-              Sales Cycle — Step 2
-            </Badge>
-          </div>
-          <p className="text-xs text-slate-500">
-            Track confirmed customer orders, delivery timelines, and convert
-            commitments into sales invoices.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Sales Orders"
+        badge={
+          <Badge tone="blue" size="md">
+            Sales Cycle — Step 2
+          </Badge>
+        }
+        description="Track confirmed customer orders, delivery timelines, and convert commitments into sales invoices."
+        actions={
           <Button
             variant="dark"
             size="sm"
@@ -192,8 +186,8 @@ export default function SalesOrdersPage() {
           >
             Create Sales Order
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col justify-between space-y-2">
@@ -232,35 +226,21 @@ export default function SalesOrdersPage() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-50/80 rounded-2xl border border-slate-200/70">
-        <div className="flex-1 max-w-md">
-          <Input
-            placeholder="Search order number, customer, project scope..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5 text-xs overflow-x-auto no-scrollbar py-0.5 max-w-full">
-          {["ALL", "CONFIRMED", "PROCESSING", "COMPLETED"].map((st) => (
-            <Button
-              key={st}
-              type="button"
-              variant={statusFilter === st ? "primary" : "secondary"}
-              size="sm"
-              onClick={() => setStatusFilter(st)}
-              className={
-                statusFilter === st
-                  ? "bg-slate-900 text-white shadow-2xs font-bold"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 font-bold"
-              }
-            >
-              {st}
-            </Button>
-          ))}
-        </div>
-      </div>
+      <FilterBar
+        tabs={[
+          { id: "ALL", label: "All Orders" },
+          { id: "CONFIRMED", label: "Confirmed" },
+          { id: "PROCESSING", label: "Processing" },
+          { id: "COMPLETED", label: "Completed" },
+        ]}
+        activeTab={statusFilter}
+        onTabChange={(st) => setStatusFilter(st)}
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search order number, customer, project scope..."
+        totalCount={filteredOrders.length}
+        countLabel="Orders Listed"
+      />
 
       <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs bg-white">
         <Table className="w-full text-xs text-left">

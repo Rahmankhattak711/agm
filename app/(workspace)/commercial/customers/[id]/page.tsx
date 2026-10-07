@@ -9,7 +9,7 @@ import {
   BuildingIcon,
   ReceiptIcon,
 } from "@/components/icons";
-import { Button } from "@/components/ui";
+import { Button, PageHeader } from "@/components/ui";
 import Link from "next/link";
 
 export default function CustomerDetailsPage() {
@@ -19,28 +19,18 @@ export default function CustomerDetailsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4 print:hidden">
-        <div className="flex items-center gap-3">
+      <PageHeader
+        backButton={
           <Link
             href="/commercial/customers"
             className="p-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
           >
             <ArrowDownLeftIcon size={16} className="rotate-45" />
           </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                Customer Profile &amp; Statement of Account
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Live accounts receivable ledger, transactions history, and
-              official corporate SOA.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
+        }
+        title="Customer Profile & Statement of Account"
+        description="Live accounts receivable ledger, transactions history, and official corporate SOA."
+        actions={
           <Link
             href={`/finance/reports?tab=statement-of-account&customerId=${customerId}`}
           >
@@ -51,8 +41,8 @@ export default function CustomerDetailsPage() {
               Open in Financial Reports
             </Button>
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       <StatementOfAccountReport initialCustomerId={customerId} />
     </div>
