@@ -4,8 +4,10 @@ import React, { Fragment } from "react";
 import {
   BuildingIcon,
   ChevronDownIcon,
+  EditIcon,
   PrintIcon,
   SearchIcon,
+  TrashIcon,
 } from "@/components/icons";
 import {
   Button,
@@ -23,25 +25,28 @@ import { CustomerExpandedRow } from "./CustomerExpandedRow";
 import { formatNumber } from "@/lib/utils/format";
 
 const COLUMNS: RegisterColumn[] = [
-  { label: "Customer Code", className: "whitespace-nowrap min-w-[160px]" },
-  { label: "Customer / Company", className: "min-w-[170px]" },
-  { label: "Phone / Mobile", className: "whitespace-nowrap min-w-[140px]" },
-  { label: "Email / Address", className: "min-w-[160px]" },
+  { label: "Customer Code", compact: true, className: "whitespace-nowrap" },
+  { label: "Customer / Company", compact: true },
+  { label: "Phone / Mobile", compact: true, className: "whitespace-nowrap" },
+  { label: "Email / Address", compact: true },
   {
     label: "Credit Limit (AED)",
     align: "right",
+    compact: true,
     className: "whitespace-nowrap",
   },
   {
     label: "Outstanding (AED)",
     align: "right",
+    compact: true,
     className: "whitespace-nowrap",
   },
   {
     label: "Actions",
-    align: "center",
+    align: "right",
+    compact: true,
     hideOnPrint: true,
-    className: "whitespace-nowrap",
+    className: "whitespace-nowrap pr-3",
   },
 ];
 
@@ -58,6 +63,8 @@ export interface CustomerTableProps {
   expandedCustomerId: string | null;
   onToggleExpand: (id: string) => void;
   onPrintCustomer: (customer: Customer) => void;
+  onEditCustomer?: (customer: Customer) => void;
+  onDeleteCustomer?: (customer: Customer) => void;
 }
 
 export function CustomerTable({
@@ -71,6 +78,8 @@ export function CustomerTable({
   expandedCustomerId,
   onToggleExpand,
   onPrintCustomer,
+  onEditCustomer,
+  onDeleteCustomer,
 }: CustomerTableProps) {
   const filterTabs: { id: CustomerFilterTab; label: string }[] = [
     { id: "ALL", label: "All Clients" },
@@ -126,25 +135,16 @@ export function CustomerTable({
                 return (
                   <Fragment key={c.id}>
                     <TableRow
+                      key={c.id}
                       onClick={() => onToggleExpand(c.id)}
-                      className={`hover:bg-emerald-50/40 cursor-pointer transition-colors ${
-                        isExpanded
-                          ? "bg-emerald-50/50 font-semibold"
-                          : "text-slate-700"
+                      className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${
+                        isExpanded ? "bg-slate-50/90 font-medium" : ""
                       }`}
                     >
-                      <TableCell className="py-2.5 px-4 font-mono font-bold text-teal-800 whitespace-nowrap min-w-[160px]">
-                        <div className="flex items-center gap-2">
-                          <ChevronDownIcon
-                            size={15}
-                            className={`shrink-0 transition-transform duration-200 ${
-                              isExpanded
-                                ? "rotate-180 text-emerald-800"
-                                : "text-slate-400"
-                            }`}
-                          />
+                      <TableCell className="py-2 px-2.5 sm:px-3 font-mono font-bold text-teal-800 whitespace-nowrap text-xs">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
                           <BuildingIcon
-                            size={13}
+                            size={14}
                             className="text-teal-700 shrink-0"
                           />
                           <span className="hover:text-emerald-800 transition-colors">
@@ -152,15 +152,20 @@ export function CustomerTable({
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-3 px-4 font-bold text-slate-900">
-                        <div>{c.name}</div>
+                      <TableCell className="py-2 px-2.5 sm:px-3 text-slate-900 text-xs">
+                        <div
+                          className="font-bold text-slate-900 truncate max-w-[140px] sm:max-w-[180px]"
+                          title={c.name}
+                        >
+                          {c.name}
+                        </div>
                         {c.companyName && (
-                          <div className="text-[10px] text-slate-400 font-normal">
+                          <div className="text-[10px] text-slate-400 font-normal truncate max-w-[140px]">
                             {c.companyName}
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className="py-3 px-4 font-mono text-slate-700">
+                      <TableCell className="py-2 px-2.5 sm:px-3 font-mono text-slate-700 text-xs whitespace-nowrap">
                         {c.phone ? (
                           <span className="font-semibold text-slate-800 text-[11px]">
                             {c.phone}
@@ -169,25 +174,31 @@ export function CustomerTable({
                           <span className="text-slate-300">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-slate-600">
-                        <div className="font-semibold text-slate-800">
+                      <TableCell className="py-2 px-2.5 sm:px-3 text-slate-600 text-xs">
+                        <div
+                          className="font-semibold text-slate-800 truncate max-w-[150px] sm:max-w-[190px]"
+                          title={c.email || ""}
+                        >
                           {c.email || "—"}
                         </div>
                         {c.address && (
-                          <div className="text-[10px] text-slate-400 truncate max-w-[200px]">
+                          <div
+                            className="text-[10px] text-slate-400 truncate max-w-[150px] sm:max-w-[190px]"
+                            title={c.address}
+                          >
                             {c.address}
                           </div>
                         )}
                       </TableCell>
                       <TableCell
                         align="right"
-                        className="py-3 px-4 text-right font-mono font-semibold text-slate-700"
+                        className="py-2 px-2.5 text-right font-mono font-bold text-slate-700 text-xs whitespace-nowrap"
                       >
                         {formatNumber(c.creditLimit)}
                       </TableCell>
                       <TableCell
                         align="right"
-                        className={`py-3 px-4 text-right font-mono font-black text-xs ${
+                        className={`py-2 px-2.5 text-right font-mono font-bold text-xs whitespace-nowrap ${
                           Number(c.currentBalance) > 0
                             ? "text-rose-700"
                             : "text-emerald-700"
@@ -195,49 +206,84 @@ export function CustomerTable({
                       >
                         {formatNumber(c.currentBalance)}
                       </TableCell>
-                      <TableCell className="py-3 px-4 text-center print:hidden">
-                        <div className="flex items-center justify-center gap-1.5">
+                      <TableCell className="py-2 px-2 sm:pr-3 text-right print:hidden whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          {onEditCustomer && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEditCustomer(c);
+                              }}
+                              className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-blue-700 rounded-lg hover:bg-blue-50 transition cursor-pointer"
+                              title="Edit Customer"
+                            >
+                              <EditIcon
+                                size={18}
+                                className="w-[18px] h-[18px]"
+                              />
+                            </Button>
+                          )}
+                          {onDeleteCustomer && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteCustomer(c);
+                              }}
+                              className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                              title="Delete Customer"
+                            >
+                              <TrashIcon
+                                size={18}
+                                className="w-[18px] h-[18px]"
+                              />
+                            </Button>
+                          )}
                           <Button
                             type="button"
-                            variant="secondary"
+                            variant="ghost"
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
                               onPrintCustomer(c);
                             }}
-                            icon={
-                              <PrintIcon
-                                size={13}
-                                className="text-emerald-700"
-                              />
-                            }
-                            className="px-3 py-1.5 text-[11px] font-bold rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                            className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
                             title="Print Statement (PDF)"
                           >
-                            Print
+                            <PrintIcon
+                              size={18}
+                              className="w-[18px] h-[18px]"
+                            />
                           </Button>
-                          <button
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
                               onToggleExpand(c.id);
                             }}
-                            className={`p-1.5 rounded-lg transition cursor-pointer ${
+                            className={`h-8 w-8 p-0 flex items-center justify-center rounded-lg transition cursor-pointer ${
                               isExpanded
                                 ? "text-emerald-800 bg-emerald-100"
-                                : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
                             }`}
                             title={
                               isExpanded ? "Collapse preview" : "Expand preview"
                             }
                           >
                             <ChevronDownIcon
-                              size={14}
-                              className={`transition-transform duration-200 ${
+                              size={18}
+                              className={`w-[18px] h-[18px] transition-transform duration-200 ${
                                 isExpanded ? "rotate-180 text-emerald-800" : ""
                               }`}
                             />
-                          </button>
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -246,6 +292,9 @@ export function CustomerTable({
                       <CustomerExpandedRow
                         customer={c}
                         onPrint={() => onPrintCustomer(c)}
+                        onEdit={
+                          onEditCustomer ? () => onEditCustomer(c) : undefined
+                        }
                         onClose={() => onToggleExpand(c.id)}
                       />
                     )}

@@ -353,18 +353,20 @@ export default function EmployeesPage() {
           }
 
           return (
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center justify-center gap-1">
               <Button
-                variant="secondary"
+                type="button"
+                variant="ghost"
                 size="sm"
                 onClick={() => handleOpenEditModal(row.original)}
-                icon={<EditIcon size={13} />}
+                className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
                 title="Edit Employee"
               >
-                Edit
+                <EditIcon size={18} className="w-[18px] h-[18px]" />
               </Button>
               <Button
-                variant="danger"
+                type="button"
+                variant="ghost"
                 size="sm"
                 onClick={async () => {
                   const isConfirmed = await confirm({
@@ -384,10 +386,10 @@ export default function EmployeesPage() {
                     }
                   }
                 }}
-                icon={<TrashIcon size={13} />}
+                className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
                 title="Delete Employee"
               >
-                Delete
+                <TrashIcon size={18} className="w-[18px] h-[18px]" />
               </Button>
             </div>
           );
@@ -478,24 +480,15 @@ export default function EmployeesPage() {
             Error loading employees: {(error as any).message}
           </div>
         ) : (
-          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white">
-                Master Workforce Directory
-              </h4>
-              <span className="text-[11px] font-mono text-emerald-300 font-bold">
-                {employees.length} Personnel
-              </span>
-            </div>
-
-            <DataTable
-              columns={columns}
-              data={employees}
-              isLoading={isLoading}
-              emptyTitle="No registered employees found"
-              emptyMessage="Registered users in Administration will automatically appear here."
-            />
-          </div>
+          <DataTable
+            title="Master Workforce Directory"
+            countLabel={`${employees.length} Personnel`}
+            columns={columns}
+            data={employees}
+            isLoading={isLoading}
+            emptyTitle="No registered employees found"
+            emptyMessage="Registered users in Administration will automatically appear here."
+          />
         )}
       </div>
 

@@ -13,6 +13,7 @@ import QuotationTemplate, {
 import {
   useConvertQuotationToSalesInvoice,
   useConvertQuotationToSalesOrder,
+  useDeleteQuotation,
   useProducts,
   useQuotations,
   useSalesInvoices,
@@ -27,6 +28,7 @@ export default function CommercialQuotationsPage() {
   const { data: salesInvoices = [] } = useSalesInvoices();
   const convertToOrderMutation = useConvertQuotationToSalesOrder();
   const convertToInvoiceMutation = useConvertQuotationToSalesInvoice();
+  const deleteQuotationMutation = useDeleteQuotation();
   const { confirm } = useConfirm();
 
   const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("LIST");
@@ -34,6 +36,9 @@ export default function CommercialQuotationsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [convertingId, setConvertingId] = useState<string | null>(null);
+  const [expandedQuotationId, setExpandedQuotationId] = useState<string | null>(
+    null,
+  );
 
   const dynamicQuotationMeta: Partial<QuotationMeta> = useMemo(() => {
     if (selectedQuotation) {
@@ -139,6 +144,29 @@ export default function CommercialQuotationsPage() {
       }
     },
     [confirm, convertToInvoiceMutation, router],
+  );
+
+  const handleDeleteQuotation = useCallback(
+    async (qtn: any) => {
+      const confirmed = await confirm({
+        title: "Delete Quotation",
+        message: `Are you sure you want to delete quotation "${qtn.quotationNo}"? This action cannot be undone.`,
+        variant: "danger",
+        confirmText: "Delete Quotation",
+      });
+      if (!confirmed) return;
+
+      try {
+        await deleteQuotationMutation.mutateAsync(qtn.id);
+        toast.success(`Quotation "${qtn.quotationNo}" deleted successfully`);
+        if (expandedQuotationId === qtn.id) {
+          setExpandedQuotationId(null);
+        }
+      } catch (err: any) {
+        toast.error(`Error deleting quotation: ${err.message}`);
+      }
+    },
+    [confirm, deleteQuotationMutation, expandedQuotationId],
   );
 
   const filteredQuotations = useMemo(() => {
@@ -266,6 +294,10 @@ export default function CommercialQuotationsPage() {
               error={error}
               isFiltered={isFiltered}
               convertingId={convertingId}
+              expandedQuotationId={expandedQuotationId}
+              onToggleExpand={(id) =>
+                setExpandedQuotationId((prev) => (prev === id ? null : id))
+              }
               onClearFilters={() => {
                 setSearch("");
                 setStatusFilter("ALL");
@@ -275,6 +307,7 @@ export default function CommercialQuotationsPage() {
                 setActiveView("EDITOR");
               }}
               onConvertToInvoice={handleConvertToInvoice}
+              onDeleteQuotation={handleDeleteQuotation}
               formatNumber={formatNumber}
             />
           </div>

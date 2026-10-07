@@ -274,11 +274,11 @@ export const SalesInvoiceExpandedDetail: React.FC<
   );
 
   return (
-    <div className="px-5 py-4 space-y-4 border-l-4 border-l-emerald-600 bg-gradient-to-b from-white to-slate-50/40 shadow-inner">
+    <div className="px-3.5 py-3 sm:px-4 sm:py-3.5 space-y-3 bg-slate-50/60 min-w-0 max-w-full">
       <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-        <div className="bg-emerald-800 text-white px-3.5 py-2 text-xs font-bold uppercase tracking-wider flex items-center justify-between">
+        <div className="bg-emerald-800 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <FileTextIcon size={13} />
+            <FileTextIcon size={15} className="w-[15px] h-[15px]" />
             <span>Description of Work / Services (Scope Breakdown)</span>
           </div>
           <div className="flex items-center gap-2">
@@ -289,7 +289,7 @@ export const SalesInvoiceExpandedDetail: React.FC<
                 className="bg-white/10 hover:bg-white/20 text-white rounded px-2 py-0.5 text-[11px] font-semibold flex items-center gap-1 transition cursor-pointer"
                 title="Edit invoice"
               >
-                <EditIcon size={11} />
+                <EditIcon size={13} className="w-[13px] h-[13px]" />
                 <span>Edit</span>
               </button>
             )}
@@ -300,7 +300,7 @@ export const SalesInvoiceExpandedDetail: React.FC<
                 className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 hover:text-white rounded px-2 py-0.5 text-[11px] font-semibold flex items-center gap-1 transition cursor-pointer"
                 title="Delete invoice"
               >
-                <TrashIcon size={11} />
+                <TrashIcon size={13} className="w-[13px] h-[13px]" />
                 <span>Delete</span>
               </button>
             )}
@@ -312,13 +312,15 @@ export const SalesInvoiceExpandedDetail: React.FC<
 
         <table className="w-full text-xs border-collapse">
           <thead>
-            <tr className="bg-slate-50/90 text-slate-700 font-semibold border-b border-slate-200 text-[11px]">
-              <th className="py-2 px-3 text-left w-12">#</th>
-              <th className="py-2 px-3 text-left">Description / Milestone</th>
-              <th className="py-2 px-3 text-center w-20">Unit</th>
-              <th className="py-2 px-3 text-right w-20">Qty</th>
-              <th className="py-2 px-3 text-right w-28">Unit Rate</th>
-              <th className="py-2 px-3 text-right w-32">Total (AED)</th>
+            <tr className="bg-slate-50/90 text-slate-700 font-semibold border-b border-slate-200 text-[10.5px]">
+              <th className="py-1.5 px-2 text-left w-8">#</th>
+              <th className="py-1.5 px-2.5 text-left">
+                Description / Milestone
+              </th>
+              <th className="py-1.5 px-2 text-center w-14">Unit</th>
+              <th className="py-1.5 px-2 text-right w-14">Qty</th>
+              <th className="py-1.5 px-2 text-right w-20">Unit Rate</th>
+              <th className="py-1.5 px-2.5 text-right w-24">Total (AED)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -329,15 +331,15 @@ export const SalesInvoiceExpandedDetail: React.FC<
                   key={item.id || idx}
                   className="hover:bg-slate-50/60 transition-colors"
                 >
-                  <td className="py-2.5 px-3 font-mono text-slate-400 align-top">
+                  <td className="py-2 px-2 font-mono text-slate-400 align-top text-[11px]">
                     {idx + 1}
                   </td>
-                  <td className="py-2.5 px-3 text-slate-800 align-top">
-                    <div className="font-semibold text-slate-900">
+                  <td className="py-2 px-2.5 text-slate-800 align-top">
+                    <div className="font-semibold text-slate-900 text-xs">
                       {parsed[0] || item.description}
                     </div>
                     {parsed.length > 1 && (
-                      <ul className="mt-1 space-y-0.5 text-[11px] text-slate-600 list-disc list-inside">
+                      <ul className="mt-1 space-y-0.5 text-[10.5px] text-slate-600 list-disc list-inside">
                         {parsed.slice(1).map((p: string, pIdx: number) => (
                           <li key={pIdx} className="leading-snug">
                             {p}
@@ -346,16 +348,16 @@ export const SalesInvoiceExpandedDetail: React.FC<
                       </ul>
                     )}
                   </td>
-                  <td className="py-2.5 px-3 text-center text-slate-600 align-top font-mono text-[11px]">
+                  <td className="py-2 px-2 text-center text-slate-600 align-top font-mono text-[10.5px]">
                     {item.unit || "SQM"}
                   </td>
-                  <td className="py-2.5 px-3 text-right font-mono font-medium text-slate-800 align-top">
+                  <td className="py-2 px-2 text-right font-mono font-medium text-slate-800 align-top text-xs">
                     {formatNumber(item.quantity)}
                   </td>
-                  <td className="py-2.5 px-3 text-right font-mono text-slate-700 align-top">
+                  <td className="py-2 px-2 text-right font-mono text-slate-700 align-top text-xs">
                     {formatNumber(item.unitPrice)}
                   </td>
-                  <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 align-top">
+                  <td className="py-2 px-2.5 text-right font-mono font-bold text-slate-900 align-top text-xs">
                     {formatNumber(item.totalAmount)}
                   </td>
                 </tr>
@@ -365,8 +367,8 @@ export const SalesInvoiceExpandedDetail: React.FC<
         </table>
       </div>
 
-      <div className="flex flex-wrap items-start justify-between gap-4 pt-1">
-        <div className="text-xs text-slate-600 flex-1 min-w-[320px] max-w-2xl space-y-3">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 pt-1 min-w-0">
+        <div className="lg:col-span-7 xl:col-span-8 text-xs text-slate-600 space-y-2.5 min-w-0">
           <div className="flex items-center gap-2 text-[11.5px]">
             <span className="text-slate-500 font-semibold">Invoice Date:</span>
             <span className="font-medium text-slate-800">
@@ -410,7 +412,7 @@ export const SalesInvoiceExpandedDetail: React.FC<
                       variant="outline"
                       size="sm"
                       onClick={handleAddMilestone}
-                      icon={<PlusIcon size={12} />}
+                      icon={<PlusIcon size={13} className="w-3.5 h-3.5" />}
                       className="text-[10.5px] font-bold text-teal-800 hover:bg-teal-50 border-teal-200 h-7 px-2 cursor-pointer"
                     >
                       Add Milestone
@@ -420,7 +422,7 @@ export const SalesInvoiceExpandedDetail: React.FC<
                       size="sm"
                       onClick={handleSaveTerms}
                       disabled={updateInvoiceMutation.isPending}
-                      icon={<SaveIcon size={12} />}
+                      icon={<SaveIcon size={13} className="w-3.5 h-3.5" />}
                       className="text-[10.5px] font-bold bg-agm-green hover:bg-agm-green-2 text-white h-7 px-2.5 cursor-pointer shadow-2xs"
                     >
                       {updateInvoiceMutation.isPending
@@ -434,7 +436,8 @@ export const SalesInvoiceExpandedDetail: React.FC<
                     onClick={() => setIsEditingTerms(true)}
                     className="text-[11px] font-semibold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100/70 border border-teal-200/80 px-2 py-0.5 rounded-lg flex items-center gap-1 transition cursor-pointer"
                   >
-                    <EditIcon size={11} /> Edit Schedule
+                    <EditIcon size={13} className="w-[13px] h-[13px]" /> Edit
+                    Schedule
                   </button>
                 )}
               </div>
@@ -535,7 +538,7 @@ export const SalesInvoiceExpandedDetail: React.FC<
                         className="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer"
                         title="Remove milestone"
                       >
-                        <TrashIcon size={12} />
+                        <TrashIcon size={14} className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
@@ -570,10 +573,10 @@ export const SalesInvoiceExpandedDetail: React.FC<
           )}
         </div>
 
-        <div className="w-80 shrink-0 flex flex-col gap-3">
-          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
-            <div className="p-4 space-y-3">
-              <div className="flex justify-between items-center text-[13px] text-slate-500">
+        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-2.5 min-w-0">
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden flex flex-col">
+            <div className="p-3.5 space-y-2.5">
+              <div className="flex justify-between items-center text-xs text-slate-500">
                 <span className="font-semibold text-slate-700">
                   Project Total Value
                 </span>
@@ -582,8 +585,8 @@ export const SalesInvoiceExpandedDetail: React.FC<
                   <span className="text-[10px] text-slate-400">AED</span>
                 </span>
               </div>
-              <div className="border-t border-slate-100/80 my-1"></div>
-              <div className="flex justify-between items-center text-[13px] text-slate-500">
+              <div className="border-t border-slate-100/80 my-0.5"></div>
+              <div className="flex justify-between items-center text-xs text-slate-500">
                 <span>Invoice Subtotal (Excl. VAT)</span>
                 <span className="font-mono font-medium text-slate-700">
                   {formatNumber(displaySubtotal)}{" "}
@@ -591,7 +594,7 @@ export const SalesInvoiceExpandedDetail: React.FC<
                 </span>
               </div>
               {displayVatAmount > 0 && (
-                <div className="flex justify-between items-center text-[13px] text-slate-500">
+                <div className="flex justify-between items-center text-xs text-slate-500">
                   <span>
                     {dbVatRate > 0
                       ? dbVatRate
@@ -608,18 +611,18 @@ export const SalesInvoiceExpandedDetail: React.FC<
               )}
             </div>
 
-            <div className="bg-slate-50/50 p-4 border-t border-slate-100/80 space-y-3">
+            <div className="bg-slate-50/50 p-3 border-t border-slate-100/80 space-y-2">
               <div className="flex justify-between items-end">
-                <span className="text-[14px] font-bold text-slate-800">
+                <span className="text-xs font-bold text-slate-800">
                   Invoice Total
                 </span>
                 <div className="text-right">
                   <span
-                    className={`font-mono text-xl font-black tracking-tight ${isEditingTerms ? "text-teal-700" : "text-slate-900"}`}
+                    className={`font-mono text-lg font-black tracking-tight ${isEditingTerms ? "text-teal-700" : "text-slate-900"}`}
                   >
                     {formatNumber(displayTotalAmount)}
                   </span>
-                  <span className="font-mono text-xs font-bold text-slate-500 ml-1">
+                  <span className="font-mono text-[10px] font-bold text-slate-500 ml-1">
                     AED
                   </span>
                 </div>
@@ -627,7 +630,7 @@ export const SalesInvoiceExpandedDetail: React.FC<
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden relative">
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden relative">
             <div className="absolute top-0 left-0 h-1 bg-slate-100 w-full overflow-hidden">
               <div
                 className="h-full bg-emerald-500 transition-all duration-500"
@@ -636,25 +639,25 @@ export const SalesInvoiceExpandedDetail: React.FC<
                 }}
               />
             </div>
-            <div className="p-4 pt-5 flex flex-col gap-3">
+            <div className="p-3.5 pt-4 flex flex-col gap-2.5">
               <div className="flex justify-between items-center">
-                <span className="text-[12px] font-semibold text-emerald-700 flex items-center gap-1.5">
+                <span className="text-[11.5px] font-semibold text-emerald-700 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                   Paid / Settled
                 </span>
-                <span className="font-mono font-bold text-emerald-700 text-[13px]">
+                <span className="font-mono font-bold text-emerald-700 text-xs">
                   {formatNumber(inv.paidAmount)}{" "}
-                  <span className="text-[10px]">AED</span>
+                  <span className="text-[9.5px]">AED</span>
                 </span>
               </div>
 
-              <div className="flex justify-between items-end pt-3 border-t border-slate-100 border-dashed">
-                <span className="text-[13px] font-bold text-slate-600">
+              <div className="flex justify-between items-end pt-2.5 border-t border-slate-100 border-dashed">
+                <span className="text-xs font-bold text-slate-600">
                   Balance Due
                 </span>
                 <div className="text-right">
                   <span
-                    className={`font-mono text-lg font-black tracking-tight ${displayRemainingBalance > 0 ? "text-rose-600" : "text-slate-700"}`}
+                    className={`font-mono text-base font-black tracking-tight ${displayRemainingBalance > 0 ? "text-rose-600" : "text-slate-700"}`}
                   >
                     {formatNumber(displayRemainingBalance)}
                   </span>

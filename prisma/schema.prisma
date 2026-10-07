@@ -1453,19 +1453,15 @@ model CustomLetter {
   date                  String  @default("")
   status                String  @default("DRAFT")
 
-  // Addressing
   addressee             String  @default("To Whom It May Concern,")
   addresseeSubtitle     String? @map("addressee_subtitle")
   subject               String  @default("") @db.Text
   salutation            String  @default("Dear Sir / Madam,")
 
-  // Dynamic content stored as JSON
   sections              Json    @default("[]")
 
-  // Closing
   closingText           String? @map("closing_text") @db.Text
 
-  // Signatory
   signatoryCompany      String  @default("AGM Fitout Technical Services LLC") @map("signatory_company")
   signatoryTitle        String  @default("Authorized Signatory,") @map("signatory_title")
   signatoryName         String  @default("Zeeshan Ahmad") @map("signatory_name")

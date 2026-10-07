@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
-import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import {
   useCreateUser,
@@ -15,8 +14,13 @@ import { useAuth } from "@/context/AuthContext";
 import { useConfirm } from "@/context/ConfirmContext";
 import {
   Button,
-  Input,
-  DataTable,
+  RegisterTable,
+  RegisterColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableLoading,
+  EmptyState,
   Modal,
   FormInput,
   FormSelect,
@@ -30,7 +34,6 @@ import {
   EditIcon,
   PlusIcon,
   ProtectedIcon,
-  SearchIcon,
   TrashIcon,
 } from "@/components/icons";
 
@@ -64,6 +67,36 @@ const ROLES = [
     value: "USER",
     label: "Standard User",
     color: "bg-slate-100 text-slate-700 border-slate-200",
+  },
+];
+
+const COLUMNS: RegisterColumn[] = [
+  { label: "User Name", compact: true },
+  { label: "Email Address", compact: true },
+  {
+    label: "Role / Access Level",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Account Status",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Registered Date",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Actions",
+    align: "right",
+    compact: true,
+    hideOnPrint: true,
+    className: "whitespace-nowrap pr-3 sm:pr-4",
   },
 ];
 
@@ -244,143 +277,8 @@ export default function UsersPage() {
     [isSuperAdmin, isAdmin, currentUser?.id],
   );
 
-  const columns = useMemo<ColumnDef<UserItem>[]>(
-    () => [
-      {
-        accessorKey: "fullName",
-        header: "User Details",
-        cell: ({ row }) => (
-          <div className="flex flex-col items-start justify-center min-w-0">
-            <span className="font-bold text-slate-900 block text-[13px] truncate w-full">
-              {row.original.fullName}
-            </span>
-            {row.original.id === currentUser?.id && (
-              <span className="mt-1 text-[9px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200 whitespace-nowrap inline-flex items-center leading-none">
-                Current Session
-              </span>
-            )}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "email",
-        header: "Email Address",
-        cell: ({ row }) => (
-          <span className="font-medium text-slate-600 text-xs">
-            {row.original.email}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "role",
-        header: () => <div className="text-center">Role / Access Level</div>,
-        cell: ({ row }) => {
-          const roleObj = ROLES.find((r) => r.value === row.original.role);
-          return (
-            <div className="text-center">
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-[10.5px] font-bold border whitespace-nowrap ${roleObj?.color || "bg-slate-100"}`}
-              >
-                {roleObj?.label || row.original.role}
-              </span>
-            </div>
-          );
-        },
-      },
-      {
-        accessorKey: "isActive",
-        header: () => <div className="text-center">Account Status</div>,
-        cell: ({ row }) => (
-          <div className="text-center">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-bold border whitespace-nowrap ${
-                row.original.isActive
-                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                  : "bg-slate-100 text-slate-500 border-slate-200"
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${row.original.isActive ? "bg-emerald-500" : "bg-slate-400"}`}
-              />
-              {row.original.isActive ? "Active" : "Disabled"}
-            </span>
-          </div>
-        ),
-      },
-      {
-        accessorKey: "createdAt",
-        header: () => <div className="text-center">Registered Date</div>,
-        cell: ({ row }) => (
-          <div className="text-center text-slate-500 text-xs font-medium whitespace-nowrap">
-            {new Date(row.original.createdAt).toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            })}
-          </div>
-        ),
-      },
-      {
-        id: "actions",
-        header: () => <div className="text-center">Actions</div>,
-        cell: ({ row }) => {
-          const allowed = canManageTargetUser(row.original);
-
-          if (!allowed && row.original.id !== currentUser?.id) {
-            return (
-              <div className="flex items-center justify-center">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleOpenEditModal(row.original)}
-                  icon={<ProtectedIcon size={13} />}
-                  title="Protected"
-                >
-                  Protected
-                </Button>
-              </div>
-            );
-          }
-
-          return (
-            <div className="flex items-center justify-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleOpenEditModal(row.original)}
-                icon={<EditIcon size={13} className="text-slate-500" />}
-                title="Edit User"
-                className="whitespace-nowrap !rounded-lg text-[11px] font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-xs transition-all"
-              >
-                Edit
-              </Button>
-              {row.original.id !== currentUser?.id && allowed && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDeleteUser(row.original)}
-                  icon={<TrashIcon size={13} className="text-rose-500" />}
-                  title="Delete User"
-                  className="whitespace-nowrap !rounded-lg text-[11px] font-semibold text-rose-600 hover:text-rose-700 bg-white border border-rose-100 hover:border-rose-200 hover:bg-rose-50 shadow-xs transition-all"
-                >
-                  Delete
-                </Button>
-              )}
-            </div>
-          );
-        },
-      },
-    ],
-    [
-      currentUser?.id,
-      canManageTargetUser,
-      handleOpenEditModal,
-      handleDeleteUser,
-    ],
-  );
-
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6">
       <PageHeader
         title="Users & Access Management"
         description="Manage system user accounts, role-based access permissions, and security credentials."
@@ -431,46 +329,173 @@ export default function UsersPage() {
         />
       </DashboardCardGrid>
 
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <FilterBar
-          tabs={[
-            { id: "ALL", label: "All Users" },
-            ...ROLES.map((r) => ({ id: r.value, label: r.label })),
-          ]}
-          activeTab={roleFilter}
-          onTabChange={(val) => setRoleFilter(val)}
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search user name or email..."
-          totalCount={filteredUsers.length}
-          countLabel="Accounts Listed"
-        />
+      <FilterBar
+        tabs={[
+          { id: "ALL", label: "All Users" },
+          ...ROLES.map((r) => ({ id: r.value, label: r.label })),
+        ]}
+        activeTab={roleFilter}
+        onTabChange={(val) => setRoleFilter(val)}
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search user name or email..."
+        totalCount={filteredUsers.length}
+        countLabel="Accounts Listed"
+      />
 
-        {error ? (
-          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
-            Error loading user accounts: {(error as any).message}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white">
-                Master Users &amp; Permissions Register
-              </h4>
-              <span className="text-[11px] font-mono text-emerald-300 font-bold">
-                {filteredUsers.length} Accounts
-              </span>
-            </div>
+      {error ? (
+        <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
+          Error loading user accounts: {(error as any).message}
+        </div>
+      ) : (
+        <RegisterTable
+          title="Master Users & Permissions Register"
+          countLabel={`${filteredUsers.length} Accounts`}
+          columns={COLUMNS}
+        >
+          <TableBody className="divide-y divide-slate-100 font-medium">
+            {isLoading ? (
+              <TableLoading colSpan={6} rows={5} />
+            ) : filteredUsers.length === 0 ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={6} className="p-0 border-0">
+                  <EmptyState
+                    icon={
+                      <ProtectedIcon size={20} className="text-slate-400" />
+                    }
+                    title="No users found"
+                    description={
+                      search || roleFilter !== "ALL"
+                        ? "No user accounts matched your search criteria."
+                        : "No users in database. Click 'Add New User' to create one."
+                    }
+                    actionLabel={
+                      isAdmin && !search ? "Add New User" : undefined
+                    }
+                    onAction={
+                      isAdmin && !search ? handleOpenCreateModal : undefined
+                    }
+                  />
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredUsers.map((user) => {
+                const roleObj = ROLES.find((r) => r.value === user.role);
+                const allowed = canManageTargetUser(user);
+                return (
+                  <TableRow
+                    key={user.id}
+                    onClick={() => handleOpenEditModal(user)}
+                    className="hover:bg-slate-50/80 transition-colors cursor-pointer"
+                  >
+                    <TableCell className="py-2.5 px-2.5 sm:px-3 text-xs">
+                      <div className="flex flex-col items-start justify-center min-w-0">
+                        <span className="font-bold text-slate-900 block text-xs truncate max-w-[200px] sm:max-w-[260px]">
+                          {user.fullName}
+                        </span>
+                        {user.id === currentUser?.id && (
+                          <span className="mt-0.5 text-[9px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 whitespace-nowrap inline-flex items-center leading-none">
+                            Current Session
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
 
-            <DataTable
-              columns={columns}
-              data={filteredUsers}
-              isLoading={isLoading}
-              emptyTitle="No users found"
-              emptyMessage="Add users or invite teammates using the button above."
-            />
-          </div>
-        )}
-      </div>
+                    <TableCell className="py-2.5 px-2.5 sm:px-3 text-xs">
+                      <span className="font-medium text-slate-600">
+                        {user.email}
+                      </span>
+                    </TableCell>
+
+                    <TableCell
+                      align="center"
+                      className="py-2.5 px-2.5 sm:px-3 text-center text-xs whitespace-nowrap"
+                    >
+                      <span
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10.5px] font-bold border whitespace-nowrap ${roleObj?.color || "bg-slate-100 text-slate-700 border-slate-200"}`}
+                      >
+                        {roleObj?.label || user.role}
+                      </span>
+                    </TableCell>
+
+                    <TableCell
+                      align="center"
+                      className="py-2.5 px-2.5 sm:px-3 text-center text-xs whitespace-nowrap"
+                    >
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold border whitespace-nowrap ${
+                          user.isActive
+                            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                            : "bg-slate-100 text-slate-500 border-slate-200"
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${user.isActive ? "bg-emerald-500" : "bg-slate-400"}`}
+                        />
+                        {user.isActive ? "Active" : "Disabled"}
+                      </span>
+                    </TableCell>
+
+                    <TableCell
+                      align="center"
+                      className="py-2.5 px-2.5 sm:px-3 text-center text-slate-500 text-xs font-mono font-medium whitespace-nowrap"
+                    >
+                      {new Date(user.createdAt).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </TableCell>
+
+                    <TableCell className="py-2.5 px-2.5 sm:px-3 text-right print:hidden whitespace-nowrap">
+                      <div
+                        className="flex items-center justify-end gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {allowed || user.id === currentUser?.id ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOpenEditModal(user)}
+                            className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
+                            title="Edit User"
+                          >
+                            <EditIcon size={18} className="w-[18px] h-[18px]" />
+                          </Button>
+                        ) : (
+                          <span
+                            className="h-7 px-2 flex items-center justify-center text-[10px] font-semibold text-slate-400 bg-slate-50 border border-slate-200 rounded-lg"
+                            title="Protected Account"
+                          >
+                            <ProtectedIcon size={11} className="mr-1" />
+                            Protected
+                          </span>
+                        )}
+                        {user.id !== currentUser?.id && allowed && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteUser(user)}
+                            className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                            title="Delete User"
+                          >
+                            <TrashIcon
+                              size={18}
+                              className="w-[18px] h-[18px]"
+                            />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </RegisterTable>
+      )}
 
       <Modal
         isOpen={isModalOpen}

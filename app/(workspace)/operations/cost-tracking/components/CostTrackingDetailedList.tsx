@@ -1,6 +1,16 @@
+"use client";
+
 import React from "react";
 import { Project, ProjectCost } from "@/lib/hooks/api-hooks";
-import { FilterBar } from "@/components/ui";
+import {
+  Button,
+  FilterBar,
+  RegisterTable,
+  RegisterColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui";
 import { TrashIcon } from "@/components/icons";
 import { CATEGORIES, fmt } from "../types";
 
@@ -13,6 +23,31 @@ interface CostTrackingDetailedListProps {
   onDeleteCost: (costId: string) => void;
 }
 
+const COLUMNS: RegisterColumn[] = [
+  {
+    label: "#",
+    align: "center",
+    compact: true,
+    className: "w-10 whitespace-nowrap",
+  },
+  { label: "Date", compact: true, className: "w-28 whitespace-nowrap" },
+  { label: "Category", compact: true, className: "w-36 whitespace-nowrap" },
+  { label: "Description", compact: true },
+  {
+    label: "Amount (AED)",
+    align: "right",
+    compact: true,
+    className: "w-32 whitespace-nowrap",
+  },
+  {
+    label: "Action",
+    align: "center",
+    compact: true,
+    hideOnPrint: true,
+    className: "w-16 whitespace-nowrap pr-3",
+  },
+];
+
 export function CostTrackingDetailedList({
   selectedProject,
   filteredCosts,
@@ -22,7 +57,7 @@ export function CostTrackingDetailedList({
   onDeleteCost,
 }: CostTrackingDetailedListProps) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 space-y-4">
       <div className="flex flex-col gap-1">
         <h3 className="text-sm font-bold text-slate-900">
           Recorded Cost Entries
@@ -51,81 +86,78 @@ export function CostTrackingDetailedList({
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-slate-200 overflow-hidden">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 font-bold text-slate-500">
-                <th className="py-2.5 px-3 text-center w-10">#</th>
-                <th className="py-2.5 px-3 w-28">Date</th>
-                <th className="py-2.5 px-3 w-36">Category</th>
-                <th className="py-2.5 px-3">Description</th>
-                <th className="py-2.5 px-3 text-right w-32">Amount</th>
-                <th className="py-2.5 px-3 text-center w-16 print:hidden">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredCosts.map((c, idx) => (
-                <tr key={c.id} className="hover:bg-slate-50 transition">
-                  <td className="py-2.5 px-3 text-center font-mono text-slate-400 text-[10px]">
-                    {idx + 1}
-                  </td>
-                  <td className="py-2.5 px-3 font-mono text-slate-500 text-[11px]">
-                    {c.date ? c.date.split("T")[0] : "—"}
-                  </td>
-                  <td className="py-2.5 px-3 font-semibold text-slate-800">
-                    {(() => {
-                      const catDef = CATEGORIES.find(
-                        (cat) =>
-                          cat.name.toLowerCase() ===
-                            (c.category || "").toLowerCase() ||
-                          cat.costType === c.costType,
-                      );
-                      const IconComponent = catDef?.icon;
-                      return (
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10.5px] font-bold border ${catDef?.bgLight || "bg-slate-100 text-slate-700 border-slate-200"}`}
-                        >
-                          {IconComponent && (
-                            <IconComponent
-                              size={13}
-                              className={catDef?.color}
-                            />
-                          )}
-                          {c.category || c.costType}
-                        </span>
-                      );
-                    })()}
-                  </td>
-                  <td className="py-2.5 px-3 text-slate-900 font-medium">
-                    <div>{c.description}</div>
-                    {c.reference && (
-                      <span className="text-[10px] text-slate-400 font-mono">
-                        Ref: {c.reference}
+        <RegisterTable
+          title={`Recorded Cost Entries — ${selectedProject?.name || "Project"}`}
+          countLabel={`${filteredCosts.length} Entries`}
+          columns={COLUMNS}
+        >
+          <TableBody className="divide-y divide-slate-100 font-medium">
+            {filteredCosts.map((c, idx) => (
+              <TableRow
+                key={c.id}
+                className="hover:bg-slate-50/80 transition-colors"
+              >
+                <TableCell className="py-2 px-2.5 text-center font-mono text-slate-400 text-[10px]">
+                  {idx + 1}
+                </TableCell>
+                <TableCell className="py-2 px-2.5 sm:px-3 font-mono text-slate-600 text-[11px] whitespace-nowrap">
+                  {c.date ? c.date.split("T")[0] : "—"}
+                </TableCell>
+                <TableCell className="py-2 px-2.5 sm:px-3 font-semibold text-slate-800 whitespace-nowrap">
+                  {(() => {
+                    const catDef = CATEGORIES.find(
+                      (cat) =>
+                        cat.name.toLowerCase() ===
+                          (c.category || "").toLowerCase() ||
+                        cat.costType === c.costType,
+                    );
+                    const IconComponent = catDef?.icon;
+                    return (
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10.5px] font-bold border ${catDef?.bgLight || "bg-slate-100 text-slate-700 border-slate-200"}`}
+                      >
+                        {IconComponent && (
+                          <IconComponent size={13} className={catDef?.color} />
+                        )}
+                        {c.category || c.costType}
                       </span>
-                    )}
-                  </td>
-                  <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
-                    AED {fmt(c.amount)}
-                  </td>
-                  <td className="py-2.5 px-3 text-center print:hidden">
-                    {canModify && (
-                      <button
+                    );
+                  })()}
+                </TableCell>
+                <TableCell className="py-2 px-2.5 sm:px-3 text-slate-900 font-medium text-xs">
+                  <div>{c.description}</div>
+                  {c.reference && (
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      Ref: {c.reference}
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell
+                  align="right"
+                  className="py-2 px-2.5 sm:px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap text-xs"
+                >
+                  AED {fmt(c.amount)}
+                </TableCell>
+                <TableCell className="py-2 px-2 sm:pr-3 text-center print:hidden whitespace-nowrap">
+                  {canModify && (
+                    <div className="flex items-center justify-center">
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => onDeleteCost(c.id)}
-                        className="text-slate-400 hover:text-rose-600 p-1 rounded hover:bg-rose-50 transition cursor-pointer"
+                        className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
                         title="Delete entry"
                       >
-                        <TrashIcon size={13} />
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                        <TrashIcon size={18} className="w-[18px] h-[18px]" />
+                      </Button>
+                    </div>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </RegisterTable>
       )}
     </div>
   );

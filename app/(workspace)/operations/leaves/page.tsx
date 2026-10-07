@@ -198,7 +198,7 @@ export default function LeavesPage() {
           const canDelete = canModify(row.original.employeeId, ["HR"]);
 
           return (
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center justify-center gap-1">
               {!canApprove && !canDelete && (
                 <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
                   View Only
@@ -207,7 +207,8 @@ export default function LeavesPage() {
               {isPending && canApprove && (
                 <>
                   <Button
-                    variant="outline"
+                    type="button"
+                    variant="ghost"
                     size="sm"
                     onClick={async () => {
                       await updateStatus.mutateAsync({
@@ -215,14 +216,14 @@ export default function LeavesPage() {
                         status: "APPROVED",
                       });
                     }}
-                    icon={<CheckIcon size={12} strokeWidth={2.5} />}
-                    className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200 cursor-pointer"
+                    className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
                     title="Approve Leave"
                   >
-                    Approve
+                    <CheckIcon size={18} className="w-[18px] h-[18px]" />
                   </Button>
                   <Button
-                    variant="outline"
+                    type="button"
+                    variant="ghost"
                     size="sm"
                     onClick={async () => {
                       await updateStatus.mutateAsync({
@@ -230,17 +231,17 @@ export default function LeavesPage() {
                         status: "REJECTED",
                       });
                     }}
-                    icon={<CloseIcon size={12} strokeWidth={2.5} />}
-                    className="bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200 cursor-pointer"
+                    className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
                     title="Reject Leave"
                   >
-                    Reject
+                    <CloseIcon size={18} className="w-[18px] h-[18px]" />
                   </Button>
                 </>
               )}
               {canDelete && (
                 <Button
-                  variant="danger"
+                  type="button"
+                  variant="ghost"
                   size="sm"
                   onClick={async () => {
                     const isConfirmed = await confirm({
@@ -259,10 +260,10 @@ export default function LeavesPage() {
                       }
                     }
                   }}
-                  icon={<TrashIcon size={13} />}
+                  className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
                   title="Delete Application"
                 >
-                  Delete
+                  <TrashIcon size={18} className="w-[18px] h-[18px]" />
                 </Button>
               )}
             </div>
@@ -353,24 +354,15 @@ export default function LeavesPage() {
             Error loading leave requests: {(error as any).message}
           </div>
         ) : (
-          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white">
-                Leave &amp; Time-Off Applications Register
-              </h4>
-              <span className="text-[11px] font-mono text-emerald-300 font-bold">
-                {leaves.length} Applications
-              </span>
-            </div>
-
-            <DataTable
-              columns={columns}
-              data={leaves}
-              isLoading={isLoading}
-              emptyTitle="No leave requests found"
-              emptyMessage="Click 'Apply for Leave' to submit a new time-off request."
-            />
-          </div>
+          <DataTable
+            title="Leave & Time-Off Applications Register"
+            countLabel={`${leaves.length} Applications`}
+            columns={columns}
+            data={leaves}
+            isLoading={isLoading}
+            emptyTitle="No leave requests found"
+            emptyMessage="Click 'Apply for Leave' to submit a new time-off request."
+          />
         )}
       </div>
 

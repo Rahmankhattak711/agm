@@ -25,28 +25,28 @@ const ACCENT_STYLES: Record<
   { cell: string; container: string }
 > = {
   emerald: {
-    cell: "border-b-2 border-emerald-600/40",
-    container: "border-l-4 border-l-emerald-600",
+    cell: "border-b border-slate-200/80",
+    container: "",
   },
   blue: {
-    cell: "border-b-2 border-blue-600/40",
-    container: "border-l-4 border-l-blue-600",
+    cell: "border-b border-slate-200/80",
+    container: "",
   },
   indigo: {
-    cell: "border-b-2 border-indigo-600/40",
-    container: "border-l-4 border-l-indigo-600",
+    cell: "border-b border-slate-200/80",
+    container: "",
   },
   rose: {
-    cell: "border-b-2 border-rose-600/40",
-    container: "border-l-4 border-l-rose-600",
+    cell: "border-b border-slate-200/80",
+    container: "",
   },
   amber: {
-    cell: "border-b-2 border-amber-600/40",
-    container: "border-l-4 border-l-amber-600",
+    cell: "border-b border-slate-200/80",
+    container: "",
   },
   slate: {
-    cell: "border-b-2 border-slate-400/40",
-    container: "border-l-4 border-l-slate-500",
+    cell: "border-b border-slate-200/80",
+    container: "",
   },
 };
 
@@ -72,8 +72,28 @@ export const CustomRowExpand: React.FC<CustomRowExpandProps> = ({
         className={`${cellClassName} ${accent.cell}`}
       >
         <div
-          className={`px-6 py-5 space-y-4 ${accent.container} bg-gradient-to-b from-white via-slate-50/40 to-slate-100/40 shadow-inner ${className}`}
+          className={`px-3.5 py-3 sm:px-4 sm:py-3.5 space-y-3 bg-slate-50/60 min-w-0 max-w-full overflow-hidden ${className}`}
         >
+          {hasHeader && (
+            <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-slate-200/80 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                {headerLeft || header}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {headerRight}
+                {onClose && (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition cursor-pointer"
+                    title="Close preview"
+                  >
+                    <CloseIcon size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
           {children}
         </div>
       </TableCell>
@@ -100,10 +120,10 @@ export const ExpandedRowSection: React.FC<ExpandedRowSectionProps> = ({
 }) => {
   return (
     <div
-      className={`border border-slate-200 bg-white rounded-xl p-4 shadow-2xs space-y-2.5 ${className}`}
+      className={`border border-slate-200 bg-white rounded-xl p-3 sm:p-3.5 shadow-2xs space-y-2 ${className}`}
     >
       <div
-        className={`flex items-center justify-between border-b border-slate-100 pb-2 ${headerClassName}`}
+        className={`flex items-center justify-between border-b border-slate-100 pb-1.5 ${headerClassName}`}
       >
         <span className="font-bold text-xs uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
           {icon && <span className="text-teal-700">{icon}</span>}

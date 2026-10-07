@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import {
   BuildingIcon,
   CreditCardIcon,
+  EditIcon,
   FileTextIcon,
   PrintIcon,
   ShieldCheckIcon,
@@ -21,12 +22,14 @@ import { formatNumber } from "@/lib/utils/format";
 export interface CustomerExpandedRowProps {
   customer: Customer;
   onPrint: () => void;
+  onEdit?: () => void;
   onClose: () => void;
 }
 
 export function CustomerExpandedRow({
   customer,
   onPrint,
+  onEdit,
   onClose,
 }: CustomerExpandedRowProps) {
   const { data: statementData, isLoading } = useCustomerStatement(customer.id);
@@ -74,18 +77,33 @@ export function CustomerExpandedRow({
       }
       headerRight={
         <>
+          {onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              icon={
+                <EditIcon size={14} className="w-3.5 h-3.5 text-blue-700" />
+              }
+              className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs"
+            >
+              Edit Profile
+            </Button>
+          )}
           <a
             href={`/finance/reports?tab=statement-of-account&customerId=${customer.id}`}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 shadow-2xs transition-colors"
           >
-            <FileTextIcon size={13} className="text-emerald-700" />
+            <FileTextIcon size={14} className="w-3.5 h-3.5 text-emerald-700" />
             <span>Full SOA Report</span>
           </a>
           <Button
             variant="outline"
             size="sm"
             onClick={onPrint}
-            icon={<PrintIcon size={13} className="text-emerald-700" />}
+            icon={
+              <PrintIcon size={14} className="w-3.5 h-3.5 text-emerald-700" />
+            }
             className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 cursor-pointer shadow-2xs"
           >
             Print Statement (PDF)
@@ -126,7 +144,7 @@ export function CustomerExpandedRow({
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <ExpandedRowSection
           title="Client Profile & Billing Data"
           icon={<BuildingIcon size={14} />}
@@ -153,7 +171,7 @@ export function CustomerExpandedRow({
               <span className="text-[10px] font-semibold text-slate-400 block">
                 Contact Email
               </span>
-              <span className="font-mono font-medium text-slate-800">
+              <span className="font-mono font-medium text-slate-800 truncate block">
                 {customer.email || "—"}
               </span>
             </div>
@@ -178,10 +196,10 @@ export function CustomerExpandedRow({
 
             <div>
               <span className="text-[10px] font-semibold text-slate-400 block">
-                Email Address
+                Tax Registration (TRN)
               </span>
-              <span className="text-slate-700 truncate block">
-                {customer.email || "—"}
+              <span className="font-mono font-medium text-slate-800 truncate block">
+                {customer.trn || "—"}
               </span>
             </div>
           </div>

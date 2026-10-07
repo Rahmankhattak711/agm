@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Fragment, useState } from "react";
 import {
   RegisterTable,
   RegisterColumn,
@@ -16,16 +16,29 @@ import { getQuotationStatus } from "@/lib/utils/status";
 import {
   FileSpreadsheetIcon,
   FileTextIcon,
-  EyeIcon,
+  EditIcon,
+  TrashIcon,
+  ChevronDownIcon,
   SearchIcon,
 } from "@/components/icons";
+import { QuotationExpandedRow } from "./QuotationExpandedRow";
 
 const COLUMNS: RegisterColumn[] = [
-  { label: "Quotation No", className: "whitespace-nowrap min-w-[175px]" },
-  { label: "Customer / Client", className: "min-w-[170px]" },
-  { label: "Project Scope & Ref", className: "min-w-[150px]" },
-  { label: "Date", compact: true, className: "whitespace-nowrap" },
-  { label: "Total (AED)", align: "right", className: "whitespace-nowrap" },
+  { label: "Quotation No", compact: true, className: "whitespace-nowrap" },
+  { label: "Customer / Client", compact: true },
+  { label: "Project Scope & Ref", compact: true },
+  {
+    label: "Date",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Total (AED)",
+    align: "right",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
   {
     label: "Status",
     align: "center",
@@ -34,9 +47,10 @@ const COLUMNS: RegisterColumn[] = [
   },
   {
     label: "Actions",
-    align: "center",
+    align: "right",
     compact: true,
-    className: "whitespace-nowrap",
+    hideOnPrint: true,
+    className: "whitespace-nowrap pr-3",
   },
 ];
 
@@ -46,9 +60,12 @@ export interface QuotationTableProps {
   error?: any;
   isFiltered: boolean;
   convertingId: string | null;
+  expandedQuotationId?: string | null;
+  onToggleExpand?: (id: string) => void;
   onClearFilters: () => void;
   onOpenEditor: (q?: any) => void;
   onConvertToInvoice: (q: any) => void;
+  onDeleteQuotation?: (q: any) => void;
   formatNumber: (val: number | string | undefined) => string;
 }
 
@@ -58,11 +75,31 @@ export const QuotationTable: React.FC<QuotationTableProps> = ({
   error,
   isFiltered,
   convertingId,
+  expandedQuotationId,
+  onToggleExpand,
   onClearFilters,
   onOpenEditor,
   onConvertToInvoice,
+  onDeleteQuotation,
   formatNumber,
 }) => {
+  const [internalExpandedId, setInternalExpandedId] = useState<string | null>(
+    null,
+  );
+
+  const activeExpandedId =
+    expandedQuotationId !== undefined
+      ? expandedQuotationId
+      : internalExpandedId;
+
+  const handleToggle = (id: string) => {
+    if (onToggleExpand) {
+      onToggleExpand(id);
+    } else {
+      setInternalExpandedId((prev) => (prev === id ? null : id));
+    }
+  };
+
   if (error) {
     return (
       <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
@@ -109,76 +146,149 @@ export const QuotationTable: React.FC<QuotationTableProps> = ({
             </TableCell>
           </TableRow>
         ) : (
-          quotations.map((q) => (
-            <TableRow
-              key={q.id}
-              className="hover:bg-slate-50/70 text-slate-700 transition-colors"
-            >
-              <TableCell className="py-2.5 px-4 font-mono font-bold text-slate-900 whitespace-nowrap min-w-[175px]">
-                <div className="flex items-center gap-1.5 whitespace-nowrap">
-                  <FileSpreadsheetIcon
-                    size={13}
-                    className="text-teal-700 shrink-0"
+          quotations.map((q) => {
+            const isExpanded = activeExpandedId === q.id;
+            return (
+              <Fragment key={q.id}>
+                <TableRow
+                  onClick={() => handleToggle(q.id)}
+                  className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${
+                    isExpanded ? "bg-slate-50/90 font-medium" : ""
+                  }`}
+                >
+                  <TableCell className="py-2 px-2.5 sm:px-3 font-mono font-bold text-slate-900 whitespace-nowrap text-xs">
+                    <div className="flex items-center gap-1.5 whitespace-nowrap">
+                      <FileSpreadsheetIcon
+                        size={14}
+                        className="text-teal-700 shrink-0"
+                      />
+                      <span className="hover:text-emerald-800 transition-colors">
+                        {q.quotationNo}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2 px-2.5 sm:px-3 text-slate-900 text-xs">
+                    <div
+                      className="font-bold text-slate-900 truncate max-w-[140px] sm:max-w-[180px]"
+                      title={q.customer || ""}
+                    >
+                      {q.customer || "—"}
+                    </div>
+                    {q.customerRel?.customerCode && (
+                      <div className="text-[10px] text-emerald-700 font-mono font-medium truncate max-w-[140px]">
+                        [{q.customerRel.customerCode}]
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="py-2 px-2.5 sm:px-3 text-slate-600 text-xs">
+                    <div
+                      className="truncate max-w-[120px] sm:max-w-[170px]"
+                      title={q.project || q.reference || ""}
+                    >
+                      {q.project || q.reference || "—"}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-2 px-2 text-center font-mono text-slate-600 text-[11px] whitespace-nowrap">
+                    {q.date || "—"}
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    className="py-2 px-2.5 text-right font-mono font-bold text-slate-900 whitespace-nowrap text-xs"
+                  >
+                    {formatNumber(q.totalAmount)}
+                  </TableCell>
+                  <TableCell className="py-2 px-2 text-center whitespace-nowrap">
+                    <Badge
+                      tone={getQuotationStatus(q.status).tone}
+                      className="text-[10.5px] px-2 py-0.5"
+                    >
+                      {getQuotationStatus(q.status).label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-2 px-2 sm:pr-3 text-right print:hidden whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onConvertToInvoice(q);
+                        }}
+                        disabled={convertingId === q.id}
+                        className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
+                        title="Convert to Tax Invoice"
+                      >
+                        <FileTextIcon size={18} className="w-[18px] h-[18px]" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenEditor(q);
+                        }}
+                        className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-blue-700 rounded-lg hover:bg-blue-50 transition cursor-pointer"
+                        title="Open in Editor"
+                      >
+                        <EditIcon size={18} className="w-[18px] h-[18px]" />
+                      </Button>
+                      {onDeleteQuotation && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteQuotation(q);
+                          }}
+                          className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                          title="Delete Quotation"
+                        >
+                          <TrashIcon size={18} className="w-[18px] h-[18px]" />
+                        </Button>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggle(q.id);
+                        }}
+                        className={`h-8 w-8 p-0 flex items-center justify-center rounded-lg transition cursor-pointer ${
+                          isExpanded
+                            ? "text-emerald-800 bg-emerald-100"
+                            : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+                        }`}
+                        title={
+                          isExpanded ? "Collapse preview" : "Expand preview"
+                        }
+                      >
+                        <ChevronDownIcon
+                          size={18}
+                          className={`w-[18px] h-[18px] transition-transform duration-200 ${
+                            isExpanded ? "rotate-180 text-emerald-800" : ""
+                          }`}
+                        />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+
+                {isExpanded && (
+                  <QuotationExpandedRow
+                    quotation={q}
+                    onOpenEditor={onOpenEditor}
+                    onConvertToInvoice={onConvertToInvoice}
+                    onClose={() => handleToggle(q.id)}
+                    formatNumber={formatNumber}
                   />
-                  <span className="whitespace-nowrap">{q.quotationNo}</span>
-                </div>
-              </TableCell>
-              <TableCell className="py-3 px-4 font-bold text-slate-900">
-                <div className="flex flex-col">
-                  <span>{q.customer || "—"}</span>
-                  {q.customerRel?.customerCode && (
-                    <span className="text-[10px] text-emerald-700 font-mono font-medium">
-                      [{q.customerRel.customerCode}]
-                    </span>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="py-3 px-4 text-slate-600 max-w-xs truncate">
-                {q.project || q.reference || "—"}
-              </TableCell>
-              <TableCell className="py-3 px-3 font-mono text-slate-600 text-xs">
-                {q.date}
-              </TableCell>
-              <TableCell
-                align="right"
-                className="py-3 px-4 text-right font-mono font-black text-slate-900"
-              >
-                AED {formatNumber(q.totalAmount)}
-              </TableCell>
-              <TableCell className="py-3 px-3 text-center">
-                <Badge tone={getQuotationStatus(q.status).tone}>
-                  {getQuotationStatus(q.status).label}
-                </Badge>
-              </TableCell>
-              <TableCell className="py-3 px-3 text-center">
-                <div className="flex items-center justify-center gap-1.5">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onOpenEditor(q)}
-                    className="p-1.5 text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
-                    title="Edit / View in Editor"
-                  >
-                    <EyeIcon size={13} />
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => onConvertToInvoice(q)}
-                    disabled={convertingId === q.id}
-                    icon={<FileTextIcon size={12} className="text-white" />}
-                    className="text-[11px] font-bold bg-agm-green hover:bg-agm-green-2 text-white shadow-2xs cursor-pointer"
-                    title="Convert directly to Tax Invoice & initiate Project in Planning"
-                  >
-                    {convertingId === q.id
-                      ? "Converting..."
-                      : "Convert to Invoice"}
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))
+                )}
+              </Fragment>
+            );
+          })
         )}
       </TableBody>
     </RegisterTable>

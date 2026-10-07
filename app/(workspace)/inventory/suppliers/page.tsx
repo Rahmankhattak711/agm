@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
-import { ColumnDef } from "@tanstack/react-table";
+import { useMemo, useState, useCallback, Fragment } from "react";
 import { useForm } from "@tanstack/react-form";
 import {
   useSuppliers,
@@ -12,20 +11,24 @@ import {
 } from "@/lib/hooks/api-hooks";
 import {
   BuildingIcon,
+  ChevronDownIcon,
   EditIcon,
   PlusIcon,
-  SearchIcon,
   TrashIcon,
 } from "@/components/icons";
 import {
   Button,
-  Input,
-  DataTable,
   Modal,
   FormInput,
   FormSubmit,
   PageHeader,
   FilterBar,
+  RegisterTable,
+  RegisterColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableLoading,
 } from "@/components/ui";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -33,6 +36,33 @@ import {
   ReportKpiCard,
   ReportKpiGrid,
 } from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
+import { SupplierExpandedRow } from "./components/SupplierExpandedRow";
+
+const COLUMNS: RegisterColumn[] = [
+  { label: "Supplier Code", compact: true, className: "whitespace-nowrap" },
+  { label: "Company & Address", compact: true },
+  { label: "Contact Person", compact: true, className: "whitespace-nowrap" },
+  { label: "Phone & Email", compact: true, className: "whitespace-nowrap" },
+  {
+    label: "UAE TRN",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Catalog SKUs",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Actions",
+    align: "right",
+    compact: true,
+    hideOnPrint: true,
+    className: "whitespace-nowrap pr-3",
+  },
+];
 
 export default function SuppliersPage() {
   const { confirm } = useConfirm();
@@ -42,12 +72,19 @@ export default function SuppliersPage() {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [expandedSupplierId, setExpandedSupplierId] = useState<string | null>(
+    null,
+  );
   const [formError, setFormError] = useState("");
 
   const { data: suppliers = [], isLoading, error } = useSuppliers();
   const createSupplier = useCreateSupplier();
   const updateSupplier = useUpdateSupplier();
   const deleteSupplier = useDeleteSupplier();
+
+  const toggleExpand = useCallback((id: string) => {
+    setExpandedSupplierId((prev) => (prev === id ? null : id));
+  }, []);
 
   const filteredSuppliers = useMemo(() => {
     return suppliers.filter((s) => {
@@ -155,132 +192,27 @@ export default function SuppliersPage() {
     [form],
   );
 
-  const columns = useMemo<ColumnDef<Supplier>[]>(
-    () => [
-      {
-        accessorKey: "supplierCode",
-        header: "Supplier Code",
-        cell: ({ row }) => (
-          <span className="font-mono font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded text-xs inline-flex items-center gap-1">
-            <BuildingIcon size={11} className="text-teal-700" />
-            {row.original.supplierCode}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "name",
-        header: "Company Name & Location",
-        cell: ({ row }) => (
-          <div>
-            <span className="font-bold text-slate-900 block text-xs">
-              {row.original.name}
-            </span>
-            {row.original.address && (
-              <span className="text-[10px] text-slate-400 block mt-0.5 truncate max-w-xs">
-                {row.original.address}
-              </span>
-            )}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "contactPerson",
-        header: "Contact Person",
-        cell: ({ row }) => (
-          <span className="text-slate-800 text-xs font-semibold">
-            {row.original.contactPerson || (
-              <span className="text-slate-300">—</span>
-            )}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "contact",
-        header: "Phone & Email",
-        cell: ({ row }) => (
-          <div className="text-xs">
-            {row.original.phone && (
-              <span className="block text-slate-800 font-mono font-medium">
-                {row.original.phone}
-              </span>
-            )}
-            {row.original.email && (
-              <span className="block text-[10px] text-slate-400">
-                {row.original.email}
-              </span>
-            )}
-            {!row.original.phone && !row.original.email && (
-              <span className="text-slate-300">—</span>
-            )}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "trn",
-        header: "UAE TRN",
-        cell: ({ row }) =>
-          row.original.trn ? (
-            <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-mono font-bold">
-              {row.original.trn}
-            </span>
-          ) : (
-            <span className="text-slate-300 font-mono text-xs">—</span>
-          ),
-      },
-      {
-        accessorKey: "catalogCount",
-        header: () => <div className="text-center">Catalog SKUs</div>,
-        cell: ({ row }) => (
-          <span className="text-center font-mono font-bold text-slate-800 text-xs block">
-            {row.original._count?.products || 0}
-          </span>
-        ),
-      },
-      {
-        id: "actions",
-        header: () => <div className="text-center">Actions</div>,
-        cell: ({ row }) => (
-          <div className="flex items-center justify-center gap-1.5">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => handleOpenEdit(row.original)}
-              className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
-              title="Edit Supplier"
-            >
-              <EditIcon size={13} />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={async () => {
-                const isConfirmed = await confirm({
-                  title: "Delete Supplier",
-                  message: `Delete supplier "${row.original.name}"?`,
-                  variant: "danger",
-                  confirmText: "Delete",
-                });
-                if (isConfirmed) {
-                  try {
-                    await deleteSupplier.mutateAsync(row.original.id);
-                    toast.success(`Supplier "${row.original.name}" deleted`);
-                  } catch (err: any) {
-                    toast.error(err.message || "Failed to delete supplier");
-                  }
-                }
-              }}
-              className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer"
-              title="Delete Supplier"
-            >
-              <TrashIcon size={13} />
-            </Button>
-          </div>
-        ),
-      },
-    ],
-    [deleteSupplier, handleOpenEdit],
+  const handleDeleteSupplier = useCallback(
+    async (s: Supplier) => {
+      const isConfirmed = await confirm({
+        title: "Delete Supplier",
+        message: `Delete supplier "${s.name}" (${s.supplierCode})?`,
+        variant: "danger",
+        confirmText: "Delete",
+      });
+      if (isConfirmed) {
+        try {
+          await deleteSupplier.mutateAsync(s.id);
+          toast.success(`Supplier "${s.name}" deleted`);
+          if (expandedSupplierId === s.id) {
+            setExpandedSupplierId(null);
+          }
+        } catch (err: any) {
+          toast.error(err.message || "Failed to delete supplier");
+        }
+      }
+    },
+    [confirm, deleteSupplier, expandedSupplierId],
   );
 
   return (
@@ -376,7 +308,7 @@ export default function SuppliersPage() {
         </div>
       </div>
 
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 min-w-0 max-w-full">
         <FilterBar
           tabs={[
             { id: "ALL", label: "All Suppliers" },
@@ -397,24 +329,189 @@ export default function SuppliersPage() {
             Error loading suppliers: {(error as any).message}
           </div>
         ) : (
-          <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-            <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white p-3.5 px-5 flex items-center justify-between">
-              <h4 className="font-black text-xs uppercase tracking-wider text-white">
-                Master Suppliers &amp; Vendors Registry
-              </h4>
-              <span className="text-[11px] font-mono text-emerald-300 font-bold">
-                {filteredSuppliers.length} Active Partners
-              </span>
-            </div>
+          <RegisterTable
+            title="Master Suppliers & Vendors Registry"
+            countLabel={`${filteredSuppliers.length} Active Partners`}
+            columns={COLUMNS}
+          >
+            <TableBody className="divide-y divide-slate-100 font-medium">
+              {isLoading ? (
+                <TableLoading
+                  colSpan={7}
+                  message="Loading suppliers directory..."
+                />
+              ) : filteredSuppliers.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="py-12 text-center text-slate-400 italic"
+                  >
+                    No suppliers match your search criteria. Click &quot;Add New
+                    Supplier&quot; to register your vendor partners.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredSuppliers.map((s) => {
+                  const isExpanded = expandedSupplierId === s.id;
+                  return (
+                    <Fragment key={s.id}>
+                      <TableRow
+                        onClick={() => toggleExpand(s.id)}
+                        className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${
+                          isExpanded ? "bg-slate-50/90 font-medium" : ""
+                        }`}
+                      >
+                        <TableCell className="py-2 px-2.5 sm:px-3 font-mono font-bold text-teal-800 whitespace-nowrap text-xs">
+                          <div className="flex items-center gap-1.5 whitespace-nowrap">
+                            <BuildingIcon
+                              size={14}
+                              className="text-teal-700 shrink-0"
+                            />
+                            <span className="hover:text-emerald-800 transition-colors">
+                              {s.supplierCode}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 sm:px-3 text-slate-900 text-xs">
+                          <div
+                            className="font-bold text-slate-900 truncate max-w-[140px] sm:max-w-[190px]"
+                            title={s.name}
+                          >
+                            {s.name}
+                          </div>
+                          {s.address && (
+                            <div
+                              className="text-[10px] text-slate-400 font-normal truncate max-w-[140px] sm:max-w-[190px]"
+                              title={s.address}
+                            >
+                              {s.address}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 sm:px-3 text-slate-800 text-xs whitespace-nowrap">
+                          {s.contactPerson ? (
+                            <div
+                              className="font-semibold text-slate-800 truncate max-w-[120px] sm:max-w-[160px]"
+                              title={s.contactPerson}
+                            >
+                              {s.contactPerson}
+                            </div>
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 sm:px-3 font-mono text-slate-700 text-xs whitespace-nowrap">
+                          {s.phone ? (
+                            <span className="block font-semibold text-slate-800 text-[11px]">
+                              {s.phone}
+                            </span>
+                          ) : null}
+                          {s.email ? (
+                            <div
+                              className="text-[10px] text-slate-400 font-sans truncate max-w-[140px] sm:max-w-[170px]"
+                              title={s.email}
+                            >
+                              {s.email}
+                            </div>
+                          ) : null}
+                          {!s.phone && !s.email && (
+                            <span className="text-slate-300 font-sans">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 text-center whitespace-nowrap">
+                          {s.trn ? (
+                            <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-mono font-bold">
+                              {s.trn}
+                            </span>
+                          ) : (
+                            <span className="text-slate-300 font-mono text-xs">
+                              —
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-2 px-2.5 text-center font-mono font-bold text-slate-800 text-xs whitespace-nowrap">
+                          {s._count?.products || 0}
+                        </TableCell>
+                        <TableCell className="py-2 px-2 sm:pr-3 text-right print:hidden whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEdit(s);
+                              }}
+                              className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-blue-700 rounded-lg hover:bg-blue-50 transition cursor-pointer"
+                              title="Edit Supplier"
+                            >
+                              <EditIcon
+                                size={18}
+                                className="w-[18px] h-[18px]"
+                              />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteSupplier(s);
+                              }}
+                              className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                              title="Delete Supplier"
+                            >
+                              <TrashIcon
+                                size={18}
+                                className="w-[18px] h-[18px]"
+                              />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleExpand(s.id);
+                              }}
+                              className={`h-8 w-8 p-0 flex items-center justify-center rounded-lg transition cursor-pointer ${
+                                isExpanded
+                                  ? "text-emerald-800 bg-emerald-100"
+                                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+                              }`}
+                              title={
+                                isExpanded
+                                  ? "Collapse preview"
+                                  : "Expand preview"
+                              }
+                            >
+                              <ChevronDownIcon
+                                size={18}
+                                className={`w-[18px] h-[18px] transition-transform duration-200 ${
+                                  isExpanded
+                                    ? "rotate-180 text-emerald-800"
+                                    : ""
+                                }`}
+                              />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
 
-            <DataTable
-              columns={columns}
-              data={filteredSuppliers}
-              isLoading={isLoading}
-              emptyTitle="No suppliers found"
-              emptyMessage='Click "Add New Supplier" to register your vendor partners.'
-            />
-          </div>
+                      {isExpanded && (
+                        <SupplierExpandedRow
+                          supplier={s}
+                          onEdit={() => handleOpenEdit(s)}
+                          onDelete={() => handleDeleteSupplier(s)}
+                          onClose={() => toggleExpand(s.id)}
+                        />
+                      )}
+                    </Fragment>
+                  );
+                })
+              )}
+            </TableBody>
+          </RegisterTable>
         )}
       </div>
 

@@ -1,6 +1,5 @@
 "use client";
 
-import GlobalCreateMenu from "@/components/GlobalCreateMenu";
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -128,8 +127,6 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-            <GlobalCreateMenu />
-
             <div className="relative" ref={userMenuRef}>
               <button
                 type="button"

@@ -28,7 +28,12 @@ export async function findOrCreateAccount(
   return account;
 }
 
+let cachedStandardAccounts: any = null;
+
 export async function getStandardAccounts() {
+  if (cachedStandardAccounts) {
+    return cachedStandardAccounts;
+  }
   const [ar, ap, bank, cash, outputVat, inputVat, salesRevenue, materialCost] =
     await Promise.all([
       findOrCreateAccount("1200", "Account Recievable", "ASSET"),
@@ -41,7 +46,7 @@ export async function getStandardAccounts() {
       findOrCreateAccount("5010", "Purchase Materials", "EXPENSE"),
     ]);
 
-  return {
+  cachedStandardAccounts = {
     ar,
     ap,
     bank,
@@ -51,6 +56,7 @@ export async function getStandardAccounts() {
     salesRevenue,
     materialCost,
   };
+  return cachedStandardAccounts;
 }
 
 export async function postSalesInvoiceJournalEntry(params: {

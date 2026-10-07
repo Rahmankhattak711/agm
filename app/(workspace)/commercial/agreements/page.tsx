@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
-import { ColumnDef } from "@tanstack/react-table";
 import AgreementTemplate from "@/components/documents/AgreementTemplate";
 import {
   AgreementRecord,
@@ -12,26 +11,59 @@ import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
 import {
   Button,
-  DataTable,
-  Input,
+  RegisterTable,
+  RegisterColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableLoading,
+  EmptyState,
   DashboardCard,
   DashboardCardGrid,
   PageHeader,
   FilterBar,
 } from "@/components/ui";
 import {
-  SearchIcon,
   PlusIcon,
   TrashIcon,
   EditIcon,
   FileTextIcon,
   FileCheckIcon,
   ShieldCheckIcon,
-  UserIcon,
-  CalendarIcon,
 } from "@/components/icons";
 import { SAMPLE_RENOVATION_AGREEMENT } from "@/components/documents/constants";
 import { formatNumber } from "@/lib/utils/format";
+
+const COLUMNS: RegisterColumn[] = [
+  { label: "Ref Number", compact: true, className: "whitespace-nowrap" },
+  { label: "Client", compact: true },
+  { label: "Project & Property", compact: true },
+  {
+    label: "Date",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Contract Value",
+    align: "right",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Status",
+    align: "center",
+    compact: true,
+    className: "whitespace-nowrap",
+  },
+  {
+    label: "Actions",
+    align: "right",
+    compact: true,
+    hideOnPrint: true,
+    className: "whitespace-nowrap pr-3 sm:pr-4",
+  },
+];
 
 export default function AgreementsAndDocumentsPage() {
   const { data: agreementsList = [], isLoading } = useAgreements();
@@ -58,12 +90,6 @@ export default function AgreementsAndDocumentsPage() {
       return matchesSearch && matchesStatus;
     });
   }, [agreementsList, search, statusFilter]);
-
-  const totalContractVolume = useMemo(
-    () =>
-      agreementsList.reduce((s, a) => s + Number(a.contractValueNum || 0), 0),
-    [agreementsList],
-  );
 
   const completedCount = useMemo(
     () => agreementsList.filter((a) => a.status === "COMPLETED").length,
@@ -143,110 +169,6 @@ export default function AgreementsAndDocumentsPage() {
       </span>
     );
   };
-
-  const columns: ColumnDef<AgreementRecord>[] = useMemo(
-    () => [
-      {
-        accessorKey: "refNumber",
-        header: "Ref Number",
-        cell: ({ row }) => (
-          <span
-            className="font-mono font-bold text-xs text-slate-900 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 inline-block max-w-[200px] truncate"
-            title={row.original.refNumber}
-          >
-            {row.original.refNumber}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "client.name",
-        header: "Client",
-        cell: ({ row }) => (
-          <span className="font-semibold text-slate-800 text-xs flex items-center gap-1.5 whitespace-nowrap">
-            <UserIcon size={12} className="text-slate-400 shrink-0" />
-            {row.original.client?.name || "—"}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "project",
-        header: "Project & Property",
-        cell: ({ row }) => (
-          <div className="flex flex-col max-w-[260px]">
-            <span
-              className="font-bold text-slate-900 text-xs flex items-center gap-1.5 truncate"
-              title={row.original.project}
-            >
-              <FileTextIcon size={12} className="text-agm-green shrink-0" />
-              {row.original.project || "—"}
-            </span>
-            <span
-              className="text-[11px] text-slate-500 truncate mt-0.5"
-              title={row.original.property}
-            >
-              {row.original.property || "—"}
-            </span>
-          </div>
-        ),
-      },
-      {
-        accessorKey: "date",
-        header: "Date",
-        cell: ({ row }) => (
-          <span className="text-xs text-slate-600 flex items-center gap-1.5 whitespace-nowrap">
-            <CalendarIcon size={12} className="text-slate-400 shrink-0" />
-            {row.original.date || "—"}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "contractValueNum",
-        header: "Contract Value",
-        cell: ({ row }) => (
-          <span className="font-semibold text-slate-900 text-xs whitespace-nowrap bg-emerald-50/70 text-emerald-800 px-2.5 py-1 rounded-md border border-emerald-200/80">
-            AED {formatNumber(row.original.contractValueNum)}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => getStatusBadge(row.original.status),
-      },
-      {
-        id: "actions",
-        header: "Actions",
-        cell: ({ row }) => (
-          <div
-            className="flex items-center justify-end gap-1.5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenInEditor(row.original)}
-              className="text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-100 px-2.5 py-1 flex items-center gap-1 cursor-pointer"
-            >
-              <EditIcon size={12} />
-              <span>Edit</span>
-            </Button>
-            <Button
-              type="button"
-              variant="danger"
-              size="sm"
-              onClick={(e) => handleDelete(row.original.id, e)}
-              className="text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 border-rose-200 px-2 py-1 flex items-center gap-1 cursor-pointer"
-              title="Delete"
-            >
-              <TrashIcon size={12} />
-            </Button>
-          </div>
-        ),
-      },
-    ],
-    [handleDelete, handleOpenInEditor],
-  );
 
   return (
     <div className="w-full space-y-6">
@@ -336,18 +258,126 @@ export default function AgreementsAndDocumentsPage() {
             countLabel="Agreements"
           />
 
-          <DataTable
-            columns={columns}
-            data={filteredAgreements}
-            isLoading={isLoading}
-            onRowClick={(row) => handleOpenInEditor(row)}
-            emptyTitle="No agreements found"
-            emptyMessage={
-              search
-                ? "No agreements matched your search criteria."
-                : "No agreements in database. Click 'New Agreement' to create one."
-            }
-          />
+          <RegisterTable
+            title="Company Agreements Register"
+            countLabel={`${filteredAgreements.length} Active Records`}
+            columns={COLUMNS}
+          >
+            <TableBody className="divide-y divide-slate-100 font-medium">
+              {isLoading ? (
+                <TableLoading colSpan={7} rows={5} />
+              ) : filteredAgreements.length === 0 ? (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={7} className="p-0 border-0">
+                    <EmptyState
+                      icon={
+                        <FileTextIcon size={20} className="text-slate-400" />
+                      }
+                      title="No agreements found"
+                      description={
+                        search
+                          ? "No agreements matched your search criteria."
+                          : "No agreements in database. Click 'New Agreement' to create one."
+                      }
+                      actionLabel={search ? undefined : "New Agreement"}
+                      onAction={search ? undefined : handleCreateNew}
+                    />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredAgreements.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    onClick={() => handleOpenInEditor(row)}
+                    className="hover:bg-slate-50/80 transition-colors cursor-pointer"
+                  >
+                    <TableCell className="py-2 px-2.5 sm:px-3 font-mono font-bold text-xs text-slate-900 whitespace-nowrap">
+                      <span
+                        className="bg-slate-100 text-slate-800 px-2.5 py-1 rounded-md border border-slate-200 inline-block max-w-[200px] truncate"
+                        title={row.refNumber}
+                      >
+                        {row.refNumber}
+                      </span>
+                    </TableCell>
+
+                    <TableCell className="py-2 px-2.5 sm:px-3 text-xs">
+                      <span className="font-semibold text-slate-800 whitespace-nowrap">
+                        {row.client?.name || "—"}
+                      </span>
+                    </TableCell>
+
+                    <TableCell className="py-2 px-2.5 sm:px-3 text-xs">
+                      <div className="flex flex-col max-w-[260px]">
+                        <span
+                          className="font-bold text-slate-900 truncate"
+                          title={row.project}
+                        >
+                          {row.project || "—"}
+                        </span>
+                        <span
+                          className="text-[11px] text-slate-500 truncate mt-0.5"
+                          title={row.property}
+                        >
+                          {row.property || "—"}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    <TableCell
+                      align="center"
+                      className="py-2 px-2.5 sm:px-3 text-center text-xs whitespace-nowrap"
+                    >
+                      <span className="text-xs text-slate-600 font-mono">
+                        {row.date || "—"}
+                      </span>
+                    </TableCell>
+
+                    <TableCell
+                      align="right"
+                      className="py-2 px-2.5 sm:px-3 text-right whitespace-nowrap font-mono font-bold text-slate-900 text-xs"
+                    >
+                      AED {formatNumber(row.contractValueNum)}
+                    </TableCell>
+
+                    <TableCell
+                      align="center"
+                      className="py-2 px-2.5 sm:px-3 text-center text-xs whitespace-nowrap"
+                    >
+                      {getStatusBadge(row.status)}
+                    </TableCell>
+
+                    <TableCell className="py-2 px-2.5 sm:px-3 text-right print:hidden whitespace-nowrap">
+                      <div
+                        className="flex items-center justify-end gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenInEditor(row)}
+                          className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
+                          title="Edit Agreement"
+                        >
+                          <EditIcon size={18} className="w-[18px] h-[18px]" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleDelete(row.id, e)}
+                          className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                          title="Delete Agreement"
+                        >
+                          <TrashIcon size={18} className="w-[18px] h-[18px]" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </RegisterTable>
         </div>
       ) : (
         <div>
