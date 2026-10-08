@@ -265,12 +265,29 @@ export const SalesInvoiceExpandedDetail: React.FC<
     [milestones],
   );
 
-  const displayTotalAmount = calculatedTotal;
-  const displaySubtotal = calculatedSubtotal;
-  const displayVatAmount = calculatedVat;
+  const isPartialMilestone =
+    Math.abs(totalMilestonePct - 100) > 0.1 && totalMilestoneAmount > 0;
+
+  const displaySubtotal = isPartialMilestone
+    ? totalMilestoneAmount
+    : calculatedSubtotal;
+
+  const displayVatAmount =
+    dbVatRate > 0
+      ? Math.round(((displaySubtotal * dbVatRate) / 100) * 100) / 100
+      : isPartialMilestone && dbVatAmount > 0 && calculatedSubtotal > 0
+        ? Math.round(
+            displaySubtotal * (dbVatAmount / calculatedSubtotal) * 100,
+          ) / 100
+        : calculatedVat;
+
+  const displayTotalAmount = isPartialMilestone
+    ? displaySubtotal + displayVatAmount
+    : calculatedTotal;
+
   const displayRemainingBalance = Math.max(
     0,
-    calculatedTotal - Number(inv.paidAmount || 0),
+    displayTotalAmount - Number(inv.paidAmount || 0),
   );
 
   return (

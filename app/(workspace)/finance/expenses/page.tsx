@@ -765,18 +765,14 @@ export default function ExpensesPage() {
                 htmlFor="auto-je"
                 className="text-slate-700 font-semibold cursor-pointer"
               >
-                Automatically post balanced General Ledger journal entry for this
-                expense
+                Automatically post balanced General Ledger journal entry for
+                this expense
               </label>
             </div>
           )}
 
           <div className="flex items-center justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCloseModal}
-            >
+            <Button type="button" variant="outline" onClick={handleCloseModal}>
               Cancel
             </Button>
             <Button

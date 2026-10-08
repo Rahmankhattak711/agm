@@ -18,6 +18,80 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
 }) => {
   if (!invoice) return null;
 
+  const itemsSum =
+    invoice.items?.reduce(
+      (sum: number, item: any) => sum + Number(item.totalAmount || 0),
+      0,
+    ) || Number(invoice.subtotal || 0);
+  const discount = Number(invoice.discount || 0);
+  const calculatedSubtotal = Math.max(0, itemsSum - discount);
+  const dbVatRate =
+    invoice.vatRate !== undefined && invoice.vatRate !== null
+      ? Number(invoice.vatRate)
+      : 0;
+  const dbVatAmount = Number(invoice.vatAmount || 0);
+  const dbTotalAmount = Number(invoice.totalAmount || 0);
+
+  const calculatedVat =
+    dbVatAmount > 0
+      ? dbVatAmount
+      : dbVatRate > 0 && dbTotalAmount > calculatedSubtotal
+        ? Math.round(((calculatedSubtotal * dbVatRate) / 100) * 100) / 100
+        : 0;
+  const calculatedTotal =
+    dbTotalAmount > 0
+      ? dbTotalAmount
+      : Math.round((calculatedSubtotal + calculatedVat) * 100) / 100;
+
+  let paymentList: string[] = [];
+  if (invoice.terms) {
+    try {
+      const parsed = JSON.parse(invoice.terms);
+      if (parsed && typeof parsed === "object") {
+        if (Array.isArray(parsed.paymentPlans))
+          paymentList = parsed.paymentPlans;
+        else if (Array.isArray(parsed.paymentTerms))
+          paymentList = parsed.paymentTerms;
+      }
+    } catch {}
+  }
+
+  let totalMilestonePct = 0;
+  let totalMilestoneAmount = 0;
+
+  if (paymentList.length > 0) {
+    paymentList.forEach((plan) => {
+      const match = plan.match(/(\d+(?:\.\d+)?)\s*%/);
+      const pct = match ? parseFloat(match[1]) : 0;
+      totalMilestonePct += pct;
+      totalMilestoneAmount +=
+        Math.round(((calculatedTotal * pct) / 100) * 100) / 100;
+    });
+  } else {
+    totalMilestonePct = 100;
+  }
+
+  const isPartialMilestone =
+    Math.abs(totalMilestonePct - 100) > 0.1 && totalMilestoneAmount > 0;
+  const displaySubtotal = isPartialMilestone
+    ? totalMilestoneAmount
+    : calculatedSubtotal;
+  const displayVatAmount =
+    dbVatRate > 0
+      ? Math.round(((displaySubtotal * dbVatRate) / 100) * 100) / 100
+      : isPartialMilestone && dbVatAmount > 0 && calculatedSubtotal > 0
+        ? Math.round(
+            displaySubtotal * (dbVatAmount / calculatedSubtotal) * 100,
+          ) / 100
+        : calculatedVat;
+  const displayTotalAmount = isPartialMilestone
+    ? displaySubtotal + displayVatAmount
+    : calculatedTotal;
+  const displayRemainingBalance = Math.max(
+    0,
+    displayTotalAmount - Number(invoice.paidAmount || 0),
+  );
+
   return (
     <div
       id="printable-voucher"
@@ -335,17 +409,17 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                           Subtotal (Excl. VAT)
                         </span>
                         <span className="font-mono font-bold text-slate-900 text-[12.5px] print:text-[10.5px]">
-                          AED {formatNumber(invoice.subtotal)}
+                          AED {formatNumber(displaySubtotal)}
                         </span>
                       </div>
 
-                      {Number(invoice.vatAmount || 0) > 0 && (
+                      {displayVatAmount > 0 && (
                         <div className="flex items-center justify-between px-4 py-2 print:py-1">
                           <span className="font-semibold text-slate-600">
                             Output VAT ({Number(invoice.vatRate || 0)}%)
                           </span>
                           <span className="font-mono font-semibold text-emerald-800">
-                            AED {formatNumber(invoice.vatAmount)}
+                            AED {formatNumber(displayVatAmount)}
                           </span>
                         </div>
                       )}
@@ -355,7 +429,7 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                           TOTAL AMOUNT
                         </span>
                         <span className="font-mono font-black text-white text-[14px] print:text-[11.5px]">
-                          AED {formatNumber(invoice.totalAmount)}
+                          AED {formatNumber(displayTotalAmount)}
                         </span>
                       </div>
 
@@ -372,12 +446,12 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                         <span>Balance Due</span>
                         <span
                           className={`font-mono ${
-                            Number(invoice.remainingBalance) > 0
+                            displayRemainingBalance > 0
                               ? "text-rose-700"
                               : "text-emerald-700"
                           }`}
                         >
-                          AED {formatNumber(invoice.remainingBalance)}
+                          AED {formatNumber(displayRemainingBalance)}
                         </span>
                       </div>
                     </div>
