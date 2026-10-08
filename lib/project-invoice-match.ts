@@ -37,6 +37,7 @@ export const INVOICE_MATCH_SELECT = {
   vatRate: true,
   vatAmount: true,
   totalAmount: true,
+  terms: true,
   items: { select: { totalAmount: true } },
 } as const;
 
@@ -104,13 +105,41 @@ export function resolveProjectValues(
   invoices: MatchableInvoice[],
 ) {
   const inv = findMatchingInvoice(project, invoices);
-  const invTotal =
+  const rawInvTotal =
     inv && Number(inv.totalAmount || 0) > 0 ? Number(inv.totalAmount) : 0;
   const itemsSum = inv ? sumBy(inv.items, (i) => i.totalAmount) : 0;
-  const matchedInvAmount =
-    invTotal ||
+
+  let totalMilestonePct = 100;
+  if (inv && (inv as any).terms) {
+    try {
+      let paymentList: string[] = [];
+      const parsed = JSON.parse((inv as any).terms);
+      if (parsed && typeof parsed === "object") {
+        if (Array.isArray(parsed.paymentPlans))
+          paymentList = parsed.paymentPlans;
+        else if (Array.isArray(parsed.paymentTerms))
+          paymentList = parsed.paymentTerms;
+      }
+      if (paymentList.length > 0) {
+        let pctSum = 0;
+        paymentList.forEach((plan) => {
+          const match = plan.match(/(\d+(?:\.\d+)?)\s*%/);
+          if (match) pctSum += parseFloat(match[1]);
+        });
+        if (pctSum > 0) totalMilestonePct = pctSum;
+      }
+    } catch {}
+  }
+
+  const isPartial = Math.abs(totalMilestonePct - 100) > 0.1;
+  const multiplier = isPartial ? totalMilestonePct / 100 : 1;
+
+  const baseInvAmount =
+    rawInvTotal ||
     (inv && Number(inv.subtotal || 0) > 0 ? Number(inv.subtotal) : 0) ||
     itemsSum;
+
+  const matchedInvAmount = baseInvAmount * multiplier;
 
   const contractValue =
     matchedInvAmount ||
