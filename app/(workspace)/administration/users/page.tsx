@@ -501,7 +501,7 @@ export default function UsersPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Add New System User"
-        maxWidth="md"
+        maxWidth="2xl"
       >
         <form
           onSubmit={(e) => {
@@ -509,7 +509,7 @@ export default function UsersPage() {
             e.stopPropagation();
             createForm.handleSubmit();
           }}
-          className="space-y-4 text-xs"
+          className="space-y-4 text-xs w-full"
         >
           {formError && (
             <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
@@ -619,7 +619,7 @@ export default function UsersPage() {
           setEditingUser(null);
         }}
         title={`Edit User: ${editingUser?.fullName || ""}`}
-        maxWidth="md"
+        maxWidth="lg"
       >
         <form
           onSubmit={(e) => {
