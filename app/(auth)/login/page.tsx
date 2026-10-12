@@ -1,5 +1,6 @@
 "use client";
 
+import AgmLogo from "@/components/AgmLogo";
 import {
   AlertCircleIcon,
   ClockIcon,
@@ -10,8 +11,7 @@ import {
   RefreshIcon,
   UserPlusIcon,
 } from "@/components/icons";
-import { Button, Input } from "@/components/ui";
-import AgmLogo from "@/components/AgmLogo";
+import { Button } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/lib/auth-service";
 import { useForm } from "@tanstack/react-form";
@@ -67,125 +67,26 @@ function LoginForm() {
   });
 
   return (
-    <div className="flex min-h-screen">
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#1d3345] via-[#243c50] to-[#2c455a] p-12 flex-col justify-between overflow-hidden">
-        <div className="absolute inset-0 opacity-15 pointer-events-none">
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 1440 900"
-            className="w-full h-full object-cover"
-          >
-            <line
-              x1="0"
-              y1="150"
-              x2="1440"
-              y2="750"
-              stroke="#dff7e6"
-              strokeWidth="1.2"
-              strokeDasharray="6 6"
-            />
-            <line
-              x1="0"
-              y1="750"
-              x2="1440"
-              y2="150"
-              stroke="#dff7e6"
-              strokeWidth="1.2"
-              strokeDasharray="6 6"
-            />
-            <rect
-              x="200"
-              y="100"
-              width="400"
-              height="700"
-              fill="none"
-              stroke="#dff7e6"
-              strokeWidth="1"
-            />
-            <rect
-              x="840"
-              y="100"
-              width="400"
-              height="700"
-              fill="none"
-              stroke="#dff7e6"
-              strokeWidth="1"
-            />
-            <circle
-              cx="720"
-              cy="450"
-              r="320"
-              fill="none"
-              stroke="#dff7e6"
-              strokeWidth="1"
-              opacity="0.6"
-            />
-          </svg>
-        </div>
-
-        <div className="relative z-10">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-8 sm:py-12">
+      <div className="w-full max-w-sm sm:max-w-md">
+        <div className="flex justify-center mb-6">
           <AgmLogo size="lg" theme="light" />
         </div>
 
-        <div className="relative z-10 max-w-md">
-          <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-[#a3e6ba] border border-emerald-400/30 text-xs font-bold uppercase tracking-wider mb-4">
-            AGM ERP
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-            All-in-one business management.
-          </h1>
-          <p className="mt-3 text-sm text-slate-300 leading-relaxed">
-            Everything you need to run finance, sales, inventory, and operations
-            in one system.
-          </p>
-
-          <div className="mt-6 space-y-2.5 text-xs text-slate-200">
-            <div className="flex items-center gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-              <span>Track general ledgers, P&amp;L, and VAT returns</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-              <span>Issue quotations, invoices, and payments</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-              <span>Control inventory, purchase orders, and warehouses</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-              <span>Manage employees, attendance, and payroll</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative z-10 text-xs text-slate-400 flex items-center justify-between border-t border-white/10 pt-6">
-          <span>© {new Date().getFullYear()} AGM Technical Services LLC</span>
-          <span>UAE FTA Compliant</span>
-        </div>
-      </div>
-
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-slate-50">
-        <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl shadow-[0_20px_60px_-15px_rgba(38,59,77,0.1)] border border-slate-200/80">
-          <div className="lg:hidden mb-6 flex justify-center">
-            <AgmLogo size="md" theme="dark" />
-          </div>
-
-          <div className="mb-6 text-center lg:text-left">
-            <h2 className="text-2xl font-bold text-agm-text tracking-tight">
-              Sign In
-            </h2>
-            <p className="text-xs text-agm-muted mt-1 max-w-xs">
-              Enter your email and password to access your workspace.
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 sm:p-8">
+          <div className="mb-6 text-center">
+            <h1 className="text-xl font-bold text-slate-800">Sign In</h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Enter your email and password to access AGM ERP
             </p>
           </div>
 
           {isDbReset && (
-            <div className="mb-4 rounded-xl bg-teal-50 p-3.5 text-xs font-semibold text-teal-900 border border-teal-200 flex items-start gap-2.5 animate-in fade-in shadow-2xs">
+            <div className="mb-4 rounded-xl bg-teal-50 p-3 text-xs text-teal-900 border border-teal-200 flex items-start gap-2.5">
               <RefreshIcon className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold">Database Reset Detected</p>
-                <p className="text-[11px] text-teal-800 font-normal mt-0.5">
+                <p className="font-semibold">Database Reset Detected</p>
+                <p className="text-[11px] text-teal-800 mt-0.5">
                   Previous sessions were cleared. Please sign in or create an
                   administrator account.
                 </p>
@@ -194,16 +95,14 @@ function LoginForm() {
           )}
 
           {isExpired && !isDbReset && (
-            <div className="mb-4 rounded-xl bg-amber-50 p-3.5 text-xs font-semibold text-amber-800 border border-amber-200 flex items-center gap-2.5 animate-in fade-in">
-              <ClockIcon className="w-4 h-4 text-amber-600 shrink-0" />
-              <span>
-                Your session has expired. Please sign in again to continue.
-              </span>
+            <div className="mb-4 rounded-xl bg-amber-50 p-3 text-xs text-amber-900 border border-amber-200 flex items-center gap-2.5">
+              <ClockIcon className="w-4 h-4 text-amber-700 shrink-0" />
+              <span>Your session has expired. Please sign in again.</span>
             </div>
           )}
 
           {mutation.error && (
-            <div className="mb-4 rounded-xl bg-rose-50 p-3.5 text-xs font-semibold text-rose-800 border border-rose-200 space-y-2 animate-in fade-in">
+            <div className="mb-4 rounded-xl bg-rose-50 p-3 text-xs text-rose-800 border border-rose-200 space-y-2">
               <div className="flex items-start gap-2">
                 <AlertCircleIcon className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
                 <span>{mutation.error.message}</span>
@@ -212,16 +111,16 @@ function LoginForm() {
                 .toLowerCase()
                 .includes("user not found") ||
                 (mutation.error as any).isDbEmpty) && (
-                <div className="pt-2 border-t border-rose-200/80 flex items-center justify-between">
-                  <span className="text-[11px] text-rose-700 font-normal">
-                    Database reset or new system?
+                <div className="pt-2 border-t border-rose-200 flex items-center justify-between">
+                  <span className="text-[11px] text-rose-700">
+                    Need an initial account?
                   </span>
                   <Link
                     href="/signup"
-                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-agm-green hover:bg-agm-green-2 px-2.5 py-1 rounded-lg transition"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-emerald-700 hover:bg-emerald-800 px-2.5 py-1 rounded-lg transition"
                   >
                     <UserPlusIcon size={12} />
-                    <span>Sign Up Admin</span>
+                    <span>Create Admin</span>
                   </Link>
                 </div>
               )}
@@ -251,20 +150,37 @@ function LoginForm() {
                 const isTouched = field.state.meta.isTouched;
                 const error = isTouched && field.state.meta.errors[0];
                 return (
-                  <Input
-                    id="email"
-                    name={field.name}
-                    type="email"
-                    label="Email Address"
-                    labelClassName="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
-                    placeholder="admin@agm.ae"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    disabled={mutation.isPending}
-                    error={error ? String(error) : undefined}
-                    leftIcon={<MailIcon size={16} />}
-                  />
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-xs font-semibold text-slate-700 mb-1"
+                    >
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
+                        <MailIcon size={15} />
+                      </div>
+                      <input
+                        id="email"
+                        name={field.name}
+                        type="email"
+                        placeholder="admin@agm.ae"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        disabled={mutation.isPending}
+                        className={`w-full pl-9 pr-3 py-2 text-xs rounded-xl border bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition ${
+                          error ? "border-rose-300" : "border-slate-300"
+                        }`}
+                      />
+                    </div>
+                    {error && (
+                      <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                        {String(error)}
+                      </p>
+                    )}
+                  </div>
                 );
               }}
             </form.Field>
@@ -280,36 +196,51 @@ function LoginForm() {
                 const isTouched = field.state.meta.isTouched;
                 const error = isTouched && field.state.meta.errors[0];
                 return (
-                  <Input
-                    id="password"
-                    name={field.name}
-                    type={showPassword ? "text" : "password"}
-                    label="Password"
-                    labelClassName="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-wider"
-                    placeholder="••••••••"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    disabled={mutation.isPending}
-                    error={error ? String(error) : undefined}
-                    leftIcon={<LockIcon size={16} />}
-                    rightElement={
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="block text-xs font-semibold text-slate-700 mb-1"
+                    >
+                      Password
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
+                        <LockIcon size={15} />
+                      </div>
+                      <input
+                        id="password"
+                        name={field.name}
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        disabled={mutation.isPending}
+                        className={`w-full pl-9 pr-9 py-2 text-xs rounded-xl border bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 transition ${
+                          error ? "border-rose-300" : "border-slate-300"
+                        }`}
+                      />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="text-slate-400 hover:text-slate-600 cursor-pointer p-1 transition-colors"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
                         aria-label={
                           showPassword ? "Hide password" : "Show password"
                         }
                       >
                         {showPassword ? (
-                          <EyeOffIcon size={16} />
+                          <EyeOffIcon size={15} />
                         ) : (
-                          <EyeIcon size={16} />
+                          <EyeIcon size={15} />
                         )}
                       </button>
-                    }
-                  />
+                    </div>
+                    {error && (
+                      <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                        {String(error)}
+                      </p>
+                    )}
+                  </div>
                 );
               }}
             </form.Field>
@@ -324,7 +255,7 @@ function LoginForm() {
                   size="lg"
                   loading={mutation.isPending || isSubmitting}
                   disabled={!canSubmit || mutation.isPending || isSubmitting}
-                  className="w-full mt-2"
+                  className="w-full mt-2 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition shadow-xs"
                 >
                   Sign In
                 </Button>
@@ -332,16 +263,22 @@ function LoginForm() {
             </form.Subscribe>
           </form>
 
-          <p className="mt-6 text-center text-xs text-agm-muted">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/signup"
-              className="font-bold text-agm-green hover:text-agm-green-2 hover:underline"
-            >
-              Create an account
-            </Link>
-          </p>
+          <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+            <p className="text-xs text-slate-500">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/signup"
+                className="font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
+              >
+                Create account
+              </Link>
+            </p>
+          </div>
         </div>
+
+        <p className="text-center text-[11px] text-slate-400 mt-6">
+          &copy; {new Date().getFullYear()} AGM Technical Services LLC
+        </p>
       </div>
     </div>
   );
@@ -351,8 +288,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-agm-bg">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-agm-green" />
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700" />
         </div>
       }
     >
