@@ -1,8 +1,18 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import {
+  getAuthUser,
+  hasRole,
+  unauthorized,
+  forbidden,
+} from "@/lib/auth-server";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "ACCOUNTANT")) return forbidden();
+
     const [supplierBills, purchaseOrders, journalLines] = await Promise.all([
       prisma.supplierBill.findMany({
         orderBy: { billDate: "desc" },

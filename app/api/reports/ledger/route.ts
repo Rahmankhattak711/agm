@@ -1,5 +1,11 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import {
+  getAuthUser,
+  hasRole,
+  unauthorized,
+  forbidden,
+} from "@/lib/auth-server";
 
 type JournalLine = Awaited<
   ReturnType<typeof prisma.journalEntryLine.findMany>
@@ -7,6 +13,10 @@ type JournalLine = Awaited<
 
 export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "ACCOUNTANT")) return forbidden();
+
     const url = new URL(request.url);
     const accountId = url.searchParams.get("accountId");
 

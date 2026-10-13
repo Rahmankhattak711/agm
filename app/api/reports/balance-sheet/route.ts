@@ -3,6 +3,12 @@ import { NextResponse } from "next/server";
 import { getStandardAccounts } from "@/lib/commercial-accounting";
 import { getAccountTransactionDetails } from "@/lib/report-helpers";
 import { BalanceSheetItem } from "@/lib/hooks/types";
+import {
+  getAuthUser,
+  hasRole,
+  unauthorized,
+  forbidden,
+} from "@/lib/auth-server";
 
 type Account = Awaited<
   ReturnType<typeof prisma.chartOfAccount.findMany>
@@ -10,6 +16,10 @@ type Account = Awaited<
 
 export async function GET(req: Request) {
   try {
+    const authUser = await getAuthUser(req);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "ACCOUNTANT")) return forbidden();
+
     const std = await getStandardAccounts();
     const { searchParams } = new URL(req.url);
     const endDateStr =
