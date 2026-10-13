@@ -9,10 +9,10 @@ const envSchema = z.object({
     .string()
     .min(32)
     .default("default-build-fallback-jwt-secret-min-32-chars-long"),
-  ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(15),
+  ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(480),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
   MAX_FAILED_LOGINS: z.coerce.number().int().positive().default(5),
-  LOCKOUT_MINUTES: z.coerce.number().int().positive().default(15),
+  LOCKOUT_MINUTES: z.coerce.number().int().positive().default(480),
   APP_ORIGIN: z.string().url().default("http://localhost:3000"),
 });
 
@@ -25,10 +25,10 @@ const rawEnv = {
     process.env.ACCESS_TOKEN_SECRET ||
     process.env.JWT_SECRET ||
     "default-build-fallback-jwt-secret-min-32-chars-long",
-  ACCESS_TOKEN_TTL_MINUTES: process.env.ACCESS_TOKEN_TTL_MINUTES || 15,
+  ACCESS_TOKEN_TTL_MINUTES: process.env.ACCESS_TOKEN_TTL_MINUTES || 480,
   REFRESH_TOKEN_TTL_DAYS: process.env.REFRESH_TOKEN_TTL_DAYS || 7,
   MAX_FAILED_LOGINS: process.env.MAX_FAILED_LOGINS || 5,
-  LOCKOUT_MINUTES: process.env.LOCKOUT_MINUTES || 15,
+  LOCKOUT_MINUTES: process.env.LOCKOUT_MINUTES || 480,
   APP_ORIGIN:
     process.env.APP_ORIGIN ||
     process.env.NEXT_PUBLIC_APP_URL ||
@@ -45,9 +45,9 @@ export const env = parsedEnv.success
   : {
       DATABASE_URL: rawEnv.DATABASE_URL,
       JWT_ACCESS_SECRET: rawEnv.JWT_ACCESS_SECRET,
-      ACCESS_TOKEN_TTL_MINUTES: 15,
+      ACCESS_TOKEN_TTL_MINUTES: 480,
       REFRESH_TOKEN_TTL_DAYS: 7,
       MAX_FAILED_LOGINS: 5,
-      LOCKOUT_MINUTES: 15,
+      LOCKOUT_MINUTES: 480,
       APP_ORIGIN: "http://localhost:3000",
     };

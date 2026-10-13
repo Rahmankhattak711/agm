@@ -1,10 +1,12 @@
 <div align="center">
   <img src="./public/assets/logo.png" alt="AGM Logo" width="200" />
+
+  <h1>AGM ERP</h1>
+
+  <p>
+    A comprehensive Enterprise Resource Planning (ERP) and financial management platform custom-built for <strong>AGM Aesthetic House Fitout Technical Services L.L.C</strong> (Dubai, UAE).
+  </p>
 </div>
-
-# AGM ERP
-
-A comprehensive Enterprise Resource Planning (ERP) and financial management platform custom-built for **AGM Aesthetic House Fitout Technical Services L.L.C** (Dubai, UAE).
 
 ---
 
@@ -60,10 +62,10 @@ Create a `.env` file in the root directory:
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/agm_db?schema=public"
 JWT_ACCESS_SECRET="your_very_long_jwt_access_secret_min_32_chars"
-ACCESS_TOKEN_TTL_MINUTES="15"
+ACCESS_TOKEN_TTL_MINUTES="480"
 REFRESH_TOKEN_TTL_DAYS="7"
 MAX_FAILED_LOGINS="5"
-LOCKOUT_MINUTES="15"
+LOCKOUT_MINUTES="480"
 APP_ORIGIN="http://localhost:3000"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 SEED_ADMIN_EMAIL="admin@agm.ae"
