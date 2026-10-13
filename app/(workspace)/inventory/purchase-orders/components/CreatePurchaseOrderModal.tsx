@@ -148,7 +148,7 @@ export const CreatePurchaseOrderModal: React.FC<
       });
     }
     prevOpenRef.current = isOpen;
-  }, [isOpen, suppliers]);
+  }, [isOpen, suppliers, poForm]);
 
   const handleOpenQuickProduct = (idx: number | null) => {
     setQuickProductTargetIdx(idx);
