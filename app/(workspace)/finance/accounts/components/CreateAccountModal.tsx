@@ -68,7 +68,7 @@ export function CreateAccountModal({
         parentId: initialParentId,
       });
     }
-  }, [isOpen, initialType, initialParentId]);
+  }, [isOpen, initialType, initialParentId, form]);
 
   return (
     <Modal

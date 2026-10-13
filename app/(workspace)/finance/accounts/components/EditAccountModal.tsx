@@ -70,7 +70,7 @@ export function EditAccountModal({
         isActive: account.isActive,
       });
     }
-  }, [account]);
+  }, [account, form]);
 
   if (!account) return null;
 
