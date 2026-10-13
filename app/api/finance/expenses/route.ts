@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getAuthUser, unauthorized } from "@/lib/auth-server";
+import {
+  getAuthUser,
+  hasRole,
+  unauthorized,
+  forbidden,
+} from "@/lib/auth-server";
 
 export async function GET(req: NextRequest) {
   try {
     const user = await getAuthUser(req);
     if (!user) {
       return unauthorized();
+    }
+    if (!hasRole(user, "ACCOUNTANT")) {
+      return forbidden();
     }
 
     const { searchParams } = new URL(req.url);
@@ -92,6 +100,9 @@ export async function POST(req: NextRequest) {
     const user = await getAuthUser(req);
     if (!user) {
       return unauthorized();
+    }
+    if (!hasRole(user, "ACCOUNTANT")) {
+      return forbidden();
     }
 
     const body = await req.json();

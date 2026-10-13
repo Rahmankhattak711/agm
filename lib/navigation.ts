@@ -74,7 +74,7 @@ export const SECTION_PATHS: Record<string, string> = {
   bonuses: "/operations/bonuses",
   assets: "/operations/fixed-assets",
 
-  admin: "/administration/users",
+  admin: "/administration",
 };
 
 export interface PageMeta {
@@ -253,7 +253,7 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: "Fixed Assets",
   },
 
-  "/administration/users": {
+  "/administration": {
     eyebrow: "Administration",
     title: "Users & Roles",
   },

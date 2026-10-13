@@ -4,6 +4,7 @@ export interface User {
   fullName: string;
   role: string;
   isActive: boolean;
+  mustChangePassword?: boolean;
 }
 
 export const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
@@ -12,19 +13,11 @@ export const SESSION_COOKIE_MAX_AGE = 86400;
 export const authService = {
   getAccessToken(): string | null {
     if (typeof window === "undefined") return null;
-    if (this.isSessionExpired()) {
-      this.clearSession();
-      return null;
-    }
     return localStorage.getItem("agm_access_token");
   },
 
   getRefreshToken(): string | null {
     if (typeof window === "undefined") return null;
-    if (this.isSessionExpired()) {
-      this.clearSession();
-      return null;
-    }
     return localStorage.getItem("agm_refresh_token");
   },
 
@@ -39,10 +32,7 @@ export const authService = {
   isSessionExpired(): boolean {
     if (typeof window === "undefined") return false;
     const expiry = this.getSessionExpiry();
-    if (!expiry) {
-      const token = localStorage.getItem("agm_access_token");
-      return !token;
-    }
+    if (!expiry) return false;
     return Date.now() >= expiry;
   },
 
@@ -56,10 +46,6 @@ export const authService = {
 
   getUser(): User | null {
     if (typeof window === "undefined") return null;
-    if (this.isSessionExpired()) {
-      this.clearSession();
-      return null;
-    }
     const userStr = localStorage.getItem("agm_user");
     if (!userStr) return null;
     try {
@@ -69,18 +55,20 @@ export const authService = {
     }
   },
 
-  setSession(user: User, accessToken: string, refreshToken: string): void {
+  setUser(user: User): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("agm_user", JSON.stringify(user));
+  },
+
+  setSession(user: User, accessToken?: string, refreshToken?: string): void {
     if (typeof window === "undefined") return;
     const expiry = Date.now() + SESSION_DURATION_MS;
 
     localStorage.setItem("agm_user", JSON.stringify(user));
-    localStorage.setItem("agm_access_token", accessToken);
-    localStorage.setItem("agm_refresh_token", refreshToken);
+    if (accessToken) localStorage.setItem("agm_access_token", accessToken);
+    if (refreshToken) localStorage.setItem("agm_refresh_token", refreshToken);
     localStorage.setItem("agm_session_expiry", expiry.toString());
 
-    document.cookie = `agm_access_token=${encodeURIComponent(
-      accessToken,
-    )}; path=/; max-age=${SESSION_COOKIE_MAX_AGE}; SameSite=Lax`;
     if (user.role) {
       document.cookie = `agm_user_role=${encodeURIComponent(
         user.role,
@@ -100,8 +88,6 @@ export const authService = {
   },
 
   isAuthenticated(): boolean {
-    return (
-      !this.isSessionExpired() && !!localStorage.getItem("agm_access_token")
-    );
+    return !this.isSessionExpired() && !!this.getUser();
   },
 };

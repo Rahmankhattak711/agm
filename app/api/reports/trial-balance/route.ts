@@ -3,13 +3,23 @@ import { NextResponse } from "next/server";
 import { getStandardAccounts } from "@/lib/commercial-accounting";
 import { getAccountTransactionDetails } from "@/lib/report-helpers";
 import { TrialBalanceRow } from "@/lib/hooks/types";
+import {
+  getAuthUser,
+  hasRole,
+  unauthorized,
+  forbidden,
+} from "@/lib/auth-server";
 
 type Account = Awaited<
   ReturnType<typeof prisma.chartOfAccount.findMany>
 >[number];
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "ACCOUNTANT")) return forbidden();
+
     const std = await getStandardAccounts();
 
     const [

@@ -1,100 +1,230 @@
-import type { UserRole } from "@/app/generated/prisma";
-import {
-  canManageRole,
-  canManageUser,
-  forbidden,
-  getAuthUser,
-  isAdminRole,
-  unauthorized,
-  userSelect,
-} from "@/lib/auth-server";
-import prisma from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import type { UserRole } from "@/app/generated/prisma";
+import { requireUser, handleAuthError } from "@/lib/auth/session";
+import { hashPassword, validatePasswordPolicy } from "@/lib/auth/password";
+import { assertSameOrigin } from "@/lib/auth/origin";
+import { createAuditLog } from "@/lib/auth/audit";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function PATCH(request: Request, context: RouteContext) {
-  try {
-    const authUser = await getAuthUser(request);
-    if (!authUser) return unauthorized();
-    if (!isAdminRole(authUser.role)) return forbidden();
+const safeUserSelect = {
+  id: true,
+  email: true,
+  fullName: true,
+  role: true,
+  isActive: true,
+  mustChangePassword: true,
+  lastLoginAt: true,
+  failedLoginAttempts: true,
+  lockedUntil: true,
+  tokenVersion: true,
+  createdAt: true,
+  updatedAt: true,
+  deletedAt: true,
+  createdById: true,
+  createdBy: {
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+    },
+  },
+} as const;
 
+export async function GET(request: Request, context: RouteContext) {
+  try {
+    await requireUser(["SUPER_ADMIN"], { isApi: true });
     const { id } = await context.params;
-    const target = await prisma.user.findUnique({
-      where: { id },
-      select: userSelect,
+
+    const user = await prisma.user.findFirst({
+      where: { id, deletedAt: null },
+      select: safeUserSelect,
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    const authRes = handleAuthError(error);
+    if (authRes) return authRes;
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(request: Request, context: RouteContext) {
+  const originCheck = assertSameOrigin(request);
+  if (originCheck) return originCheck;
+
+  try {
+    const actor = await requireUser(["SUPER_ADMIN"], { isApi: true });
+    const { id } = await context.params;
+
+    const target = await prisma.user.findFirst({
+      where: { id, deletedAt: null },
     });
 
     if (!target) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const body = await request.json();
-    const { fullName, email, role, isActive, password } = body as {
-      fullName?: string;
-      email?: string;
-      role?: UserRole;
-      isActive?: boolean;
-      password?: string;
-    };
+    const body = await request.json().catch(() => ({}));
+    const { fullName, email, role, isActive, temporaryPassword, password } =
+      body as {
+        fullName?: string;
+        email?: string;
+        role?: UserRole;
+        isActive?: boolean;
+        temporaryPassword?: string;
+        password?: string;
+      };
 
-    const isSelf = authUser.id === id;
+    const isSelf = actor.id === target.id;
+    const isTargetSuperAdmin = target.role === "SUPER_ADMIN";
 
-    if (isSelf && (role !== undefined || isActive === false)) {
-      return NextResponse.json(
-        { error: "You cannot change your own role or deactivate yourself" },
-        { status: 403 },
-      );
+    if (role !== undefined && role !== target.role) {
+      if (isSelf) {
+        return NextResponse.json(
+          { error: "You cannot change your own role" },
+          { status: 403 },
+        );
+      }
+      if (isTargetSuperAdmin) {
+        return NextResponse.json(
+          { error: "Cannot change the role of a SUPER_ADMIN" },
+          { status: 403 },
+        );
+      }
+      if (role === "SUPER_ADMIN") {
+        return NextResponse.json(
+          { error: "Cannot assign SUPER_ADMIN role" },
+          { status: 403 },
+        );
+      }
     }
 
-    if (!isSelf && !canManageUser(authUser, target)) {
-      return forbidden();
+    if (isActive === false) {
+      if (isSelf) {
+        return NextResponse.json(
+          { error: "You cannot deactivate your own account" },
+          { status: 403 },
+        );
+      }
+      if (isTargetSuperAdmin) {
+        return NextResponse.json(
+          { error: "Cannot deactivate a SUPER_ADMIN account" },
+          { status: 403 },
+        );
+      }
     }
 
-    if (role !== undefined && !canManageRole(authUser, role)) {
-      return NextResponse.json(
-        { error: "You cannot assign this role" },
-        { status: 403 },
-      );
+    const auditChanges: Record<string, any> = {};
+    let shouldIncrementTokenVersion = false;
+    let shouldRevokeRefreshTokens = false;
+
+    const updateData: any = {};
+
+    if (typeof fullName === "string" && fullName.trim() !== target.fullName) {
+      updateData.fullName = fullName.trim();
+      auditChanges.fullName = {
+        from: target.fullName,
+        to: updateData.fullName,
+      };
     }
 
-    const data: {
-      fullName?: string;
-      email?: string;
-      role?: UserRole;
-      isActive?: boolean;
-      passwordHash?: string;
-    } = {};
-
-    if (fullName !== undefined) data.fullName = fullName.trim();
-    if (email !== undefined) {
-      const trimmedEmail = email.trim().toLowerCase();
-      if (trimmedEmail !== target.email.toLowerCase()) {
+    if (typeof email === "string") {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (normalizedEmail !== target.email.toLowerCase()) {
         const existing = await prisma.user.findUnique({
-          where: { email: trimmedEmail },
+          where: { email: normalizedEmail },
         });
         if (existing && existing.id !== id) {
           return NextResponse.json(
-            { error: "A user with this email already exists" },
+            { error: "A user with this email address already exists" },
             { status: 409 },
           );
         }
-        data.email = trimmedEmail;
+        updateData.email = normalizedEmail;
+        auditChanges.email = { from: target.email, to: normalizedEmail };
       }
     }
-    if (role !== undefined) data.role = role;
-    if (isActive !== undefined) data.isActive = isActive;
-    if (password) data.passwordHash = await bcrypt.hash(password, 10);
 
-    const updated = await prisma.user.update({
-      where: { id },
-      data,
-      select: userSelect,
+    if (role !== undefined && role !== target.role) {
+      updateData.role = role;
+      auditChanges.role = { from: target.role, to: role };
+      shouldIncrementTokenVersion = true;
+    }
+
+    if (isActive !== undefined && isActive !== target.isActive) {
+      updateData.isActive = isActive;
+      auditChanges.isActive = { from: target.isActive, to: isActive };
+      if (!isActive) {
+        shouldIncrementTokenVersion = true;
+        shouldRevokeRefreshTokens = true;
+      }
+    }
+
+    const pwdToSet = temporaryPassword || password;
+    if (pwdToSet) {
+      const policy = validatePasswordPolicy(pwdToSet);
+      if (!policy.valid) {
+        return NextResponse.json(
+          { error: policy.errors[0], errors: policy.errors },
+          { status: 400 },
+        );
+      }
+      updateData.passwordHash = await hashPassword(pwdToSet);
+      updateData.mustChangePassword = true;
+      updateData.failedLoginAttempts = 0;
+      updateData.lockedUntil = null;
+      auditChanges.passwordReset = true;
+      shouldIncrementTokenVersion = true;
+      shouldRevokeRefreshTokens = true;
+    }
+
+    if (shouldIncrementTokenVersion) {
+      updateData.tokenVersion = { increment: 1 };
+    }
+
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      const u = await tx.user.update({
+        where: { id },
+        data: updateData,
+        select: safeUserSelect,
+      });
+
+      if (shouldRevokeRefreshTokens) {
+        await tx.refreshToken.updateMany({
+          where: { userId: id, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
+      }
+
+      return u;
     });
 
-    return NextResponse.json(updated);
-  } catch {
+    await createAuditLog({
+      actorId: actor.id,
+      action: "USER_UPDATED",
+      entity: "User",
+      entityId: id,
+      metadata: {
+        changes: auditChanges,
+      },
+    });
+
+    return NextResponse.json(updatedUser);
+  } catch (error) {
+    const authRes = handleAuthError(error);
+    if (authRes) return authRes;
+    console.error("PATCH /api/users/[id] error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },
@@ -103,61 +233,70 @@ export async function PATCH(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(request: Request, context: RouteContext) {
-  try {
-    const authUser = await getAuthUser(request);
-    if (!authUser) return unauthorized();
-    if (!isAdminRole(authUser.role)) return forbidden();
+  const originCheck = assertSameOrigin(request);
+  if (originCheck) return originCheck;
 
+  try {
+    const actor = await requireUser(["SUPER_ADMIN"], { isApi: true });
     const { id } = await context.params;
 
-    if (authUser.id === id) {
+    if (actor.id === id) {
       return NextResponse.json(
         { error: "You cannot delete your own account" },
         { status: 403 },
       );
     }
 
-    const target = await prisma.user.findUnique({
-      where: { id },
-      select: userSelect,
+    const target = await prisma.user.findFirst({
+      where: { id, deletedAt: null },
     });
 
     if (!target) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (!canManageUser(authUser, target)) return forbidden();
-
-    if (authUser.role === "SUPER_ADMIN") {
-      try {
-        await prisma.refreshToken.deleteMany({ where: { userId: id } });
-        await prisma.user.delete({ where: { id } });
-        return NextResponse.json({
-          success: true,
-          message: "User permanently deleted",
-        });
-      } catch (e) {
-        const updated = await prisma.user.update({
-          where: { id },
-          data: { isActive: false },
-          select: userSelect,
-        });
-        return NextResponse.json({
-          success: true,
-          message: "User has linked operational records, deactivated instead",
-          user: updated,
-        });
-      }
+    if (target.role === "SUPER_ADMIN") {
+      return NextResponse.json(
+        { error: "Cannot delete a SUPER_ADMIN account" },
+        { status: 403 },
+      );
     }
 
-    const updated = await prisma.user.update({
-      where: { id },
-      data: { isActive: false },
-      select: userSelect,
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id },
+        data: {
+          deletedAt: new Date(),
+          isActive: false,
+          tokenVersion: { increment: 1 },
+        },
+      });
+
+      await tx.refreshToken.updateMany({
+        where: { userId: id, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
     });
 
-    return NextResponse.json({ success: true, user: updated });
-  } catch {
+    await createAuditLog({
+      actorId: actor.id,
+      action: "USER_DELETED",
+      entity: "User",
+      entityId: id,
+      metadata: {
+        email: target.email,
+        softDelete: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "User successfully deactivated and marked as deleted",
+    });
+  } catch (error) {
+    const authRes = handleAuthError(error);
+    if (authRes) return authRes;
+    console.error("DELETE /api/users/[id] error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

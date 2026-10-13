@@ -1,35 +1,60 @@
-import { authService } from "@/lib/auth-service";
+let activeRefreshPromise: Promise<boolean> | null = null;
 
-export async function authFetch(
-  url: string,
-  options: RequestInit = {},
-): Promise<Response> {
-  const token = authService.getAccessToken();
-  const headers = new Headers(options.headers);
-
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+async function executeRefresh(): Promise<boolean> {
+  if (activeRefreshPromise) {
+    return activeRefreshPromise;
   }
-  if (options.body && !headers.has("Content-Type")) {
+
+  activeRefreshPromise = (async () => {
+    try {
+      const res = await fetch("/api/auth/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      activeRefreshPromise = null;
+    }
+  })();
+
+  return activeRefreshPromise;
+}
+
+export async function fetchWithRefresh(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> {
+  const headers = new Headers(init?.headers);
+  if (init?.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
-  const res = await fetch(url, { ...options, headers });
+  let res = await fetch(input, { ...init, headers });
 
-  if (res.status === 401 && typeof window !== "undefined") {
-    const isAuthApi =
-      url.includes("/api/auth/signin") ||
-      url.includes("/api/auth/signup") ||
-      url.includes("/api/auth/signout");
-    const isAuthPage =
-      window.location.pathname.startsWith("/login") ||
-      window.location.pathname.startsWith("/signup");
+  const urlStr = typeof input === "string" ? input : input.toString();
+  const isAuthEndpoint =
+    urlStr.includes("/api/auth/login") ||
+    urlStr.includes("/api/auth/refresh") ||
+    urlStr.includes("/api/auth/logout") ||
+    urlStr.includes("/api/auth/signin") ||
+    urlStr.includes("/api/auth/signout");
 
-    if (!isAuthApi && !isAuthPage) {
-      authService.clearSession();
-      window.location.href = "/login?reset=1";
+  if (res.status === 401 && !isAuthEndpoint && typeof window !== "undefined") {
+    const refreshed = await executeRefresh();
+
+    if (refreshed) {
+      res = await fetch(input, { ...init, headers });
+    } else {
+      if (!window.location.pathname.startsWith("/login")) {
+        const currentPath = window.location.pathname + window.location.search;
+        window.location.href = `/login?next=${encodeURIComponent(currentPath)}`;
+      }
     }
   }
 
   return res;
 }
+
+export const authFetch = fetchWithRefresh;

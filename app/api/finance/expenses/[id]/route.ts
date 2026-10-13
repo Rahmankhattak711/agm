@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getAuthUser, unauthorized } from "@/lib/auth-server";
+import {
+  getAuthUser,
+  hasRole,
+  unauthorized,
+  forbidden,
+} from "@/lib/auth-server";
 
 export async function GET(
   req: NextRequest,
@@ -10,6 +15,9 @@ export async function GET(
     const user = await getAuthUser(req);
     if (!user) {
       return unauthorized();
+    }
+    if (!hasRole(user, "ACCOUNTANT")) {
+      return forbidden();
     }
 
     const { id } = await params;
@@ -50,6 +58,9 @@ export async function PATCH(
     const user = await getAuthUser(req);
     if (!user) {
       return unauthorized();
+    }
+    if (!hasRole(user, "ACCOUNTANT")) {
+      return forbidden();
     }
 
     const { id } = await params;
@@ -118,6 +129,9 @@ export async function DELETE(
     const user = await getAuthUser(req);
     if (!user) {
       return unauthorized();
+    }
+    if (!hasRole(user, "ACCOUNTANT")) {
+      return forbidden();
     }
 
     const { id } = await params;

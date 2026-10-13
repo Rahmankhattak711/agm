@@ -1,5 +1,11 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import {
+  getAuthUser,
+  hasRole,
+  unauthorized,
+  forbidden,
+} from "@/lib/auth-server";
 
 const MONTH_NAMES = [
   "FEBRUARY",
@@ -16,8 +22,12 @@ const MONTH_NAMES = [
   "JANUARY",
 ];
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (!hasRole(authUser, "ACCOUNTANT")) return forbidden();
+
     const [sums, vatEntries, allLines] = await Promise.all([
       prisma.vatEntry.groupBy({
         by: ["vatType"],

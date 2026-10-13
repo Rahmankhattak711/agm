@@ -276,7 +276,7 @@ const navGroups: NavGroup[] = [
         id: "admin",
         label: "User Management",
         icon: <UserAdminIcon />,
-        href: "/administration/users",
+        href: "/administration",
       },
     ],
   },

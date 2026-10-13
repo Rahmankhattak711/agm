@@ -41,6 +41,18 @@ model User {
 
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
+  mustChangePassword Boolean          @default(true) @map("must_change_password")
+  lastLoginAt      DateTime?         @map("last_login_at")
+  passwordChangedAt DateTime?        @map("password_changed_at")
+  failedLoginAttempts Int             @default(0) @map("failed_login_attempts")
+  lockedUntil      DateTime?         @map("locked_until")
+  tokenVersion     Int               @default(0) @map("token_version")
+  deletedAt        DateTime?         @map("deleted_at")
+  createdById      String?           @map("created_by_id") @db.Uuid
+  createdBy        User?             @relation("UserCreator", fields: [createdById], references: [id])
+  createdUsers     User[]            @relation("UserCreator")
+  auditLogs        AuditLog[]
+
   tokens           RefreshToken[]
   salesOrders      SalesOrder[]
   salesInvoices    SalesInvoice[]
@@ -61,18 +73,42 @@ model User {
   createdProjects      Project[]             @relation("ProjectCreator")
   recordedProjectCosts ProjectCost[]         @relation("CostRecorder")
 
+  @@index([role, isActive])
   @@map("users")
 }
 
 model RefreshToken {
+  id           String    @id @default(uuid()) @db.Uuid
+  tokenHash    String    @unique @map("token_hash")
+  familyId     String    @map("family_id") @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt    DateTime  @map("expires_at")
+  revokedAt    DateTime? @map("revoked_at")
+  replacedById String?   @map("replaced_by_id") @db.Uuid
+  userAgent    String?   @map("user_agent")
+  ip           String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+model AuditLog {
   id        String   @id @default(uuid()) @db.Uuid
-  token     String   @unique
-  userId    String   @map("user_id") @db.Uuid
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  revoked   Boolean  @default(false)
+  actorId   String?  @map("actor_id") @db.Uuid
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  metadata  Json?
+  ip        String?
   createdAt DateTime @default(now()) @map("created_at")
 
-  @@map("refresh_tokens")
+  @@index([entity, entityId])
+  @@index([actorId])
+  @@map("audit_logs")
 }
 
 enum AccountType {

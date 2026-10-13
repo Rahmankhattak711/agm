@@ -4,6 +4,7 @@ import {
   canModifyResource,
   forbidden,
   getAuthUser,
+  isAdminRole,
   unauthorized,
 } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
@@ -83,8 +84,8 @@ export async function PUT(
       );
     }
 
-    if (!canModifyResource(authUser, existing.createdById, ["ACCOUNTANT"])) {
-      return forbidden("Forbidden: You cannot edit another user's quotation");
+    if (!isAdminRole(authUser.role)) {
+      return forbidden("Forbidden: Only Admins can update quotations");
     }
 
     const body = await request.json();
@@ -247,8 +248,8 @@ export async function DELETE(
       );
     }
 
-    if (!canModifyResource(authUser, existing.createdById, ["ACCOUNTANT"])) {
-      return forbidden("Forbidden: You cannot delete another user's quotation");
+    if (!isAdminRole(authUser.role)) {
+      return forbidden("Forbidden: Only Admins can delete quotations");
     }
 
     await prisma.quotation.delete({
