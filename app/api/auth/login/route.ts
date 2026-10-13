@@ -104,7 +104,7 @@ export async function POST(request: Request) {
     if (!isPasswordValid) {
       const failedAttempts = user.failedLoginAttempts + 1;
       const maxFailed = env.MAX_FAILED_LOGINS || 5;
-      const lockoutMinutes = env.LOCKOUT_MINUTES || 15;
+      const lockoutMinutes = env.LOCKOUT_MINUTES || 480;
 
       let newLockedUntil: Date | null = null;
       if (failedAttempts >= maxFailed) {

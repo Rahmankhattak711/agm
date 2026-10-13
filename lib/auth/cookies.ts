@@ -12,7 +12,7 @@ export async function setAuthCookies(
   refreshToken: string,
 ) {
   const cookieStore = await cookies();
-  const accessTtlSeconds = (env.ACCESS_TOKEN_TTL_MINUTES || 15) * 60;
+  const accessTtlSeconds = (env.ACCESS_TOKEN_TTL_MINUTES || 480) * 60;
   const refreshTtlSeconds = (env.REFRESH_TOKEN_TTL_DAYS || 7) * 24 * 60 * 60;
 
   cookieStore.set({

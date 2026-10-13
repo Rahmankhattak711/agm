@@ -25,7 +25,7 @@ export async function signAccessToken(payload: {
   role: UserRole;
   v: number;
 }): Promise<string> {
-  const expiresMinutes = env.ACCESS_TOKEN_TTL_MINUTES || 15;
+  const expiresMinutes = env.ACCESS_TOKEN_TTL_MINUTES || 480;
   return new SignJWT({
     role: payload.role,
     v: payload.v,
