@@ -1,5 +1,5 @@
 import type { UserRole } from "@/app/generated/prisma";
-import { verifyAccessToken } from "@/lib/jwt";
+import { verifyAccessToken } from "@/lib/auth/tokens";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -9,6 +9,8 @@ export interface AuthUser {
   fullName: string;
   role: UserRole;
   isActive: boolean;
+  tokenVersion?: number;
+  mustChangePassword?: boolean;
 }
 
 export function getTokenFromRequest(request: Request): string | null {
@@ -17,30 +19,45 @@ export function getTokenFromRequest(request: Request): string | null {
 
   const cookieHeader = request.headers.get("cookie");
   if (cookieHeader) {
-    const match = cookieHeader.match(/agm_access_token=([^;]+)/);
+    const match =
+      cookieHeader.match(/access_token=([^;]+)/) ||
+      cookieHeader.match(/agm_access_token=([^;]+)/);
     if (match) return decodeURIComponent(match[1]);
   }
 
   return null;
 }
 
-export async function getAuthUser(request: Request): Promise<AuthUser | null> {
+export async function getAuthUser(
+  request: Request,
+  options?: { allowMustChangePassword?: boolean },
+): Promise<AuthUser | null> {
   const token = getTokenFromRequest(request);
   if (!token) return null;
 
   try {
-    const payload = verifyAccessToken(token) as { userId: string };
+    const payload = await verifyAccessToken(token);
+    if (!payload || !payload.sub) return null;
+
     const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
+      where: { id: payload.sub },
       select: {
         id: true,
         email: true,
         fullName: true,
         role: true,
         isActive: true,
+        tokenVersion: true,
+        deletedAt: true,
+        mustChangePassword: true,
       },
     });
-    if (!user || !user.isActive) return null;
+
+    if (!user || !user.isActive || user.deletedAt) return null;
+    if (user.tokenVersion !== payload.v) return null;
+    if (user.mustChangePassword && !options?.allowMustChangePassword)
+      return null;
+
     return user;
   } catch {
     return null;
@@ -72,21 +89,17 @@ export function canModifyResource(
 }
 
 export function canManageRole(actor: AuthUser, targetRole: UserRole): boolean {
-  if (actor.role === "SUPER_ADMIN") return true;
-  if (actor.role === "ADMIN") {
-    return (
-      targetRole === "ACCOUNTANT" ||
-      targetRole === "HR" ||
-      targetRole === "INVENTORY_MANAGER" ||
-      targetRole === "USER"
-    );
+  if (actor.role === "SUPER_ADMIN") {
+    return targetRole !== "SUPER_ADMIN";
   }
   return false;
 }
 
 export function canManageUser(actor: AuthUser, target: AuthUser): boolean {
-  if (actor.id === target.id) return false;
-  return canManageRole(actor, target.role);
+  if (actor.role === "SUPER_ADMIN") {
+    return actor.id !== target.id && target.role !== "SUPER_ADMIN";
+  }
+  return false;
 }
 
 export function unauthorized() {
@@ -107,4 +120,7 @@ export const userSelect = {
   isActive: true,
   createdAt: true,
   updatedAt: true,
+  mustChangePassword: true,
+  lastLoginAt: true,
+  tokenVersion: true,
 } as const;

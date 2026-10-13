@@ -28,12 +28,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => authService.getUser());
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const logout = useCallback(
-    (isExpired?: boolean | unknown) => {
+    async (isExpired?: boolean | unknown) => {
+      try {
+        await fetch("/api/auth/logout", { method: "POST" });
+      } catch {}
       authService.clearSession();
       setUser(null);
       if (isExpired === true) {
@@ -46,77 +49,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const checkAuth = useCallback(() => {
-    if (!authService.isAuthenticated() || authService.isSessionExpired()) {
+    if (!user && !authService.getUser()) {
       logout(true);
       return false;
     }
     return true;
-  }, [logout]);
+  }, [user, logout]);
 
   useEffect(() => {
-    const verifyDatabaseSession = async () => {
-      const currentUser = authService.getUser();
-      const token = authService.getAccessToken();
+    let isMounted = true;
 
-      if (currentUser && token && authService.isAuthenticated()) {
-        setUser(currentUser);
-        try {
-          const res = await fetch("/api/auth/me", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (!res.ok) {
+    const verifyDatabaseSession = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.user && isMounted) {
+            setUser(data.user);
+            authService.setSession(data.user);
+          }
+        } else if (res.status === 401) {
+          if (isMounted) {
             authService.clearSession();
             setUser(null);
-            router.push("/login?reset=1");
-          } else {
-            const data = await res.json();
-            if (data.user) {
-              setUser(data.user);
-            }
           }
-        } catch {}
-      } else {
-        if (authService.isSessionExpired()) {
-          authService.clearSession();
         }
-        setUser(null);
+      } catch {
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
     };
 
     verifyDatabaseSession();
-  }, [router]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const checkExpiration = () => {
-      if (authService.isSessionExpired()) {
-        logout(true);
-      }
-    };
-
-    const remainingMs = authService.getTimeUntilExpiry();
-    if (remainingMs <= 0) {
-      logout(true);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      logout(true);
-    }, remainingMs);
-
-    const intervalId = setInterval(checkExpiration, 60000);
-    window.addEventListener("focus", checkExpiration);
-    document.addEventListener("visibilitychange", checkExpiration);
 
     return () => {
-      clearTimeout(timeoutId);
-      clearInterval(intervalId);
-      window.removeEventListener("focus", checkExpiration);
-      document.removeEventListener("visibilitychange", checkExpiration);
+      isMounted = false;
     };
-  }, [user, logout]);
+  }, []);
 
   const login = useCallback(
     (accessToken: string, refreshToken: string, userData: User) => {

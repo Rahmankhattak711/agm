@@ -4,6 +4,7 @@ import {
   canModifyResource,
   forbidden,
   getAuthUser,
+  isAdminRole,
   unauthorized,
 } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
@@ -74,6 +75,9 @@ export async function POST(request: Request) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
+    if (!isAdminRole(authUser.role)) {
+      return forbidden("Forbidden: Only Admins can create quotations");
+    }
 
     const body = await request.json();
     const {
