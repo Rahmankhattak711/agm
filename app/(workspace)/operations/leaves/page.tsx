@@ -271,7 +271,7 @@ export default function LeavesPage() {
         },
       },
     ],
-    [canModify, deleteLeave, hasRole, updateStatus],
+    [canModify, deleteLeave, hasRole, updateStatus, confirm],
   );
 
   return (

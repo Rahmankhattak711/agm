@@ -462,7 +462,7 @@ export default function AttendancePage() {
         },
       },
     ],
-    [canModify, deleteAttendance, handleEditRecord],
+    [canModify, deleteAttendance, handleEditRecord, confirm],
   );
 
   return (
