@@ -123,8 +123,8 @@ export default function AdministrationPage() {
   if (authLoading) {
     return (
       <div className="w-full py-20 flex flex-col items-center justify-center space-y-3">
-        <div className="h-8 w-8 animate-spin rounded-full border-3 border-teal-600 border-t-transparent" />
-        <span className="text-xs text-slate-500 font-medium">Loading...</span>
+        <div className="h-8 w-8 animate-spin rounded-full border-3 border-agm-green border-t-transparent" />
+        <span className="text-xs text-agm-muted font-medium">Loading...</span>
       </div>
     );
   }
@@ -135,9 +135,9 @@ export default function AdministrationPage() {
   if (!isEffectiveSuperAdmin) {
     return (
       <div className="w-full py-20 text-center space-y-3">
-        <ProtectedIcon size={36} className="mx-auto text-amber-500" />
-        <h2 className="text-sm font-bold text-slate-800">Access Restricted</h2>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+        <ProtectedIcon size={36} className="mx-auto text-agm-navy" />
+        <h2 className="text-sm font-bold text-agm-text">Access Restricted</h2>
+        <p className="text-xs text-agm-muted max-w-sm mx-auto">
           User provisioning is restricted to the Super Administrator.
         </p>
       </div>
@@ -151,7 +151,7 @@ export default function AdministrationPage() {
         description="Manage user accounts, roles, and view system permissions."
         actions={
           <div className="flex items-center gap-2">
-            <div className="inline-flex p-0.5 rounded-lg bg-slate-100 border border-slate-200 text-xs">
+            <div className="inline-flex p-0.5 rounded-lg bg-agm-box-bg border border-agm-box-border text-xs">
               <Button
                 type="button"
                 variant="ghost"
@@ -159,8 +159,8 @@ export default function AdministrationPage() {
                 onClick={() => setActiveTab("users")}
                 className={`px-3 py-1.5 font-bold rounded-md transition cursor-pointer ${
                   activeTab === "users"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-agm-card text-agm-text shadow-xs"
+                    : "text-agm-muted hover:text-agm-text"
                 }`}
               >
                 Users ({users.length})
@@ -172,8 +172,8 @@ export default function AdministrationPage() {
                 onClick={() => setActiveTab("permissions")}
                 className={`px-3 py-1.5 font-bold rounded-md transition cursor-pointer ${
                   activeTab === "permissions"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-agm-card text-agm-text shadow-xs"
+                    : "text-agm-muted hover:text-agm-text"
                 }`}
               >
                 Permissions
@@ -211,7 +211,7 @@ export default function AdministrationPage() {
                     <button
                       type="button"
                       onClick={() => setSearch("")}
-                      className="text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+                      className="text-xs text-agm-subtle hover:text-agm-text cursor-pointer"
                     >
                       ✕
                     </button>
@@ -234,13 +234,13 @@ export default function AdministrationPage() {
               />
             </div>
 
-            <span className="text-[11px] text-slate-400 ml-auto font-medium">
+            <span className="text-[11px] text-agm-subtle ml-auto font-medium">
               {filteredUsers.length} user{filteredUsers.length === 1 ? "" : "s"}
             </span>
           </div>
 
           {error ? (
-            <div className="py-6 text-center text-xs text-rose-600 bg-rose-50 rounded-lg border border-rose-200">
+            <div className="py-6 text-center text-xs text-agm-navy bg-agm-box-bg rounded-lg border border-agm-box-border">
               {(error as any).message || "Failed to load users"}
             </div>
           ) : (

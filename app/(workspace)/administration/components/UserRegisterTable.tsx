@@ -3,8 +3,9 @@
 import type { UserItem } from "@/lib/hooks/types";
 import {
   Button,
-  Badge,
-  RegisterTable,
+  Table,
+  TableHead,
+  TableHeaderCell,
   TableBody,
   TableRow,
   TableCell,
@@ -12,7 +13,7 @@ import {
   EmptyState,
 } from "@/components/ui";
 import { EditIcon, ProtectedIcon, TrashIcon } from "@/components/icons";
-import { ALL_ROLES, ROLE_TONES, USER_TABLE_COLUMNS } from "../types";
+import { ALL_ROLES } from "../types";
 
 export interface UserRegisterTableProps {
   users: UserItem[];
@@ -34,127 +35,141 @@ export function UserRegisterTable({
   onAddUser,
 }: UserRegisterTableProps) {
   return (
-    <RegisterTable
-      title="Users Register"
-      countLabel={`${users.length} Accounts`}
-      columns={USER_TABLE_COLUMNS}
-    >
-      <TableBody className="divide-y divide-slate-100 font-medium">
-        {isLoading ? (
-          <TableLoading colSpan={6} rows={4} />
-        ) : users.length === 0 ? (
-          <TableRow className="hover:bg-transparent">
-            <TableCell colSpan={6} className="p-0 border-0">
-              <EmptyState
-                icon={<ProtectedIcon size={20} className="text-slate-400" />}
-                title="No users found"
-                description={
-                  search
-                    ? "Try adjusting your search."
-                    : "No accounts created yet."
-                }
-                actionLabel={!search ? "Add User" : undefined}
-                onAction={!search ? onAddUser : undefined}
-              />
-            </TableCell>
-          </TableRow>
-        ) : (
-          users.map((user) => {
-            const roleObj = ALL_ROLES.find((r) => r.value === user.role);
-            const isSelf = user.id === currentUserId;
-            const isTargetSuperAdmin = user.role === "SUPER_ADMIN";
-            const mustChangePwd = (user as any).mustChangePassword;
+    <div className="bg-agm-card rounded-2xl border border-agm-box-border shadow-xs overflow-hidden">
+      <Table>
+        <TableHead className="bg-agm-box-bg border-b border-agm-box-border">
+          <TableHeaderCell className="py-2.5 px-4 text-agm-muted font-bold">
+            User
+          </TableHeaderCell>
+          <TableHeaderCell className="py-2.5 px-4 text-agm-muted font-bold">
+            Email Address
+          </TableHeaderCell>
+          <TableHeaderCell className="py-2.5 px-4 text-agm-muted font-bold">
+            Role
+          </TableHeaderCell>
+          <TableHeaderCell className="py-2.5 px-4 text-agm-muted font-bold">
+            Status
+          </TableHeaderCell>
+          <TableHeaderCell className="py-2.5 px-4 text-agm-muted font-bold">
+            Password
+          </TableHeaderCell>
+          <TableHeaderCell
+            align="right"
+            className="py-2.5 px-4 text-agm-muted font-bold"
+          >
+            Actions
+          </TableHeaderCell>
+        </TableHead>
+        <TableBody className="divide-y divide-agm-border font-medium">
+          {isLoading ? (
+            <TableLoading colSpan={6} rows={5} />
+          ) : users.length === 0 ? (
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={6} className="py-12 px-4 border-0">
+                <EmptyState
+                  icon={<ProtectedIcon size={24} className="text-agm-subtle" />}
+                  title="No users found"
+                  description={
+                    search
+                      ? "Try adjusting your search criteria or role filters."
+                      : "No user accounts have been created yet."
+                  }
+                  actionLabel={!search ? "Add User" : undefined}
+                  onAction={!search ? onAddUser : undefined}
+                />
+              </TableCell>
+            </TableRow>
+          ) : (
+            users.map((user) => {
+              const roleObj = ALL_ROLES.find((r) => r.value === user.role);
+              const isSelf = user.id === currentUserId;
+              const isTargetSuperAdmin = user.role === "SUPER_ADMIN";
+              const mustChangePwd = (user as any).mustChangePassword;
 
-            return (
-              <TableRow
-                key={user.id}
-                onClick={() => onEdit(user)}
-                className="hover:bg-slate-50/80 transition-colors cursor-pointer"
-              >
-                <TableCell className="py-2.5 px-3 text-xs">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-slate-900 truncate max-w-[180px]">
+              return (
+                <TableRow
+                  key={user.id}
+                  onClick={() => onEdit(user)}
+                  className="hover:bg-agm-box-bg/70 transition-colors cursor-pointer group"
+                >
+                  <TableCell className="py-3 px-4 text-xs">
+                    <span className="font-bold text-agm-text group-hover:text-agm-green transition-colors">
                       {user.fullName}
                     </span>
                     {isSelf && (
-                      <Badge tone="emerald" size="xs">
-                        You
-                      </Badge>
+                      <span className="ml-1.5 text-[11px] font-normal text-agm-muted">
+                        (You)
+                      </span>
                     )}
-                  </div>
-                </TableCell>
+                  </TableCell>
 
-                <TableCell className="py-2.5 px-3 text-xs text-slate-600">
-                  {user.email}
-                </TableCell>
+                  <TableCell className="py-3 px-4 text-xs text-agm-muted">
+                    {user.email}
+                  </TableCell>
 
-                <TableCell
-                  align="center"
-                  className="py-2.5 px-3 text-center text-xs"
-                >
-                  <Badge tone={ROLE_TONES[user.role] || "slate"}>
+                  <TableCell className="py-3 px-4 text-xs text-agm-text">
                     {roleObj?.label || user.role}
-                  </Badge>
-                </TableCell>
+                  </TableCell>
 
-                <TableCell
-                  align="center"
-                  className="py-2.5 px-3 text-center text-xs"
-                >
-                  <Badge tone={user.isActive ? "emerald" : "rose"}>
-                    {user.isActive ? "Active" : "Disabled"}
-                  </Badge>
-                </TableCell>
+                  <TableCell className="py-3 px-4 text-xs">
+                    {user.isActive ? (
+                      <span className="text-agm-green font-semibold">
+                        Active
+                      </span>
+                    ) : (
+                      <span className="text-agm-muted font-normal">
+                        Disabled
+                      </span>
+                    )}
+                  </TableCell>
 
-                <TableCell
-                  align="center"
-                  className="py-2.5 px-3 text-center text-xs"
-                >
-                  {mustChangePwd ? (
-                    <Badge tone="amber">Reset Required</Badge>
-                  ) : (
-                    <span className="text-[10px] text-slate-400">Active</span>
-                  )}
-                </TableCell>
+                  <TableCell className="py-3 px-4 text-xs">
+                    {mustChangePwd ? (
+                      <span className="text-agm-navy font-semibold">
+                        Pending Reset
+                      </span>
+                    ) : (
+                      <span className="text-agm-subtle font-normal">
+                        Secured
+                      </span>
+                    )}
+                  </TableCell>
 
-                <TableCell className="py-2.5 px-3 text-right whitespace-nowrap">
-                  <div
-                    className="flex items-center justify-end gap-1"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEdit(user)}
-                      className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100 cursor-pointer transition"
-                      title="Edit"
+                  <TableCell className="py-3 px-4 text-right whitespace-nowrap">
+                    <div
+                      className="flex items-center justify-end gap-1"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <EditIcon size={20} className="w-5 h-5" strokeWidth={2} />
-                    </Button>
-                    {!isSelf && !isTargetSuperAdmin && (
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => onDelete(user)}
-                        className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 cursor-pointer transition"
-                        title="Deactivate"
+                        onClick={() => onEdit(user)}
+                        className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-agm-text rounded-lg hover:bg-agm-box-bg cursor-pointer transition"
+                        title="Edit Account"
                       >
-                        <TrashIcon
-                          size={20}
-                          className="w-5 h-5"
-                          strokeWidth={2}
-                        />
+                        <EditIcon size={18} className="w-[18px] h-[18px]" />
                       </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })
-        )}
-      </TableBody>
-    </RegisterTable>
+                      {!isSelf && !isTargetSuperAdmin && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onDelete(user)}
+                          className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-agm-navy rounded-lg hover:bg-agm-box-bg cursor-pointer transition"
+                          title="Deactivate Account"
+                        >
+                          <TrashIcon size={18} className="w-[18px] h-[18px]" />
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

@@ -26,21 +26,24 @@ export const Table: React.FC<TableProps> = ({
 export const TableHead: React.FC<
   React.HTMLAttributes<HTMLTableSectionElement>
 > = ({ children, className = "", ...props }) => {
-  const hasRow = React.Children.toArray(children).some(
+  const childrenArray = React.Children.toArray(children);
+  const isHeaderCells = childrenArray.some(
     (child) =>
       React.isValidElement(child) &&
-      (child.type === TableRow ||
-        (typeof child.type === "string" && child.type === "tr")),
+      (child.type === TableHeaderCell ||
+        (child.type as any)?.name === "TableHeaderCell" ||
+        (child.type as any)?.displayName === "TableHeaderCell" ||
+        (typeof child.type === "string" && child.type.toLowerCase() === "th")),
   );
 
   return (
     <thead className={className} {...props}>
-      {hasRow ? (
-        children
-      ) : (
-        <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-wider font-semibold">
+      {isHeaderCells ? (
+        <tr className="border-b border-agm-box-border text-agm-muted uppercase tracking-wider font-bold">
           {children}
         </tr>
+      ) : (
+        children
       )}
     </thead>
   );
@@ -62,7 +65,7 @@ export const TableHeaderCell: React.FC<
     .replace(/\bpy-3\b/g, "py-2");
   return (
     <th
-      className={`py-2 px-3 text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider text-slate-600 whitespace-nowrap ${alignClass} ${cleanClassName}`}
+      className={`py-2 px-3 text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider text-agm-muted whitespace-nowrap ${alignClass} ${cleanClassName}`}
       {...props}
     >
       {children}
@@ -74,7 +77,7 @@ export const TableBody: React.FC<
   React.HTMLAttributes<HTMLTableSectionElement>
 > = ({ children, className = "", ...props }) => {
   return (
-    <tbody className={`divide-y divide-slate-100 ${className}`} {...props}>
+    <tbody className={`divide-y divide-agm-border ${className}`} {...props}>
       {children}
     </tbody>
   );
@@ -87,7 +90,7 @@ export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({
 }) => {
   return (
     <tr
-      className={`hover:bg-slate-50/70 transition-colors ${className}`}
+      className={`hover:bg-agm-box-bg/70 transition-colors ${className}`}
       {...props}
     >
       {children}
@@ -207,8 +210,16 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-4 print:p-0 print:bg-transparent print:static print:block print:inset-auto print:z-auto">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-agm-charcoal/40 backdrop-blur-xs p-3 sm:p-4 print:p-0 print:bg-transparent print:static print:block print:inset-auto print:z-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && closeOnOutsideClick) {
+          onClose();
+        }
+      }}
+    >
       <OutsideClickHandler
+        display="contents"
         onOutsideClick={() => {
           if (closeOnOutsideClick) {
             onClose();
@@ -216,16 +227,17 @@ export const Modal: React.FC<ModalProps> = ({
         }}
       >
         <div
-          className={`w-full ${widthClass[maxWidth]} max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:w-full print:max-w-full print:p-0`}
+          onClick={(e) => e.stopPropagation()}
+          className={`w-full ${widthClass[maxWidth]} max-w-[calc(100vw-1.5rem)] bg-agm-card rounded-2xl shadow-xl border border-agm-box-border overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:w-full print:max-w-full print:p-0`}
         >
-          <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50/50 print:hidden">
-            <h3 className="font-bold text-sm text-slate-900 truncate pr-2">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-agm-box-border bg-agm-box-bg print:hidden">
+            <h3 className="font-bold text-sm text-agm-text truncate pr-2">
               {title}
             </h3>
             <button
               type="button"
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 text-lg leading-none cursor-pointer p-1"
+              className="text-agm-subtle hover:text-agm-text text-lg leading-none cursor-pointer p-1"
             >
               ✕
             </button>

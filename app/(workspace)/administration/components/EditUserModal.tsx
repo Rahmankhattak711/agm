@@ -92,7 +92,7 @@ export function EditUserModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={`Edit User: ${user?.fullName || ""}`}
+      title="Edit User"
       maxWidth="lg"
     >
       <form
@@ -101,75 +101,105 @@ export function EditUserModal({
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="space-y-3.5 text-xs"
+        className="space-y-3.5 text-xs w-full"
       >
         {formError && (
-          <div className="p-2.5 rounded-lg bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
+          <div className="p-3 bg-agm-box-bg border border-agm-box-border rounded-lg text-agm-navy font-semibold text-xs">
             {formError}
           </div>
         )}
 
-        <form.Field
-          name="fullName"
-          validators={{
-            onChange: ({ value }) =>
-              !value.trim() ? "Full name is required" : undefined,
-          }}
-        >
-          {(field) => <FormInput field={field} label="Full Name *" required />}
-        </form.Field>
-
-        <form.Field
-          name="email"
-          validators={{
-            onChange: ({ value }) =>
-              !value.trim()
-                ? "Email is required"
-                : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-                  ? "Invalid email format"
-                  : undefined,
-          }}
-        >
-          {(field) => (
-            <FormInput
-              field={field}
-              type="email"
-              label="Email Address *"
-              required
-            />
-          )}
-        </form.Field>
-
-        {!isTargetSuperAdmin && !isSelf && (
-          <form.Field name="role">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <form.Field
+            name="fullName"
+            validators={{
+              onChange: ({ value }) =>
+                !value.trim() ? "Full name is required" : undefined,
+            }}
+          >
             {(field) => (
-              <FormSelect
+              <FormInput
                 field={field}
-                label="Role *"
+                label="Full Name *"
+                placeholder="Full Name"
                 required
-                options={ASSIGNABLE_ROLES.map((r) => ({
-                  value: r.value,
-                  label: r.label,
-                }))}
               />
             )}
           </form.Field>
-        )}
 
-        {!isTargetSuperAdmin && !isSelf && (
-          <form.Field name="isActive">
+          <form.Field
+            name="email"
+            validators={{
+              onChange: ({ value }) =>
+                !value.trim()
+                  ? "Email is required"
+                  : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+                    ? "Invalid email format"
+                    : undefined,
+            }}
+          >
             {(field) => (
-              <FormSelect
+              <FormInput
                 field={field}
-                label="Status"
-                options={[
-                  { value: "true", label: "Active" },
-                  { value: "false", label: "Disabled" },
-                ]}
+                type="email"
+                label="Email Address *"
+                placeholder="user@agm.ae"
+                required
               />
             )}
           </form.Field>
-        )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {!isTargetSuperAdmin && !isSelf ? (
+            <form.Field name="role">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  label="Role *"
+                  required
+                  options={ASSIGNABLE_ROLES.map((r) => ({
+                    value: r.value,
+                    label: r.label,
+                  }))}
+                />
+              )}
+            </form.Field>
+          ) : (
+            <div>
+              <label className="block text-xs font-bold text-agm-text mb-1">
+                Role
+              </label>
+              <div className="px-3 py-2 rounded-xl bg-agm-box-bg border border-agm-box-border text-xs font-semibold text-agm-text">
+                {user?.role} (Protected)
+              </div>
+            </div>
+          )}
+
+          {!isTargetSuperAdmin && !isSelf ? (
+            <form.Field name="isActive">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  label="Status"
+                  options={[
+                    { value: "true", label: "Active" },
+                    { value: "false", label: "Disabled" },
+                  ]}
+                />
+              )}
+            </form.Field>
+          ) : (
+            <div>
+              <label className="block text-xs font-bold text-agm-text mb-1">
+                Status
+              </label>
+              <div className="px-3 py-2 rounded-xl bg-agm-green-soft border border-agm-box-border text-xs font-bold text-agm-green">
+                Active
+              </div>
+            </div>
+          )}
+        </div>
 
         <form.Field
           name="temporaryPassword"
@@ -188,17 +218,16 @@ export function EditUserModal({
             <FormInput
               field={field}
               type="password"
-              label="Reset Password (optional)"
+              label="Reset Password"
               placeholder="Leave blank to keep current"
             />
           )}
         </form.Field>
 
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+        <div className="flex justify-end gap-2.5 pt-3 border-t border-agm-box-border">
           <Button
             type="button"
             variant="outline"
-            size="sm"
             onClick={handleClose}
             className="cursor-pointer"
           >
