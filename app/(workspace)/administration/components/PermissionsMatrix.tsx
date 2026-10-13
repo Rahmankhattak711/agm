@@ -12,70 +12,88 @@ import {
 export function PermissionsMatrix() {
   return (
     <div className="space-y-6">
-      <div className="bg-white text-slate-800 rounded-xl border border-slate-200 p-5 shadow-xs overflow-hidden">
+      <div className="bg-agm-card text-agm-text rounded-2xl border border-agm-box-border shadow-xs overflow-hidden">
         <Table className="w-full text-left">
-          <TableHead className="border-b border-slate-200 bg-slate-50/50">
+          <TableHead className="border-b border-agm-box-border bg-agm-box-bg">
             <TableRow>
-              <TableHeaderCell className="py-3 px-4 font-mono text-slate-700 text-xs font-bold">
+              <TableHeaderCell className="py-3 px-4 font-mono text-agm-text text-xs font-bold">
                 USER
               </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-mono text-slate-700 text-xs font-bold">
+              <TableHeaderCell className="py-3 px-4 font-mono text-agm-text text-xs font-bold">
                 ACCOUNTANT
               </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-mono text-slate-700 text-xs font-bold">
+              <TableHeaderCell className="py-3 px-4 font-mono text-agm-text text-xs font-bold">
                 HR
               </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-mono text-slate-700 text-xs font-bold">
+              <TableHeaderCell className="py-3 px-4 font-mono text-agm-text text-xs font-bold">
                 INVENTORY_MANAGER
               </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-mono text-slate-700 text-xs font-bold">
+              <TableHeaderCell className="py-3 px-4 font-mono text-agm-text text-xs font-bold">
                 ADMIN
               </TableHeaderCell>
             </TableRow>
           </TableHead>
-          <TableBody className="divide-y divide-slate-100 text-xs font-mono">
-            <TableRow className="hover:bg-slate-50/60">
-              <TableCell className="py-3.5 px-4 text-slate-600">view</TableCell>
-              <TableCell className="py-3.5 px-4 text-slate-600">view</TableCell>
-              <TableCell className="py-3.5 px-4 text-slate-600">view</TableCell>
-              <TableCell className="py-3.5 px-4 text-slate-600">view</TableCell>
-              <TableCell className="py-3.5 px-4 text-emerald-600 font-bold">
+          <TableBody className="divide-y divide-agm-border text-xs font-mono">
+            <TableRow className="hover:bg-agm-box-bg/70 transition-colors">
+              <TableCell className="py-3.5 px-4 text-agm-muted">view</TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-muted">view</TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-muted">view</TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-muted">view</TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-green font-bold">
                 create/update/delete
               </TableCell>
             </TableRow>
 
-            <TableRow className="hover:bg-slate-50/60">
-              <TableCell className="py-3.5 px-4 text-slate-400">none</TableCell>
-              <TableCell className="py-3.5 px-4 text-teal-600 font-bold">
+            <TableRow className="hover:bg-agm-box-bg/70 transition-colors">
+              <TableCell className="py-3.5 px-4 text-agm-subtle">
+                none
+              </TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-navy font-bold">
                 create/update
               </TableCell>
-              <TableCell className="py-3.5 px-4 text-slate-400">none</TableCell>
-              <TableCell className="py-3.5 px-4 text-slate-400">none</TableCell>
-              <TableCell className="py-3.5 px-4 text-teal-600 font-bold">
-                create/update
+              <TableCell className="py-3.5 px-4 text-agm-subtle">
+                none
               </TableCell>
-            </TableRow>
-
-            <TableRow className="hover:bg-slate-50/60">
-              <TableCell className="py-3.5 px-4 text-slate-400">none</TableCell>
-              <TableCell className="py-3.5 px-4 text-slate-400">none</TableCell>
-              <TableCell className="py-3.5 px-4 text-teal-600 font-bold">
-                create/update
+              <TableCell className="py-3.5 px-4 text-agm-subtle">
+                none
               </TableCell>
-              <TableCell className="py-3.5 px-4 text-slate-400">none</TableCell>
-              <TableCell className="py-3.5 px-4 text-teal-600 font-bold">
+              <TableCell className="py-3.5 px-4 text-agm-navy font-bold">
                 create/update
               </TableCell>
             </TableRow>
 
-            <TableRow className="hover:bg-slate-50/60">
-              <TableCell className="py-3.5 px-4 text-slate-400">none</TableCell>
-              <TableCell className="py-3.5 px-4 text-slate-400">none</TableCell>
-              <TableCell className="py-3.5 px-4 text-slate-400">none</TableCell>
-              <TableCell className="py-3.5 px-4 text-teal-600 font-bold">
+            <TableRow className="hover:bg-agm-box-bg/70 transition-colors">
+              <TableCell className="py-3.5 px-4 text-agm-subtle">
+                none
+              </TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-subtle">
+                none
+              </TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-navy font-bold">
                 create/update
               </TableCell>
-              <TableCell className="py-3.5 px-4 text-teal-600 font-bold">
+              <TableCell className="py-3.5 px-4 text-agm-subtle">
+                none
+              </TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-navy font-bold">
+                create/update
+              </TableCell>
+            </TableRow>
+
+            <TableRow className="hover:bg-agm-box-bg/70 transition-colors">
+              <TableCell className="py-3.5 px-4 text-agm-subtle">
+                none
+              </TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-subtle">
+                none
+              </TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-subtle">
+                none
+              </TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-navy font-bold">
+                create/update
+              </TableCell>
+              <TableCell className="py-3.5 px-4 text-agm-navy font-bold">
                 create/update
               </TableCell>
             </TableRow>
@@ -83,42 +101,42 @@ export function PermissionsMatrix() {
         </Table>
       </div>
 
-      <div className="bg-white text-slate-800 rounded-xl border border-slate-200 p-5 shadow-xs overflow-hidden">
+      <div className="bg-agm-card text-agm-text rounded-2xl border border-agm-box-border shadow-xs overflow-hidden">
         <Table className="w-full text-left">
-          <TableHead className="border-b border-slate-200 bg-slate-50/50">
+          <TableHead className="border-b border-agm-box-border bg-agm-box-bg">
             <TableRow>
-              <TableHeaderCell className="py-3 px-4 font-mono text-slate-700 text-xs font-bold w-1/2">
+              <TableHeaderCell className="py-3 px-4 font-mono text-agm-text text-xs font-bold w-1/2">
                 Role
               </TableHeaderCell>
-              <TableHeaderCell className="py-3 px-4 font-mono text-slate-700 text-xs font-bold w-1/2">
+              <TableHeaderCell className="py-3 px-4 font-mono text-agm-text text-xs font-bold w-1/2">
                 Quotations
               </TableHeaderCell>
             </TableRow>
           </TableHead>
-          <TableBody className="divide-y divide-slate-100 text-xs font-mono">
-            <TableRow className="hover:bg-slate-50/60">
-              <TableCell className="py-3.5 px-4 font-bold text-slate-900">
+          <TableBody className="divide-y divide-agm-border text-xs font-mono">
+            <TableRow className="hover:bg-agm-box-bg/70 transition-colors">
+              <TableCell className="py-3.5 px-4 font-bold text-agm-text">
                 SUPER_ADMIN
               </TableCell>
-              <TableCell className="py-3.5 px-4 text-slate-700 font-medium">
+              <TableCell className="py-3.5 px-4 text-agm-muted font-medium">
                 full access
               </TableCell>
             </TableRow>
 
-            <TableRow className="hover:bg-slate-50/60">
-              <TableCell className="py-3.5 px-4 font-bold text-slate-900">
+            <TableRow className="hover:bg-agm-box-bg/70 transition-colors">
+              <TableCell className="py-3.5 px-4 font-bold text-agm-text">
                 ADMIN
               </TableCell>
-              <TableCell className="py-3.5 px-4 text-emerald-600 font-bold">
+              <TableCell className="py-3.5 px-4 text-agm-green font-bold">
                 create / update / delete
               </TableCell>
             </TableRow>
 
-            <TableRow className="hover:bg-slate-50/60">
-              <TableCell className="py-3.5 px-4 text-slate-700 font-medium">
+            <TableRow className="hover:bg-agm-box-bg/70 transition-colors">
+              <TableCell className="py-3.5 px-4 text-agm-text font-medium">
                 ACCOUNTANT, HR, INVENTORY_MANAGER, USER
               </TableCell>
-              <TableCell className="py-3.5 px-4 text-slate-500">
+              <TableCell className="py-3.5 px-4 text-agm-subtle">
                 view only
               </TableCell>
             </TableRow>

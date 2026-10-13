@@ -127,7 +127,7 @@ export const CreateSupplierBillModal: React.FC<
       });
     }
     prevOpenRef.current = isOpen;
-  }, [isOpen]);
+  }, [isOpen, createBillForm]);
 
   const addItem = () => {
     const current = createBillForm.getFieldValue("items");

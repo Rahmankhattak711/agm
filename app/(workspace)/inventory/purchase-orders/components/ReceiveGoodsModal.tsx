@@ -37,7 +37,7 @@ export const ReceiveGoodsModal: React.FC<ReceiveGoodsModalProps> = ({
         receiveWarehouseId: warehouses[0]?.id || "",
       });
     }
-  }, [po, warehouses]);
+  }, [po, warehouses, receiveForm]);
 
   return (
     <Modal

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useAuth } from "@/context/AuthContext";
 import { formatAed } from "@/lib/utils/format";
@@ -84,26 +84,29 @@ export default function JournalEntriesPage() {
     }
   };
 
-  const getEntryProject = (je: any) => {
-    if (!projects || projects.length === 0) return null;
-    return (
-      projects.find((p) => {
-        if (
-          je.reference &&
-          (je.reference === p.projectCode ||
-            je.reference.includes(p.projectCode))
-        )
-          return true;
-        if (
-          je.description &&
-          (je.description.includes(`[${p.projectCode}`) ||
-            je.description.includes(p.name))
-        )
-          return true;
-        return false;
-      }) || null
-    );
-  };
+  const getEntryProject = useCallback(
+    (je: any) => {
+      if (!projects || projects.length === 0) return null;
+      return (
+        projects.find((p) => {
+          if (
+            je.reference &&
+            (je.reference === p.projectCode ||
+              je.reference.includes(p.projectCode))
+          )
+            return true;
+          if (
+            je.description &&
+            (je.description.includes(`[${p.projectCode}`) ||
+              je.description.includes(p.name))
+          )
+            return true;
+          return false;
+        }) || null
+      );
+    },
+    [projects],
+  );
 
   const form = useForm({
     defaultValues: {
@@ -271,7 +274,7 @@ export default function JournalEntriesPage() {
       if (statusFilter === "DRAFT") return matchesSearch && !entry.isPosted;
       return matchesSearch;
     });
-  }, [journalEntries, search, statusFilter, projects]);
+  }, [journalEntries, search, statusFilter, getEntryProject]);
 
   const handleOpenAddModal = () => {
     setEditingId(null);

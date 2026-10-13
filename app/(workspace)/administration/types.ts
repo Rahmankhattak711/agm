@@ -1,39 +1,30 @@
-import type { BadgeTone, RegisterColumn } from "@/components/ui";
-
-export const ROLE_TONES: Record<string, BadgeTone> = {
-  SUPER_ADMIN: "purple",
-  ADMIN: "sky",
-  ACCOUNTANT: "emerald",
-  HR: "teal",
-  INVENTORY_MANAGER: "amber",
-  USER: "slate",
-};
+import type { RegisterColumn } from "@/components/ui";
 
 export const ASSIGNABLE_ROLES = [
   {
     value: "ADMIN",
     label: "Admin",
-    color: "bg-sky-50 text-sky-800 border-sky-200",
+    color: "bg-agm-green-soft text-agm-green border-agm-box-border",
   },
   {
     value: "ACCOUNTANT",
     label: "Accountant",
-    color: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    color: "bg-agm-box-bg text-agm-text border-agm-box-border",
   },
   {
     value: "HR",
     label: "HR Specialist",
-    color: "bg-teal-50 text-teal-800 border-teal-200",
+    color: "bg-agm-box-bg text-agm-text border-agm-box-border",
   },
   {
     value: "INVENTORY_MANAGER",
     label: "Inventory Manager",
-    color: "bg-amber-50 text-amber-800 border-amber-200",
+    color: "bg-agm-box-bg text-agm-text border-agm-box-border",
   },
   {
     value: "USER",
     label: "Standard User",
-    color: "bg-slate-100 text-slate-700 border-slate-200",
+    color: "bg-agm-box-bg text-agm-muted border-agm-box-border",
   },
 ];
 
@@ -41,7 +32,7 @@ export const ALL_ROLES = [
   {
     value: "SUPER_ADMIN",
     label: "Super Admin",
-    color: "bg-purple-50 text-purple-800 border-purple-200",
+    color: "bg-agm-navy text-white border-agm-navy",
   },
   ...ASSIGNABLE_ROLES,
 ];

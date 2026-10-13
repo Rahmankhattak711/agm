@@ -35,8 +35,8 @@ export function CreateUserModal({
     defaultValues: {
       fullName: "",
       email: "",
-      temporaryPassword: "",
       role: "USER",
+      temporaryPassword: "",
     },
     onSubmit: async ({ value }) => {
       setFormError("");
@@ -44,8 +44,8 @@ export function CreateUserModal({
         await onSubmit({
           fullName: value.fullName.trim(),
           email: value.email.trim(),
-          temporaryPassword: value.temporaryPassword,
           role: value.role,
+          temporaryPassword: value.temporaryPassword,
         });
         form.reset();
       } catch (err: any) {
@@ -61,12 +61,7 @@ export function CreateUserModal({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Add User Account"
-      maxWidth="3xl"
-    >
+    <Modal isOpen={isOpen} onClose={handleClose} title="Add User" maxWidth="lg">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -76,95 +71,98 @@ export function CreateUserModal({
         className="space-y-3.5 text-xs w-full"
       >
         {formError && (
-          <div className="p-2.5 rounded-lg bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
+          <div className="p-3 bg-agm-box-bg border border-agm-box-border rounded-lg text-agm-navy font-semibold text-xs">
             {formError}
           </div>
         )}
 
-        <form.Field
-          name="fullName"
-          validators={{
-            onChange: ({ value }) =>
-              !value.trim() ? "Full name is required" : undefined,
-          }}
-        >
-          {(field) => (
-            <FormInput
-              field={field}
-              label="Full Name *"
-              placeholder="e.g. John Doe"
-              required
-            />
-          )}
-        </form.Field>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <form.Field
+            name="fullName"
+            validators={{
+              onChange: ({ value }) =>
+                !value.trim() ? "Full name is required" : undefined,
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                label="Full Name *"
+                placeholder="Full Name"
+                required
+              />
+            )}
+          </form.Field>
 
-        <form.Field
-          name="email"
-          validators={{
-            onChange: ({ value }) =>
-              !value.trim()
-                ? "Email is required"
-                : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-                  ? "Invalid email format"
-                  : undefined,
-          }}
-        >
-          {(field) => (
-            <FormInput
-              field={field}
-              type="email"
-              label="Email Address *"
-              placeholder="user@agm.ae"
-              required
-            />
-          )}
-        </form.Field>
+          <form.Field
+            name="email"
+            validators={{
+              onChange: ({ value }) =>
+                !value.trim()
+                  ? "Email is required"
+                  : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+                    ? "Invalid email format"
+                    : undefined,
+            }}
+          >
+            {(field) => (
+              <FormInput
+                field={field}
+                type="email"
+                label="Email Address *"
+                placeholder="user@agm.ae"
+                required
+              />
+            )}
+          </form.Field>
+        </div>
 
-        <form.Field
-          name="temporaryPassword"
-          validators={{
-            onChange: ({ value }) => {
-              if (!value) return "Password is required";
-              if (value.length < 12) return "Must be at least 12 characters";
-              if (!/[A-Z]/.test(value)) return "Must include uppercase letter";
-              if (!/[a-z]/.test(value)) return "Must include lowercase letter";
-              if (!/[0-9]/.test(value)) return "Must include number";
-              return undefined;
-            },
-          }}
-        >
-          {(field) => (
-            <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <form.Field name="role">
+            {(field) => (
+              <FormSelect
+                field={field}
+                label="Role *"
+                required
+                options={ASSIGNABLE_ROLES.map((r) => ({
+                  value: r.value,
+                  label: r.label,
+                }))}
+              />
+            )}
+          </form.Field>
+
+          <form.Field
+            name="temporaryPassword"
+            validators={{
+              onChange: ({ value }) => {
+                if (!value) return "Password is required";
+                if (value.length < 12) return "Must be at least 12 characters";
+                if (!/[A-Z]/.test(value))
+                  return "Must include uppercase letter";
+                if (!/[a-z]/.test(value))
+                  return "Must include lowercase letter";
+                if (!/[0-9]/.test(value)) return "Must include number";
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
               <FormInput
                 field={field}
                 type="password"
                 label="Temporary Password *"
-                placeholder="Min 12 chars (upper, lower, digit)"
+                placeholder="Min 12 characters"
                 required
               />
-            </div>
-          )}
-        </form.Field>
+            )}
+          </form.Field>
+        </div>
 
-        <form.Field name="role">
-          {(field) => (
-            <FormSelect
-              field={field}
-              label="Role *"
-              required
-              options={ASSIGNABLE_ROLES.map((r) => ({
-                value: r.value,
-                label: r.label,
-              }))}
-            />
-          )}
-        </form.Field>
-
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+        <div className="flex justify-end gap-2.5 pt-3 border-t border-agm-box-border">
           <Button
             type="button"
             variant="outline"
-            size="sm"
             onClick={handleClose}
             className="cursor-pointer"
           >
@@ -175,7 +173,7 @@ export function CreateUserModal({
             loading={isPending}
             className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
           >
-            Create Account
+            Create User
           </FormSubmit>
         </div>
       </form>
