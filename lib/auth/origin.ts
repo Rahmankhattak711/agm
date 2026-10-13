@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 export function assertSameOrigin(req: Request): NextResponse | null {
   const origin = req.headers.get("origin");
   const host = req.headers.get("host");
+  const forwardedHost = req.headers.get("x-forwarded-host");
 
   if (!origin) {
     const referer = req.headers.get("referer");
@@ -14,7 +15,8 @@ export function assertSameOrigin(req: Request): NextResponse | null {
         const expectedUrl = new URL(env.APP_ORIGIN);
         if (
           refererUrl.origin === expectedUrl.origin ||
-          (host && refererUrl.host === host)
+          (host && refererUrl.host === host) ||
+          (forwardedHost && refererUrl.host === forwardedHost)
         ) {
           return null;
         }
@@ -28,10 +30,13 @@ export function assertSameOrigin(req: Request): NextResponse | null {
 
   const expectedOrigin = new URL(env.APP_ORIGIN).origin;
   if (origin !== expectedOrigin) {
-    if (host) {
+    if (host || forwardedHost) {
       try {
         const originUrl = new URL(origin);
-        if (originUrl.host === host) {
+        if (
+          (host && originUrl.host === host) ||
+          (forwardedHost && originUrl.host === forwardedHost)
+        ) {
           return null;
         }
       } catch {}
