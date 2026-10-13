@@ -70,7 +70,7 @@ export const DisbursePaymentModal: React.FC<DisbursePaymentModalProps> = ({
         referenceNumber: "",
       });
     }
-  }, [bill]);
+  }, [bill, paymentForm]);
 
   return (
     <Modal
