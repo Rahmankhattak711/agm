@@ -10,28 +10,12 @@ export type CardVariant =
   | "success"
   | "info"
   | "primary"
-  | "emerald"
-  | "blue"
-  | "amber"
-  | "rose"
-  | "indigo"
-  | "purple"
-  | "teal"
-  | "sky"
-  | "slate";
+  | string;
 
 export type CardAccentColor =
-  | "emerald"
-  | "blue"
-  | "amber"
-  | "slate"
-  | "indigo"
-  | "rose"
-  | "purple"
-  | "teal"
-  | "sky"
+  | "default"
   | "neutral"
-  | "default";
+  | string;
 
 export interface CardProps {
   id?: string;
@@ -54,142 +38,12 @@ export interface CardProps {
   children?: React.ReactNode;
 }
 
-interface VariantStyle {
-  container: string;
-  title: string;
-  value: string;
-  subtitle: string;
-  iconBg: string;
-  badge: string;
-}
-
-const VARIANT_STYLES: Record<string, VariantStyle> = {
-  default: {
-    container:
-      "bg-white border-slate-200/90 hover:border-slate-300 text-slate-900 shadow-2xs hover:shadow-xs",
-    title: "text-slate-500",
-    value: "text-slate-900",
-    subtitle: "text-slate-400",
-    iconBg: "bg-slate-50 text-slate-700 border border-slate-200/80",
-    badge: "bg-slate-50 text-slate-700 border-slate-200",
-  },
-  emerald: {
-    container:
-      "bg-white border-slate-200/90 hover:border-emerald-300 text-slate-900 shadow-2xs hover:shadow-xs",
-    title: "text-emerald-700",
-    value: "text-slate-900",
-    subtitle: "text-slate-400",
-    iconBg: "bg-emerald-50 text-emerald-800 border border-emerald-200",
-    badge: "bg-emerald-50 text-emerald-800 border-emerald-200",
-  },
-  rose: {
-    container:
-      "bg-white border-slate-200/90 hover:border-rose-300 text-slate-900 shadow-2xs hover:shadow-xs",
-    title: "text-rose-700",
-    value: "text-rose-600",
-    subtitle: "text-slate-400",
-    iconBg: "bg-rose-50 text-rose-800 border border-rose-200",
-    badge: "bg-rose-50 text-rose-800 border-rose-200",
-  },
-  amber: {
-    container:
-      "bg-white border-slate-200/90 hover:border-amber-300 text-slate-900 shadow-2xs hover:shadow-xs",
-    title: "text-amber-700",
-    value: "text-slate-900",
-    subtitle: "text-slate-400",
-    iconBg: "bg-amber-50 text-amber-800 border border-amber-200",
-    badge: "bg-amber-50 text-amber-800 border-amber-200",
-  },
-  blue: {
-    container:
-      "bg-white border-slate-200/90 hover:border-sky-300 text-slate-900 shadow-2xs hover:shadow-xs",
-    title: "text-sky-700",
-    value: "text-slate-900",
-    subtitle: "text-slate-400",
-    iconBg: "bg-sky-50 text-sky-800 border border-sky-200",
-    badge: "bg-sky-50 text-sky-800 border-sky-200",
-  },
-  sky: {
-    container:
-      "bg-white border-slate-200/90 hover:border-sky-300 text-slate-900 shadow-2xs hover:shadow-xs",
-    title: "text-sky-700",
-    value: "text-slate-900",
-    subtitle: "text-slate-400",
-    iconBg: "bg-sky-50 text-sky-800 border border-sky-200",
-    badge: "bg-sky-50 text-sky-800 border-sky-200",
-  },
-  indigo: {
-    container:
-      "bg-white border-slate-200/90 hover:border-indigo-300 text-slate-900 shadow-2xs hover:shadow-xs",
-    title: "text-indigo-700",
-    value: "text-slate-900",
-    subtitle: "text-slate-400",
-    iconBg: "bg-indigo-50 text-indigo-800 border border-indigo-200",
-    badge: "bg-indigo-50 text-indigo-800 border-indigo-200",
-  },
-  purple: {
-    container:
-      "bg-white border-slate-200/90 hover:border-purple-300 text-slate-900 shadow-2xs hover:shadow-xs",
-    title: "text-purple-700",
-    value: "text-slate-900",
-    subtitle: "text-slate-400",
-    iconBg: "bg-purple-50 text-purple-800 border border-purple-200",
-    badge: "bg-purple-50 text-purple-800 border-purple-200",
-  },
-  teal: {
-    container:
-      "bg-white border-slate-200/90 hover:border-teal-300 text-slate-900 shadow-2xs hover:shadow-xs",
-    title: "text-teal-700",
-    value: "text-slate-900",
-    subtitle: "text-slate-400",
-    iconBg: "bg-teal-50 text-teal-800 border border-teal-200",
-    badge: "bg-teal-50 text-teal-800 border-teal-200",
-  },
-};
-
-function resolveVariant(
-  variant?: CardVariant,
-  accentColor?: CardAccentColor,
-): string {
-  const chosen = accentColor || variant || "default";
-  switch (chosen) {
-    case "rose":
-    case "danger":
-      return "rose";
-    case "amber":
-    case "warning":
-      return "amber";
-    case "emerald":
-    case "success":
-      return "emerald";
-    case "blue":
-    case "info":
-      return "blue";
-    case "sky":
-      return "sky";
-    case "indigo":
-    case "primary":
-      return "indigo";
-    case "purple":
-      return "purple";
-    case "teal":
-      return "teal";
-    case "slate":
-    case "neutral":
-    case "default":
-    default:
-      return "default";
-  }
-}
-
 export const Card: React.FC<CardProps> = ({
   id,
   title,
   value,
   subtitle,
   currency = false,
-  variant,
-  accentColor,
   loading = false,
   badge,
   icon,
@@ -198,8 +52,6 @@ export const Card: React.FC<CardProps> = ({
   className = "",
   children,
 }) => {
-  const key = resolveVariant(variant, accentColor);
-  const styles = VARIANT_STYLES[key] || VARIANT_STYLES.default;
   const currencySymbol = currency === true ? "AED" : currency || null;
 
   const valueStr = typeof value === "string" ? value : "";
@@ -215,9 +67,9 @@ export const Card: React.FC<CardProps> = ({
       <div
         id={id}
         onClick={onClick}
-        className={`relative rounded-xl border bg-white transition-all duration-200 overflow-hidden ${styles.container} ${
+        className={`relative rounded-xl border border-agm-box-border bg-agm-card text-agm-text transition-all duration-200 overflow-hidden shadow-2xs ${
           onClick
-            ? "cursor-pointer hover:border-slate-300 hover:shadow-xs active:scale-[0.99]"
+            ? "cursor-pointer hover:border-agm-border hover:shadow-xs active:scale-[0.99]"
             : ""
         } ${className}`}
       >
@@ -230,23 +82,19 @@ export const Card: React.FC<CardProps> = ({
     <div
       id={id}
       onClick={onClick}
-      className={`p-3.5 sm:p-4 border rounded-xl flex flex-col justify-between space-y-2 transition-all duration-200 overflow-hidden ${styles.container} ${
+      className={`p-3.5 sm:p-4 border border-agm-box-border rounded-xl flex flex-col justify-between space-y-2 transition-all duration-200 overflow-hidden bg-agm-card text-agm-text shadow-2xs hover:shadow-xs ${
         onClick
-          ? "cursor-pointer hover:border-slate-300 hover:shadow-xs active:scale-[0.99]"
+          ? "cursor-pointer hover:border-agm-border hover:shadow-xs active:scale-[0.99]"
           : ""
       } ${className}`}
     >
       <div className="flex items-center justify-between gap-2">
-        <span
-          className={`text-[11px] font-bold uppercase tracking-wider leading-tight truncate ${styles.title}`}
-        >
+        <span className="text-[11px] font-bold uppercase tracking-wider leading-tight truncate text-agm-muted">
           {title}
         </span>
         {badge && <div className="shrink-0">{badge}</div>}
         {!badge && icon && (
-          <div
-            className={`shrink-0 p-1.5 rounded-lg flex items-center justify-center ${styles.iconBg}`}
-          >
+          <div className="shrink-0 p-1.5 rounded-lg flex items-center justify-center bg-agm-box-bg text-agm-text border border-agm-box-border">
             {icon}
           </div>
         )}
@@ -254,16 +102,14 @@ export const Card: React.FC<CardProps> = ({
 
       <div className="flex items-baseline flex-wrap gap-1 pt-0.5">
         {isLoading ? (
-          <div className="h-7 w-24 rounded bg-slate-100 animate-pulse my-0.5" />
+          <div className="h-7 w-24 rounded bg-agm-box-bg animate-pulse my-0.5" />
         ) : (
           <>
-            <span
-              className={`text-xl sm:text-[20px] font-black font-mono tracking-tight leading-none ${styles.value}`}
-            >
+            <span className="text-xl sm:text-[20px] font-black font-mono tracking-tight leading-none text-agm-text">
               {displayValue}
             </span>
             {showCurrency && (
-              <span className="text-xs font-bold font-mono text-slate-400 uppercase tracking-wide ml-1 select-none">
+              <span className="text-xs font-bold font-mono text-agm-muted uppercase tracking-wide ml-1 select-none">
                 {showCurrency}
               </span>
             )}
@@ -272,11 +118,9 @@ export const Card: React.FC<CardProps> = ({
       </div>
 
       {(subtitle || trend) && (
-        <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100 min-h-[20px]">
+        <div className="flex items-center justify-between text-xs pt-2 border-t border-agm-box-border min-h-[20px]">
           {subtitle && (
-            <span
-              className={`truncate text-[11.5px] font-medium ${styles.subtitle}`}
-            >
+            <span className="truncate text-[11.5px] font-medium text-agm-muted">
               {subtitle}
             </span>
           )}
@@ -284,10 +128,10 @@ export const Card: React.FC<CardProps> = ({
             <span
               className={`shrink-0 ml-auto font-bold text-[10px] px-1.5 py-0.5 rounded border flex items-center gap-1 font-mono ${
                 trend.up
-                  ? "text-emerald-700 bg-emerald-50/80 border-emerald-200"
+                  ? "text-agm-green-dark bg-agm-green-soft border-agm-green/30"
                   : trend.neutral
-                    ? "text-slate-600 bg-slate-50 border-slate-200"
-                    : "text-rose-700 bg-rose-50/80 border-rose-200"
+                    ? "text-agm-muted bg-agm-box-bg border-agm-box-border"
+                    : "text-rose-700 bg-rose-50 border-rose-200"
               }`}
             >
               <span>{trend.up ? "↑" : trend.neutral ? "•" : "↓"}</span>
@@ -336,7 +180,7 @@ export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props
 }) => (
   <div
-    className={`p-3.5 sm:p-4 border-b border-slate-100 flex flex-col space-y-1 ${className}`}
+    className={`p-3.5 sm:p-4 border-b border-agm-box-border flex flex-col space-y-1 ${className}`}
     {...props}
   >
     {children}
@@ -349,7 +193,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   ...props
 }) => (
   <h3
-    className={`font-black text-slate-900 tracking-tight text-sm sm:text-base ${className}`}
+    className={`font-bold text-agm-text tracking-tight text-sm sm:text-base ${className}`}
     {...props}
   >
     {children}
@@ -359,7 +203,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
 export const CardDescription: React.FC<
   React.HTMLAttributes<HTMLParagraphElement>
 > = ({ className = "", children, ...props }) => (
-  <p className={`text-xs text-slate-500 font-normal ${className}`} {...props}>
+  <p className={`text-xs text-agm-muted font-normal ${className}`} {...props}>
     {children}
   </p>
 );
@@ -380,7 +224,7 @@ export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props
 }) => (
   <div
-    className={`p-3.5 sm:p-4 border-t border-slate-100 flex items-center justify-between ${className}`}
+    className={`p-3.5 sm:p-4 border-t border-agm-box-border flex items-center justify-between ${className}`}
     {...props}
   >
     {children}
