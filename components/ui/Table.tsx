@@ -123,8 +123,8 @@ export const TableEmpty: React.FC<{
 }> = ({ title = "No records found", message, colSpan = 8 }) => {
   return (
     <tr>
-      <td colSpan={colSpan} className="py-12 text-center text-slate-400">
-        <p className="text-sm font-semibold text-slate-600">{title}</p>
+      <td colSpan={colSpan} className="py-12 text-center text-agm-subtle">
+        <p className="text-sm font-semibold text-agm-muted">{title}</p>
         {message && <p className="text-xs mt-1">{message}</p>}
       </td>
     </tr>
@@ -149,13 +149,13 @@ export const TableLoading: React.FC<{
   return (
     <>
       {Array.from({ length: rows }).map((_, rowIdx) => (
-        <tr key={rowIdx} className="hover:bg-slate-50/40">
+        <tr key={rowIdx} className="hover:bg-agm-box-bg/50">
           {Array.from({ length: colSpan }).map((_, colIdx) => {
             const width = widths[(rowIdx + colIdx) % widths.length];
             return (
               <td key={colIdx} className="py-3.5 px-3">
                 <div
-                  className={`h-3.5 ${width} rounded-md bg-slate-200/75 animate-pulse`}
+                  className={`h-3.5 ${width} rounded-md bg-agm-box-border/80 animate-pulse`}
                 />
               </td>
             );
@@ -174,7 +174,7 @@ export interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
+  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl" | "7xl" | "full";
   closeOnOutsideClick?: boolean;
 }
 
@@ -207,6 +207,10 @@ export const Modal: React.FC<ModalProps> = ({
     "2xl": "max-w-2xl",
     "3xl": "max-w-3xl",
     "4xl": "max-w-4xl",
+    "5xl": "max-w-5xl",
+    "6xl": "max-w-6xl",
+    "7xl": "max-w-7xl",
+    full: "max-w-[96vw]",
   };
 
   return (
