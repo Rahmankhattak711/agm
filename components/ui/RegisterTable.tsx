@@ -20,7 +20,7 @@ export interface RegisterTableProps {
 }
 
 const HEADER_CELL =
-  "py-2 font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap";
+  "py-2 font-bold text-agm-text uppercase text-[10px] tracking-wider whitespace-nowrap";
 
 export const RegisterTable: React.FC<RegisterTableProps> = ({
   title,
@@ -30,21 +30,21 @@ export const RegisterTable: React.FC<RegisterTableProps> = ({
   wrapperClassName = "",
 }) => (
   <div
-    className={`rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs min-w-0 max-w-full ${wrapperClassName}`}
+    className={`rounded-2xl border border-agm-box-border overflow-hidden shadow-xs min-w-0 max-w-full ${wrapperClassName}`}
   >
-    <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white py-2.5 px-4 sm:px-5 flex items-center justify-between">
+    <div className="bg-agm-sidebar text-white py-2.5 px-4 sm:px-5 flex items-center justify-between">
       <h4 className="font-bold text-xs uppercase tracking-wider text-white">
         {title}
       </h4>
       {countLabel !== undefined && (
-        <span className="text-[11px] font-mono text-emerald-300 font-bold">
+        <span className="text-[11px] font-mono text-agm-green-soft font-bold">
           {countLabel}
         </span>
       )}
     </div>
 
     <Table className="w-full text-xs text-left">
-      <TableHead className="bg-slate-50 border-b border-slate-200">
+      <TableHead className="bg-agm-box-bg border-b border-agm-box-border">
         <TableRow>
           {columns.map((col, i) => {
             const align = col.align ?? "left";
