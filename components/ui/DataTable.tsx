@@ -12,6 +12,7 @@ import {
   ColumnFiltersState,
   useReactTable,
 } from "@tanstack/react-table";
+import { SpinnerIcon } from "@/components/icons";
 
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -25,6 +26,7 @@ export interface DataTableProps<TData, TValue> {
   showPagination?: boolean;
   globalFilterPlaceholder?: string;
   onRowClick?: (row: TData) => void;
+  renderExpandedRow?: (row: TData) => React.ReactNode;
   className?: string;
   wrapperClassName?: string;
 }
@@ -40,6 +42,7 @@ export function DataTable<TData, TValue>({
   pageSize = 10,
   showPagination = true,
   onRowClick,
+  renderExpandedRow,
   className = "",
   wrapperClassName = "",
 }: DataTableProps<TData, TValue>) {
@@ -68,13 +71,13 @@ export function DataTable<TData, TValue>({
 
   const content = (
     <>
-      <div className="overflow-x-auto bg-white min-w-0 max-w-full">
+      <div className="overflow-x-auto bg-agm-card min-w-0 max-w-full">
         <table className={`w-full text-left text-xs ${className}`}>
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr
                 key={headerGroup.id}
-                className="bg-slate-50 border-b border-slate-200"
+                className="bg-agm-box-bg border-b border-agm-box-border"
               >
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort();
@@ -83,9 +86,9 @@ export function DataTable<TData, TValue>({
                   return (
                     <th
                       key={header.id}
-                      className={`py-2 px-2.5 sm:px-3 text-[10px] font-bold uppercase tracking-wider text-slate-600 whitespace-nowrap ${
+                      className={`py-2 px-2.5 sm:px-3 text-[10px] font-bold uppercase tracking-wider text-agm-text whitespace-nowrap ${
                         canSort
-                          ? "cursor-pointer select-none hover:text-slate-900 transition-colors"
+                          ? "cursor-pointer select-none hover:text-agm-navy transition-colors"
                           : ""
                       }`}
                       onClick={header.column.getToggleSortingHandler()}
@@ -111,45 +114,30 @@ export function DataTable<TData, TValue>({
             ))}
           </thead>
 
-          <tbody className="bg-white divide-y divide-slate-100 font-medium">
+          <tbody className="bg-agm-card divide-y divide-agm-border font-medium">
             {isLoading ? (
-              Array.from({ length: Math.min(pageSize, 5) }).map((_, rowIdx) => (
-                <tr
-                  key={rowIdx}
-                  className={rowIdx % 2 === 1 ? "bg-slate-50/40" : "bg-white"}
-                >
-                  {columns.map((_, colIdx) => {
-                    const widths = [
-                      "w-3/4",
-                      "w-1/2",
-                      "w-4/5",
-                      "w-2/3",
-                      "w-5/6",
-                      "w-3/5",
-                    ];
-                    const width = widths[(rowIdx + colIdx) % widths.length];
-                    return (
-                      <td key={colIdx} className="py-2.5 px-2.5 sm:px-3">
-                        <div
-                          className={`h-2.5 ${width} rounded-md bg-slate-200/70 animate-pulse`}
-                        />
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))
+              <tr>
+                <td colSpan={columns.length} className="py-14 text-center">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <SpinnerIcon size={24} className="text-agm-green animate-spin" />
+                    <span className="text-xs font-semibold text-agm-muted">
+                      Loading records...
+                    </span>
+                  </div>
+                </td>
+              </tr>
             ) : table.getRowModel().rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="py-12 text-center">
                   <div className="flex flex-col items-center gap-1.5">
-                    <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-base text-slate-400">
+                    <div className="w-9 h-9 rounded-full bg-agm-box-bg flex items-center justify-center text-base text-agm-subtle">
                       🗂
                     </div>
-                    <p className="text-xs font-bold text-slate-700">
+                    <p className="text-xs font-bold text-agm-text">
                       {emptyTitle}
                     </p>
                     {emptyMessage && (
-                      <p className="text-[11px] text-slate-400 max-w-xs leading-relaxed">
+                      <p className="text-[11px] text-agm-muted max-w-xs leading-relaxed">
                         {emptyMessage}
                       </p>
                     )}
@@ -157,54 +145,61 @@ export function DataTable<TData, TValue>({
                 </td>
               </tr>
             ) : (
-              table.getRowModel().rows.map((row, rowIdx) => (
-                <tr
-                  key={row.id}
-                  onClick={() => onRowClick && onRowClick(row.original)}
-                  className={`transition-colors duration-100 ${
-                    rowIdx % 2 === 1 ? "bg-slate-50/30" : "bg-white"
-                  } ${
-                    onRowClick
-                      ? "cursor-pointer hover:bg-slate-50/80"
-                      : "hover:bg-slate-50/80"
-                  }`}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="py-2 px-2.5 sm:px-3 text-slate-800 text-xs align-middle"
+              table.getRowModel().rows.map((row, rowIdx) => {
+                const expandedContent = renderExpandedRow
+                  ? renderExpandedRow(row.original)
+                  : null;
+                return (
+                  <React.Fragment key={row.id}>
+                    <tr
+                      onClick={() => onRowClick && onRowClick(row.original)}
+                      className={`transition-colors duration-100 ${
+                        rowIdx % 2 === 1 ? "bg-agm-box-bg/30" : "bg-agm-card"
+                      } ${
+                        onRowClick
+                          ? "cursor-pointer hover:bg-agm-box-bg/60"
+                          : "hover:bg-agm-box-bg/60"
+                      }`}
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className="py-2 px-2.5 sm:px-3 text-agm-text text-xs align-middle"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                    {expandedContent}
+                  </React.Fragment>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
       {showPagination && data.length > pageSize && (
-        <div className="flex items-center justify-between px-3.5 py-2.5 border-t border-slate-200 bg-slate-50/60">
-          <p className="text-[11px] text-slate-500">
+        <div className="flex items-center justify-between px-3.5 py-2.5 border-t border-agm-box-border bg-agm-box-bg/60">
+          <p className="text-[11px] text-agm-muted">
             Showing{" "}
-            <span className="font-bold text-slate-700">
+            <span className="font-bold text-agm-text">
               {table.getState().pagination.pageIndex *
                 table.getState().pagination.pageSize +
                 1}
             </span>{" "}
             –{" "}
-            <span className="font-bold text-slate-700">
+            <span className="font-bold text-agm-text">
               {Math.min(
                 (table.getState().pagination.pageIndex + 1) *
                   table.getState().pagination.pageSize,
                 data.length,
               )}
             </span>{" "}
-            of <span className="font-bold text-slate-700">{data.length}</span>{" "}
+            of <span className="font-bold text-agm-text">{data.length}</span>{" "}
             entries
           </p>
 
@@ -212,18 +207,18 @@ export function DataTable<TData, TValue>({
             <button
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-agm-box-border bg-agm-card text-agm-text hover:bg-agm-box-bg disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               ← Prev
             </button>
-            <span className="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 rounded-lg border border-slate-200">
+            <span className="px-2.5 py-1 text-[11px] font-bold text-agm-text bg-agm-box-bg rounded-lg border border-agm-box-border">
               {table.getState().pagination.pageIndex + 1} /{" "}
               {table.getPageCount()}
             </span>
             <button
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-agm-box-border bg-agm-card text-agm-text hover:bg-agm-box-bg disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               Next →
             </button>
@@ -236,14 +231,14 @@ export function DataTable<TData, TValue>({
   if (title) {
     return (
       <div
-        className={`rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs min-w-0 max-w-full ${wrapperClassName}`}
+        className={`rounded-2xl border border-agm-box-border overflow-hidden shadow-xs min-w-0 max-w-full ${wrapperClassName}`}
       >
-        <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white py-2.5 px-4 sm:px-5 flex items-center justify-between print:bg-none print:!bg-slate-100 print:!text-slate-900">
-          <h4 className="font-bold text-xs uppercase tracking-wider text-white print:!text-slate-900">
+        <div className="bg-agm-sidebar text-white py-2.5 px-4 sm:px-5 flex items-center justify-between print:bg-none print:!bg-agm-box-bg print:!text-agm-text">
+          <h4 className="font-bold text-xs uppercase tracking-wider text-white print:!text-agm-text">
             {title}
           </h4>
           {countLabel !== undefined && (
-            <span className="text-[11px] font-mono text-emerald-300 font-bold print:!text-slate-700">
+            <span className="text-[11px] font-mono text-agm-green-soft font-bold print:!text-agm-muted">
               {countLabel}
             </span>
           )}
@@ -255,7 +250,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div
-      className={`rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs min-w-0 max-w-full ${wrapperClassName}`}
+      className={`rounded-2xl border border-agm-box-border overflow-hidden shadow-xs min-w-0 max-w-full ${wrapperClassName}`}
     >
       {content}
     </div>
