@@ -1064,3 +1064,154 @@ export interface StatementOfAccountData {
     difference: number;
   };
 }
+
+export interface MonthlySheetDailyRecord {
+  dayNumber: number;
+  date: string;
+  dayName: string;
+  isWeekend: boolean;
+  status: string;
+  checkInTime: string | null;
+  checkOutTime: string | null;
+  workingHours: number;
+  overtimeHours: number;
+  lateMinutes: number;
+  location: string;
+  notes: string;
+}
+
+export interface EmployeeMonthlySheetData {
+  employee: {
+    id: string;
+    employeeCode: string;
+    firstName: string;
+    lastName: string;
+    email?: string | null;
+    phone?: string | null;
+    department: string;
+    designation: string;
+    joiningDate: string;
+    employmentStatus: string;
+    contractType: string;
+    emiratesId?: string | null;
+    emiratesIdExpiry?: string | null;
+    passportNo?: string | null;
+    passportExpiry?: string | null;
+    visaNumber?: string | null;
+    visaExpiry?: string | null;
+    laborCardNo?: string | null;
+    laborCardExpiry?: string | null;
+    annualLeaveBalance: number;
+    paymentMethod: string;
+    bankName?: string | null;
+    iban?: string | null;
+  };
+  period: {
+    month: number;
+    year: number;
+    monthName: string;
+    totalDaysInMonth: number;
+    startDate: string;
+    endDate: string;
+  };
+  attendanceSummary: {
+    totalDays: number;
+    daysPresent: number;
+    daysAbsent: number;
+    daysLate: number;
+    totalLateMinutes: number;
+    daysOnLeave: number;
+    weekendHolidayDays: number;
+    totalWorkingHours: number;
+    totalOvertimeHours: number;
+    attendanceRate: number;
+  };
+  dailyRecords: MonthlySheetDailyRecord[];
+  bonuses: Array<{
+    id: string;
+    type: string;
+    amount: number;
+    reason?: string | null;
+    isPaid?: boolean;
+    paidDate?: string | null;
+  }>;
+  leaves: Array<{
+    id: string;
+    leaveType: string;
+    startDate: string;
+    endDate: string;
+    totalDays: number;
+    reason?: string | null;
+    status: string;
+  }>;
+  payroll: {
+    payrollRecordId?: string | null;
+    basicSalary: number;
+    housingAllowance: number;
+    transportAllowance: number;
+    otherAllowances: number;
+    totalAllowances: number;
+    grossSalary: number;
+    hourlyRate: number;
+    dailyRate: number;
+    overtimeHours: number;
+    overtimeAmount: number;
+    bonusAmount: number;
+    absenceDeduction: number;
+    otherDeductions: number;
+    totalDeductions: number;
+    netSalary: number;
+    isPaid: boolean;
+    paymentDate?: string | null;
+    remarks?: string | null;
+    paymentMethod: string;
+    bankName?: string | null;
+    iban?: string | null;
+  };
+}
+
+export interface WorkforceMonthlySheetItem {
+  id: string;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  department: string;
+  designation: string;
+  basicSalary: number;
+  allowances: number;
+  grossSalary: number;
+  daysPresent: number;
+  daysAbsent: number;
+  overtimeHours: number;
+  overtimeAmount: number;
+  bonusAmount: number;
+  deductions: number;
+  netSalary: number;
+  paymentMethod: string;
+  bankName: string;
+  iban: string;
+  isPaid: boolean;
+  paymentDate?: string | null;
+}
+
+export interface WorkforceMonthlySheetData {
+  period: {
+    month: number;
+    year: number;
+    monthName: string;
+    totalDaysInMonth: number;
+    startDate: string;
+    endDate: string;
+  };
+  workforceStats: {
+    totalEmployees: number;
+    totalWorkforceGross: number;
+    totalOvertimeAmount: number;
+    totalBonuses: number;
+    totalDeductions: number;
+    totalNetPayroll: number;
+    totalOvertimeHours: number;
+    averageDaysPresent: number;
+  };
+  employeeSheets: WorkforceMonthlySheetItem[];
+}

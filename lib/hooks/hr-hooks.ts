@@ -7,6 +7,8 @@ import type {
   LeaveStatus,
   Bonus,
   BonusType,
+  EmployeeMonthlySheetData,
+  WorkforceMonthlySheetData,
 } from "./types";
 
 export function useEmployees(filters?: {
@@ -247,3 +249,62 @@ export function useDeleteBonus() {
     },
   });
 }
+
+export function useEmployeeMonthlySheet(filters: {
+  employeeId?: string;
+  month: number;
+  year: number;
+}) {
+  const params = new URLSearchParams();
+  if (filters.employeeId) params.append("employeeId", filters.employeeId);
+  params.append("month", filters.month.toString());
+  params.append("year", filters.year.toString());
+
+  return useQuery<EmployeeMonthlySheetData>({
+    queryKey: ["employee-monthly-sheet", filters],
+    queryFn: () =>
+      fetchJson<EmployeeMonthlySheetData>(
+        `/api/employees/monthly-sheet?${params.toString()}`,
+      ),
+    enabled: Boolean(filters.employeeId && filters.month && filters.year),
+  });
+}
+
+export function useWorkforceMonthlySheet(filters: {
+  month: number;
+  year: number;
+}) {
+  const params = new URLSearchParams();
+  params.append("employeeId", "all");
+  params.append("month", filters.month.toString());
+  params.append("year", filters.year.toString());
+
+  return useQuery<WorkforceMonthlySheetData>({
+    queryKey: ["workforce-monthly-sheet", filters],
+    queryFn: () =>
+      fetchJson<WorkforceMonthlySheetData>(
+        `/api/employees/monthly-sheet?${params.toString()}`,
+      ),
+    enabled: Boolean(filters.month && filters.year),
+  });
+}
+
+export function useSaveMonthlyPayroll() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      fetchJson<any>("/api/employees/monthly-sheet", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: ["employee-monthly-sheet"],
+      });
+      qc.invalidateQueries({
+        queryKey: ["workforce-monthly-sheet"],
+      });
+    },
+  });
+}
+
