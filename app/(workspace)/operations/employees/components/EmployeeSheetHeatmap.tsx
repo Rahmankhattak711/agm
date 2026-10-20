@@ -301,7 +301,7 @@ export function EmployeeSheetHeatmap({
 
             {selectedDayRecord.notes && (
               <div className="text-[11px] text-agm-muted bg-agm-box-bg p-2 rounded-xl border border-agm-box-border italic">
-                Remarks: "{selectedDayRecord.notes}"
+                Remarks: &ldquo;{selectedDayRecord.notes}&rdquo;
               </div>
             )}
 

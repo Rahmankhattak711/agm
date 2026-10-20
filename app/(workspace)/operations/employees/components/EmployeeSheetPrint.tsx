@@ -232,7 +232,7 @@ export function EmployeeSheetPrint({
             </span>
           </div>
           <div className="text-xs text-agm-subtle italic font-normal">
-            "{numberToWordsAED(sheetData.payroll.netSalary)}"
+            &ldquo;{numberToWordsAED(sheetData.payroll.netSalary)}&rdquo;
           </div>
         </div>
       </div>
