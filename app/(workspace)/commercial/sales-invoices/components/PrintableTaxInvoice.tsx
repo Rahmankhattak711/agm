@@ -133,6 +133,23 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                     <p className="text-[11px] print:text-[9.5px] font-semibold text-emerald-700 mt-0.5 print:mt-0">
                       Official UAE FTA Tax Invoice (Standard Rated 5% VAT)
                     </p>
+                    {(invoice.projectScope || invoice.customerName) && (
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs print:text-[11px] text-slate-700 font-semibold">
+                        {invoice.projectScope && (
+                          <span className="font-bold text-slate-900">
+                            {invoice.projectScope}
+                          </span>
+                        )}
+                        {invoice.projectScope && invoice.customerName && (
+                          <span className="text-slate-400">•</span>
+                        )}
+                        {invoice.customerName && (
+                          <span className="text-slate-600">
+                            {invoice.customerName}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="w-[340px] space-y-1 text-[12px] print:text-[10px]">

@@ -6,6 +6,10 @@ import { StatementOfAccountDocument } from "@/components/documents";
 import { PrintIcon, RefreshIcon, ReceiptIcon } from "@/components/icons";
 import { Button, DatePicker, Select, PageHeader } from "@/components/ui";
 import { useSearchParams } from "next/navigation";
+import {
+  formatPdfDocumentTitle,
+  printWithDocumentTitle,
+} from "@/lib/utils/format";
 
 function formatAmount(val: number | string | undefined): string {
   const num = Number(val || 0);
@@ -59,8 +63,18 @@ export const StatementOfAccountReport: React.FC<
     status: "ALL",
   });
 
+  const selectedCustomer = customers.find((c) => c.id === selectedCustomerId);
+
   const handlePrint = () => {
-    window.print();
+    const printTitle = formatPdfDocumentTitle(
+      [
+        "Statement of Account",
+        selectedCustomer?.name || selectedCustomer?.companyName,
+        `${fromDate} to ${toDate}`,
+      ],
+      "AGM-Statement-of-Account",
+    );
+    printWithDocumentTitle(printTitle);
   };
 
   return (

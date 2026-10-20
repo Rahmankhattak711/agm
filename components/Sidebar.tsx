@@ -346,7 +346,7 @@ export default function Sidebar({
   return (
     <>
       <div
-        className={`fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-xs transition-opacity duration-300 md:hidden ${
+        className={`fixed inset-0 z-40 bg-agm-charcoal/70 backdrop-blur-xs transition-opacity duration-300 md:hidden ${
           mobileOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
@@ -357,9 +357,9 @@ export default function Sidebar({
 
       <aside
         className={`
-          flex flex-col h-screen overflow-hidden border-r border-slate-800/80
-          bg-[linear-gradient(180deg,#0c1322_0%,#09101d_40%,#070d18_100%)]
-          shadow-[4px_0_24px_rgba(2,6,23,0.35)] transition-all duration-300 ease-in-out
+          flex flex-col h-screen overflow-hidden border-r border-agm-sidebar-border
+          bg-gradient-to-b from-agm-sidebar via-agm-sidebar to-agm-navy-2
+          shadow-lg transition-all duration-300 ease-in-out
           fixed inset-y-0 left-0 z-50 md:static md:sticky md:top-0 md:z-40 md:flex-shrink-0
           ${mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
         `}
@@ -367,10 +367,10 @@ export default function Sidebar({
           width: isMobile ? 260 : effectiveCollapsed ? 74 : 248,
         }}
       >
-        <div className="pointer-events-none absolute -top-12 -right-12 w-44 h-44 rounded-full bg-emerald-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 -left-12 w-48 h-48 rounded-full bg-teal-500/8 blur-3xl" />
+        <div className="pointer-events-none absolute -top-12 -right-12 w-44 h-44 rounded-full bg-agm-green/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-16 -left-12 w-48 h-48 rounded-full bg-agm-navy/20 blur-3xl" />
 
-        <div className="relative z-10 flex items-center justify-between border-b border-slate-800/80 px-3.5 h-[68px] min-h-[68px]">
+        <div className="relative z-10 flex items-center justify-between border-b border-agm-sidebar-border px-3.5 h-[68px] min-h-[68px]">
           {!effectiveCollapsed ? (
             <div className="flex items-center">
               <AgmLogo size="sm" collapsed={false} theme="dark" />
@@ -385,7 +385,7 @@ export default function Sidebar({
             id="sidebar-toggle"
             type="button"
             onClick={() => setCollapsed((c) => !c)}
-            className="ml-auto hidden md:flex h-7 w-7 p-0 shrink-0 items-center justify-center rounded-lg border border-slate-700/60 bg-slate-800/50 text-slate-300 hover:bg-slate-700/70 hover:text-white transition-all cursor-pointer shadow-2xs"
+            className="ml-auto hidden md:flex h-7 w-7 p-0 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-agm-subtle hover:bg-white/15 hover:text-white transition-all cursor-pointer shadow-2xs"
             title={effectiveCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <ChevronsLeftIcon
@@ -399,7 +399,7 @@ export default function Sidebar({
             <button
               type="button"
               onClick={onCloseMobile}
-              className="md:hidden ml-auto flex h-8 w-8 p-0 shrink-0 items-center justify-center rounded-lg border border-slate-700/60 bg-slate-800/50 text-slate-300 hover:bg-slate-700/70 hover:text-white cursor-pointer"
+              className="md:hidden ml-auto flex h-8 w-8 p-0 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-agm-subtle hover:bg-white/15 hover:text-white cursor-pointer"
               aria-label="Close menu"
             >
               <CloseIcon size={16} />
@@ -412,16 +412,16 @@ export default function Sidebar({
             <div key={group.label}>
               {groupIdx > 0 && (
                 <div
-                  className={`${effectiveCollapsed ? "my-2.5 mx-auto w-6" : "my-2.5 mx-1.5"} h-px bg-slate-800/70`}
+                  className={`${effectiveCollapsed ? "my-2.5 mx-auto w-6" : "my-2.5 mx-1.5"} h-px bg-agm-sidebar-border`}
                 />
               )}
 
               {!effectiveCollapsed && (
                 <div className="flex items-center justify-between px-2.5 pt-1.5 pb-1 select-none">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-300/80">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-agm-subtle">
                     {group.label}
                   </span>
-                  <span className="w-1 h-1 rounded-full bg-slate-700" />
+                  <span className="w-1 h-1 rounded-full bg-agm-sidebar-border" />
                 </div>
               )}
 
@@ -464,24 +464,24 @@ export default function Sidebar({
                           : "justify-start px-3 py-2"
                       } ${
                         isDirectActive
-                          ? "bg-emerald-500/15 border border-emerald-500/30 text-white shadow-[0_2px_14px_rgba(16,185,129,0.16)] backdrop-blur-xs"
+                          ? "bg-agm-green/20 border border-agm-green/40 text-white shadow-xs backdrop-blur-xs"
                           : isChildActive
-                            ? "bg-slate-800/70 border border-slate-700/60 text-white"
-                            : "border border-transparent text-slate-300 hover:text-white hover:bg-slate-800/50"
+                            ? "bg-white/10 border border-white/15 text-white"
+                            : "border border-transparent text-agm-ivory/80 hover:text-white hover:bg-white/10"
                       }`}
                     >
                       {isDirectActive && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-emerald-400 rounded-r-full shadow-[0_0_10px_#34d399]" />
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-agm-green rounded-r-full shadow-xs" />
                       )}
                       {isChildActive && !isDirectActive && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-emerald-400/70 rounded-r-full" />
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-agm-green-soft rounded-r-full" />
                       )}
 
                       <span
                         className={`flex shrink-0 items-center justify-center w-5 text-center transition-colors ${
                           active
-                            ? "text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.35)]"
-                            : "text-slate-400 group-hover:text-slate-200"
+                            ? "text-agm-green-soft"
+                            : "text-agm-subtle group-hover:text-agm-ivory"
                         }`}
                       >
                         {item.icon}
@@ -495,7 +495,7 @@ export default function Sidebar({
                                 ? "font-bold text-white"
                                 : isChildActive
                                   ? "font-semibold text-white"
-                                  : "font-medium text-slate-300 group-hover:text-white"
+                                  : "font-medium text-agm-ivory/85 group-hover:text-white"
                             }`}
                           >
                             {item.label}
@@ -506,8 +506,8 @@ export default function Sidebar({
                               <span
                                 className={`text-[9.5px] font-bold px-1.5 py-0.2 rounded-md transition-colors ${
                                   active
-                                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                                    : "bg-slate-800/90 text-slate-400 border border-slate-700/60 group-hover:text-slate-200 group-hover:border-slate-600"
+                                    ? "bg-agm-green/25 text-agm-green-soft border border-agm-green/40"
+                                    : "bg-white/10 text-agm-subtle border border-white/10 group-hover:text-agm-ivory group-hover:border-white/20"
                                 }`}
                               >
                                 {item.children!.length}
@@ -516,8 +516,8 @@ export default function Sidebar({
                                 size={12}
                                 className={`shrink-0 transition-transform duration-250 ease-out ${
                                   isExpanded
-                                    ? "rotate-0 text-emerald-400"
-                                    : "-rotate-90 text-slate-400 group-hover:text-slate-200"
+                                    ? "rotate-0 text-agm-green-soft"
+                                    : "-rotate-90 text-agm-subtle group-hover:text-agm-ivory"
                                 }`}
                               />
                             </div>
@@ -527,7 +527,7 @@ export default function Sidebar({
                     </div>
 
                     {hasChildren && isExpanded && !effectiveCollapsed && (
-                      <div className="ml-5 pl-2.5 my-1 space-y-0.5 border-l-2 border-slate-800/90">
+                      <div className="ml-5 pl-2.5 my-1 space-y-0.5 border-l-2 border-agm-sidebar-border">
                         {item.children!.map((child) => {
                           const childActive =
                             pathname === child.href ||
@@ -539,15 +539,15 @@ export default function Sidebar({
                               onClick={() => handleNavigateHref(child.href)}
                               className={`group/sub flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-[12px] text-left transition-all cursor-pointer ${
                                 childActive
-                                  ? "font-semibold text-emerald-200 bg-emerald-500/15 border border-emerald-500/25 shadow-xs"
-                                  : "font-medium text-slate-400 hover:text-white hover:bg-slate-800/40 border border-transparent"
+                                  ? "font-semibold text-agm-green-soft bg-agm-green/20 border border-agm-green/30 shadow-xs"
+                                  : "font-medium text-agm-subtle hover:text-white hover:bg-white/10 border border-transparent"
                               }`}
                             >
                               <span className="truncate">{child.label}</span>
                               {childActive ? (
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] shrink-0 ml-1.5" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-agm-green shadow-xs shrink-0 ml-1.5" />
                               ) : (
-                                <span className="w-1 h-1 rounded-full bg-slate-600 group-hover/sub:bg-slate-400 shrink-0 ml-1.5 transition-colors" />
+                                <span className="w-1 h-1 rounded-full bg-agm-subtle/40 group-hover/sub:bg-agm-subtle shrink-0 ml-1.5 transition-colors" />
                               )}
                             </button>
                           );

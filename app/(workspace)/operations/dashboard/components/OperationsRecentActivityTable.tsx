@@ -2,13 +2,8 @@
 
 import React, { useMemo } from "react";
 import Link from "next/link";
-import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import { Badge } from "@/components/ui";
+import { type ColumnDef } from "@tanstack/react-table";
+import { Badge, DataTable } from "@/components/ui";
 
 export interface OperationsActivityItem {
   id: string;
@@ -37,10 +32,10 @@ export default function OperationsRecentActivityTable({
           const row = info.row.original;
           return (
             <div>
-              <span className="font-bold text-slate-900 block text-xs">
+              <span className="font-bold text-agm-text block text-xs">
                 {row.employeeName}
               </span>
-              <span className="text-[10px] text-teal-800 font-mono font-semibold block">
+              <span className="text-[10px] text-agm-green-dark font-mono font-semibold block">
                 {row.employeeCode}
               </span>
             </div>
@@ -51,7 +46,7 @@ export default function OperationsRecentActivityTable({
         accessorKey: "department",
         header: () => <span>Department</span>,
         cell: (info) => (
-          <span className="text-slate-600 text-xs font-medium">
+          <span className="text-agm-muted text-xs font-medium">
             {info.getValue<string>() || "Operations"}
           </span>
         ),
@@ -60,7 +55,7 @@ export default function OperationsRecentActivityTable({
         accessorKey: "activityType",
         header: () => <span>Activity</span>,
         cell: (info) => (
-          <span className="text-xs font-semibold text-slate-800">
+          <span className="text-xs font-semibold text-agm-text">
             {info.getValue<string>()}
           </span>
         ),
@@ -72,10 +67,10 @@ export default function OperationsRecentActivityTable({
           const row = info.row.original;
           return (
             <div>
-              <span className="text-slate-700 text-xs block truncate max-w-xs">
+              <span className="text-agm-text text-xs block truncate max-w-xs">
                 {row.detail}
               </span>
-              <span className="text-[10px] text-slate-400 font-mono block">
+              <span className="text-[10px] text-agm-subtle font-mono block">
                 {row.date}
               </span>
             </div>
@@ -109,75 +104,27 @@ export default function OperationsRecentActivityTable({
     [],
   );
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
   return (
-    <div className="p-4 sm:p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-3">
-      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+    <div className="p-4 sm:p-5 bg-agm-card border border-agm-box-border rounded-2xl shadow-xs space-y-3">
+      <div className="flex items-center justify-between pb-2 border-b border-agm-box-border/50">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-agm-text">
           Recent operational activity
         </h3>
         <Link
           href="/operations/attendance"
-          className="text-xs font-bold text-teal-700 hover:text-teal-900 transition-colors"
+          className="text-xs font-bold text-agm-green hover:text-agm-green-dark transition-colors"
         >
           View all →
         </Link>
       </div>
 
-      {data.length === 0 ? (
-        <div className="py-6 text-center text-xs text-slate-400 font-medium">
-          No operational activity logged yet.
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200/80">
-          <table className="w-full text-left text-xs">
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr
-                  key={headerGroup.id}
-                  className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-[10px] uppercase tracking-wider"
-                >
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id} className="py-2 px-2.5 sm:px-3">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
-              {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="hover:bg-slate-50/80 transition-colors"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="py-2 px-2.5 sm:px-3 text-slate-800"
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        data={data}
+        showPagination={false}
+        emptyTitle="No operational activity logged yet."
+        emptyMessage=""
+      />
     </div>
   );
 }

@@ -112,13 +112,13 @@ export default function LeavesPage() {
       case "PENDING":
         return "bg-amber-50 text-amber-800 border-amber-200";
       case "APPROVED":
-        return "bg-emerald-50 text-emerald-800 border-emerald-200";
+        return "bg-agm-green-soft text-agm-green-dark border-agm-green/20";
       case "REJECTED":
         return "bg-rose-50 text-rose-800 border-rose-200";
       case "CANCELLED":
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-agm-box-bg text-agm-muted border-agm-box-border";
       default:
-        return "bg-slate-100 text-slate-800 border-slate-200";
+        return "bg-agm-box-bg text-agm-text border-agm-box-border";
     }
   };
 
@@ -129,11 +129,11 @@ export default function LeavesPage() {
         header: "Employee Details",
         cell: ({ row }) => (
           <div>
-            <span className="font-bold text-slate-900 block text-xs">
+            <span className="font-bold text-agm-text block text-xs">
               {row.original.employee?.firstName}{" "}
               {row.original.employee?.lastName}
             </span>
-            <span className="font-mono text-[10px] text-teal-800 font-bold bg-teal-50 border border-teal-200 px-1.5 py-0.2 rounded mt-0.5 inline-block">
+            <span className="font-mono text-[10px] text-agm-green-dark font-bold bg-agm-green-soft border border-agm-green/20 px-1.5 py-0.2 rounded mt-0.5 inline-block">
               {row.original.employee?.employeeCode} &bull;{" "}
               {row.original.employee?.department || "Operations"}
             </span>
@@ -144,7 +144,7 @@ export default function LeavesPage() {
         accessorKey: "leaveType",
         header: "Leave Type",
         cell: ({ row }) => (
-          <span className="font-semibold text-slate-800 text-xs uppercase tracking-wide">
+          <span className="font-semibold text-agm-text text-xs uppercase tracking-wide">
             {row.original.leaveType}
           </span>
         ),
@@ -154,12 +154,12 @@ export default function LeavesPage() {
         header: "Dates & Duration",
         cell: ({ row }) => (
           <div>
-            <span className="font-mono text-xs font-semibold text-slate-800 block">
+            <span className="font-mono text-xs font-semibold text-agm-text block">
               {new Date(row.original.startDate).toLocaleDateString("en-GB")}{" "}
               &rarr;{" "}
               {new Date(row.original.endDate).toLocaleDateString("en-GB")}
             </span>
-            <span className="text-[11px] font-bold text-emerald-800 font-mono">
+            <span className="text-[11px] font-bold text-agm-green font-mono">
               {row.original.totalDays} Days
             </span>
           </div>
@@ -184,8 +184,8 @@ export default function LeavesPage() {
         accessorKey: "reason",
         header: "Notes / Reason",
         cell: ({ row }) => (
-          <span className="text-xs text-slate-600 truncate max-w-xs block font-medium">
-            {row.original.reason || <span className="text-slate-300">—</span>}
+          <span className="text-xs text-agm-muted truncate max-w-xs block font-medium">
+            {row.original.reason || <span className="text-agm-subtle">—</span>}
           </span>
         ),
       },
@@ -216,7 +216,7 @@ export default function LeavesPage() {
                         status: "APPROVED",
                       });
                     }}
-                    className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
+                    className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-agm-green rounded-lg hover:bg-agm-green-soft transition cursor-pointer"
                     title="Approve Leave"
                   >
                     <CheckIcon size={18} className="w-[18px] h-[18px]" />
@@ -231,7 +231,7 @@ export default function LeavesPage() {
                         status: "REJECTED",
                       });
                     }}
-                    className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                    className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
                     title="Reject Leave"
                   >
                     <CloseIcon size={18} className="w-[18px] h-[18px]" />
@@ -260,7 +260,7 @@ export default function LeavesPage() {
                       }
                     }
                   }}
-                  className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                  className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
                   title="Delete Application"
                 >
                   <TrashIcon size={18} className="w-[18px] h-[18px]" />
@@ -319,7 +319,7 @@ export default function LeavesPage() {
         />
       </DashboardCardGrid>
 
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+      <div className="p-5 rounded-2xl bg-agm-card border border-agm-border shadow-xs space-y-4">
         <FilterBar
           tabs={[
             { id: "ALL", label: "All Requests" },
@@ -467,7 +467,7 @@ export default function LeavesPage() {
             )}
           </form.Field>
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-agm-border">
             <Button
               type="button"
               variant="outline"

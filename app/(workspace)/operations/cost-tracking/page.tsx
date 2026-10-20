@@ -19,7 +19,6 @@ import {
   CostTrackingProjectSelector,
   CostTrackingMetrics,
   CostTrackingAddExpense,
-  CostTrackingCategoryReport,
   CostTrackingDetailedList,
 } from "./components";
 
@@ -257,11 +256,6 @@ function CostTrackingInner() {
         />
       )}
 
-      <CostTrackingCategoryReport
-        selectedProject={selectedProject}
-        reportData={reportData}
-      />
-
       <CostTrackingDetailedList
         selectedProject={selectedProject}
         filteredCosts={filteredCosts}
@@ -299,7 +293,7 @@ export default function CostTrackingPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-8 text-center text-xs text-slate-500">
+        <div className="p-8 text-center text-xs text-agm-muted">
           Loading Cost Tracking Report…
         </div>
       }

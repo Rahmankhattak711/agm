@@ -1,10 +1,22 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+import { useForm } from "@tanstack/react-form";
 import {
   QuotationRecord,
   Customer,
   ProjectPriority,
 } from "@/lib/hooks/api-hooks";
-import { Button, Input, Select, Modal, DatePicker } from "@/components/ui";
+import {
+  Button,
+  Modal,
+  Select,
+  FormInput,
+  FormSelect,
+  FormDatePicker,
+  FormTextarea,
+  FormSubmit,
+} from "@/components/ui";
 import { fmt, dpToISO, isoToDP } from "../types";
 
 interface CreateProjectModalProps {
@@ -39,82 +51,101 @@ export function CreateProjectModal({
   const [createMode, setCreateMode] = useState<"FROM_QUOTE" | "CUSTOM">(
     "FROM_QUOTE",
   );
-  const [cQuoteId, setCQuoteId] = useState("");
-  const [cName, setCName] = useState("");
-  const [cCustomer, setCCustomer] = useState("");
-  const [cLocation, setCLocation] = useState("");
-  const [cDesc, setCDesc] = useState("");
-  const [cBudget, setCBudget] = useState("");
-  const [cPriority, setCPriority] = useState<ProjectPriority>("MEDIUM");
-  const [cStart, setCStart] = useState(
-    isoToDP(new Date().toISOString().split("T")[0]),
-  );
-  const [cDeadline, setCDeadline] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const fillFromQuote = React.useCallback(
+  const quoteList =
+    acceptedQuotations.length > 0 ? acceptedQuotations : quotations;
+
+  const form = useForm({
+    defaultValues: {
+      quotationId: "",
+      name: "",
+      customerId: "",
+      location: "",
+      description: "",
+      budget: "",
+      priority: "MEDIUM" as ProjectPriority,
+      startDate: isoToDP(new Date().toISOString().split("T")[0]),
+      deadline: "",
+    },
+    onSubmit: async ({ value }) => {
+      setErrorMsg("");
+      try {
+        if (!value.name.trim()) throw new Error("Project name is required");
+        await onSubmit({
+          name: value.name.trim(),
+          description: value.description.trim() || undefined,
+          location: value.location.trim() || undefined,
+          quotationId:
+            createMode === "FROM_QUOTE" ? value.quotationId : undefined,
+          customerId: value.customerId || undefined,
+          budget: value.budget ? Number(value.budget) : 0,
+          priority: value.priority,
+          startDate: dpToISO(value.startDate) || undefined,
+          deadline: dpToISO(value.deadline) || undefined,
+        });
+        onClose();
+      } catch (err: any) {
+        setErrorMsg(err.message || "Failed to create project");
+      }
+    },
+  });
+
+  const fillFromQuote = useCallback(
     (quoteId: string) => {
-      setCQuoteId(quoteId);
+      form.setFieldValue("quotationId", quoteId);
       const q = quotations.find((x) => x.id === quoteId);
       if (!q) return;
-      setCName(
+      form.setFieldValue(
+        "name",
         q.project
           ? `${q.project} (${q.quotationNo})`
           : `Project – ${q.quotationNo}`,
       );
-      setCLocation(q.location || "");
-      setCBudget(String(q.totalAmount || "0"));
-      if (q.customerId) setCCustomer(q.customerId);
+      form.setFieldValue("location", q.location || "");
+      form.setFieldValue("budget", String(q.totalAmount || "0"));
+      if (q.customerId) form.setFieldValue("customerId", q.customerId);
     },
-    [quotations],
+    [quotations, form],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       setErrorMsg("");
       const initialQuotes =
         acceptedQuotations.length > 0 ? acceptedQuotations : quotations;
       if (initialQuotes.length > 0) {
         setCreateMode("FROM_QUOTE");
-        fillFromQuote(initialQuotes[0].id);
+        const firstQuote = initialQuotes[0];
+        form.reset({
+          quotationId: firstQuote.id,
+          name: firstQuote.project
+            ? `${firstQuote.project} (${firstQuote.quotationNo})`
+            : `Project – ${firstQuote.quotationNo}`,
+          customerId: firstQuote.customerId || "",
+          location: firstQuote.location || "",
+          description: "",
+          budget: String(firstQuote.totalAmount || "0"),
+          priority: "MEDIUM",
+          startDate: isoToDP(new Date().toISOString().split("T")[0]),
+          deadline: "",
+        });
       } else {
         setCreateMode("CUSTOM");
-        setCName("");
-        setCLocation("");
-        setCBudget("");
-        setCCustomer(customers[0]?.id || "");
+        form.reset({
+          quotationId: "",
+          name: "",
+          customerId: customers[0]?.id || "",
+          location: "",
+          description: "",
+          budget: "",
+          priority: "MEDIUM",
+          startDate: isoToDP(new Date().toISOString().split("T")[0]),
+          deadline: "",
+        });
       }
-      setCDesc("");
-      setCPriority("MEDIUM");
-      setCStart(isoToDP(new Date().toISOString().split("T")[0]));
-      setCDeadline("");
     }
-  }, [isOpen, acceptedQuotations, customers, fillFromQuote, quotations]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setErrorMsg("");
-    try {
-      if (!cName.trim()) throw new Error("Project name is required");
-      await onSubmit({
-        name: cName.trim(),
-        description: cDesc.trim() || undefined,
-        location: cLocation.trim() || undefined,
-        quotationId: createMode === "FROM_QUOTE" ? cQuoteId : undefined,
-        customerId: cCustomer || undefined,
-        budget: cBudget ? Number(cBudget) : 0,
-        priority: cPriority,
-        startDate: dpToISO(cStart) || undefined,
-        deadline: dpToISO(cDeadline) || undefined,
-      });
-      onClose();
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to create project");
-    }
-  }
-
-  const quoteList =
-    acceptedQuotations.length > 0 ? acceptedQuotations : quotations;
+  }, [isOpen, acceptedQuotations, customers, quotations, form]);
 
   return (
     <Modal
@@ -128,7 +159,7 @@ export function CreateProjectModal({
           {errorMsg}
         </div>
       )}
-      <div className="flex bg-slate-100 p-1 rounded-xl mb-4 text-xs font-bold">
+      <div className="flex bg-agm-box-bg p-1 rounded-xl mb-4 text-xs font-bold border border-agm-box-border">
         {(["FROM_QUOTE", "CUSTOM"] as const).map((m) => (
           <button
             key={m}
@@ -136,118 +167,147 @@ export function CreateProjectModal({
             onClick={() => setCreateMode(m)}
             className={`flex-1 py-1.5 rounded-lg transition cursor-pointer ${
               createMode === m
-                ? "bg-white text-emerald-800 shadow"
-                : "text-slate-500 hover:text-slate-800"
+                ? "bg-agm-card text-agm-green-dark shadow-xs"
+                : "text-agm-muted hover:text-agm-text"
             }`}
           >
             {m === "FROM_QUOTE" ? "From Accepted Quotation" : "Custom Project"}
           </button>
         ))}
       </div>
-      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          form.handleSubmit();
+        }}
+        className="space-y-4 text-xs"
+      >
         {createMode === "FROM_QUOTE" && (
           <div>
             <label className="form-label">Select Quotation *</label>
-            <Select
-              value={cQuoteId}
-              onChange={(e) => fillFromQuote(e.target.value)}
-              className="w-full py-1.5"
-              options={quoteList.map((q) => ({
-                value: q.id,
-                label: `${q.quotationNo} – ${q.customer || "Client"} (AED ${fmt(q.totalAmount)})`,
-              }))}
-            />
+            <form.Field name="quotationId">
+              {(field) => (
+                <Select
+                  value={field.state.value}
+                  onChange={(e) => fillFromQuote(e.target.value)}
+                  className="w-full py-1.5"
+                  options={quoteList.map((q) => ({
+                    value: q.id,
+                    label: `${q.quotationNo} – ${q.customer || "Client"} (AED ${fmt(q.totalAmount)})`,
+                  }))}
+                />
+              )}
+            </form.Field>
           </div>
         )}
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
             <label className="form-label">Project Name *</label>
-            <Input
-              required
-              value={cName}
-              onChange={(e) => setCName(e.target.value)}
-              placeholder="e.g. Villa 42 Interior Fitout"
-              className="w-full py-1.5"
-            />
+            <form.Field name="name">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  required
+                  placeholder="e.g. Villa 42 Interior Fitout"
+                  className="w-full py-1.5"
+                />
+              )}
+            </form.Field>
           </div>
           <div>
             <label className="form-label">Customer</label>
-            <Select
-              value={cCustomer}
-              onChange={(e) => setCCustomer(e.target.value)}
-              className="w-full py-1.5"
-              options={[
-                { value: "", label: "Select customer…" },
-                ...customers.map((c) => ({ value: c.id, label: c.name })),
-              ]}
-            />
+            <form.Field name="customerId">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  className="w-full py-1.5"
+                  options={[
+                    { value: "", label: "Select customer…" },
+                    ...customers.map((c) => ({ value: c.id, label: c.name })),
+                  ]}
+                />
+              )}
+            </form.Field>
           </div>
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
             <label className="form-label">Site Location</label>
-            <Input
-              value={cLocation}
-              onChange={(e) => setCLocation(e.target.value)}
-              placeholder="e.g. Business Bay, Dubai"
-              className="w-full py-1.5"
-            />
+            <form.Field name="location">
+              {(field) => (
+                <FormInput
+                  field={field}
+                  placeholder="e.g. Business Bay, Dubai"
+                  className="w-full py-1.5"
+                />
+              )}
+            </form.Field>
           </div>
           <div>
             <label className="form-label">Priority</label>
-            <Select
-              value={cPriority}
-              onChange={(e) => setCPriority(e.target.value as ProjectPriority)}
-              className="w-full py-1.5"
-              options={[
-                { value: "LOW", label: "Low" },
-                { value: "MEDIUM", label: "Medium" },
-                { value: "HIGH", label: "High" },
-                { value: "URGENT", label: "Urgent" },
-              ]}
-            />
+            <form.Field name="priority">
+              {(field) => (
+                <FormSelect
+                  field={field}
+                  className="w-full py-1.5"
+                  options={[
+                    { value: "LOW", label: "Low" },
+                    { value: "MEDIUM", label: "Medium" },
+                    { value: "HIGH", label: "High" },
+                    { value: "URGENT", label: "Urgent" },
+                  ]}
+                />
+              )}
+            </form.Field>
           </div>
         </div>
         <div>
           <label className="form-label">Budget (AED) *</label>
-          <Input
-            type="number"
-            step="0.01"
-            value={cBudget}
-            onChange={(e) => setCBudget(e.target.value)}
-            placeholder="0.00"
-            className="w-full py-1.5 font-mono"
-          />
+          <form.Field name="budget">
+            {(field) => (
+              <FormInput
+                field={field}
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                className="w-full py-1.5 font-mono"
+              />
+            )}
+          </form.Field>
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
             <label className="form-label">Start Date</label>
-            <DatePicker
-              value={cStart}
-              onChange={setCStart}
-              placeholder="Select start date"
-            />
+            <form.Field name="startDate">
+              {(field) => (
+                <FormDatePicker field={field} placeholder="Select start date" />
+              )}
+            </form.Field>
           </div>
           <div>
             <label className="form-label">Deadline</label>
-            <DatePicker
-              value={cDeadline}
-              onChange={setCDeadline}
-              placeholder="Select deadline"
-            />
+            <form.Field name="deadline">
+              {(field) => (
+                <FormDatePicker field={field} placeholder="Select deadline" />
+              )}
+            </form.Field>
           </div>
         </div>
         <div>
           <label className="form-label">Notes & Scope</label>
-          <textarea
-            value={cDesc}
-            onChange={(e) => setCDesc(e.target.value)}
-            rows={2}
-            className="w-full rounded-xl border border-slate-300 p-2.5 text-xs focus:ring-2 focus:ring-emerald-400 focus:outline-none"
-            placeholder="Key deliverables, materials, subcontractors…"
-          />
+          <form.Field name="description">
+            {(field) => (
+              <FormTextarea
+                field={field}
+                rows={2}
+                placeholder="Key deliverables, materials, subcontractors…"
+                className="w-full rounded-xl border border-agm-box-border bg-agm-card text-agm-text p-2.5 text-xs focus:ring-2 focus:ring-agm-green/20 focus:border-agm-green focus:outline-none"
+              />
+            )}
+          </form.Field>
         </div>
-        <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
+        <div className="flex justify-end gap-2.5 pt-2 border-t border-agm-border">
           <Button
             type="button"
             variant="outline"
@@ -256,14 +316,14 @@ export function CreateProjectModal({
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
+          <FormSubmit
+            form={form}
             variant="primary"
             loading={isLoading}
             className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
           >
             Create Project
-          </Button>
+          </FormSubmit>
         </div>
       </form>
     </Modal>

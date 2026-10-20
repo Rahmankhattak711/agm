@@ -38,6 +38,10 @@ import {
   AgreementRecord,
 } from "@/lib/hooks/api-hooks";
 import { toast } from "@/lib/toast";
+import {
+  formatPdfDocumentTitle,
+  printWithDocumentTitle,
+} from "@/lib/utils/format";
 import { useConfirm } from "@/context/ConfirmContext";
 import { AgreementSavedModal } from "./AgreementSavedModal";
 
@@ -91,7 +95,11 @@ export default function AgreementTemplate({
   }, [initialData]);
 
   const handlePrint = () => {
-    window.print();
+    const printTitle = formatPdfDocumentTitle(
+      [data.refNumber, data.client?.name, data.project || data.property],
+      "AGM-Fitout-Agreement",
+    );
+    printWithDocumentTitle(printTitle);
   };
 
   const handleNewBlank = () => {
@@ -630,6 +638,32 @@ export default function AgreementTemplate({
                             {data.refNumber}
                           </strong>
                         </div>
+                        {(data.client?.name ||
+                          data.project ||
+                          data.property) && (
+                          <div className="text-center text-xs sm:text-[13px] text-slate-700 print:text-slate-900 font-semibold space-x-1.5">
+                            {data.client?.name && (
+                              <span>
+                                Client:{" "}
+                                <strong className="font-bold text-slate-900">
+                                  {data.client.name}
+                                </strong>
+                              </span>
+                            )}
+                            {data.client?.name &&
+                              (data.project || data.property) && (
+                                <span className="text-slate-400">•</span>
+                              )}
+                            {(data.project || data.property) && (
+                              <span>
+                                Project:{" "}
+                                <strong className="font-bold text-slate-900">
+                                  {data.project || data.property}
+                                </strong>
+                              </span>
+                            )}
+                          </div>
+                        )}
 
                         <div className="flex items-center gap-3 text-xs text-neutral-600 font-medium">
                           <div className="flex items-center gap-1.5">

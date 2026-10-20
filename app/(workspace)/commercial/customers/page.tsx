@@ -19,6 +19,7 @@ import {
   CustomerEditModal,
   CustomerStatementDocument,
 } from "./components";
+import { formatPdfDocumentTitle } from "@/lib/utils/format";
 
 export default function CustomersPage() {
   const { confirm } = useConfirm();
@@ -49,9 +50,15 @@ export default function CustomersPage() {
 
   const triggerPrint = useReactToPrint({
     contentRef: printDocumentRef,
-    documentTitle: statementToPrint?.customer?.customerCode
-      ? `Statement-${statementToPrint.customer.customerCode}`
-      : "Customer-Statement-of-Account",
+    documentTitle: formatPdfDocumentTitle(
+      [
+        "Statement",
+        statementToPrint?.customer?.customerCode,
+        statementToPrint?.customer?.name ||
+          statementToPrint?.customer?.companyName,
+      ],
+      "Customer-Statement-of-Account",
+    ),
   });
 
   const handlePrintCustomer = async (

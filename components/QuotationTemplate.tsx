@@ -9,6 +9,10 @@ import {
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
 import {
+  formatPdfDocumentTitle,
+  printWithDocumentTitle,
+} from "@/lib/utils/format";
+import {
   Check,
   ChevronDown,
   FileText,
@@ -503,7 +507,12 @@ export default function QuotationTemplate({
               );
               return;
             }
-            window.print();
+            const printTitle = formatPdfDocumentTitle([
+              meta.quotationNo,
+              meta.customer,
+              meta.project,
+            ]);
+            printWithDocumentTitle(printTitle);
           }}
           className="bg-[#243746] hover:bg-[#1a2935] text-white rounded-2xl px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
         >

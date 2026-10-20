@@ -11,6 +11,10 @@ import {
   SalesInvoice,
 } from "@/lib/hooks/api-hooks";
 import { useConfirm } from "@/context/ConfirmContext";
+import {
+  formatPdfDocumentTitle,
+  printWithDocumentTitle,
+} from "@/lib/utils/format";
 import { PageHeader } from "@/components/ui";
 import {
   SalesInvoiceKPIs,
@@ -57,7 +61,15 @@ export default function SalesInvoicesPage() {
   const handlePrintTaxInvoice = (inv: SalesInvoice) => {
     setSelectedInvoice(inv);
     setTimeout(() => {
-      window.print();
+      const printTitle = formatPdfDocumentTitle(
+        [
+          inv.invoiceNumber,
+          inv.customerName,
+          inv.projectScope || (inv as any).project,
+        ],
+        "Tax-Invoice",
+      );
+      printWithDocumentTitle(printTitle);
     }, 50);
   };
 

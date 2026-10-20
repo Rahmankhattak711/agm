@@ -120,13 +120,13 @@ export default function ProjectsPage() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-2xl border border-slate-200 h-52 animate-pulse"
+              className="bg-agm-card rounded-2xl border border-agm-box-border h-52 animate-pulse"
             />
           ))}
         </div>
       ) : filteredProjects.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-dashed border-slate-300 py-16 flex flex-col items-center gap-3 text-slate-400">
-          <BuildingIcon size={36} className="text-slate-300" />
+        <div className="bg-agm-card rounded-2xl border border-dashed border-agm-box-border py-16 flex flex-col items-center gap-3 text-agm-muted">
+          <BuildingIcon size={36} className="text-agm-subtle" />
           <p className="font-semibold text-sm">No projects yet</p>
           <p className="text-xs text-center max-w-xs">
             Start by clicking &quot;New Project&quot; to create a project from

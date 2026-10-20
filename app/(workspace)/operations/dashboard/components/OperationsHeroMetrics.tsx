@@ -26,7 +26,7 @@ export default function OperationsHeroMetrics({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div className="p-5 bg-white border border-agm-box-border rounded-[12px] flex flex-col justify-between space-y-1">
+      <div className="p-5 bg-agm-card border border-agm-box-border rounded-[12px] flex flex-col justify-between space-y-1">
         <span className="text-[13px] font-normal text-agm-muted">
           Active workforce
         </span>
@@ -56,7 +56,7 @@ export default function OperationsHeroMetrics({
         </span>
       </div>
 
-      <div className="p-5 bg-white border border-agm-box-border rounded-[12px] flex flex-col justify-between space-y-1">
+      <div className="p-5 bg-agm-card border border-agm-box-border rounded-[12px] flex flex-col justify-between space-y-1">
         <span className="text-[13px] font-normal text-agm-muted">
           Monthly payroll liability
         </span>
