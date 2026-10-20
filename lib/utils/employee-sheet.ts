@@ -74,7 +74,9 @@ export function getAttendanceStatusBadge(status: string): string {
   }
 }
 
-export function getEmploymentStatusBadge(status: EmploymentStatus | string): string {
+export function getEmploymentStatusBadge(
+  status: EmploymentStatus | string,
+): string {
   switch (status) {
     case "ACTIVE":
       return "bg-emerald-50 text-emerald-800 border-emerald-200";

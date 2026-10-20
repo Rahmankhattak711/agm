@@ -19,15 +19,15 @@ export function CostTrackingCategoryReport({
   reportData,
 }: CostTrackingCategoryReportProps) {
   return (
-    <div className="bg-white rounded-2xl border border-agm-box-border shadow-sm overflow-hidden">
-      <div className="p-5 border-b border-agm-box-border bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="bg-agm-card rounded-2xl border border-agm-border shadow-xs overflow-hidden">
+      <div className="p-5 border-b border-agm-border bg-agm-card flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-lg sm:text-xl font-black text-agm-navy">
             {selectedProject?.name || "Project Cost Report"}
           </h2>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
+          <p className="text-xs text-agm-muted font-medium mt-0.5">
             Project Code:{" "}
-            <strong className="font-mono text-slate-800">
+            <strong className="font-mono text-agm-text">
               {selectedProject?.projectCode}
             </strong>
             {selectedProject?.customer?.name &&
@@ -38,7 +38,7 @@ export function CostTrackingCategoryReport({
         </div>
 
         <div className="text-left sm:text-right">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+          <span className="text-[10px] font-bold text-agm-subtle uppercase tracking-wider block">
             Total Actual Spent
           </span>
           <span className="text-xl sm:text-2xl font-black font-mono text-agm-navy">
@@ -75,11 +75,13 @@ export function CostTrackingCategoryReport({
               return (
                 <tr
                   key={cat.key}
-                  className={`hover:bg-slate-50/70 transition ${
-                    hasSpend ? "bg-white" : "bg-slate-50/20 text-slate-400"
+                  className={`hover:bg-agm-box-bg/50 transition ${
+                    hasSpend
+                      ? "bg-agm-card"
+                      : "bg-agm-box-bg/20 text-agm-subtle"
                   }`}
                 >
-                  <td className="py-3 px-5 font-semibold text-slate-900">
+                  <td className="py-3 px-5 font-semibold text-agm-text">
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${cat.bgLight}`}
@@ -90,14 +92,14 @@ export function CostTrackingCategoryReport({
                         <div
                           className={
                             hasSpend
-                              ? "font-bold text-slate-900"
-                              : "font-medium text-slate-600"
+                              ? "font-bold text-agm-text"
+                              : "font-medium text-agm-muted"
                           }
                         >
                           {cat.name}
                         </div>
                         {catCount > 0 && (
-                          <div className="text-[10px] text-slate-400 font-normal">
+                          <div className="text-[10px] text-agm-subtle font-normal">
                             {catCount} {catCount === 1 ? "entry" : "entries"}{" "}
                             recorded
                           </div>
@@ -106,19 +108,19 @@ export function CostTrackingCategoryReport({
                     </div>
                   </td>
 
-                  <td className="py-3 px-4 text-slate-500 hidden sm:table-cell text-xs">
+                  <td className="py-3 px-4 text-agm-muted hidden sm:table-cell text-xs">
                     {cat.description}
                   </td>
 
                   <td className="py-3 px-5 text-right font-mono font-bold text-sm">
                     <span
-                      className={hasSpend ? "text-slate-900" : "text-slate-300"}
+                      className={hasSpend ? "text-agm-text" : "text-agm-subtle"}
                     >
                       AED {fmt(catSpent)}
                     </span>
                   </td>
 
-                  <td className="py-3 px-4 text-right font-mono text-slate-600 font-medium">
+                  <td className="py-3 px-4 text-right font-mono text-agm-muted font-medium">
                     {sharePct}%
                   </td>
                 </tr>
@@ -129,10 +131,10 @@ export function CostTrackingCategoryReport({
               <td className="py-3 px-5 font-black text-white text-sm">
                 TOTAL PROJECT EXPENDITURE
               </td>
-              <td className="py-3 px-4 text-xs text-slate-300 hidden sm:table-cell">
+              <td className="py-3 px-4 text-xs text-agm-subtle hidden sm:table-cell">
                 Sum of all recorded labor, materials, equipment and overheads
               </td>
-              <td className="py-3 px-5 text-right font-mono font-black text-sm text-emerald-300">
+              <td className="py-3 px-5 text-right font-mono font-black text-sm text-agm-green-soft">
                 AED {fmt(reportData.totalSpent)}
               </td>
               <td className="py-3 px-4 text-right font-mono font-bold text-white">
@@ -143,29 +145,29 @@ export function CostTrackingCategoryReport({
             <tr
               className={
                 reportData.isUnderBudget
-                  ? "bg-emerald-50/80 border-b border-emerald-200"
+                  ? "bg-agm-green-soft/80 border-b border-agm-green/20"
                   : "bg-rose-50/80 border-b border-rose-200"
               }
             >
               <td
-                className={`py-2.5 px-5 font-bold text-xs ${reportData.isUnderBudget ? "text-emerald-900" : "text-rose-900"}`}
+                className={`py-2.5 px-5 font-bold text-xs ${reportData.isUnderBudget ? "text-agm-green-dark" : "text-rose-900"}`}
               >
                 {reportData.isUnderBudget
                   ? "Budget Balance Remaining (Under Budget)"
                   : "Budget Variance (Over Budget)"}
               </td>
-              <td className="py-2.5 px-4 text-slate-500 text-xs hidden sm:table-cell">
+              <td className="py-2.5 px-4 text-agm-muted text-xs hidden sm:table-cell">
                 {reportData.isUnderBudget
                   ? "Available funds remaining from approved project budget"
                   : "Total expenditure exceeds approved project budget"}
               </td>
               <td
-                className={`py-2.5 px-5 text-right font-mono font-black text-sm ${reportData.isUnderBudget ? "text-emerald-700" : "text-rose-700"}`}
+                className={`py-2.5 px-5 text-right font-mono font-black text-sm ${reportData.isUnderBudget ? "text-agm-green" : "text-rose-700"}`}
               >
                 AED {fmt(Math.abs(reportData.remaining))}
               </td>
               <td
-                className={`py-2.5 px-4 text-right font-mono font-bold text-xs ${reportData.isUnderBudget ? "text-emerald-700" : "text-rose-700"}`}
+                className={`py-2.5 px-4 text-right font-mono font-bold text-xs ${reportData.isUnderBudget ? "text-agm-green" : "text-rose-700"}`}
               >
                 {reportData.budget > 0
                   ? `${((Math.abs(reportData.remaining) / reportData.budget) * 100).toFixed(1)}%`

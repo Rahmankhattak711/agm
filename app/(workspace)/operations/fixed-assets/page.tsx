@@ -134,8 +134,8 @@ export default function FixedAssetsPage() {
         accessorKey: "assetCode",
         header: "Asset Code",
         cell: ({ row }) => (
-          <span className="font-mono font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded text-xs inline-flex items-center gap-1">
-            <BuildingIcon size={12} className="text-teal-700" />
+          <span className="font-mono font-bold text-agm-green-dark bg-agm-green-soft border border-agm-green/20 px-2 py-0.5 rounded text-xs inline-flex items-center gap-1">
+            <BuildingIcon size={12} className="text-agm-green" />
             {row.original.assetCode}
           </span>
         ),
@@ -145,7 +145,7 @@ export default function FixedAssetsPage() {
         header: "Asset Name & Description",
         cell: ({ row }) => (
           <div>
-            <span className="font-bold text-slate-900 block text-xs">
+            <span className="font-bold text-agm-text block text-xs">
               {row.original.assetName}
             </span>
           </div>
@@ -159,7 +159,7 @@ export default function FixedAssetsPage() {
             (c) => c.value === row.original.category,
           );
           return (
-            <span className="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            <span className="text-[11px] font-semibold text-agm-muted bg-agm-box-bg px-2 py-0.5 rounded border border-agm-box-border">
               {cat?.label || row.original.category}
             </span>
           );
@@ -169,7 +169,7 @@ export default function FixedAssetsPage() {
         accessorKey: "purchaseDate",
         header: "Purchase Date",
         cell: ({ row }) => (
-          <span className="text-slate-600 text-xs font-mono">
+          <span className="text-agm-muted text-xs font-mono">
             {new Date(row.original.purchaseDate).toLocaleDateString("en-GB")}
           </span>
         ),
@@ -178,7 +178,7 @@ export default function FixedAssetsPage() {
         accessorKey: "cost",
         header: "Acquisition Cost",
         cell: ({ row }) => (
-          <span className="font-mono font-black text-xs text-slate-900">
+          <span className="font-mono font-black text-xs text-agm-text">
             {formatAed(row.original.cost)}
           </span>
         ),
@@ -188,7 +188,7 @@ export default function FixedAssetsPage() {
         header: () => <div className="text-center">Depr. Rate</div>,
         cell: ({ row }) => (
           <div className="text-center">
-            <span className="text-slate-700 text-xs font-mono font-bold bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">
+            <span className="text-agm-text text-xs font-mono font-bold bg-agm-box-bg border border-agm-box-border px-2 py-0.5 rounded">
               {Number(row.original.depreciationRate)}%/yr
             </span>
           </div>
@@ -243,7 +243,7 @@ export default function FixedAssetsPage() {
           value="100% Capitalized"
           subtitle="Automated straight-line depr."
           badge={
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200">
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-agm-green-soft text-agm-green-dark border border-agm-green/20">
               Active
             </span>
           }
@@ -251,7 +251,7 @@ export default function FixedAssetsPage() {
         />
       </DashboardCardGrid>
 
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+      <div className="p-5 rounded-2xl bg-agm-card border border-agm-border shadow-xs space-y-4">
         <FilterBar
           tabs={[
             { id: "ALL", label: "All Assets" },
@@ -392,7 +392,7 @@ export default function FixedAssetsPage() {
             </form.Field>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-agm-border">
             <form.Field name="assetAccountId">
               {(field) => (
                 <FormSelect
@@ -433,7 +433,7 @@ export default function FixedAssetsPage() {
             </form.Field>
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-agm-border">
             <Button
               type="button"
               variant="outline"

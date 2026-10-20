@@ -34,6 +34,10 @@ import {
   RiskAssessmentRecord,
 } from "@/lib/hooks/api-hooks";
 import { toast } from "@/lib/toast";
+import {
+  formatPdfDocumentTitle,
+  printWithDocumentTitle,
+} from "@/lib/utils/format";
 import { useConfirm } from "@/context/ConfirmContext";
 import { RiskAssessmentSavedModal } from "./RiskAssessmentSavedModal";
 
@@ -71,7 +75,11 @@ export default function RiskAssessmentTemplate({
   }, [initialData]);
 
   const handlePrint = () => {
-    window.print();
+    const printTitle = formatPdfDocumentTitle(
+      [data.refNumber, data.customerName, data.projectName],
+      "AGM-Risk-Assessment",
+    );
+    printWithDocumentTitle(printTitle);
   };
 
   const handleNewBlank = () => {
@@ -356,6 +364,30 @@ export default function RiskAssessmentTemplate({
                     <div className="w-full bg-agm-green text-white text-center py-2.5 px-4 print:py-1.5 print:px-3 font-bold text-sm sm:text-base tracking-wider uppercase shadow-xs">
                       PROJECT RISK ASSESSMENT
                     </div>
+
+                    {(data.projectName || data.customerName) && (
+                      <div className="w-full bg-slate-50 print:bg-transparent border-x border-b border-slate-200 print:border-none text-center py-1.5 px-3 -mt-3 text-xs sm:text-[12.5px] text-slate-700 print:text-slate-900 font-medium">
+                        {data.projectName && (
+                          <span>
+                            Project:{" "}
+                            <strong className="font-bold text-slate-900">
+                              {data.projectName}
+                            </strong>
+                          </span>
+                        )}
+                        {data.projectName && data.customerName && (
+                          <span className="mx-2 text-slate-400">•</span>
+                        )}
+                        {data.customerName && (
+                          <span>
+                            Client:{" "}
+                            <strong className="font-bold text-slate-900">
+                              {data.customerName}
+                            </strong>
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     <div className="w-full border border-slate-200 print:border-y print:border-x-0 print:border-slate-300 overflow-hidden text-xs sm:text-[13px] break-inside-avoid print:break-inside-avoid">
                       <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-200 print:divide-slate-300">

@@ -12,10 +12,7 @@ export type CardVariant =
   | "primary"
   | string;
 
-export type CardAccentColor =
-  | "default"
-  | "neutral"
-  | string;
+export type CardAccentColor = "default" | "neutral" | string;
 
 export interface CardProps {
   id?: string;

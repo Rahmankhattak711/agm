@@ -28,7 +28,7 @@ export default function OperationsDashboardHeader({
         <select
           value={period}
           onChange={(e) => onPeriodChange(e.target.value as PeriodOption)}
-          className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-emerald-500 cursor-pointer shadow-2xs"
+          className="bg-agm-card border border-agm-box-border rounded-xl px-3 py-1.5 text-xs font-semibold text-agm-text focus:outline-none focus:border-agm-green cursor-pointer shadow-2xs"
         >
           <option value="THIS_MONTH">This month</option>
           <option value="THIS_QUARTER">This quarter</option>

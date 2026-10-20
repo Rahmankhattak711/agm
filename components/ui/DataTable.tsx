@@ -119,7 +119,10 @@ export function DataTable<TData, TValue>({
               <tr>
                 <td colSpan={columns.length} className="py-14 text-center">
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <SpinnerIcon size={24} className="text-agm-green animate-spin" />
+                    <SpinnerIcon
+                      size={24}
+                      className="text-agm-green animate-spin"
+                    />
                     <span className="text-xs font-semibold text-agm-muted">
                       Loading records...
                     </span>

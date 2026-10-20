@@ -276,7 +276,7 @@ export default function AttendancePage() {
   const getStatusBadge = (status: AttendanceStatus) => {
     switch (status) {
       case "PRESENT":
-        return "bg-emerald-50 text-emerald-800 border-emerald-200";
+        return "bg-agm-green-soft text-agm-green-dark border-agm-green/20";
       case "LATE":
         return "bg-amber-50 text-amber-800 border-amber-200";
       case "HALF_DAY":
@@ -286,7 +286,7 @@ export default function AttendancePage() {
       case "ON_LEAVE":
         return "bg-blue-50 text-blue-800 border-blue-200";
       default:
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-agm-box-bg text-agm-muted border-agm-box-border";
     }
   };
 
@@ -297,11 +297,11 @@ export default function AttendancePage() {
         header: "Employee Details",
         cell: ({ row }) => (
           <div>
-            <div className="font-bold text-slate-900 text-xs">
+            <div className="font-bold text-agm-text text-xs">
               {row.original.employee?.firstName || ""}{" "}
               {row.original.employee?.lastName || "Staff"}
             </div>
-            <span className="font-mono text-[10px] text-teal-800 font-bold bg-teal-50 border border-teal-200 px-1.5 py-0.2 rounded mt-0.5 inline-block">
+            <span className="font-mono text-[10px] text-agm-green-dark font-bold bg-agm-green-soft border border-agm-green/20 px-1.5 py-0.2 rounded mt-0.5 inline-block">
               {row.original.employee?.employeeCode || "N/A"}
             </span>
           </div>
@@ -326,27 +326,27 @@ export default function AttendancePage() {
         accessorKey: "timing",
         header: "Timestamps",
         cell: ({ row }) => (
-          <div className="text-xs font-mono text-slate-700 font-medium">
+          <div className="text-xs font-mono text-agm-muted font-medium">
             {row.original.checkInTime ? (
-              <span className="text-emerald-800 font-bold">
+              <span className="text-agm-green font-bold">
                 {new Date(row.original.checkInTime).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
               </span>
             ) : (
-              <span className="text-slate-300">—</span>
+              <span className="text-agm-subtle">—</span>
             )}{" "}
             &rarr;{" "}
             {row.original.checkOutTime ? (
-              <span className="text-slate-900 font-bold">
+              <span className="text-agm-text font-bold">
                 {new Date(row.original.checkOutTime).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
               </span>
             ) : (
-              <span className="text-slate-300">—</span>
+              <span className="text-agm-subtle">—</span>
             )}
           </div>
         ),
@@ -356,7 +356,7 @@ export default function AttendancePage() {
         header: () => <div className="text-center">Logged Hours</div>,
         cell: ({ row }) => (
           <div className="text-center">
-            <span className="font-mono text-xs font-bold text-slate-900">
+            <span className="font-mono text-xs font-bold text-agm-text">
               {row.original.workingHours
                 ? `${row.original.workingHours} hrs`
                 : "—"}
@@ -376,7 +376,7 @@ export default function AttendancePage() {
                   +{ot} hrs OT
                 </span>
               ) : (
-                <span className="text-slate-300 text-xs font-mono">0.0</span>
+                <span className="text-agm-subtle text-xs font-mono">0.0</span>
               )}
             </div>
           );
@@ -394,7 +394,7 @@ export default function AttendancePage() {
                   {late}m late
                 </span>
               ) : (
-                <span className="text-slate-300 text-xs font-mono">0m</span>
+                <span className="text-agm-subtle text-xs font-mono">0m</span>
               )}
             </div>
           );
@@ -404,8 +404,10 @@ export default function AttendancePage() {
         accessorKey: "location",
         header: "Site / Project",
         cell: ({ row }) => (
-          <span className="text-xs text-slate-600 truncate max-w-xs block font-medium">
-            {row.original.location || <span className="text-slate-300">—</span>}
+          <span className="text-xs text-agm-muted truncate max-w-xs block font-medium">
+            {row.original.location || (
+              <span className="text-agm-subtle">—</span>
+            )}
           </span>
         ),
       },
@@ -422,7 +424,7 @@ export default function AttendancePage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleEditRecord(row.original)}
-                className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
+                className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-agm-navy rounded-lg hover:bg-agm-box-bg transition cursor-pointer"
                 title="Edit / Update Attendance"
               >
                 <EditIcon size={18} className="w-[18px] h-[18px]" />
@@ -451,7 +453,7 @@ export default function AttendancePage() {
                       }
                     }
                   }}
-                  className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-amber-700 rounded-lg hover:bg-amber-50 transition cursor-pointer"
+                  className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-amber-700 rounded-lg hover:bg-amber-50 transition cursor-pointer"
                   title="Reset to Present"
                 >
                   <TrashIcon size={18} className="w-[18px] h-[18px]" />
@@ -478,10 +480,8 @@ export default function AttendancePage() {
                 size="sm"
                 onClick={handleMarkAllPresent}
                 loading={isSavingAll}
-                icon={
-                  <CheckCircle2Icon size={14} className="text-emerald-700" />
-                }
-                className="text-xs font-bold border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 text-emerald-800 cursor-pointer"
+                icon={<CheckCircle2Icon size={14} className="text-agm-green" />}
+                className="text-xs font-bold border-agm-box-border bg-agm-green-soft hover:bg-agm-green-soft/80 text-agm-green-dark cursor-pointer"
                 title="Save all active employees as Present in database for this date"
               >
                 Mark All Present
@@ -527,7 +527,7 @@ export default function AttendancePage() {
         />
       </DashboardCardGrid>
 
-      <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+      <div className="p-3.5 sm:p-5 rounded-2xl bg-agm-card border border-agm-border shadow-xs space-y-4">
         <FilterBar
           tabs={[
             { id: "ALL", label: "All Records" },
@@ -721,7 +721,7 @@ export default function AttendancePage() {
             </form.Field>
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-agm-border">
             <Button
               type="button"
               variant="outline"

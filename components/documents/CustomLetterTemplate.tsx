@@ -33,6 +33,10 @@ import {
   useDeleteCustomLetter,
 } from "@/lib/hooks/api-hooks";
 import { toast } from "@/lib/toast";
+import {
+  formatPdfDocumentTitle,
+  printWithDocumentTitle,
+} from "@/lib/utils/format";
 import { useConfirm } from "@/context/ConfirmContext";
 import { CustomLetterSavedModal } from "./CustomLetterSavedModal";
 
@@ -152,7 +156,11 @@ export default function CustomLetterTemplate({
   };
 
   const handlePrint = () => {
-    window.print();
+    const printTitle = formatPdfDocumentTitle(
+      [data.refNumber, data.addressee, data.subject || data.docTitle],
+      "AGM-Company-Letter",
+    );
+    printWithDocumentTitle(printTitle);
   };
 
   const handleStampUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

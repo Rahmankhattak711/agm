@@ -9,6 +9,7 @@ import QuotationTemplate, {
   QuotationMeta,
 } from "@/components/QuotationTemplate";
 import { Product } from "@/lib/hooks/api-hooks";
+import { formatPdfDocumentTitle } from "@/lib/utils/format";
 
 interface QuotationPrintModalProps {
   isOpen: boolean;
@@ -29,7 +30,14 @@ export const QuotationPrintModal: React.FC<QuotationPrintModalProps> = ({
 
   const handlePrint = useReactToPrint({
     contentRef,
-    documentTitle: dynamicQuotationMeta.quotationNo || "Commercial-Quotation",
+    documentTitle: formatPdfDocumentTitle(
+      [
+        dynamicQuotationMeta.quotationNo,
+        dynamicQuotationMeta.customer,
+        dynamicQuotationMeta.project,
+      ],
+      "Commercial-Quotation",
+    ),
   });
 
   if (!isOpen) return null;

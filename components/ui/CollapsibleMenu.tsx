@@ -52,8 +52,10 @@ export const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
 
   const variantStyles = {
     card: "bg-agm-card border border-agm-box-border rounded-2xl shadow-2xs overflow-hidden",
-    bordered: "bg-white border border-agm-box-border rounded-xl overflow-hidden",
-    subtle: "bg-agm-box-bg border border-agm-box-border/80 rounded-xl overflow-hidden",
+    bordered:
+      "bg-white border border-agm-box-border rounded-xl overflow-hidden",
+    subtle:
+      "bg-agm-box-bg border border-agm-box-border/80 rounded-xl overflow-hidden",
     ghost: "border-b border-agm-box-border",
   };
 
@@ -90,10 +92,7 @@ export const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
 
         <div className="flex items-center gap-2 shrink-0">
           {headerRight && (
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="mr-1"
-            >
+            <div onClick={(e) => e.stopPropagation()} className="mr-1">
               {headerRight}
             </div>
           )}

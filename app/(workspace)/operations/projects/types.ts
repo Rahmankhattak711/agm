@@ -61,15 +61,15 @@ export const STATUS_CFG: Record<
 > = {
   PLANNING: {
     label: "Planning",
-    dot: "bg-slate-400",
-    ring: "ring-slate-200",
-    text: "text-slate-600",
+    dot: "bg-agm-subtle",
+    ring: "ring-agm-box-border",
+    text: "text-agm-muted",
   },
   IN_PROGRESS: {
     label: "In Progress",
-    dot: "bg-emerald-500",
-    ring: "ring-emerald-200",
-    text: "text-emerald-700",
+    dot: "bg-agm-green",
+    ring: "ring-agm-green/20",
+    text: "text-agm-green-dark",
   },
   ON_HOLD: {
     label: "On Hold",
@@ -79,9 +79,9 @@ export const STATUS_CFG: Record<
   },
   COMPLETED: {
     label: "Completed",
-    dot: "bg-teal-500",
-    ring: "ring-teal-200",
-    text: "text-teal-700",
+    dot: "bg-agm-green",
+    ring: "ring-agm-green/30",
+    text: "text-agm-green-dark",
   },
   CANCELLED: {
     label: "Cancelled",
@@ -92,17 +92,20 @@ export const STATUS_CFG: Record<
 };
 
 export const PRIORITY_CFG: Record<string, { label: string; color: string }> = {
-  LOW: { label: "Low", color: "text-slate-500 bg-slate-50   border-slate-200" },
+  LOW: {
+    label: "Low",
+    color: "text-agm-muted bg-agm-box-bg border-agm-box-border",
+  },
   MEDIUM: {
     label: "Medium",
-    color: "text-blue-600  bg-blue-50    border-blue-200",
+    color: "text-agm-navy bg-agm-card border-agm-box-border",
   },
   HIGH: {
     label: "High",
-    color: "text-amber-700 bg-amber-50   border-amber-200",
+    color: "text-amber-700 bg-amber-50 border-amber-200",
   },
   URGENT: {
     label: "Urgent",
-    color: "text-rose-700  bg-rose-50    border-rose-200",
+    color: "text-rose-700 bg-rose-50 border-rose-200",
   },
 };

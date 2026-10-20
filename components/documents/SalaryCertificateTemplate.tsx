@@ -26,6 +26,10 @@ import {
   SalaryCertificateRecord,
 } from "@/lib/hooks/api-hooks";
 import { toast } from "@/lib/toast";
+import {
+  formatPdfDocumentTitle,
+  printWithDocumentTitle,
+} from "@/lib/utils/format";
 import { useConfirm } from "@/context/ConfirmContext";
 import { SalaryCertificateSavedModal } from "./SalaryCertificateSavedModal";
 
@@ -76,7 +80,11 @@ export default function SalaryCertificateTemplate({
   }, [initialData]);
 
   const handlePrint = () => {
-    window.print();
+    const printTitle = formatPdfDocumentTitle(
+      [data.refNumber, data.employeeName, "Salary Certificate"],
+      "AGM-Salary-Certificate",
+    );
+    printWithDocumentTitle(printTitle);
   };
 
   const handleNewBlank = () => {

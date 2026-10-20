@@ -140,11 +140,11 @@ export default function BonusesPage() {
         header: "Employee Details",
         cell: ({ row }) => (
           <div>
-            <span className="font-bold text-slate-900 block text-xs">
+            <span className="font-bold text-agm-text block text-xs">
               {row.original.employee?.firstName || ""}{" "}
               {row.original.employee?.lastName || "Staff"}
             </span>
-            <span className="font-mono text-[10px] text-teal-800 font-bold bg-teal-50 border border-teal-200 px-1.5 py-0.2 rounded mt-0.5 inline-block">
+            <span className="font-mono text-[10px] text-agm-green-dark font-bold bg-agm-green-soft border border-agm-green/20 px-1.5 py-0.2 rounded mt-0.5 inline-block">
               {row.original.employee?.employeeCode || "N/A"}
             </span>
           </div>
@@ -154,7 +154,7 @@ export default function BonusesPage() {
         accessorKey: "type",
         header: "Incentive Type",
         cell: ({ row }) => (
-          <span className="font-semibold text-slate-800 text-xs uppercase tracking-wide">
+          <span className="font-semibold text-agm-text text-xs uppercase tracking-wide">
             {row.original.type.replace("_", " ")}
           </span>
         ),
@@ -163,7 +163,7 @@ export default function BonusesPage() {
         accessorKey: "period",
         header: "Payroll Period",
         cell: ({ row }) => (
-          <span className="font-mono text-xs text-slate-700 font-medium">
+          <span className="font-mono text-xs text-agm-muted font-medium">
             {String(row.original.month).padStart(2, "0")}/{row.original.year}
           </span>
         ),
@@ -172,7 +172,7 @@ export default function BonusesPage() {
         accessorKey: "amount",
         header: "Bonus Amount",
         cell: ({ row }) => (
-          <span className="font-mono font-black text-emerald-800 text-xs">
+          <span className="font-mono font-black text-agm-green-dark text-xs">
             {formatAed(row.original.amount)}
           </span>
         ),
@@ -188,7 +188,7 @@ export default function BonusesPage() {
               <span
                 className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                   isApproved
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                    ? "bg-agm-green-soft text-agm-green-dark border-agm-green/20"
                     : "bg-amber-50 text-amber-800 border-amber-200"
                 }`}
               >
@@ -207,8 +207,8 @@ export default function BonusesPage() {
         accessorKey: "reason",
         header: "Notes / Justification",
         cell: ({ row }) => (
-          <span className="text-xs text-slate-600 truncate max-w-xs block font-medium">
-            {row.original.reason || <span className="text-slate-300">—</span>}
+          <span className="text-xs text-agm-muted truncate max-w-xs block font-medium">
+            {row.original.reason || <span className="text-agm-subtle">—</span>}
           </span>
         ),
       },
@@ -240,7 +240,7 @@ export default function BonusesPage() {
                       isApproved: true,
                     });
                   }}
-                  className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
+                  className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-agm-green rounded-lg hover:bg-agm-green-soft transition cursor-pointer"
                   title="Approve Bonus"
                 >
                   <CheckIcon size={18} className="w-[18px] h-[18px]" />
@@ -269,7 +269,7 @@ export default function BonusesPage() {
                     }
                   }
                 }}
-                className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
                 title="Delete Grant"
               >
                 <TrashIcon size={18} className="w-[18px] h-[18px]" />
@@ -335,7 +335,7 @@ export default function BonusesPage() {
         />
       </DashboardCardGrid>
 
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
+      <div className="p-5 rounded-2xl bg-agm-card border border-agm-border shadow-xs space-y-4">
         <FilterBar
           tabs={[
             { id: "ALL", label: "All Grants" },
@@ -518,7 +518,7 @@ export default function BonusesPage() {
             )}
           </form.Field>
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-agm-border">
             <Button
               type="button"
               variant="outline"

@@ -7,11 +7,11 @@ export function StatusBadge({ status }: { status: ProjectStatus }) {
   const isLive = status === "IN_PROGRESS";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ring-1 ${cfg.ring} ${cfg.text} bg-white shadow-2xs whitespace-nowrap`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ring-1 ${cfg.ring} ${cfg.text} bg-agm-card shadow-2xs whitespace-nowrap`}
     >
       <span className="relative flex h-2 w-2">
         {isLive && (
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-agm-green opacity-75" />
         )}
         <span
           className={`relative inline-flex rounded-full h-2 w-2 ${cfg.dot}`}

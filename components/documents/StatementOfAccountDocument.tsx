@@ -214,9 +214,30 @@ export const StatementOfAccountDocument: React.FC<
                   </h1>
                   <div className="h-[1.5px] bg-[#28633a] flex-1 max-w-[120px]"></div>
                 </div>
-                <div className="text-center text-[10px] print:text-[9px] tracking-[0.25em] text-[#657484] font-semibold uppercase -mt-1.5 mb-3.5 print:mb-1.5">
+                <div className="text-center text-[10px] print:text-[9px] tracking-[0.25em] text-[#657484] font-semibold uppercase -mt-1.5 mb-2.5 print:mb-1.5">
                   CUSTOMER ACCOUNT STATEMENT
                 </div>
+                {(data.customer?.name || projectName) && (
+                  <div className="text-center text-xs print:text-[11px] text-[#263b4d] font-semibold -mt-1.5 mb-3 print:mb-1.5">
+                    {data.customer?.name && (
+                      <span>
+                        Client:{" "}
+                        <strong className="font-bold">
+                          {data.customer.name}
+                        </strong>
+                      </span>
+                    )}
+                    {data.customer?.name && projectName && (
+                      <span className="mx-2 text-slate-400">•</span>
+                    )}
+                    {projectName && (
+                      <span>
+                        Project:{" "}
+                        <strong className="font-bold">{projectName}</strong>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="px-8 print:px-5 mb-3 print:mb-1.5">
