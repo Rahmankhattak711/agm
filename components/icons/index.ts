@@ -89,3 +89,4 @@ export * from "./PaintbrushIcon";
 export * from "./ZapIcon";
 export * from "./WrenchIcon";
 export * from "./UserPlusIcon";
+export * from "./MoreVerticalIcon";

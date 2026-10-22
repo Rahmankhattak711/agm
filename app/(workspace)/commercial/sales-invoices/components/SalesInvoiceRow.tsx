@@ -11,6 +11,7 @@ import {
   PrintIcon,
   EditIcon,
   TrashIcon,
+  MoreVerticalIcon,
 } from "@/components/icons";
 import { SalesInvoice } from "@/lib/hooks/api-hooks";
 import { formatNumber } from "./types";
@@ -25,6 +26,8 @@ export interface SalesInvoiceRowProps {
   onOpenPayment: (inv: SalesInvoice) => void;
   onEdit: (inv: SalesInvoice) => void;
   onDelete: (inv: SalesInvoice) => void;
+  isMenuOpen: boolean;
+  onOpenMenu: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
@@ -36,6 +39,8 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
   onOpenPayment,
   onEdit,
   onDelete,
+  isMenuOpen,
+  onOpenMenu,
 }) => {
   const status = getInvoiceStatus(inv.status);
   return (
@@ -109,102 +114,45 @@ export const SalesInvoiceRow: React.FC<SalesInvoiceRowProps> = ({
           </Badge>
         </TableCell>
         <TableCell className="py-2 px-2 sm:pr-3 text-right print:hidden whitespace-nowrap">
-          <div className="flex items-center justify-end gap-1">
-            <Button
+          <div className="flex items-center justify-end gap-1.5">
+            <button
               type="button"
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPrint(inv);
-              }}
-              className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
-              title="Print Tax Invoice"
-            >
-              <PrintIcon size={18} className="w-[18px] h-[18px]" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(inv);
-              }}
-              className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-teal-800 rounded-lg hover:bg-teal-50 transition cursor-pointer"
-              title="Edit Invoice"
-            >
-              <EditIcon size={18} className="w-[18px] h-[18px]" />
-            </Button>
-            {inv.status === "DRAFT" && (
-              <Button
-                variant="dark"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPost(inv.id);
-                }}
-                icon={
-                  <FileCheck2Icon size={15} className="w-[15px] h-[15px]" />
-                }
-                className="text-[11px] font-bold bg-agm-green text-white hover:bg-agm-green-2 cursor-pointer h-8 px-2.5 gap-1.5"
-                title="Post to General Ledger"
-              >
-                Post
-              </Button>
-            )}
-            {inv.status !== "DRAFT" && inv.status !== "PAID" && (
-              <Button
-                variant="dark"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenPayment(inv);
-                }}
-                icon={
-                  <CreditCardIcon size={15} className="w-[15px] h-[15px]" />
-                }
-                className="text-[11px] font-bold bg-teal-800 text-white hover:bg-teal-900 cursor-pointer h-8 px-2.5 gap-1.5"
-                title="Record Payment"
-              >
-                Receive
-              </Button>
-            )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(inv);
-              }}
-              className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-rose-700 rounded-lg hover:bg-rose-50 transition cursor-pointer"
-              title="Delete Invoice"
-            >
-              <TrashIcon size={18} className="w-[18px] h-[18px]" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleExpand();
               }}
-              className={`h-8 w-8 p-0 flex items-center justify-center rounded-lg transition cursor-pointer ${
+              className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
                 isExpanded
-                  ? "text-emerald-800 bg-emerald-100"
-                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200/80 shadow-2xs"
+                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent"
               }`}
               title={isExpanded ? "Collapse Details" : "View Invoice Details"}
+              aria-label={isExpanded ? "Collapse Details" : "View Invoice Details"}
             >
               <ChevronDownIcon
-                size={18}
-                className={`w-[18px] h-[18px] transition-transform duration-200 ${
-                  isExpanded ? "rotate-180 text-emerald-800" : ""
+                size={15}
+                className={`transition-transform duration-200 ${
+                  isExpanded ? "rotate-180 text-emerald-700" : ""
                 }`}
               />
-            </Button>
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenMenu(e);
+              }}
+              className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                isMenuOpen
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent hover:border-slate-200"
+              }`}
+              title="More actions"
+              aria-label="More actions"
+            >
+              <MoreVerticalIcon size={16} />
+            </button>
           </div>
         </TableCell>
       </TableRow>
