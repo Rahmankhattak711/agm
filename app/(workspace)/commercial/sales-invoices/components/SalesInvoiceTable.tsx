@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
   RegisterTable,
@@ -91,6 +92,7 @@ export const SalesInvoiceTable: React.FC<SalesInvoiceTableProps> = ({
   isFiltered = false,
   onClearFilters,
 }) => {
+  const router = useRouter();
   const [activeMenu, setActiveMenu] = useState<{
     id: string;
     inv: SalesInvoice;
@@ -301,23 +303,19 @@ export const SalesInvoiceTable: React.FC<SalesInvoiceTableProps> = ({
                 </button>
               )}
 
-            {/* View Details */}
+            {/* Open Full Invoice Page */}
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 const invId = activeMenu.inv.id;
                 handleCloseMenu();
-                onToggleExpand(invId);
+                router.push(`/commercial/sales-invoices/${invId}`);
               }}
-              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100/70 transition-colors cursor-pointer text-left group"
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:bg-indigo-50 transition-colors cursor-pointer text-left group"
             >
-              <EyeIcon size={14} className="text-slate-500 shrink-0" />
-              <span className="truncate">
-                {expandedInvoiceId === activeMenu.inv.id
-                  ? "Collapse Details"
-                  : "View Details"}
-              </span>
+              <EyeIcon size={14} className="text-indigo-600 shrink-0" />
+              <span className="truncate">View Full Invoice</span>
             </button>
 
             {/* Delete Option */}

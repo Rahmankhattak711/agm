@@ -1,4 +1,6 @@
 import prisma from "@/lib/prisma";
+import { AccountResolverService } from "@/app/(workspace)/finance/accounts";
+import { FiscalLockService } from "./modules/accounting/services/fiscal-lock.service";
 
 export async function findOrCreateAccount(
   code: string,
@@ -28,70 +30,133 @@ export async function findOrCreateAccount(
   return account;
 }
 
-let cachedStandardAccounts: any = null;
-
 export async function getStandardAccounts() {
-  if (cachedStandardAccounts) {
-    return cachedStandardAccounts;
-  }
-  const [ar, ap, bank, cash, outputVat, inputVat, salesRevenue, materialCost] =
-    await Promise.all([
-      findOrCreateAccount("1200", "Account Recievable", "ASSET"),
-      findOrCreateAccount("2000", "Accounts Payable", "LIABILITY"),
-      findOrCreateAccount("1020", "RAK Bank", "ASSET"),
-      findOrCreateAccount("1010", "Cash on Hand", "ASSET"),
-      findOrCreateAccount("2210", "VAT Output Tax Payable", "LIABILITY"),
-      findOrCreateAccount("2200", "VAT Input Tax Payable", "LIABILITY"),
-      findOrCreateAccount("4000", "Service Income", "REVENUE"),
-      findOrCreateAccount("5010", "Purchase Materials", "EXPENSE"),
-    ]);
-
-  cachedStandardAccounts = {
-    ar,
-    ap,
-    bank,
-    cash,
-    outputVat,
-    inputVat,
-    salesRevenue,
-    materialCost,
-  };
-  return cachedStandardAccounts;
+  return await AccountResolverService.getCommercialSystemAccounts();
 }
 
+/**
+ * Posts Sales Invoice to General Ledger:
+ * Dr. Accounts Receivable (Total Gross Amount)
+ * Dr. Sales Discount (Discount Amount, if applicable)
+ *   Cr. Sales Revenue (Gross Subtotal)
+ *   Cr. VAT Output Tax (VAT 5% Amount, if applicable)
+ */
 export async function postSalesInvoiceJournalEntry(params: {
   invoiceId: string;
   invoiceNumber: string;
   invoiceDate: Date;
   customerName: string;
+  customerId?: string | null;
+  projectId?: string | null;
   subtotal: number;
+  discount?: number;
+  discountAccountId?: string | null;
   vatAmount: number;
   totalAmount: number;
   userId: string;
 }) {
+  await FiscalLockService.assertPeriodNotLocked(params.invoiceDate);
+
   const accounts = await getStandardAccounts();
 
-  const entryNumber = `JE-INV-${params.invoiceNumber}-${Date.now().toString().slice(-4)}`;
+  const cleanInv = params.invoiceNumber.replace(/^INV-(?:20\d{2}-)?/i, "").replace(/^INV-/i, "");
+  const entryNumber = `JE-INV-${cleanInv}`;
 
-  const lines: any[] = [
-    {
-      accountId: accounts.ar.id,
-      debit: params.totalAmount,
-      credit: 0,
-    },
-    {
-      accountId: accounts.salesRevenue.id,
-      debit: 0,
-      credit: params.subtotal,
-    },
-  ];
+  const discountAmount = Math.max(0, Math.round(Number(params.discount || 0) * 100) / 100);
+  const vatAmount = Math.max(0, Math.round(Number(params.vatAmount || 0) * 100) / 100);
+  const totalAmount = Math.round(Number(params.totalAmount || 0) * 100) / 100;
+  const netSubtotal = Math.round((totalAmount - vatAmount) * 100) / 100;
+  const grossSubtotal = Math.round((netSubtotal + discountAmount) * 100) / 100;
 
-  if (params.vatAmount > 0) {
+  const lines: any[] = [];
+
+  // 1. Debit Accounts Receivable (Full Total Amount Owed)
+  lines.push({
+    accountId: accounts.ar.id,
+    debit: totalAmount,
+    credit: 0,
+    currency: "AED",
+    fxRate: 1,
+    debitAed: totalAmount,
+    creditAed: 0,
+    contactId: params.customerId || null,
+    contactName: params.customerName || null,
+    projectId: params.projectId || null,
+    description: `Sales Invoice ${params.invoiceNumber} - ${params.customerName}`,
+  });
+
+  // 2. Debit Sales Discount (if applicable)
+  let discountApplied = false;
+  if (discountAmount > 0) {
+    const discountAcc = params.discountAccountId
+      ? await prisma.chartOfAccount.findUnique({ where: { id: params.discountAccountId } })
+      : accounts.salesDiscount;
+    const targetAccountId = discountAcc?.id || accounts.salesDiscount?.id || accounts.expenseDiscount?.id;
+
+    if (targetAccountId) {
+      lines.push({
+        accountId: targetAccountId,
+        debit: discountAmount,
+        credit: 0,
+        currency: "AED",
+        fxRate: 1,
+        debitAed: discountAmount,
+        creditAed: 0,
+        contactId: params.customerId || null,
+        contactName: params.customerName || null,
+        projectId: params.projectId || null,
+        description: `Sales Discount granted on Invoice ${params.invoiceNumber}`,
+      });
+      discountApplied = true;
+    }
+  }
+
+  // 3. Credit Sales Revenue
+  // If discount was linked, credit grossSubtotal (Revenue - Discount = Net)
+  // If no discount or unlinked, credit netSubtotal so Double-Entry is strictly balanced
+  const revenueCredit = discountApplied ? grossSubtotal : netSubtotal;
+  lines.push({
+    accountId: accounts.salesRevenue.id,
+    debit: 0,
+    credit: revenueCredit,
+    currency: "AED",
+    fxRate: 1,
+    debitAed: 0,
+    creditAed: revenueCredit,
+    contactId: params.customerId || null,
+    contactName: params.customerName || null,
+    projectId: params.projectId || null,
+    description: `Gross Sales Revenue - Invoice ${params.invoiceNumber}`,
+  });
+
+  // 4. Credit Output VAT (if applicable)
+  if (vatAmount > 0) {
     lines.push({
       accountId: accounts.outputVat.id,
       debit: 0,
-      credit: params.vatAmount,
+      credit: vatAmount,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: 0,
+      creditAed: vatAmount,
+      taxRate: 5,
+      taxType: "STANDARD_SALES",
+      taxAmount: vatAmount,
+      contactId: params.customerId || null,
+      contactName: params.customerName || null,
+      projectId: params.projectId || null,
+      description: `Output VAT 5% for ${params.invoiceNumber}`,
     });
+  }
+
+  // Strict double-entry balancing validation
+  const totalDebit = lines.reduce((s, l) => s + Number(l.debitAed), 0);
+  const totalCredit = lines.reduce((s, l) => s + Number(l.creditAed), 0);
+  const diff = Math.abs(totalDebit - totalCredit);
+  if (diff > 0.01) {
+    throw new Error(
+      `Cannot post unbalanced journal entry for Invoice ${params.invoiceNumber}. Total Debit: AED ${totalDebit.toFixed(2)}, Total Credit: AED ${totalCredit.toFixed(2)} (Diff: ${diff.toFixed(2)})`
+    );
   }
 
   const journalEntry = await prisma.journalEntry.create({
@@ -106,26 +171,69 @@ export async function postSalesInvoiceJournalEntry(params: {
         create: lines,
       },
     },
+    include: {
+      lines: true,
+    },
   });
 
   return journalEntry;
 }
 
+/**
+ * Post Customer Payment to General Ledger:
+ * Dr. Bank / Cash (Amount)
+ *   Cr. Accounts Receivable (Amount)
+ */
 export async function postCustomerPaymentJournalEntry(params: {
   paymentId: string;
   receiptNumber: string;
   paymentDate: Date;
   customerName: string;
+  customerId?: string | null;
+  projectId?: string | null;
   amount: number;
   paymentMethod: string;
   invoiceNumber?: string;
   userId: string;
 }) {
+  await FiscalLockService.assertPeriodNotLocked(params.paymentDate);
+
   const accounts = await getStandardAccounts();
   const debitAccount =
     params.paymentMethod === "CASH" ? accounts.cash : accounts.bank;
 
-  const entryNumber = `JE-REC-${params.receiptNumber}-${Date.now().toString().slice(-4)}`;
+  const cleanRec = params.receiptNumber.replace(/^REC-(?:20\d{2}-)?/i, "").replace(/^REC-/i, "");
+  const entryNumber = `JE-REC-${cleanRec}`;
+  const amt = Math.round(Number(params.amount) * 100) / 100;
+
+  const lines = [
+    {
+      accountId: debitAccount.id,
+      debit: amt,
+      credit: 0,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: amt,
+      creditAed: 0,
+      contactId: params.customerId || null,
+      contactName: params.customerName || null,
+      projectId: params.projectId || null,
+      description: `Receipt ${params.receiptNumber} - Payment received (${params.paymentMethod})`,
+    },
+    {
+      accountId: accounts.ar.id,
+      debit: 0,
+      credit: amt,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: 0,
+      creditAed: amt,
+      contactId: params.customerId || null,
+      contactName: params.customerName || null,
+      projectId: params.projectId || null,
+      description: `Customer payment applied: ${params.receiptNumber}${params.invoiceNumber ? ` (Inv: ${params.invoiceNumber})` : ""}`,
+    },
+  ];
 
   const journalEntry = await prisma.journalEntry.create({
     data: {
@@ -136,59 +244,128 @@ export async function postCustomerPaymentJournalEntry(params: {
       isPosted: true,
       createdBy: params.userId,
       lines: {
-        create: [
-          {
-            accountId: debitAccount.id,
-            debit: params.amount,
-            credit: 0,
-          },
-          {
-            accountId: accounts.ar.id,
-            debit: 0,
-            credit: params.amount,
-          },
-        ],
+        create: lines,
       },
+    },
+    include: {
+      lines: true,
     },
   });
 
   return journalEntry;
 }
 
+/**
+ * Post Supplier Bill to General Ledger:
+ * Dr. Purchase Materials / Expense (Gross Subtotal)
+ * Dr. Input VAT (VAT 5% Amount, if applicable)
+ *   Cr. Accounts Payable (Total Amount)
+ *   Cr. Purchase Discount (Discount, if applicable)
+ */
 export async function postSupplierBillJournalEntry(params: {
   billId: string;
   billNumber: string;
   billDate: Date;
   supplierName: string;
+  supplierId?: string | null;
+  projectId?: string | null;
   subtotal: number;
+  discount?: number;
   vatAmount: number;
   totalAmount: number;
   userId: string;
 }) {
+  await FiscalLockService.assertPeriodNotLocked(params.billDate);
+
   const accounts = await getStandardAccounts();
-  const entryNumber = `JE-BILL-${params.billNumber}-${Date.now().toString().slice(-4)}`;
+  const cleanBill = params.billNumber.replace(/^BILL-(?:20\d{2}-)?/i, "").replace(/^BILL-/i, "");
+  const entryNumber = `JE-BILL-${cleanBill}`;
 
-  const lines: any[] = [
-    {
-      accountId: accounts.materialCost.id,
-      debit: params.subtotal,
-      credit: 0,
-    },
-  ];
+  const discountAmount = Math.max(0, Math.round(Number(params.discount || 0) * 100) / 100);
+  const vatAmount = Math.max(0, Math.round(Number(params.vatAmount || 0) * 100) / 100);
+  const totalAmount = Math.round(Number(params.totalAmount || 0) * 100) / 100;
+  const netSubtotal = Math.round((totalAmount - vatAmount) * 100) / 100;
+  const grossSubtotal = Math.round((netSubtotal + discountAmount) * 100) / 100;
 
-  if (params.vatAmount > 0) {
+  const lines: any[] = [];
+
+  // 1. Debit Purchase Materials / Expense
+  const expenseDebit = discountAmount > 0 ? grossSubtotal : netSubtotal;
+  lines.push({
+    accountId: accounts.materialCost.id,
+    debit: expenseDebit,
+    credit: 0,
+    currency: "AED",
+    fxRate: 1,
+    debitAed: expenseDebit,
+    creditAed: 0,
+    contactId: params.supplierId || null,
+    contactName: params.supplierName || null,
+    projectId: params.projectId || null,
+    description: `Purchase Materials / Expenses - Bill ${params.billNumber}`,
+  });
+
+  // 2. Debit Input VAT (if applicable)
+  if (vatAmount > 0) {
     lines.push({
       accountId: accounts.inputVat.id,
-      debit: params.vatAmount,
+      debit: vatAmount,
       credit: 0,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: vatAmount,
+      creditAed: 0,
+      taxRate: 5,
+      taxType: "STANDARD_PURCHASES",
+      taxAmount: vatAmount,
+      contactId: params.supplierId || null,
+      contactName: params.supplierName || null,
+      projectId: params.projectId || null,
+      description: `Input VAT 5% on Bill ${params.billNumber}`,
     });
   }
 
+  // 3. Credit Accounts Payable
   lines.push({
     accountId: accounts.ap.id,
     debit: 0,
-    credit: params.totalAmount,
+    credit: totalAmount,
+    currency: "AED",
+    fxRate: 1,
+    debitAed: 0,
+    creditAed: totalAmount,
+    contactId: params.supplierId || null,
+    contactName: params.supplierName || null,
+    projectId: params.projectId || null,
+    description: `Accounts Payable - Bill ${params.billNumber} (${params.supplierName})`,
   });
+
+  // 4. Credit Purchase Discount (if applicable)
+  if (discountAmount > 0) {
+    lines.push({
+      accountId: accounts.expenseDiscount.id,
+      debit: 0,
+      credit: discountAmount,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: 0,
+      creditAed: discountAmount,
+      contactId: params.supplierId || null,
+      contactName: params.supplierName || null,
+      projectId: params.projectId || null,
+      description: `Purchase Discount received on Bill ${params.billNumber}`,
+    });
+  }
+
+  // Double-entry validation
+  const totalDebit = lines.reduce((s, l) => s + Number(l.debitAed), 0);
+  const totalCredit = lines.reduce((s, l) => s + Number(l.creditAed), 0);
+  const diff = Math.abs(totalDebit - totalCredit);
+  if (diff > 0.01) {
+    throw new Error(
+      `Cannot post unbalanced journal entry for Bill ${params.billNumber}. Total Debit: AED ${totalDebit.toFixed(2)}, Total Credit: AED ${totalCredit.toFixed(2)}`
+    );
+  }
 
   const journalEntry = await prisma.journalEntry.create({
     data: {
@@ -202,26 +379,69 @@ export async function postSupplierBillJournalEntry(params: {
         create: lines,
       },
     },
+    include: {
+      lines: true,
+    },
   });
 
   return journalEntry;
 }
 
+/**
+ * Post Supplier Payment to General Ledger:
+ * Dr. Accounts Payable (Amount)
+ *   Cr. Bank / Cash (Amount)
+ */
 export async function postSupplierPaymentJournalEntry(params: {
   paymentId: string;
   paymentNumber: string;
   paymentDate: Date;
   supplierName: string;
+  supplierId?: string | null;
+  projectId?: string | null;
   amount: number;
   paymentMethod: string;
   billNumber?: string;
   userId: string;
 }) {
+  await FiscalLockService.assertPeriodNotLocked(params.paymentDate);
+
   const accounts = await getStandardAccounts();
   const creditAccount =
     params.paymentMethod === "CASH" ? accounts.cash : accounts.bank;
 
-  const entryNumber = `JE-PAY-${params.paymentNumber}-${Date.now().toString().slice(-4)}`;
+  const cleanPay = params.paymentNumber.replace(/^PAY-(?:20\d{2}-)?/i, "").replace(/^PAY-/i, "");
+  const entryNumber = `JE-PAY-${cleanPay}`;
+  const amt = Math.round(Number(params.amount) * 100) / 100;
+
+  const lines = [
+    {
+      accountId: accounts.ap.id,
+      debit: amt,
+      credit: 0,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: amt,
+      creditAed: 0,
+      contactId: params.supplierId || null,
+      contactName: params.supplierName || null,
+      projectId: params.projectId || null,
+      description: `Accounts payable settlement: ${params.paymentNumber}`,
+    },
+    {
+      accountId: creditAccount.id,
+      debit: 0,
+      credit: amt,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: 0,
+      creditAed: amt,
+      contactId: params.supplierId || null,
+      contactName: params.supplierName || null,
+      projectId: params.projectId || null,
+      description: `Supplier payment disbursement: ${params.paymentNumber}${params.billNumber ? ` (Bill: ${params.billNumber})` : ""}`,
+    },
+  ];
 
   const journalEntry = await prisma.journalEntry.create({
     data: {
@@ -232,58 +452,93 @@ export async function postSupplierPaymentJournalEntry(params: {
       isPosted: true,
       createdBy: params.userId,
       lines: {
-        create: [
-          {
-            accountId: accounts.ap.id,
-            debit: params.amount,
-            credit: 0,
-          },
-          {
-            accountId: creditAccount.id,
-            debit: 0,
-            credit: params.amount,
-          },
-        ],
+        create: lines,
       },
+    },
+    include: {
+      lines: true,
     },
   });
 
   return journalEntry;
 }
 
+/**
+ * Post Credit Note (Sales Return) to General Ledger:
+ * Dr. Sales Revenue (Subtotal)
+ * Dr. Output VAT (VAT Amount, if applicable)
+ *   Cr. Accounts Receivable (Total Amount)
+ */
 export async function postCreditNoteJournalEntry(params: {
   creditNoteId: string;
   creditNoteNumber: string;
   returnDate: Date;
   customerName: string;
+  customerId?: string | null;
+  projectId?: string | null;
   subtotal: number;
+  discount?: number;
   vatAmount: number;
   totalAmount: number;
   userId: string;
 }) {
+  await FiscalLockService.assertPeriodNotLocked(params.returnDate);
+
   const accounts = await getStandardAccounts();
-  const entryNumber = `JE-CN-${params.creditNoteNumber}-${Date.now().toString().slice(-4)}`;
+  const cleanCn = params.creditNoteNumber.replace(/^CN-(?:20\d{2}-)?/i, "").replace(/^CN-/i, "");
+  const entryNumber = `JE-CN-${cleanCn}`;
+
+  const vatAmount = Math.max(0, Math.round(Number(params.vatAmount || 0) * 100) / 100);
+  const totalAmount = Math.round(Number(params.totalAmount || 0) * 100) / 100;
+  const netSubtotal = Math.round((totalAmount - vatAmount) * 100) / 100;
 
   const lines: any[] = [
     {
       accountId: accounts.salesRevenue.id,
-      debit: params.subtotal,
+      debit: netSubtotal,
       credit: 0,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: netSubtotal,
+      creditAed: 0,
+      contactId: params.customerId || null,
+      contactName: params.customerName || null,
+      projectId: params.projectId || null,
+      description: `Credit Note revenue reversal: ${params.creditNoteNumber}`,
     },
   ];
 
-  if (params.vatAmount > 0) {
+  if (vatAmount > 0) {
     lines.push({
       accountId: accounts.outputVat.id,
-      debit: params.vatAmount,
+      debit: vatAmount,
       credit: 0,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: vatAmount,
+      creditAed: 0,
+      taxRate: 5,
+      taxType: "STANDARD_SALES",
+      taxAmount: vatAmount,
+      contactId: params.customerId || null,
+      contactName: params.customerName || null,
+      projectId: params.projectId || null,
+      description: `Output VAT reversal on Credit Note ${params.creditNoteNumber}`,
     });
   }
 
   lines.push({
     accountId: accounts.ar.id,
     debit: 0,
-    credit: params.totalAmount,
+    credit: totalAmount,
+    currency: "AED",
+    fxRate: 1,
+    debitAed: 0,
+    creditAed: totalAmount,
+    contactId: params.customerId || null,
+    contactName: params.customerName || null,
+    projectId: params.projectId || null,
+    description: `Credit Note receivable reduction: ${params.creditNoteNumber} - ${params.customerName}`,
   });
 
   const journalEntry = await prisma.journalEntry.create({
@@ -298,42 +553,88 @@ export async function postCreditNoteJournalEntry(params: {
         create: lines,
       },
     },
+    include: {
+      lines: true,
+    },
   });
 
   return journalEntry;
 }
 
+/**
+ * Post Debit Note (Purchase Return) to General Ledger:
+ * Dr. Accounts Payable (Total Amount)
+ *   Cr. Purchase Materials / Expense (Subtotal)
+ *   Cr. Input VAT (VAT Amount, if applicable)
+ */
 export async function postDebitNoteJournalEntry(params: {
   debitNoteId: string;
   debitNoteNumber: string;
   returnDate: Date;
   supplierName: string;
+  supplierId?: string | null;
+  projectId?: string | null;
   subtotal: number;
+  discount?: number;
   vatAmount: number;
   totalAmount: number;
   userId: string;
 }) {
+  await FiscalLockService.assertPeriodNotLocked(params.returnDate);
+
   const accounts = await getStandardAccounts();
-  const entryNumber = `JE-DN-${params.debitNoteNumber}-${Date.now().toString().slice(-4)}`;
+  const cleanDn = params.debitNoteNumber.replace(/^DN-(?:20\d{2}-)?/i, "").replace(/^DN-/i, "");
+  const entryNumber = `JE-DN-${cleanDn}`;
+
+  const vatAmount = Math.max(0, Math.round(Number(params.vatAmount || 0) * 100) / 100);
+  const totalAmount = Math.round(Number(params.totalAmount || 0) * 100) / 100;
+  const netSubtotal = Math.round((totalAmount - vatAmount) * 100) / 100;
 
   const lines: any[] = [
     {
       accountId: accounts.ap.id,
-      debit: params.totalAmount,
+      debit: totalAmount,
       credit: 0,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: totalAmount,
+      creditAed: 0,
+      contactId: params.supplierId || null,
+      contactName: params.supplierName || null,
+      projectId: params.projectId || null,
+      description: `Debit Note payable reduction: ${params.debitNoteNumber} - ${params.supplierName}`,
     },
     {
       accountId: accounts.materialCost.id,
       debit: 0,
-      credit: params.subtotal,
+      credit: netSubtotal,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: 0,
+      creditAed: netSubtotal,
+      contactId: params.supplierId || null,
+      contactName: params.supplierName || null,
+      projectId: params.projectId || null,
+      description: `Debit Note material purchase return: ${params.debitNoteNumber}`,
     },
   ];
 
-  if (params.vatAmount > 0) {
+  if (vatAmount > 0) {
     lines.push({
       accountId: accounts.inputVat.id,
       debit: 0,
-      credit: params.vatAmount,
+      credit: vatAmount,
+      currency: "AED",
+      fxRate: 1,
+      debitAed: 0,
+      creditAed: vatAmount,
+      taxRate: 5,
+      taxType: "STANDARD_PURCHASES",
+      taxAmount: vatAmount,
+      contactId: params.supplierId || null,
+      contactName: params.supplierName || null,
+      projectId: params.projectId || null,
+      description: `Input VAT reversal on Debit Note ${params.debitNoteNumber}`,
     });
   }
 
@@ -348,6 +649,9 @@ export async function postDebitNoteJournalEntry(params: {
       lines: {
         create: lines,
       },
+    },
+    include: {
+      lines: true,
     },
   });
 

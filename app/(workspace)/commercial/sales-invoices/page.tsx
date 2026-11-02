@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import {
   useSalesInvoices,
@@ -28,7 +29,11 @@ import {
   EditSalesInvoiceModal,
 } from "@/app/(workspace)/commercial/sales-invoices/components";
 
-export default function SalesInvoicesPage() {
+function SalesInvoicesContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams.get("search") || "";
+
   const { data: invoices = [], isLoading, error } = useSalesInvoices();
   const { data: products = [] } = useProducts();
 
@@ -42,7 +47,7 @@ export default function SalesInvoicesPage() {
   const [selectedInvoiceForEditor, setSelectedInvoiceForEditor] =
     useState<SalesInvoice | null>(null);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(urlSearch);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(
     null,
@@ -56,6 +61,25 @@ export default function SalesInvoicesPage() {
   const [expandedInvoiceId, setExpandedInvoiceId] = useState<string | null>(
     null,
   );
+
+  useEffect(() => {
+    if (urlSearch) {
+      setSearch(urlSearch);
+    }
+  }, [urlSearch]);
+
+  useEffect(() => {
+    if (urlSearch && invoices.length > 0) {
+      const match = invoices.find(
+        (inv) =>
+          inv.invoiceNumber.toLowerCase() === urlSearch.toLowerCase() ||
+          inv.id.toLowerCase() === urlSearch.toLowerCase(),
+      );
+      if (match) {
+        router.push(`/commercial/sales-invoices/${match.id}`);
+      }
+    }
+  }, [urlSearch, invoices, router]);
 
   const handlePostInvoice = async (invoiceId: string) => {
     try {
@@ -277,5 +301,13 @@ export default function SalesInvoicesPage() {
 
       <PrintableTaxInvoice invoice={selectedInvoice} />
     </div>
+  );
+}
+
+export default function SalesInvoicesPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading Sales Invoices...</div>}>
+      <SalesInvoicesContent />
+    </Suspense>
   );
 }

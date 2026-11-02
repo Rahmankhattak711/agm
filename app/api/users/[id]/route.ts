@@ -36,7 +36,7 @@ const safeUserSelect = {
 
 export async function GET(request: Request, context: RouteContext) {
   try {
-    await requireUser(["SUPER_ADMIN"], { isApi: true });
+    await requireUser(["SUPER_ADMIN", "ADMIN"], { isApi: true });
     const { id } = await context.params;
 
     const user = await prisma.user.findFirst({
@@ -64,7 +64,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (originCheck) return originCheck;
 
   try {
-    const actor = await requireUser(["SUPER_ADMIN"], { isApi: true });
+    const actor = await requireUser(["SUPER_ADMIN", "ADMIN"], { isApi: true });
     const { id } = await context.params;
 
     const target = await prisma.user.findFirst({
@@ -237,7 +237,7 @@ export async function DELETE(request: Request, context: RouteContext) {
   if (originCheck) return originCheck;
 
   try {
-    const actor = await requireUser(["SUPER_ADMIN"], { isApi: true });
+    const actor = await requireUser(["SUPER_ADMIN", "ADMIN"], { isApi: true });
     const { id } = await context.params;
 
     if (actor.id === id) {

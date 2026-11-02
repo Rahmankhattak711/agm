@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import AgmLogo from "./AgmLogo";
@@ -140,6 +141,11 @@ const navGroups: NavGroup[] = [
             id: "journals",
             label: "Journal Entries",
             href: "/finance/journal-entries",
+          },
+          {
+            id: "general-ledger",
+            label: "General Ledger",
+            href: "/finance/general-ledger",
           },
           {
             id: "expenses",
@@ -451,6 +457,9 @@ export default function Sidebar({
                           handleNavigateHref(item.href);
                         }
                       }}
+                      onMouseEnter={() => {
+                        if (item.href) router.prefetch(item.href);
+                      }}
                       title={effectiveCollapsed ? item.label : undefined}
                       className={`group relative flex w-full items-center rounded-lg transition-all duration-150 cursor-pointer ${
                         effectiveCollapsed
@@ -532,10 +541,13 @@ export default function Sidebar({
                                 pathname === child.href ||
                                 pathname.startsWith(`${child.href}/`);
                               return (
-                                <button
+                                <Link
                                   key={child.id}
-                                  type="button"
-                                  onClick={() => handleNavigateHref(child.href)}
+                                  href={child.href}
+                                  prefetch={true}
+                                  onClick={() => {
+                                    if (onCloseMobile) onCloseMobile();
+                                  }}
                                   className={`group/sub flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-[13px] text-left transition-all duration-150 cursor-pointer ${
                                     childActive
                                       ? "font-semibold text-white bg-white/[0.15] shadow-xs"
@@ -543,7 +555,7 @@ export default function Sidebar({
                                   }`}
                                 >
                                   <span className="truncate">{child.label}</span>
-                                </button>
+                                </Link>
                               );
                             })}
                           </div>

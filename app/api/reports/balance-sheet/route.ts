@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getStandardAccounts } from "@/lib/commercial-accounting";
 import { getAccountTransactionDetails } from "@/lib/report-helpers";
 import { BalanceSheetItem } from "@/lib/hooks/types";
+import { microCache } from "@/lib/modules/accounting/cache/micro-cache";
 import {
   getAuthUser,
   hasRole,
@@ -24,6 +25,12 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const endDateStr =
       searchParams.get("endDate") || searchParams.get("asOfDate");
+
+    const cacheKey = `bs:${endDateStr || "all"}`;
+    const cached = microCache.get<any>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
 
     const whereCondition: any = {};
     if (endDateStr) {
@@ -394,11 +401,6 @@ export async function GET(req: Request) {
     );
     const totalLiabilities = totalCurrentLiabilities;
 
-    const calculatedRetainedProfit = Math.max(
-      0,
-      totalAssets - totalLiabilities,
-    );
-
     const equityItems: BalanceSheetItem[] = equityAccounts.map(
       (acc: Account) => {
         let amt = balanceMap.get(acc.id) || 0;
@@ -409,10 +411,7 @@ export async function GET(req: Request) {
           acc.accountName.toLowerCase().includes("retained") ||
           acc.accountName.toLowerCase().includes("profit")
         ) {
-          amt =
-            calculatedRetainedProfit > 0
-              ? calculatedRetainedProfit
-              : currentYearEarnings;
+          amt = currentYearEarnings;
           section = "Retained Earnings";
         }
         return {
@@ -450,38 +449,13 @@ export async function GET(req: Request) {
       });
     }
 
-    let totalEquity = equityItems.reduce(
+    const totalEquity = equityItems.reduce(
       (s: number, i: BalanceSheetItem) => s + i.amount,
       0,
     );
-    let totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
-    let balanceCheck =
+    const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
+    const balanceCheck =
       Math.round((totalAssets - totalLiabilitiesAndEquity) * 100) / 100;
-
-    if (Math.abs(balanceCheck) > 0.01) {
-      const retainedItem = equityItems.find(
-        (e) => e.section === "Retained Earnings" || e.accountCode === "3100",
-      );
-      if (retainedItem) {
-        retainedItem.amount += balanceCheck;
-      } else {
-        equityItems.push({
-          id: "equity-adjustment",
-          section: "Capital",
-          accountCode: "3000",
-          accountName: "Owner Capital / Financial Equalization",
-          amount: balanceCheck,
-        });
-      }
-      totalEquity = equityItems.reduce(
-        (s: number, i: BalanceSheetItem) => s + i.amount,
-        0,
-      );
-      totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
-      balanceCheck =
-        Math.round((totalAssets - totalLiabilitiesAndEquity) * 100) / 100;
-    }
-
     const balanced = Math.abs(balanceCheck) < 0.01;
 
     const projectSummaries = projects.map((p) => {
@@ -632,7 +606,7 @@ export async function GET(req: Request) {
       };
     });
 
-    return NextResponse.json({
+    const responseData = {
       companyName: "AGM FITOUT TECHNICAL SERVICES LLC",
       reportTitle: "Balance Sheet",
       currentAssets: currentAssetItems,
@@ -653,7 +627,11 @@ export async function GET(req: Request) {
       equityAmount: totalEquity,
       projects: projectSummaries,
       customers: customerSummaries,
-    });
+    };
+
+    microCache.set(cacheKey, responseData, 60_000);
+
+    return NextResponse.json(responseData);
   } catch (error: any) {
     console.error("GET /api/reports/balance-sheet error:", error);
     return NextResponse.json(

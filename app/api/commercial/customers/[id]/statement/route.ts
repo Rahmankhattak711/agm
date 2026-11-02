@@ -16,6 +16,9 @@ export async function GET(
       where: { id },
       include: {
         salesInvoices: {
+          where: {
+            status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
+          },
           orderBy: { invoiceDate: "asc" },
           include: {
             items: true,
@@ -23,6 +26,13 @@ export async function GET(
         },
         customerPayments: {
           orderBy: { paymentDate: "asc" },
+          include: {
+            journalEntry: {
+              include: {
+                lines: true,
+              },
+            },
+          },
         },
         creditNotes: {
           orderBy: { returnDate: "asc" },
@@ -57,6 +67,9 @@ export async function GET(
     }[] = [];
 
     customer.salesInvoices.forEach((inv) => {
+      // Exclude DRAFT and CANCELLED invoices from official customer statement
+      if (inv.status === "DRAFT" || inv.status === "CANCELLED") return;
+
       rawEvents.push({
         date: new Date(inv.invoiceDate),
         type: "INVOICE",
@@ -67,14 +80,36 @@ export async function GET(
       });
     });
 
+    let totalSettlementDiscounts = 0;
+
     customer.customerPayments.forEach((pmt) => {
+      let settledCredit = Number(pmt.amount);
+      let discAmt = 0;
+
+      if (pmt.journalEntry && pmt.journalEntry.lines) {
+        // Find AR credit line
+        const arLine = pmt.journalEntry.lines.find(
+          (l) => Number(l.credit || 0) > 0 && Number(l.debit || 0) === 0
+        );
+        if (arLine && Number(arLine.credit) >= Number(pmt.amount)) {
+          settledCredit = Number(arLine.credit);
+          discAmt = Math.round((settledCredit - Number(pmt.amount)) * 100) / 100;
+        }
+      }
+
+      if (discAmt > 0) {
+        totalSettlementDiscounts += discAmt;
+      }
+
       rawEvents.push({
         date: new Date(pmt.paymentDate),
         type: "PAYMENT",
         reference: pmt.receiptNumber,
-        description: `Payment Receipt (${pmt.paymentMethod})${pmt.referenceNumber ? ` Ref: ${pmt.referenceNumber}` : ""}`,
+        description: `Payment Receipt (${pmt.paymentMethod})${
+          pmt.referenceNumber ? ` Ref: ${pmt.referenceNumber}` : ""
+        }${discAmt > 0 ? ` [Incl. AED ${discAmt.toFixed(2)} Early Settlement Discount]` : ""}`,
         debit: 0,
-        credit: Number(pmt.amount),
+        credit: settledCredit,
       });
     });
 
@@ -101,7 +136,7 @@ export async function GET(
         description: evt.description,
         debit: evt.debit,
         credit: evt.credit,
-        runningBalance: running,
+        runningBalance: Math.round(running * 100) / 100,
       };
     });
 
@@ -117,7 +152,18 @@ export async function GET(
       (s, c) => s + Number(c.totalAmount),
       0,
     );
-    const currentOutstanding = totalBilled - totalPaid - totalCredits;
+    const currentOutstanding = Math.round(
+      (totalBilled - totalPaid - totalCredits - totalSettlementDiscounts) * 100
+    ) / 100;
+
+    // Self-heal and sync customer.currentBalance with AR ledger
+    if (Math.abs(Number(customer.currentBalance) - currentOutstanding) > 0.01) {
+      await prisma.customer.update({
+        where: { id: customer.id },
+        data: { currentBalance: currentOutstanding },
+      });
+      customer.currentBalance = currentOutstanding as any;
+    }
 
     return NextResponse.json({
       customer,
@@ -125,6 +171,7 @@ export async function GET(
       summary: {
         totalBilled,
         totalPaid,
+        totalDiscounts: totalSettlementDiscounts,
         totalCredits,
         currentOutstanding,
       },

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { useAccounts } from "@/lib/hooks/finance-hooks";
 import { useForm } from "@tanstack/react-form";
 import {
   Button,
@@ -28,6 +29,19 @@ export const CreateSalesInvoiceModal: React.FC<
   CreateSalesInvoiceModalProps
 > = ({ isOpen, onClose, customers, onSubmitInvoice }) => {
   const [error, setError] = useState("");
+  const { data: allAccounts = [] } = useAccounts();
+  const discountAccounts = useMemo(() => {
+    return (allAccounts || []).filter(
+      (acc: any) =>
+        acc.isActive !== false &&
+        (acc.type === "REVENUE" || acc.type === "EXPENSE") &&
+        (acc.accountName?.toLowerCase().includes("discount") ||
+         acc.accountName?.toLowerCase().includes("allowance") ||
+         acc.accountCode === "4112" ||
+         acc.accountCode === "54" ||
+         acc.accountCode === "5215")
+    );
+  }, [allAccounts]);
 
   const createInvoiceForm = useForm({
     defaultValues: {

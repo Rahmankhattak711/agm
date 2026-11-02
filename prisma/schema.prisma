@@ -39,19 +39,20 @@ model User {
 
   quotations Quotation[]
 
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
-  mustChangePassword Boolean          @default(true) @map("must_change_password")
-  lastLoginAt      DateTime?         @map("last_login_at")
-  passwordChangedAt DateTime?        @map("password_changed_at")
-  failedLoginAttempts Int             @default(0) @map("failed_login_attempts")
-  lockedUntil      DateTime?         @map("locked_until")
-  tokenVersion     Int               @default(0) @map("token_version")
-  deletedAt        DateTime?         @map("deleted_at")
-  createdById      String?           @map("created_by_id") @db.Uuid
-  createdBy        User?             @relation("UserCreator", fields: [createdById], references: [id])
-  createdUsers     User[]            @relation("UserCreator")
-  auditLogs        AuditLog[]
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  mustChangePassword  Boolean             @default(true) @map("must_change_password")
+  lastLoginAt         DateTime?           @map("last_login_at")
+  passwordChangedAt   DateTime?           @map("password_changed_at")
+  failedLoginAttempts Int                 @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime?           @map("locked_until")
+  tokenVersion        Int                 @default(0) @map("token_version")
+  deletedAt           DateTime?           @map("deleted_at")
+  createdById         String?             @map("created_by_id") @db.Uuid
+  createdBy           User?               @relation("UserCreator", fields: [createdById], references: [id])
+  createdUsers        User[]              @relation("UserCreator")
+  auditLogs           AuditLog[]
+  fiscalClosings      FiscalYearClosing[]
 
   tokens           RefreshToken[]
   salesOrders      SalesOrder[]
@@ -120,29 +121,55 @@ enum AccountType {
 }
 
 model ChartOfAccount {
-  id          String      @id @default(uuid()) @db.Uuid
-  accountCode String      @unique @map("account_code")
-  accountName String      @map("account_name")
-  type        AccountType
-  isActive    Boolean     @default(true) @map("is_active")
+  id                  String      @id @default(uuid()) @db.Uuid
+  accountCode         String      @unique @map("account_code")
+  accountName         String      @map("account_name")
+  nameAr              String?     @map("name_ar")
+  type                AccountType
+  accountSubtype      String?     @map("account_subtype")
+  cashFlowType        String?     @default("Operating") @map("cash_flow_type")
+  allowPosting        Boolean     @default(true) @map("allow_posting")
+  enablePayments      Boolean     @default(false) @map("enable_payments")
+  showInExpenseClaims Boolean     @default(false) @map("show_in_expense_claims")
+  isSystem            Boolean     @default(false) @map("is_system")
+  level               Int         @default(1)
+  isActive            Boolean     @default(true) @map("is_active")
 
   parentId String?          @map("parent_id") @db.Uuid
   parent   ChartOfAccount?  @relation("AccountHierarchy", fields: [parentId], references: [id])
   children ChartOfAccount[] @relation("AccountHierarchy")
 
   journalLines                    JournalEntryLine[]
-  fixedAssetAccounts              FixedAsset[]           @relation("AssetAccount")
-  accumulatedDepreciationAccounts FixedAsset[]           @relation("AccumulatedDepreciationAccount")
-  depreciationExpenseAccounts     FixedAsset[]           @relation("DepreciationExpenseAccount")
-  expenseAccounts                 Expense[]              @relation("ExpenseAccount")
-  paymentExpenseAccounts          Expense[]              @relation("PaymentAccount")
-  inventoryAccounts               ProductCategory[]      @relation("InventoryAccount")
-  cogsAccounts                    ProductCategory[]      @relation("CogsAccount")
+  fixedAssetAccounts              FixedAsset[]       @relation("AssetAccount")
+  accumulatedDepreciationAccounts FixedAsset[]       @relation("AccumulatedDepreciationAccount")
+  depreciationExpenseAccounts     FixedAsset[]       @relation("DepreciationExpenseAccount")
+  expenseAccounts                 Expense[]          @relation("ExpenseAccount")
+  paymentExpenseAccounts          Expense[]          @relation("PaymentAccount")
+  inventoryAccounts               ProductCategory[]  @relation("InventoryAccount")
+  cogsAccounts                    ProductCategory[]  @relation("CogsAccount")
+  discountInvoices                SalesInvoice[]     @relation("InvoiceDiscountAccount")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("chart_of_accounts")
+}
+
+model AccountSubtype {
+  id                  String      @id @default(uuid()) @db.Uuid
+  name                String      @unique
+  nameAr              String?     @map("name_ar")
+  type                AccountType
+  cashFlowType        String      @default("Operating") @map("cash_flow_type")
+  description         String?
+  parentCodePrefix    String?     @map("parent_code_prefix")
+  enablePayments      Boolean     @default(false) @map("enable_payments")
+  showInExpenseClaims Boolean     @default(false) @map("show_in_expense_claims")
+  isSystem            Boolean     @default(false) @map("is_system")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+
+  @@map("account_subtypes")
 }
 
 model JournalEntry {
@@ -170,22 +197,46 @@ model JournalEntry {
   debitNotes       DebitNote[]
   expenses         Expense[]
 
+  @@index([isPosted, entryDate])
+  @@index([entryDate])
   @@map("journal_entries")
 }
 
 model JournalEntryLine {
-  id             String @id @default(uuid()) @db.Uuid
-  journalEntryId String @map("journal_entry_id") @db.Uuid
-  accountId      String @map("account_id") @db.Uuid
+  id             String  @id @default(uuid()) @db.Uuid
+  journalEntryId String  @map("journal_entry_id") @db.Uuid
+  accountId      String  @map("account_id") @db.Uuid
 
-  debit  Decimal @default(0.00) @db.Decimal(15, 2)
-  credit Decimal @default(0.00) @db.Decimal(15, 2)
+  description    String?
+  debit          Decimal @default(0.00) @db.Decimal(15, 2)
+  credit         Decimal @default(0.00) @db.Decimal(15, 2)
 
-  journalEntry JournalEntry   @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
-  account      ChartOfAccount @relation(fields: [accountId], references: [id])
+  currency       String  @default("AED")
+  fxRate         Decimal @default(1.0000) @map("fx_rate") @db.Decimal(10, 4)
+  debitAed       Decimal @default(0.00) @map("debit_aed") @db.Decimal(15, 2)
+  creditAed      Decimal @default(0.00) @map("credit_aed") @db.Decimal(15, 2)
 
-  vatEntry VatEntry?
+  taxRate        Decimal @default(0.00) @map("tax_rate") @db.Decimal(5, 2)
+  taxType        String  @default("OUT_OF_SCOPE") @map("tax_type")
+  taxAmount      Decimal @default(0.00) @map("tax_amount") @db.Decimal(15, 2)
 
+  projectId      String?  @map("project_id") @db.Uuid
+  project        Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  contactId      String?  @map("contact_id") @db.Uuid
+  contactName    String?  @map("contact_name")
+
+  branch         String?
+  costCenter     String?  @map("cost_center")
+
+  journalEntry   JournalEntry   @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  account        ChartOfAccount @relation(fields: [accountId], references: [id])
+
+  vatEntry       VatEntry?
+
+  @@index([journalEntryId])
+  @@index([accountId])
+  @@index([projectId])
   @@map("journal_entry_lines")
 }
 
@@ -1001,6 +1052,8 @@ model SalesInvoice {
   status           SalesInvoiceStatus @default(DRAFT)
   subtotal         Decimal            @default(0.00) @db.Decimal(15, 2)
   discount         Decimal            @default(0.00) @db.Decimal(15, 2)
+  discountAccountId String?           @map("discount_account_id") @db.Uuid
+  discountAccount   ChartOfAccount?   @relation("InvoiceDiscountAccount", fields: [discountAccountId], references: [id])
   vatRate          Decimal            @default(5.00) @map("vat_rate") @db.Decimal(5, 2)
   vatAmount        Decimal            @default(0.00) @map("vat_amount") @db.Decimal(15, 2)
   totalAmount      Decimal            @default(0.00) @map("total_amount") @db.Decimal(15, 2)
@@ -1026,6 +1079,8 @@ model SalesInvoice {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([status, invoiceDate])
+  @@index([customerId])
   @@map("sales_invoices")
 }
 
@@ -1076,6 +1131,9 @@ model CustomerPayment {
 
   createdAt DateTime @default(now()) @map("created_at")
 
+  @@index([salesInvoiceId])
+  @@index([customerId])
+  @@index([paymentDate])
   @@map("customer_payments")
 }
 
@@ -1361,21 +1419,21 @@ model DebitNoteItem {
 }
 
 model CommercialAgreement {
-  id                  String   @id @default(uuid()) @db.Uuid
-  refNumber           String   @unique @map("ref_number")
-  title               String   @default("AGM FITOUT AGREEMENT")
-  date                String   @default("")
-  status              String   @default("DRAFT")
+  id                  String @id @default(uuid()) @db.Uuid
+  refNumber           String @unique @map("ref_number")
+  title               String @default("AGM FITOUT AGREEMENT")
+  date                String @default("")
+  status              String @default("DRAFT")
   contractor          Json
   client              Json
   property            Json
   project             Json
-  contractValue       Json     @map("contract_value")
+  contractValue       Json   @map("contract_value")
   clauses             Json
-  paymentMilestones   Json     @map("payment_milestones")
-  clientMaterials     Json     @map("client_materials")
-  contractorSignatory Json?    @map("contractor_signatory")
-  clientSignatory     Json?    @map("client_signatory")
+  paymentMilestones   Json   @map("payment_milestones")
+  clientMaterials     Json   @map("client_materials")
+  contractorSignatory Json?  @map("contractor_signatory")
+  clientSignatory     Json?  @map("client_signatory")
 
   createdById String? @map("created_by_id") @db.Uuid
   createdBy   User?   @relation(fields: [createdById], references: [id])
@@ -1387,21 +1445,21 @@ model CommercialAgreement {
 }
 
 model RiskAssessment {
-  id                  String   @id @default(uuid()) @db.Uuid
-  refNumber           String   @unique @map("ref_number")
-  date                String   @default("")
-  status              String   @default("DRAFT")
-  customerName        String   @default("") @map("customer_name")
-  projectName         String   @default("") @map("project_name")
-  phoneNumber         String   @default("") @map("phone_number")
-  projectLocation     String   @default("") @map("project_location")
-  startDate           String   @default("") @map("start_date")
-  duration            String   @default("")
-  workingHours        String   @default("") @map("working_hours")
-  projectManager      Json     @map("project_manager")
-  constructionManager Json     @map("construction_manager")
-  purpose             String   @default("") @db.Text
-  scope               String   @default("") @db.Text
+  id                  String @id @default(uuid()) @db.Uuid
+  refNumber           String @unique @map("ref_number")
+  date                String @default("")
+  status              String @default("DRAFT")
+  customerName        String @default("") @map("customer_name")
+  projectName         String @default("") @map("project_name")
+  phoneNumber         String @default("") @map("phone_number")
+  projectLocation     String @default("") @map("project_location")
+  startDate           String @default("") @map("start_date")
+  duration            String @default("")
+  workingHours        String @default("") @map("working_hours")
+  projectManager      Json   @map("project_manager")
+  constructionManager Json   @map("construction_manager")
+  purpose             String @default("") @db.Text
+  scope               String @default("") @db.Text
   items               Json
 
   createdById String? @map("created_by_id") @db.Uuid
@@ -1414,24 +1472,24 @@ model RiskAssessment {
 }
 
 model MethodStatement {
-  id                  String   @id @default(uuid()) @db.Uuid
-  refNumber           String   @unique @map("ref_number")
-  date                String   @default("")
-  status              String   @default("DRAFT")
-  customerName        String   @default("") @map("customer_name")
-  projectName         String   @default("") @map("project_name")
-  phoneNumber         String   @default("") @map("phone_number")
-  customerEmail       String   @default("") @map("customer_email")
-  projectLocation     String   @default("") @map("project_location")
-  workType            String   @default("") @map("work_type")
-  startDate           String   @default("") @map("start_date")
-  duration            String   @default("")
-  workingHours        String   @default("") @map("working_hours")
-  projectManager      Json     @map("project_manager")
-  constructionManager Json     @map("construction_manager")
-  introduction        String   @default("") @db.Text
-  purpose             String   @default("") @db.Text
-  scopeOverview       String   @default("") @map("scope_overview") @db.Text
+  id                  String @id @default(uuid()) @db.Uuid
+  refNumber           String @unique @map("ref_number")
+  date                String @default("")
+  status              String @default("DRAFT")
+  customerName        String @default("") @map("customer_name")
+  projectName         String @default("") @map("project_name")
+  phoneNumber         String @default("") @map("phone_number")
+  customerEmail       String @default("") @map("customer_email")
+  projectLocation     String @default("") @map("project_location")
+  workType            String @default("") @map("work_type")
+  startDate           String @default("") @map("start_date")
+  duration            String @default("")
+  workingHours        String @default("") @map("working_hours")
+  projectManager      Json   @map("project_manager")
+  constructionManager Json   @map("construction_manager")
+  introduction        String @default("") @db.Text
+  purpose             String @default("") @db.Text
+  scopeOverview       String @default("") @map("scope_overview") @db.Text
   items               Json
 
   createdById String? @map("created_by_id") @db.Uuid
@@ -1444,34 +1502,34 @@ model MethodStatement {
 }
 
 model SalaryCertificate {
-  id                    String   @id @default(uuid()) @db.Uuid
-  refNumber             String   @unique @map("ref_number")
-  date                  String   @default("")
-  status                String   @default("DRAFT")
-  addressee             String   @default("To Whom It May Concern,")
-  employeePrefix        String   @default("Mr.") @map("employee_prefix")
-  employeeName          String   @default("") @map("employee_name")
-  emiratesId            String   @default("") @map("emirates_id")
-  joiningDate           String   @default("") @map("joining_date")
-  companyName           String   @default("AGM Fitout Technical Services LLC") @map("company_name")
-  position              String   @default("")
-  purposeDisclaimer     String   @default("") @map("purpose_disclaimer") @db.Text
-  monthlySalaryNum      Decimal  @default(0.00) @map("monthly_salary_num") @db.Decimal(15, 2)
-  monthlySalaryText     String   @default("") @map("monthly_salary_text")
-  currency              String   @default("AED")
-  signatoryCompany      String   @default("AGM Fitout Technical Services LLC") @map("signatory_company")
-  signatoryTitle        String   @default("Authorized Signatory,") @map("signatory_title")
-  signatoryName         String   @default("Zeeshan Ahmad") @map("signatory_name")
-  signatoryDesignation  String   @default("Accountant") @map("signatory_designation")
-  showStampAndSignature Boolean  @default(true) @map("show_stamp_and_signature")
-  city                  String   @default("Dubai")
-  poBox                 String   @default("No") @map("po_box")
-  landline              String   @default("New 1143 Business Center LLC")
-  telephone             String   @default("+971 4 280 4184")
-  vatNumber             String   @default("104094432200003") @map("vat_number")
-  footerCompanyName     String   @default("AGM Fitout Technical Services") @map("footer_company_name")
-  registeredAddress     String   @default("") @map("registered_address") @db.Text
-  notes                 String?  @db.Text
+  id                    String  @id @default(uuid()) @db.Uuid
+  refNumber             String  @unique @map("ref_number")
+  date                  String  @default("")
+  status                String  @default("DRAFT")
+  addressee             String  @default("To Whom It May Concern,")
+  employeePrefix        String  @default("Mr.") @map("employee_prefix")
+  employeeName          String  @default("") @map("employee_name")
+  emiratesId            String  @default("") @map("emirates_id")
+  joiningDate           String  @default("") @map("joining_date")
+  companyName           String  @default("AGM Fitout Technical Services LLC") @map("company_name")
+  position              String  @default("")
+  purposeDisclaimer     String  @default("") @map("purpose_disclaimer") @db.Text
+  monthlySalaryNum      Decimal @default(0.00) @map("monthly_salary_num") @db.Decimal(15, 2)
+  monthlySalaryText     String  @default("") @map("monthly_salary_text")
+  currency              String  @default("AED")
+  signatoryCompany      String  @default("AGM Fitout Technical Services LLC") @map("signatory_company")
+  signatoryTitle        String  @default("Authorized Signatory,") @map("signatory_title")
+  signatoryName         String  @default("Zeeshan Ahmad") @map("signatory_name")
+  signatoryDesignation  String  @default("Accountant") @map("signatory_designation")
+  showStampAndSignature Boolean @default(true) @map("show_stamp_and_signature")
+  city                  String  @default("Dubai")
+  poBox                 String  @default("No") @map("po_box")
+  landline              String  @default("New 1143 Business Center LLC")
+  telephone             String  @default("+971 4 280 4184")
+  vatNumber             String  @default("104094432200003") @map("vat_number")
+  footerCompanyName     String  @default("AGM Fitout Technical Services") @map("footer_company_name")
+  registeredAddress     String  @default("") @map("registered_address") @db.Text
+  notes                 String? @db.Text
 
   createdById String? @map("created_by_id") @db.Uuid
   createdBy   User?   @relation(fields: [createdById], references: [id])
@@ -1483,20 +1541,20 @@ model SalaryCertificate {
 }
 
 model CustomLetter {
-  id                    String  @id @default(uuid()) @db.Uuid
-  refNumber             String  @unique @map("ref_number")
-  docTitle              String  @default("OFFICIAL COMPANY LETTER") @map("doc_title")
-  date                  String  @default("")
-  status                String  @default("DRAFT")
+  id        String @id @default(uuid()) @db.Uuid
+  refNumber String @unique @map("ref_number")
+  docTitle  String @default("OFFICIAL COMPANY LETTER") @map("doc_title")
+  date      String @default("")
+  status    String @default("DRAFT")
 
-  addressee             String  @default("To Whom It May Concern,")
-  addresseeSubtitle     String? @map("addressee_subtitle")
-  subject               String  @default("") @db.Text
-  salutation            String  @default("Dear Sir / Madam,")
+  addressee         String  @default("To Whom It May Concern,")
+  addresseeSubtitle String? @map("addressee_subtitle")
+  subject           String  @default("") @db.Text
+  salutation        String  @default("Dear Sir / Madam,")
 
-  sections              Json    @default("[]")
+  sections Json @default("[]")
 
-  closingText           String? @map("closing_text") @db.Text
+  closingText String? @map("closing_text") @db.Text
 
   signatoryCompany      String  @default("AGM Fitout Technical Services LLC") @map("signatory_company")
   signatoryTitle        String  @default("Authorized Signatory,") @map("signatory_title")
@@ -1506,7 +1564,7 @@ model CustomLetter {
   companyStampUrl       String? @map("company_stamp_url") @db.Text
   signatorySignatureUrl String? @map("signatory_signature_url") @db.Text
 
-  notes       String? @db.Text
+  notes String? @db.Text
 
   createdById String? @map("created_by_id") @db.Uuid
   createdBy   User?   @relation(fields: [createdById], references: [id])
@@ -1558,45 +1616,46 @@ model Project {
   status      ProjectStatus   @default(PLANNING)
   priority    ProjectPriority @default(MEDIUM)
 
-  location    String?
-  startDate   DateTime?       @map("start_date")
-  endDate     DateTime?       @map("end_date")
-  deadline    DateTime?
+  location  String?
+  startDate DateTime? @map("start_date")
+  endDate   DateTime? @map("end_date")
+  deadline  DateTime?
 
-  contractValue  Decimal @default(0.00) @map("contract_value") @db.Decimal(15, 2)
-  budget         Decimal @default(0.00) @map("budget") @db.Decimal(15, 2)
-  estimatedCost  Decimal @default(0.00) @map("estimated_cost") @db.Decimal(15, 2)
-  actualCost     Decimal @default(0.00) @map("actual_cost") @db.Decimal(15, 2)
-  materialCost   Decimal @default(0.00) @map("material_cost") @db.Decimal(15, 2)
-  laborCost      Decimal @default(0.00) @map("labor_cost") @db.Decimal(15, 2)
-  otherExpenses  Decimal @default(0.00) @map("other_expenses") @db.Decimal(15, 2)
-  progressPct    Int     @default(0) @map("progress_pct")
+  contractValue Decimal @default(0.00) @map("contract_value") @db.Decimal(15, 2)
+  budget        Decimal @default(0.00) @map("budget") @db.Decimal(15, 2)
+  estimatedCost Decimal @default(0.00) @map("estimated_cost") @db.Decimal(15, 2)
+  actualCost    Decimal @default(0.00) @map("actual_cost") @db.Decimal(15, 2)
+  materialCost  Decimal @default(0.00) @map("material_cost") @db.Decimal(15, 2)
+  laborCost     Decimal @default(0.00) @map("labor_cost") @db.Decimal(15, 2)
+  otherExpenses Decimal @default(0.00) @map("other_expenses") @db.Decimal(15, 2)
+  progressPct   Int     @default(0) @map("progress_pct")
 
   quotationId String?    @map("quotation_id") @db.Uuid
   quotation   Quotation? @relation(fields: [quotationId], references: [id], onDelete: SetNull)
 
-  customerId  String?   @map("customer_id") @db.Uuid
-  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId String?   @map("customer_id") @db.Uuid
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
 
-  managerId   String? @map("manager_id") @db.Uuid
-  manager     User?   @relation("ProjectManager", fields: [managerId], references: [id], onDelete: SetNull)
+  managerId String? @map("manager_id") @db.Uuid
+  manager   User?   @relation("ProjectManager", fields: [managerId], references: [id], onDelete: SetNull)
 
   createdById String? @map("created_by_id") @db.Uuid
   createdBy   User?   @relation("ProjectCreator", fields: [createdById], references: [id], onDelete: SetNull)
 
-  costs       ProjectCost[]
-  milestones  ProjectMilestone[]
+  costs        ProjectCost[]
+  milestones   ProjectMilestone[]
+  journalLines JournalEntryLine[]
 
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("projects")
 }
 
 model ProjectCost {
-  id          String          @id @default(uuid()) @db.Uuid
-  projectId   String          @map("project_id") @db.Uuid
-  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id        String  @id @default(uuid()) @db.Uuid
+  projectId String  @map("project_id") @db.Uuid
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   costType    ProjectCostType @default(OTHER) @map("cost_type")
   category    String?
@@ -1611,16 +1670,16 @@ model ProjectCost {
   recordedById String? @map("recorded_by_id") @db.Uuid
   recordedBy   User?   @relation("CostRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
 
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("project_costs")
 }
 
 model ProjectMilestone {
-  id             String          @id @default(uuid()) @db.Uuid
-  projectId      String          @map("project_id") @db.Uuid
-  project        Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id        String  @id @default(uuid()) @db.Uuid
+  projectId String  @map("project_id") @db.Uuid
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   title          String
   description    String?
@@ -1631,8 +1690,29 @@ model ProjectMilestone {
   completionDate DateTime?       @map("completion_date")
   billedAmount   Decimal?        @map("billed_amount") @db.Decimal(15, 2)
 
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("project_milestones")
+}
+
+model FiscalYearClosing {
+  id         String    @id @default(uuid()) @db.Uuid
+  year       Int       @unique
+  startDate  DateTime  @map("start_date") @db.Date
+  endDate    DateTime  @map("end_date") @db.Date
+  isClosed   Boolean   @default(false) @map("is_closed")
+  closedAt   DateTime? @map("closed_at")
+  closedById String?   @map("closed_by_id") @db.Uuid
+  closedBy   User?     @relation(fields: [closedById], references: [id], onDelete: SetNull)
+
+  netProfitLoss            Decimal @default(0.00) @map("net_profit_loss") @db.Decimal(15, 2)
+  retainedEarningsTransfer Decimal @default(0.00) @map("retained_earnings_transfer") @db.Decimal(15, 2)
+  closingJournalId         String? @map("closing_journal_id") @db.Uuid
+
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("fiscal_year_closings")
 }

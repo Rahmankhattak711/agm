@@ -1,29 +1,28 @@
 import prisma from "@/lib/prisma";
 
 export async function getNextInvoiceNumber(tx: any = prisma): Promise<string> {
-  const year = new Date().getFullYear();
-  const prefix = `INV-${year}-`;
   const existing = await tx.salesInvoice.findMany({
-    where: { invoiceNumber: { startsWith: prefix } },
     select: { invoiceNumber: true },
   });
 
   let maxNum = 0;
   for (const item of existing) {
-    const numPart = item.invoiceNumber.slice(prefix.length);
-    const parsed = parseInt(numPart, 10);
-    if (!isNaN(parsed) && parsed > maxNum) {
-      maxNum = parsed;
+    const match = item.invoiceNumber.match(/(?:INV-)?(?:20\d{2}-)?(\d+)/i);
+    if (match) {
+      const parsed = parseInt(match[1], 10);
+      if (!isNaN(parsed) && parsed > maxNum) {
+        maxNum = parsed;
+      }
     }
   }
 
   let nextNum = maxNum + 1;
-  let candidate = `${prefix}${nextNum.toString().padStart(4, "0")}`;
+  let candidate = `INV-${nextNum.toString().padStart(4, "0")}`;
   while (
     await tx.salesInvoice.findUnique({ where: { invoiceNumber: candidate } })
   ) {
     nextNum++;
-    candidate = `${prefix}${nextNum.toString().padStart(4, "0")}`;
+    candidate = `INV-${nextNum.toString().padStart(4, "0")}`;
   }
 
   return candidate;

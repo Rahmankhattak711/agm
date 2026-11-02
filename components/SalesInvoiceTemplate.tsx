@@ -7,6 +7,7 @@ import {
   useSalesInvoices,
   useProducts,
   SalesInvoice,
+  useAccounts,
 } from "@/lib/hooks/api-hooks";
 import { toast } from "@/lib/toast";
 import {
@@ -219,6 +220,23 @@ export default function SalesInvoiceTemplate({
       ? Number(initialInvoice.discount)
       : 0,
   );
+  const [discountAccountId, setDiscountAccountId] = useState<string>(
+    initialInvoice?.discountAccountId || "",
+  );
+
+  const { data: allAccounts = [] } = useAccounts();
+  const discountAccounts = useMemo(() => {
+    return (allAccounts || []).filter(
+      (acc: any) =>
+        acc.isActive !== false &&
+        (acc.type === "REVENUE" || acc.type === "EXPENSE") &&
+        (acc.accountName?.toLowerCase().includes("discount") ||
+         acc.accountName?.toLowerCase().includes("allowance") ||
+         acc.accountCode === "4112" ||
+         acc.accountCode === "54" ||
+         acc.accountCode === "5215")
+    );
+  }, [allAccounts]);
 
   // Status dropdown outside click listener
   useEffect(() => {
@@ -370,6 +388,7 @@ export default function SalesInvoiceTemplate({
     setTerms(DEFAULT_SALES_INVOICE_TERMS_TEXT);
     setPaymentPlans(DEFAULT_SALES_INVOICE_PAYMENT_PLANS);
     setDiscount(0);
+    setDiscountAccountId("");
     setVatPct(5.0);
     setStatus("DRAFT");
   };
@@ -421,6 +440,7 @@ export default function SalesInvoiceTemplate({
       dueDate: dueDate.toISOString(),
       items: formattedItems,
       discount: discountNum,
+      discountAccountId: discountNum > 0 ? (discountAccountId || null) : null,
       vatRate: vatRate,
       vatAmount: vatAmt,
       totalAmount: total,
@@ -691,6 +711,9 @@ export default function SalesInvoiceTemplate({
                     vatPct={vatPct}
                     vatAmt={vatAmt}
                     discount={discount}
+                    discountAccountId={discountAccountId}
+                    discountAccounts={discountAccounts}
+                    onUpdateDiscountAccountId={(accId) => setDiscountAccountId(accId)}
                     total={total}
                     onUpdateVatPct={(val) => setVatPct(val)}
                     onUpdateDiscount={(val) => setDiscount(val)}

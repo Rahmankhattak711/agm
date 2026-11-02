@@ -19,6 +19,7 @@
     "clean:comments": "node scripts/remove-comments.mjs"
   },
   "dependencies": {
+    "@next/swc-wasm-nodejs": "15.5.28",
     "@prisma/adapter-pg": "^6.13.0",
     "@prisma/client": "^6.13.0",
     "@tanstack/react-form": "^1.33.5",

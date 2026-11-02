@@ -187,22 +187,37 @@ agm/
 - **Stock Movement Ledger**: Complete audit trail of inventory transactions: `PURCHASE_IN`, `SALE_OUT`, `TRANSFER_IN/OUT`, `RETURN_IN/OUT`, `ADJUSTMENT`, and `PROJECT_CONSUMPTION`.
 - **Multi-Warehouse Stock**: Real-time stock on hand (SOH) across primary warehouses and project site locations with minimum reorder level alerts.
 
-### 4. Financial Accounting & General Ledger
+### 4. Financial Accounting & Enterprise Ledger Suite
 
-- **Chart of Accounts (COA)**: Five-category standard chart of accounts:
-  - `ASSET` (1000s: Cash, Bank, Accounts Receivable, Inventory, Fixed Assets)
-  - `LIABILITY` (2000s: Accounts Payable, VAT Payable, Accruals)
-  - `EQUITY` (3000s: Retained Earnings, Owner's Capital)
-  - `REVENUE` (4000s: Service Income, Fitout Contracting Revenue)
-  - `EXPENSE` (5000s: Purchase Materials, Subcontractor Costs, Labor, Depreciation)
-- **Manual & Automated Journal Entries**: Strict debit/credit equality validation, reference tracking, and support for multi-line compound transactions.
-- **Financial Reporting Suite**:
-  - **Profit & Loss (Income Statement)**: Net revenue, cost of goods sold (COGS), gross margin, operating expenses, and net profit.
-  - **Balance Sheet**: Comprehensive snapshot of Assets = Liabilities + Equity.
-  - **Trial Balance**: Verification of total debit vs. credit balance equality.
-  - **Aging Reports**: Accounts Receivable (AR) & Accounts Payable (AP) aging buckets (0-30, 31-60, 61-90, 90+ days).
-  - **General Ledger Book**: Drill-down account ledger with beginning balance, transaction stream, and ending balance.
-  - **UAE VAT 201 Report**: Detailed output VAT collected, input VAT paid, and net VAT payable/refundable to the Federal Tax Authority.
+Modeled strictly after UAE market gold standards (**Wafeq** / FTA Federal Tax Authority compliance), the financial suite operates on a multi-tier, real-time interconnected ledger architecture:
+
+- **Chart of Accounts (COA) - 5 Pillars & 4-Tier Hierarchy**:
+  - `1 - ASSETS` (Current Assets: Cash, Bank, Accounts Receivable, Inventory, Prepayments; Fixed Assets & Accumulated Depreciation)
+  - `2 - LIABILITIES` (Current Liabilities: Accounts Payable, VAT Output/Input Clearing, Accrued Payroll; Non-Current Liabilities: Long-term Bank Loans)
+  - `3 - CAPITAL / EQUITY` (Owner's Invested Capital, Drawings, and Retained Earnings)
+  - `4 - REVENUE` (Operating Revenue from Invoices, Service Income, and Other Income)
+  - `5 - EXPENSES` (Cost of Sales / Direct Project Material & Labor, Operating Expenses, Repairs & Maintenance, Financial & Depreciation)
+  - Expandable depth control (`[ 1 | 2 | 3 | 4 ]`), pastel category headers, tree guide lines (`└─`), right-side `AccountSlideOverDrawer` for quick creation/editing, and Export to Excel/CSV.
+- **Smart Manual Journals**:
+  - Multi-line compound entry spreadsheet editor with real-time math engine.
+  - **Smart Auto-Balancing**: Automatic calculation of remaining balancing difference (Debit sum vs Credit sum) auto-populating Credit cells when selecting payment accounts (e.g., Petty Cash, Bank).
+  - Line-level Tax category selection: Taxable 5% (VAT on Purchases / Sales) vs Non-Taxable 0% (Out of Scope / Exempt / Reverse Charge).
+  - Direct in-table quick creators: `+ Create account`, `+ Create contact`, `+ Create project / site`.
+  - Sequential numbering (`SYS-MJ-x`), `DRAFT` and `POSTED` status tracking, and compact inline Dr/Cr previews.
+- **General Ledger with Offset Accounts & Timeline Slider**:
+  - Dual and split-transaction offset accounts engine showing exact counter-balancing accounts as interactive badges.
+  - Interactive month-range timeline scrubber (Apr 2026 -> Oct 2026) for chronological transaction filtration.
+- **Interactive Clickable Drill-Down Reporting Suite**:
+  - **Profit and Loss (Income Statement)**: Operating Revenue vs Cost of Sales, Gross Margin, Operating Expenses, Sparkline trendlines, and monthly comparison columns. Every row is clickable to drill down directly into the General Ledger audit trail and source documents.
+  - **Balance Sheet**: Assets = Liabilities + Equity verification with period comparison (Month, Quarter, Year) and project/branch breakdowns.
+  - **Trial Balance**: 5-column ledger verification: Opening Balance + Movements = Closing Balance, FX Adjustments, and Revalued Closing Balance.
+  - **Statement of Account (SOA)**:
+    - *For Accountants*: Grouped by GL Account with `[Summary | Details]` modes, Opening Balance rows, Offset accounts, and running balance.
+    - *Customer & Supplier*: Filtered by client/vendor with specific invoice matching, payments, and outstanding balances.
+  - **Cash Flow Statement**: IFRS Direct & Indirect cash flow statements tracking Operating, Investing, and Financing activities reconciling directly with cash on hand and at bank.
+  - **Project & Site Costing & Profitability**: Direct P&L and cost accumulation per site location.
+- **Automated Fiscal Year-End Closing Engine**:
+  - Automated annual roll-forward process resetting Revenue (4xxx) and Expense (5xxx) accounts to zero, transferring Net Profit / Loss to `331 - Retained Earnings`, and rolling Balance Sheet closing balances to next year's opening balances.
 
 ### 5. Projects & Fitout Cost Tracking
 
@@ -269,6 +284,107 @@ flowchart LR
         SP -- "Post Payment" --> JE4["Journal Entry<br/>Dr. Accounts Payable (2000)<br/>Cr. Bank / Cash (1020/1010)"]
     end
 ```
+
+### Complete Accounting Lifecycle & Engineering Architecture
+
+The following diagram illustrates the universal end-to-end data flow: from operational transactions and multi-project site costing, through the smart auto-balancing journal grid and tax engine, into the core 5-pillar chart of accounts, and dynamically generating financial reports, cash flows, and automated year-end roll-forwards:
+
+```mermaid
+flowchart TD
+    subgraph S1["1. Operations & Commercial Activities"]
+        SI["Sales Invoice (Billed to Client)"]
+        CP["Customer Payment (Against Specific Invoice)"]
+        SB["Supplier Bill (From Vendor)"]
+        SP["Supplier Payment (Against Specific Bill)"]
+        EX["Staff Expenses / Daybook"]
+        PR["Payroll Run (WPS Salaries)"]
+        FA["Fixed Assets Depreciation"]
+        MJ["Manual Journals (Single & Multi-line Compound Entries)"]
+    end
+
+    subgraph S2["2. Project & Site Allocation Dimension"]
+        PRJ["Active Project / Site Tag (e.g. Marina Tower, Villa Renovation)"]
+        PRJ_CREATE["+ Quick Create Project / Site (Direct from Table)"]
+        PRJ_CREATE --> PRJ
+    end
+
+    subgraph S3["3. Smart Auto-Balancing & Tax Engine"]
+        TAX_ENG["Tax Category Selector:<br>• Taxable 5% (VAT on Purchases / Sales)<br>• Non-Taxable 0% (Out of Scope / Exempt)"]
+        AUTO_BAL["Smart Auto-Balancing:<br>Auto-calculates remaining balancing sum and fills Credit cell when Petty Cash is selected"]
+    end
+
+    subgraph S4["4. Central Double-Entry Posting Service"]
+        JE_HDR["Journal Entry Record (SYS-MJ-x, Date, Source, Solid Notes)"]
+        JE_LINES["Balanced Journal Lines (Account, Debit, Credit, Tax, Contact, Project)"]
+        OFFSET_RES["Offset Accounts Engine (Dynamic Balancing Legs Resolver)"]
+        JE_HDR --> JE_LINES
+        JE_LINES --> OFFSET_RES
+    end
+
+    subgraph S5["5. UAE 4-Tier Chart of Accounts (5 Pillars)"]
+        C1["1 - Assets (111 Cash/Bank, 112 AR, 12 Fixed Assets)"]
+        C2["2 - Liabilities (211 AP, 218 VAT Input/Output, 22 Loans)"]
+        C3["3 - Equity (31 Share Capital, 331 Retained Earnings)"]
+        C4["4 - Revenue (41 Contract Sales, 42 Other Income)"]
+        C5["5 - Expenses (51 Direct Project Cost, 52 Operating/Repairs)"]
+    end
+
+    subgraph S6["6. Real-Time Financial Reports Layer"]
+        GL["General Ledger (Detailed Rows + Offset Badges + Timeline)"]
+        TB["Trial Balance (Opening + Movements = Closing, FX Revalued)"]
+        PL["Profit and Loss (Monthly Comparison, Trendlines, Net Profit)"]
+        BS["Balance Sheet (Assets = Liabilities + Equity)"]
+        CF["Cash Flow Statement (Direct & Indirect: Operating, Investing, Financing)"]
+        SOA_ACC["Statement of Account - For Accountants (Summary & Details by GL)"]
+        SOA_CUST["Statement of Account - Customer / Supplier (By Invoice/Payment)"]
+        PRJ_REP["Project Costing & Profitability Report (P&L per Site)"]
+        VAT_REP["UAE FTA VAT Return (Box 1-8 Tax Report)"]
+    end
+
+    subgraph S7["7. Automated Fiscal Year-End Engine"]
+        YEC_TRIGGER["Annual Fiscal Year End (e.g. 31 Dec)"]
+        YEC_ZERO["Reset / Zero-out P&L Accounts (4xxx & 5xxx) to 0.00"]
+        YEC_RE["Roll Net Profit/Loss into 331 - Retained Earnings"]
+        YEC_ROLL["Roll Balance Sheet Closings (1xxx, 2xxx, 3xxx) to Next Year Openings"]
+    end
+
+    %% CONNECTIONS & DATA FLOW
+    S1 --> JE_HDR
+    PRJ -.->|"Tagged per line"| JE_LINES
+    TAX_ENG -.->|"Computes VAT lines"| JE_LINES
+    AUTO_BAL -.->|"Balances Dr = Cr"| JE_LINES
+
+    JE_LINES --> C1 & C2 & C3 & C4 & C5
+    OFFSET_RES --> GL
+
+    C1 & C2 & C3 & C4 & C5 --> TB
+    TB --> PL
+    TB --> BS
+    JE_LINES --> SOA_ACC
+    JE_LINES --> SOA_CUST
+    JE_LINES --> PRJ_REP
+    JE_LINES --> VAT_REP
+
+    %% Cash flow
+    C1 & JE_LINES --> CF
+
+    %% Year-End Closing
+    YEC_TRIGGER --> YEC_ZERO
+    YEC_ZERO --> YEC_RE
+    YEC_RE --> C3
+    YEC_TRIGGER --> YEC_ROLL
+    YEC_ROLL -.->|"Becomes Jan 1 Opening Balance"| TB
+```
+
+### Implementation Roadmap & Engineering Phases
+
+| Phase | Milestone | Scope & Deliverables | Safety & Data Integrity |
+|---|---|---|---|
+| **Phase 1** | **Database Schema Evolution & Central Services** | Non-destructive nullable columns on `JournalEntryLine` (`projectId`, `contactId`, `taxRate`, `taxAmount`, `lineDescription`, `debitAed`, `creditAed`), `FiscalYearClosing` model. Core services: `LedgerPostingService`, `OffsetResolverService`, `TaxEngineService`. | Zero data loss, all existing data remains 100% intact. |
+| **Phase 2** | **Smart Manual Journals Suite** | Full spreadsheet multi-row grid at `/finance/journal-entries/new` with real-time math engine, smart auto-balancing Credit fill for payment accounts, line-level Taxable 5% vs Non-Taxable 0% selector, and inline quick-creators (`+ Create account`, `+ Create contact`, `+ Create project`). Sequential listing at `/finance/journal-entries` (`SYS-MJ-x`, `DRAFT`/`POSTED` badges, Dr/Cr inline previews, Excel/CSV export). | Clean isolated route, no overlay on legacy components. |
+| **Phase 3** | **General Ledger with Offset Badges & Timeline Slider** | Dedicated page at `/finance/general-ledger` matching Wafeq Screenshot 1: Lock icons, Source badges, Account badges, dynamic Offset accounts badges, and chronological month range slider (Apr 2026 -> Oct 2026). | Real-time aggregate query with zero table locks. |
+| **Phase 4** | **Financial Reporting Suite with 1-Click Drill-Down** | `/finance/reports/profit-and-loss` (with monthly comparisons, sparklines, and click-to-drilldown into invoices), `/finance/reports/balance-sheet` (4-tier hierarchy, comparison popover), `/finance/reports/trial-balance`, `/finance/reports/statement-of-account` (Summary & Details), and `/finance/reports/cash-flow`. | Dedicated sub-routes under `/finance/reports/` preventing state clashes. |
+| **Phase 5** | **Automated Year-End Closing Engine** | Automated fiscal year closure resetting Revenue & Expense accounts to 0.00, posting Net Profit/Loss to `331 - Retained Earnings`, and generating January 1st Opening Balances for Trial Balance and Statement of Account. | Audit-trailed with full rollback and historical review capability. |
 
 ### Standard Posting Matrix
 

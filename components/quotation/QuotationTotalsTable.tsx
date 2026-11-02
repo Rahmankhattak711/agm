@@ -10,6 +10,14 @@ export interface QuotationTotalsTableProps {
   total: number;
   onUpdateVatPct: (val: string) => void;
   onUpdateDiscount: (val: string) => void;
+  discountAccountId?: string;
+  discountAccounts?: Array<{
+    id: string;
+    accountCode: string;
+    accountName: string;
+    type: string;
+  }>;
+  onUpdateDiscountAccountId?: (val: string) => void;
 }
 
 export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
@@ -20,6 +28,9 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
   total,
   onUpdateVatPct,
   onUpdateDiscount,
+  discountAccountId,
+  discountAccounts,
+  onUpdateDiscountAccountId,
 }) => {
   const discountNum = Math.max(0, Number(discount) || 0);
   const afterDiscount = Math.max(0, subtotal - discountNum);
@@ -116,6 +127,30 @@ export const QuotationTotalsTable: React.FC<QuotationTotalsTableProps> = ({
                 </span>
               </div>
             </div>
+
+                        {discountNum > 0 && discountAccounts && discountAccounts.length > 0 && (
+              <div className="px-3.5 py-2 bg-purple-50/80 border-y border-purple-100 flex flex-col gap-1 text-[11px] print:hidden">
+                <div className="flex items-center justify-between text-[10.5px]">
+                  <span className="font-bold text-purple-900 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+                    Post Discount To:
+                  </span>
+                  <span className="text-[10px] text-purple-700 font-semibold">Chart of Accounts</span>
+                </div>
+                <select
+                  value={discountAccountId || ""}
+                  onChange={(e) => onUpdateDiscountAccountId?.(e.target.value)}
+                  className="w-full text-[11px] font-semibold text-slate-800 bg-white border border-purple-300 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer shadow-2xs"
+                >
+                  <option value="">Default (4112 - Sales Discounts [Contra Revenue])</option>
+                  {discountAccounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.accountCode} - {acc.accountName} ({acc.type === "REVENUE" ? "Contra Revenue" : "Operating Expense"})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="flex items-center justify-between px-4 py-2.5 print:py-2 bg-slate-50/40">
               <span className="font-semibold text-slate-600 print:text-slate-700 print:text-[12.5px]">

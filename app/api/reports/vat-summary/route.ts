@@ -28,12 +28,26 @@ export async function GET(request: Request) {
     if (!authUser) return unauthorized();
     if (!hasRole(authUser, "ACCOUNTANT")) return forbidden();
 
+    const { searchParams } = new URL(request.url);
+    const yearParam = searchParams.get("year");
+    const targetYear = yearParam ? parseInt(yearParam, 10) : new Date().getFullYear();
+    const startOfYear = new Date(`${targetYear}-01-01T00:00:00.000Z`);
+    const endOfYear = new Date(`${targetYear}-12-31T23:59:59.999Z`);
+
     const [sums, vatEntries, allLines] = await Promise.all([
       prisma.vatEntry.groupBy({
         by: ["vatType"],
         _sum: { vatAmount: true, taxableAmount: true },
       }),
       prisma.vatEntry.findMany({
+        where: {
+          journalEntryLine: {
+            journalEntry: {
+              isPosted: true,
+              entryDate: { gte: startOfYear, lte: endOfYear },
+            },
+          },
+        },
         include: {
           vatRate: true,
           journalEntryLine: {
@@ -45,6 +59,12 @@ export async function GET(request: Request) {
         },
       }),
       prisma.journalEntryLine.findMany({
+        where: {
+          journalEntry: {
+            isPosted: true,
+            entryDate: { gte: startOfYear, lte: endOfYear },
+          },
+        },
         include: {
           account: true,
           journalEntry: true,

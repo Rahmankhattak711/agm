@@ -9,6 +9,7 @@ import {
   FileTextIcon,
 } from "@/components/icons";
 import { SalesInvoice } from "@/lib/hooks/api-hooks";
+import { useAccounts } from "@/lib/hooks/finance-hooks";
 import { formatNumber } from "./types";
 import { round2 } from "@/lib/utils/math";
 
@@ -39,6 +40,21 @@ export const EditSalesInvoiceModal: React.FC<EditSalesInvoiceModalProps> = ({
   const [invoiceDate, setInvoiceDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [discount, setDiscount] = useState<number>(0);
+  const [discountAccountId, setDiscountAccountId] = useState<string>("");
+
+  const { data: allAccounts = [] } = useAccounts();
+  const discountAccounts = useMemo(() => {
+    return (allAccounts || []).filter(
+      (acc: any) =>
+        acc.isActive !== false &&
+        (acc.type === "REVENUE" || acc.type === "EXPENSE") &&
+        (acc.accountName?.toLowerCase().includes("discount") ||
+         acc.accountName?.toLowerCase().includes("allowance") ||
+         acc.accountCode === "4112" ||
+         acc.accountCode === "54" ||
+         acc.accountCode === "5215")
+    );
+  }, [allAccounts]);
   const [vatRate, setVatRate] = useState<number>(0);
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<EditableInvoiceItem[]>([]);
@@ -63,6 +79,7 @@ export const EditSalesInvoiceModal: React.FC<EditSalesInvoiceModalProps> = ({
               .slice(0, 10),
       );
       setDiscount(Number(invoice.discount || 0));
+      setDiscountAccountId(invoice.discountAccountId || "");
       const hasVat =
         Number(invoice.vatAmount || 0) > 0 ||
         (invoice.vatRate !== null &&
@@ -173,6 +190,7 @@ export const EditSalesInvoiceModal: React.FC<EditSalesInvoiceModalProps> = ({
         invoiceDate,
         dueDate,
         discount: Number(discount || 0),
+        discountAccountId: Number(discount || 0) > 0 ? (discountAccountId || null) : null,
         vatRate: Number(vatRate || 0),
         vatAmount: calculatedVat,
         totalAmount: totalDue,

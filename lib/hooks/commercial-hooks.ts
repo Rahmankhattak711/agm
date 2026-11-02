@@ -231,6 +231,13 @@ export interface SalesOrder {
   status: "DRAFT" | "CONFIRMED" | "PROCESSING" | "COMPLETED" | "CANCELLED";
   subtotal: number;
   discount: number;
+  discountAccountId?: string | null;
+  discountAccount?: {
+    id: string;
+    accountCode: string;
+    accountName: string;
+    type: string;
+  } | null;
   vatRate: number;
   vatAmount: number;
   totalAmount: number;
@@ -298,6 +305,13 @@ export interface SalesInvoice {
     "DRAFT" | "POSTED" | "PARTIALLY_PAID" | "PAID" | "OVERDUE" | "CANCELLED";
   subtotal: number;
   discount: number;
+  discountAccountId?: string | null;
+  discountAccount?: {
+    id: string;
+    accountCode: string;
+    accountName: string;
+    type: string;
+  } | null;
   vatRate: number;
   vatAmount: number;
   totalAmount: number;
