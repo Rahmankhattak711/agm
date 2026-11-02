@@ -102,6 +102,18 @@ export function canManageUser(actor: AuthUser, target: AuthUser): boolean {
   return false;
 }
 
+export function isSuperAdmin(actor: AuthUser): boolean {
+  return actor.role === "SUPER_ADMIN";
+}
+
+export function isFinancialUser(actor: AuthUser): boolean {
+  return (
+    actor.role === "SUPER_ADMIN" ||
+    actor.role === "ADMIN" ||
+    actor.role === "ACCOUNTANT"
+  );
+}
+
 export function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }

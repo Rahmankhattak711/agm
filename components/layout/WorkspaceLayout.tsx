@@ -232,7 +232,17 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 md:p-6 lg:p-8 print:p-0 print:m-0 print:!bg-white print:!bg-none print:overflow-visible">
+        <main
+          className={`flex-1 min-w-0 ${
+            pathname.startsWith("/finance") ||
+            pathname.startsWith("/reports") ||
+            pathname.startsWith("/commercial") ||
+            pathname.startsWith("/inventory") ||
+            pathname.startsWith("/administration")
+              ? "p-0 overflow-y-auto bg-white"
+              : "overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 md:p-6 lg:p-8"
+          } print:p-0 print:m-0 print:!bg-white print:!bg-none print:overflow-visible`}
+        >
           {children}
         </main>
       </div>

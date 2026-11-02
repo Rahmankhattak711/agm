@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getStandardAccounts } from "@/lib/commercial-accounting";
 import { getAccountTransactionDetails } from "@/lib/report-helpers";
 import { TrialBalanceRow } from "@/lib/hooks/types";
+import { microCache } from "@/lib/modules/accounting/cache/micro-cache";
 import {
   getAuthUser,
   hasRole,
@@ -19,6 +20,10 @@ export async function GET(request: Request) {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
     if (!hasRole(authUser, "ACCOUNTANT")) return forbidden();
+
+    const cacheKey = "tb:all";
+    const cached = microCache.get<any>(cacheKey);
+    if (cached) return NextResponse.json(cached);
 
     const std = await getStandardAccounts();
 
@@ -39,10 +44,12 @@ export async function GET(request: Request) {
         orderBy: { accountCode: "asc" },
       }),
       prisma.journalEntryLine.groupBy({
+        where: { journalEntry: { isPosted: true } },
         by: ["accountId"],
         _sum: { debit: true, credit: true },
       }),
       prisma.journalEntryLine.findMany({
+        where: { journalEntry: { isPosted: true } },
         include: { account: true, journalEntry: true },
       }),
       prisma.salesInvoice.findMany({
@@ -288,65 +295,15 @@ export async function GET(request: Request) {
       }));
     }
 
-    const initialDebit = nonZeroRows.reduce((s, r) => s + r.debit, 0);
-    const initialCredit = nonZeroRows.reduce((s, r) => s + r.credit, 0);
-    const diff = Math.round((initialDebit - initialCredit) * 100) / 100;
-
-    if (Math.abs(diff) > 0.001) {
-      const equityAcct =
-        accounts.find((a) => a.type === "EQUITY") ||
-        accounts.find((a) => a.accountCode === "3000") ||
-        std.salesRevenue;
-      const targetId = equityAcct.id;
-      const foundIdx = nonZeroRows.findIndex((r) => r.accountId === targetId);
-
-      if (diff > 0) {
-        if (foundIdx >= 0) {
-          nonZeroRows[foundIdx].credit =
-            Math.round((nonZeroRows[foundIdx].credit + diff) * 100) / 100;
-          nonZeroRows[foundIdx].netBalance =
-            nonZeroRows[foundIdx].credit - nonZeroRows[foundIdx].debit;
-        } else {
-          nonZeroRows.push({
-            accountId: targetId,
-            accountCode: equityAcct.accountCode,
-            accountName: "Retained Earnings / Equity Balancing",
-            type: "EQUITY",
-            debit: 0,
-            credit: diff,
-            netBalance: diff,
-          });
-        }
-      } else {
-        const absDiff = Math.abs(diff);
-        if (foundIdx >= 0) {
-          nonZeroRows[foundIdx].debit =
-            Math.round((nonZeroRows[foundIdx].debit + absDiff) * 100) / 100;
-          nonZeroRows[foundIdx].netBalance =
-            nonZeroRows[foundIdx].debit - nonZeroRows[foundIdx].credit;
-        } else {
-          nonZeroRows.push({
-            accountId: targetId,
-            accountCode: equityAcct.accountCode,
-            accountName: "Owner Capital / Financial Equalization",
-            type: "EQUITY",
-            debit: absDiff,
-            credit: 0,
-            netBalance: -absDiff,
-          });
-        }
-      }
-    }
-
-    const totalDebit = nonZeroRows.reduce(
-      (s: number, r: TrialBalanceRow) => s + r.debit,
-      0,
-    );
-    const totalCredit = nonZeroRows.reduce(
-      (s: number, r: TrialBalanceRow) => s + r.credit,
-      0,
-    );
-    const difference = Math.abs(totalDebit - totalCredit);
+    const totalDebit =
+      Math.round(
+        nonZeroRows.reduce((s: number, r: TrialBalanceRow) => s + r.debit, 0) * 100,
+      ) / 100;
+    const totalCredit =
+      Math.round(
+        nonZeroRows.reduce((s: number, r: TrialBalanceRow) => s + r.credit, 0) * 100,
+      ) / 100;
+    const difference = Math.round(Math.abs(totalDebit - totalCredit) * 100) / 100;
     const isBalanced = difference < 0.01;
 
     const projectSummaries = projects.map((p) => {
@@ -533,7 +490,7 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({
+    const responsePayload = {
       rows: nonZeroRows,
       totalDebit,
       totalCredit,
@@ -550,7 +507,10 @@ export async function GET(request: Request) {
         totalPayables: openAP,
         netCashFlow: netCash,
       },
-    });
+    };
+
+    microCache.set(cacheKey, responsePayload, 60_000);
+    return NextResponse.json(responsePayload);
   } catch (error: any) {
     console.error("GET /api/reports/trial-balance error:", error);
     return NextResponse.json(

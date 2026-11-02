@@ -1,281 +1,319 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import {
   useAccounts,
+  useCreateAccount,
+  useUpdateAccount,
   useDeleteAccount,
   ChartOfAccount,
 } from "@/lib/hooks/api-hooks";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/lib/toast";
-import { PlusIcon } from "@/components/icons";
-import { Button, PageHeader } from "@/components/ui";
-import {
-  ACCOUNT_TYPES,
-  HierarchicalAccount,
-  AccountTypeConfig,
-  AccountsSummaryCards,
-  CreateAccountModal,
-  EditAccountModal,
-  DeleteAccountModal,
-  AccountsFilterToolbar,
-  AccountsHierarchyView,
-} from "./components";
 import { formatNumber, formatCurrency } from "@/lib/utils/format";
+import {
+  HierarchicalAccount,
+  AccountsHierarchyView,
+  AccountSlideOverDrawer,
+  CleanAccountsHeader,
+  AccountTypesManagerModal,
+} from "./components";
+
+function buildMultiLevelTree(accounts: ChartOfAccount[]): HierarchicalAccount[] {
+  const map = new Map<string, HierarchicalAccount>();
+  accounts.forEach((a) => {
+    map.set(a.id, { ...a, subAccounts: [] });
+  });
+
+  const roots: HierarchicalAccount[] = [];
+  accounts.forEach((a) => {
+    const item = map.get(a.id)!;
+    if (a.parentId && map.has(a.parentId)) {
+      map.get(a.parentId)!.subAccounts.push(item);
+    } else {
+      roots.push(item);
+    }
+  });
+
+  const sortRecursive = (list: HierarchicalAccount[]) => {
+    list.sort((x, y) =>
+      x.accountCode.localeCompare(y.accountCode, undefined, { numeric: true }),
+    );
+    list.forEach((item) => sortRecursive(item.subAccounts));
+  };
+  sortRecursive(roots);
+
+  return roots;
+}
 
 export default function AccountsPage() {
-  const { data: accounts = [], isLoading, error } = useAccounts();
+  const { user, isSuperAdmin, hasRole } = useAuth();
+  const isFinancialUser = isSuperAdmin || hasRole("ADMIN", "ACCOUNTANT");
+
+  const { data: accounts = [], isLoading, error, refetch } = useAccounts();
+  const createAccountMutation = useCreateAccount();
+  const updateAccountMutation = useUpdateAccount();
   const deleteAccountMutation = useDeleteAccount();
 
   const [search, setSearch] = useState("");
-  const [selectedType, setSelectedType] = useState<string>("ALL");
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [activeDepthLevel, setActiveDepthLevel] = useState<number | null>(4);
 
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [createDefaultType, setCreateDefaultType] = useState<
-    "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE"
-  >("ASSET");
-  const [createDefaultParentId, setCreateDefaultParentId] =
-    useState<string>("");
+  // Account Subtypes Manager Modal state
+  const [isAccountTypesModalOpen, setIsAccountTypesModalOpen] = useState(false);
 
-  const [editingAccount, setEditingAccount] = useState<ChartOfAccount | null>(
-    null,
-  );
-  const [deletingAccount, setDeletingAccount] = useState<ChartOfAccount | null>(
-    null,
-  );
+  // Drawer state
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerMode, setDrawerMode] = useState<"CREATE" | "EDIT">("CREATE");
+  const [drawerAccount, setDrawerAccount] = useState<ChartOfAccount | null>(null);
+  const [drawerParentAccount, setDrawerParentAccount] =
+    useState<ChartOfAccount | null>(null);
 
-  const [collapsedCategories, setCollapsedCategories] = useState<
-    Record<string, boolean>
-  >({});
-  const [collapsedParents, setCollapsedParents] = useState<
-    Record<string, boolean>
-  >({});
-  const [expandedLedgerAccounts, setExpandedLedgerAccounts] = useState<
-    Record<string, boolean>
-  >({});
+  const [collapsedNodes, setCollapsedNodes] = useState<Record<string, boolean>>({});
 
-  const toggleCategory = useCallback((catVal: string) => {
-    setCollapsedCategories((prev) => ({
+  const toggleCollapse = useCallback((nodeId: string) => {
+    setCollapsedNodes((prev) => ({
       ...prev,
-      [catVal]: !prev[catVal],
+      [nodeId]: !prev[nodeId],
     }));
   }, []);
 
-  const toggleParent = useCallback((parentId: string) => {
-    setCollapsedParents((prev) => ({
-      ...prev,
-      [parentId]: !prev[parentId],
-    }));
-  }, []);
-
-  const toggleLedgerAccount = useCallback((accId: string) => {
-    setExpandedLedgerAccounts((prev) => ({
-      ...prev,
-      [accId]: !prev[accId],
-    }));
-  }, []);
-
+  // Filtered accounts based on search and category
   const filteredAccounts = useMemo(() => {
     return (accounts || []).filter((acc) => {
+      if (acc.isActive === false) return false;
+
       const q = search.toLowerCase().trim();
       const matchesSearch =
         !q ||
         acc.accountCode.toLowerCase().includes(q) ||
         acc.accountName.toLowerCase().includes(q) ||
-        (acc.parent?.accountName &&
-          acc.parent.accountName.toLowerCase().includes(q));
+        ((acc as any).nameAr &&
+          (acc as any).nameAr.toLowerCase().includes(q));
 
-      const matchesType = selectedType === "ALL" || acc.type === selectedType;
+      const matchesCategory =
+        selectedCategory === "ALL" || acc.type === selectedCategory;
 
-      let matchesStatus = true;
-      if (statusFilter === "ACTIVE") matchesStatus = acc.isActive === true;
-      if (statusFilter === "INACTIVE") matchesStatus = acc.isActive === false;
-      if (statusFilter === "SYSTEM") matchesStatus = Boolean(acc.isSystem);
-
-      return matchesSearch && matchesType && matchesStatus;
+      return matchesSearch && matchesCategory;
     });
-  }, [accounts, search, selectedType, statusFilter]);
+  }, [accounts, search, selectedCategory]);
 
-  const classSummary = useMemo(() => {
-    const map: Record<string, { count: number; totalBalance: number }> = {
-      ASSET: { count: 0, totalBalance: 0 },
-      LIABILITY: { count: 0, totalBalance: 0 },
-      EQUITY: { count: 0, totalBalance: 0 },
-      REVENUE: { count: 0, totalBalance: 0 },
-      EXPENSE: { count: 0, totalBalance: 0 },
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      ALL: accounts.length,
+      ASSET: 0,
+      LIABILITY: 0,
+      EQUITY: 0,
+      REVENUE: 0,
+      EXPENSE: 0,
     };
-
-    (accounts || []).forEach((a) => {
-      if (!map[a.type]) {
-        map[a.type] = { count: 0, totalBalance: 0 };
+    accounts.forEach((a) => {
+      if (counts[a.type] !== undefined) {
+        counts[a.type]++;
       }
-      map[a.type].count += 1;
-      map[a.type].totalBalance += Number(a.balance || 0);
     });
-
-    return map;
+    return counts;
   }, [accounts]);
 
-  const categorizedAccounts = useMemo(() => {
-    const map: Record<
-      string,
-      {
-        typeInfo: AccountTypeConfig;
-        roots: HierarchicalAccount[];
-        totalBalance: number;
-        totalCount: number;
-      }
-    > = {};
-
-    ACCOUNT_TYPES.forEach((t) => {
-      const accountsInType = filteredAccounts.filter((a) => a.type === t.value);
-      const accMap = new Map<string, HierarchicalAccount>();
-      accountsInType.forEach((acc) => {
-        accMap.set(acc.id, { ...acc, subAccounts: [] });
-      });
-
-      const roots: HierarchicalAccount[] = [];
-      accountsInType.forEach((acc) => {
-        const item = accMap.get(acc.id)!;
-        if (acc.parentId && accMap.has(acc.parentId)) {
-          accMap.get(acc.parentId)!.subAccounts.push(item);
-        } else {
-          roots.push(item);
-        }
-      });
-
-      roots.sort((a, b) => a.accountCode.localeCompare(b.accountCode));
-      roots.forEach((r) => {
-        r.subAccounts.sort((a, b) =>
-          a.accountCode.localeCompare(b.accountCode),
-        );
-      });
-
-      const totalBalance = accountsInType.reduce(
-        (sum, a) => sum + Number(a.balance || 0),
-        0,
-      );
-
-      map[t.value] = {
-        typeInfo: t,
-        roots,
-        totalBalance,
-        totalCount: accountsInType.length,
-      };
-    });
-
-    return map;
+  const treeData = useMemo(() => {
+    return buildMultiLevelTree(filteredAccounts);
   }, [filteredAccounts]);
 
+  const handleSelectDepthLevel = useCallback(
+    (lvl: number) => {
+      setActiveDepthLevel(lvl);
+      const newCollapsed: Record<string, boolean> = {};
+
+      const traverse = (items: HierarchicalAccount[]) => {
+        items.forEach((item) => {
+          const itemLvl = item.level ?? 1;
+          if (itemLvl >= lvl && item.subAccounts && item.subAccounts.length > 0) {
+            newCollapsed[item.id] = true;
+          } else {
+            newCollapsed[item.id] = false;
+          }
+          if (item.subAccounts) {
+            traverse(item.subAccounts);
+          }
+        });
+      };
+
+      traverse(treeData);
+      setCollapsedNodes(newCollapsed);
+    },
+    [treeData],
+  );
+
+  const handleExpandAll = useCallback(() => {
+    setActiveDepthLevel(4);
+    setCollapsedNodes({});
+  }, []);
+
+  const handleCollapseAll = useCallback(() => {
+    setActiveDepthLevel(1);
+    const newCollapsed: Record<string, boolean> = {};
+    const traverse = (items: HierarchicalAccount[]) => {
+      items.forEach((item) => {
+        if (item.subAccounts && item.subAccounts.length > 0) {
+          newCollapsed[item.id] = true;
+        }
+        if (item.subAccounts) {
+          traverse(item.subAccounts);
+        }
+      });
+    };
+    traverse(treeData);
+    setCollapsedNodes(newCollapsed);
+  }, [treeData]);
+
+  useEffect(() => {
+    if (activeDepthLevel !== null && treeData.length > 0) {
+      handleSelectDepthLevel(activeDepthLevel);
+    }
+  }, [activeDepthLevel, treeData.length]);
+
   const handleOpenCreate = () => {
-    setCreateDefaultType("ASSET");
-    setCreateDefaultParentId("");
-    setIsCreateModalOpen(true);
+    setDrawerMode("CREATE");
+    setDrawerAccount(null);
+    setDrawerParentAccount(null);
+    setIsDrawerOpen(true);
   };
 
-  const handleOpenCreateForType = (
-    type: "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE",
-    defaultParentId?: string,
-  ) => {
-    setCreateDefaultType(type);
-    setCreateDefaultParentId(defaultParentId || "");
-    setIsCreateModalOpen(true);
+  const handleOpenCreateChild = (parentAcc: ChartOfAccount) => {
+    if (parentAcc.level === 1) {
+      toast.warning("Level 1 root categories cannot have direct child accounts. Please select a Level 2 Group.");
+      return;
+    }
+    setDrawerMode("CREATE");
+    setDrawerAccount(null);
+    setDrawerParentAccount(parentAcc);
+    setIsDrawerOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!deletingAccount) return;
+  const handleOpenEdit = (acc: ChartOfAccount) => {
+    setDrawerMode("EDIT");
+    setDrawerAccount(acc);
+    setDrawerParentAccount(null);
+    setIsDrawerOpen(true);
+  };
+
+  const handleSaveAccount = async (formData: any) => {
+    if (drawerMode === "EDIT" && drawerAccount) {
+      await updateAccountMutation.mutateAsync({
+        id: drawerAccount.id,
+        data: formData,
+      });
+      toast.success(`Account "${formData.accountCode}" updated successfully.`);
+    } else {
+      await createAccountMutation.mutateAsync(formData);
+      toast.success(`Account "${formData.accountCode}" created successfully.`);
+    }
+    refetch();
+  };
+
+  const handleDeleteAccount = async (acc: ChartOfAccount) => {
     try {
-      await deleteAccountMutation.mutateAsync(deletingAccount.id);
-      toast.success(
-        `Account "${deletingAccount.accountName}" deleted successfully`,
-      );
-      setDeletingAccount(null);
+      const res = await deleteAccountMutation.mutateAsync(acc.id);
+      if ((res as any)?.message) {
+        toast.success((res as any).message);
+      } else {
+        toast.success(`Account "${acc.accountCode}" deleted successfully.`);
+      }
+      refetch();
     } catch (err: any) {
-      toast.error(err.message || "Failed to delete account");
+      toast.error(err.message || `Failed to delete account "${acc.accountCode}"`);
+      throw err;
     }
   };
 
+  // Export to CSV
+  const handleExportCsv = () => {
+    if (!accounts.length) return;
+    const headers = ["Account Code", "Account Name", "Arabic Name", "Type", "Subtype", "Cash Flow", "Level", "Balance"];
+    const rows = accounts.map((a: any) => [
+      a.accountCode,
+      `"${a.accountName}"`,
+      `"${a.nameAr || ""}"`,
+      a.type,
+      `"${a.accountSubtype || ""}"`,
+      `"${a.cashFlowType || ""}"`,
+      a.level || 1,
+      Number(a.balance || 0).toFixed(2),
+    ]);
+    const csv = [headers.join(","), ...rows.map((r: any) => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Chart_of_Accounts_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+  };
+
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Chart of Accounts"
-        description="Manage your master chart of accounts, view real-time balances, and organize account structures."
-        actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleOpenCreate}
-            icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
-          >
-            Add Account
-          </Button>
-        }
+    <div className="w-full min-h-full bg-white flex flex-col">
+      {/* Sleek Modern Header & Controls Toolbar */}
+      <CleanAccountsHeader
+        search={search}
+        setSearch={setSearch}
+        activeDepthLevel={activeDepthLevel}
+        onSelectDepthLevel={handleSelectDepthLevel}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        totalCount={filteredAccounts.length}
+        categoryCounts={categoryCounts}
+        onAddAccount={handleOpenCreate}
+        onExportCsv={handleExportCsv}
+        onRefresh={refetch}
+        onExpandAll={handleExpandAll}
+        onCollapseAll={handleCollapseAll}
+        canAddAccount={isFinancialUser}
+        onOpenAccountTypes={() => setIsAccountTypesModalOpen(true)}
       />
 
-      <AccountsSummaryCards
-        selectedType={selectedType}
-        onSelectType={setSelectedType}
-        classSummary={classSummary}
-        formatNumber={formatNumber}
-      />
-
-      <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <AccountsFilterToolbar
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          search={search}
-          setSearch={setSearch}
-          selectedType={selectedType}
-          setSelectedType={setSelectedType}
-          totalDisplayed={filteredAccounts.length}
-        />
-
+      {/* Main Full-Viewport Hierarchy Table matching Wafeq Image 1 */}
+      <div className="w-full border-t border-slate-200/90 flex-1 bg-white">
         {error ? (
-          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
+          <div className="p-6 text-center text-xs text-rose-600 bg-rose-50/50">
             Error loading accounts: {(error as any).message}
           </div>
         ) : (
           <AccountsHierarchyView
-            categorizedAccounts={categorizedAccounts}
-            selectedType={selectedType}
-            collapsedCategories={collapsedCategories}
-            toggleCategory={toggleCategory}
-            collapsedParents={collapsedParents}
-            toggleParent={toggleParent}
-            expandedLedgerAccounts={expandedLedgerAccounts}
-            toggleLedgerAccount={toggleLedgerAccount}
-            onOpenCreateForType={handleOpenCreateForType}
+            rootAccounts={treeData}
+            collapsedNodes={collapsedNodes}
+            onToggleCollapse={toggleCollapse}
+            onOpenEdit={handleOpenEdit}
+            onOpenCreateChild={handleOpenCreateChild}
+            onDelete={handleDeleteAccount}
+            hasAccounts={accounts.length > 0}
             onOpenCreate={handleOpenCreate}
-            onOpenEdit={(acc) => setEditingAccount(acc)}
-            onDelete={(acc) => setDeletingAccount(acc)}
-            hasAccounts={filteredAccounts.length > 0}
-            searchQuery={search}
             formatNumber={formatNumber}
             formatCurrency={formatCurrency}
+            activeDepthLevel={activeDepthLevel}
+            onSelectDepthLevel={handleSelectDepthLevel}
+            isSuperAdmin={isSuperAdmin}
+            isFinancialUser={isFinancialUser}
           />
         )}
       </div>
 
-      <CreateAccountModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        accounts={accounts}
-        initialType={createDefaultType}
-        initialParentId={createDefaultParentId}
+      {/* Right Slide-Over Drawer for Adding/Editing Accounts */}
+      <AccountSlideOverDrawer
+        isOpen={isDrawerOpen}
+        mode={drawerMode}
+        account={drawerAccount}
+        parentAccount={drawerParentAccount}
+        allAccounts={accounts}
+        onClose={() => setIsDrawerOpen(false)}
+        onSave={handleSaveAccount}
+        onDelete={handleDeleteAccount}
+        isSuperAdmin={isSuperAdmin}
+        isFinancialUser={isFinancialUser}
+        onOpenManageSubtypes={() => setIsAccountTypesModalOpen(true)}
       />
 
-      <EditAccountModal
-        account={editingAccount}
-        onClose={() => setEditingAccount(null)}
-        accounts={accounts}
-      />
-
-      <DeleteAccountModal
-        account={deletingAccount}
-        onClose={() => setDeletingAccount(null)}
-        onConfirm={handleDeleteConfirm}
-        isPending={deleteAccountMutation.isPending}
+      {/* Modal to view, create, edit, and delete Account Types dynamically */}
+      <AccountTypesManagerModal
+        isOpen={isAccountTypesModalOpen}
+        onClose={() => setIsAccountTypesModalOpen(false)}
       />
     </div>
   );

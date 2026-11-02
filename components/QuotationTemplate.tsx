@@ -21,7 +21,7 @@ import {
   Printer,
   Save,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   DEFAULT_PAYMENT_TERMS,
   DEFAULT_TERMS_AND_CONDITIONS,
@@ -65,6 +65,8 @@ export default function QuotationTemplate({
   const [status, setStatus] = useState<"ACCEPTED" | "REJECTED" | "DRAFT">(
     "ACCEPTED",
   );
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const statusRef = useRef<HTMLDivElement>(null);
   const [isSavedDrawerOpen, setIsSavedDrawerOpen] = useState<boolean>(false);
   const { confirm } = useConfirm();
 
@@ -72,6 +74,21 @@ export default function QuotationTemplate({
     useQuotations();
   const saveQuotationMutation = useSaveQuotation();
   const deleteQuotationMutation = useDeleteQuotation();
+
+  useEffect(() => {
+    if (!isStatusOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        statusRef.current &&
+        !statusRef.current.contains(e.target as Node)
+      ) {
+        setIsStatusOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, [isStatusOpen]);
 
   const [meta, setMeta] = useState<QuotationMeta>({
     quotationNo:
@@ -441,11 +458,11 @@ export default function QuotationTemplate({
           : "min-h-screen print:bg-white print:py-0 print:px-0"
       }
     >
-      <div className="max-w-full mx-auto mb-4 bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2.5 print:hidden">
+      <div className="max-w-full mx-auto mb-4 bg-white/95 backdrop-blur-sm p-2 sm:p-2.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center gap-2 print:hidden">
         <button
           type="button"
           onClick={handleNewQuotation}
-          className="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/90 rounded-2xl px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+          className="bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 rounded-xl px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs active:scale-[0.98] cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5 text-slate-600" />
           <span>New Blank</span>
@@ -454,33 +471,100 @@ export default function QuotationTemplate({
         <button
           type="button"
           onClick={() => setIsSavedDrawerOpen(true)}
-          className="bg-[#243746] hover:bg-[#1a2935] text-white rounded-2xl px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+          className="bg-slate-800 hover:bg-slate-900 text-white rounded-xl px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs active:scale-[0.98] cursor-pointer"
         >
           <FolderOpen className="w-3.5 h-3.5" />
           <span>Saved DB ({savedQuotations.length})</span>
         </button>
 
-        <div className="relative inline-flex items-center">
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as any)}
-            className="appearance-none bg-slate-50 hover:bg-slate-100/80 border border-slate-200/90 rounded-2xl pl-3.5 pr-8 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer transition-all shadow-2xs"
+        {/* Modern Custom Status Selector Dropdown */}
+        <div ref={statusRef} className="relative inline-flex items-center">
+          <button
+            type="button"
+            onClick={() => setIsStatusOpen((v) => !v)}
+            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] ${
+              status === "ACCEPTED"
+                ? "bg-emerald-50 hover:bg-emerald-100/90 text-emerald-800 border-emerald-200/90"
+                : status === "REJECTED"
+                  ? "bg-rose-50 hover:bg-rose-100/90 text-rose-800 border-rose-200/90"
+                  : "bg-amber-50 hover:bg-amber-100/90 text-amber-800 border-amber-200/90"
+            }`}
           >
-            <option value="DRAFT">Status: DRAFT</option>
-            <option value="ACCEPTED">Status: ACCEPTED</option>
-            <option value="REJECTED">Status: REJECTED</option>
-          </select>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 pointer-events-none" />
+            <span
+              className={`w-2 h-2 rounded-full shrink-0 ${
+                status === "ACCEPTED"
+                  ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                  : status === "REJECTED"
+                    ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
+                    : "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+              }`}
+            />
+            <span className="font-semibold">
+              Status: <span className="capitalize">{status.toLowerCase()}</span>
+            </span>
+            <ChevronDown
+              className={`w-3.5 h-3.5 transition-transform duration-200 opacity-60 ${
+                isStatusOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {isStatusOpen && (
+            <div className="absolute top-full left-0 mt-1.5 w-44 rounded-xl bg-white border border-slate-200 shadow-xl shadow-slate-900/10 p-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+              {[
+                {
+                  val: "ACCEPTED",
+                  label: "Accepted",
+                  dot: "bg-emerald-500",
+                  badge: "bg-emerald-50 text-emerald-700",
+                },
+                {
+                  val: "DRAFT",
+                  label: "Draft",
+                  dot: "bg-amber-500",
+                  badge: "bg-amber-50 text-amber-700",
+                },
+                {
+                  val: "REJECTED",
+                  label: "Rejected",
+                  dot: "bg-rose-500",
+                  badge: "bg-rose-50 text-rose-700",
+                },
+              ].map((opt) => (
+                <button
+                  key={opt.val}
+                  type="button"
+                  onClick={() => {
+                    setStatus(opt.val as any);
+                    setIsStatusOpen(false);
+                  }}
+                  className={`flex items-center justify-between w-full px-2.5 py-2 rounded-lg text-xs font-semibold transition cursor-pointer text-left ${
+                    status === opt.val
+                      ? `${opt.badge} font-bold`
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${opt.dot}`} />
+                    <span>{opt.label}</span>
+                  </div>
+                  {status === opt.val && (
+                    <span className="text-xs font-bold">✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <button
           type="button"
           onClick={handleSaveToDb}
           disabled={saveQuotationMutation.isPending}
-          className={`rounded-2xl px-4 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
+          className={`rounded-xl px-4 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs hover:shadow-sm active:scale-[0.98] cursor-pointer ${
             !meta.customerId && !meta.customer.trim()
-              ? "bg-slate-400 hover:bg-slate-500 text-white"
-              : "bg-[#1b5e3a] hover:bg-[#154b2e] text-white"
+              ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
+              : "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white border border-emerald-400/25"
           }`}
           title={
             !meta.customerId && !meta.customer.trim()
@@ -514,22 +598,23 @@ export default function QuotationTemplate({
             ]);
             printWithDocumentTitle(printTitle);
           }}
-          className="bg-[#243746] hover:bg-[#1a2935] text-white rounded-2xl px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+          className="bg-[#1e293b] hover:bg-[#0f172a] text-white rounded-xl px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs active:scale-[0.98] cursor-pointer"
         >
           <Printer className="w-3.5 h-3.5" />
           <span>Print / PDF</span>
         </button>
 
         {!meta.customerId && !meta.customer.trim() && (
-          <span className="px-3 py-1 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl text-[11px] font-bold flex items-center gap-1 shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-            Customer Profile Required
+          <span className="px-3 py-1 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span>Customer Profile Required</span>
           </span>
         )}
 
         {selectedQuotationId && (
-          <span className="px-2.5 py-1 rounded-full bg-agm-green-2 text-white border border-agm-green text-[11px] font-bold">
-            Loaded: {meta.quotationNo}
+          <span className="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span>Loaded: {meta.quotationNo}</span>
           </span>
         )}
       </div>

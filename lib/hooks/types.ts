@@ -4,7 +4,14 @@ export interface ChartOfAccount {
   id: string;
   accountCode: string;
   accountName: string;
+  nameAr?: string | null;
   type: "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE";
+  accountSubtype?: string | null;
+  cashFlowType?: string | null;
+  allowPosting?: boolean;
+  enablePayments?: boolean;
+  showInExpenseClaims?: boolean;
+  level?: number;
   isActive: boolean;
   parentId?: string | null;
   parent?: {

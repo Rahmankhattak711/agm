@@ -21,7 +21,7 @@ export function AccountInlineLedger({
 
   return (
     <tr className="bg-slate-50/70 border-y border-slate-200/80">
-      <td colSpan={6} className="p-3 sm:px-6">
+      <td colSpan={8} className="p-3 sm:px-6">
         <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden">
           <div className="px-4 py-2 bg-slate-50 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">

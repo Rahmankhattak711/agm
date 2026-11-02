@@ -1,1141 +1,328 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
-import { useForm } from "@tanstack/react-form";
-import { useAuth } from "@/context/AuthContext";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useJournalEntries } from "@/lib/hooks/api-hooks";
 import { formatAed } from "@/lib/utils/format";
-import { toast } from "@/lib/toast";
-import {
-  useAccounts,
-  useCreateJournalEntry,
-  useDeleteJournalEntry,
-  useJournalEntries,
-  useUpdateJournalEntry,
-} from "@/lib/hooks/api-hooks";
-import { useProjects } from "@/lib/hooks/projects-hooks";
-import { useConfirm } from "@/context/ConfirmContext";
-import {
-  Button,
-  Input,
-  Modal,
-  Select,
-  DashboardCard,
-  DashboardCardGrid,
-  PageHeader,
-  FilterBar,
-} from "@/components/ui";
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  CloseIcon,
-  EditIcon,
-  PlusIcon,
-  SearchIcon,
-  TrashIcon,
-  FileSpreadsheetIcon,
-} from "@/components/icons";
+import { Plus, Search, Download, X, RefreshCw, Filter } from "lucide-react";
+import { JournalDetailsModal } from "./components/JournalDetailsModal";
 
-interface JournalLineFormItem {
-  accountId: string;
-  debit: number;
-  credit: number;
-  vatType?: "INPUT" | "OUTPUT" | null;
-  taxableAmount?: number;
-  vatAmount?: number;
-}
+function ManualJournalsContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams.get("search") || "";
 
-export default function JournalEntriesPage() {
-  const { data: journalEntries, isLoading, error } = useJournalEntries();
-  const { data: accounts } = useAccounts();
-  const { data: projects = [] } = useProjects();
-  const { user, canModify } = useAuth();
-  const { confirm } = useConfirm();
-  const createJournalEntryMutation = useCreateJournalEntry();
-  const updateJournalEntryMutation = useUpdateJournalEntry();
-  const deleteJournalEntryMutation = useDeleteJournalEntry();
+  const { data: journalEntries = [], isLoading, refetch } = useJournalEntries();
 
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "POSTED" | "DRAFT">(
-    "ALL",
-  );
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [formError, setFormError] = useState("");
+  const [search, setSearch] = useState(urlSearch);
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "POSTED" | "DRAFT">("ALL");
+  const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
 
-  const getVatAccount = (nature: "INPUT" | "OUTPUT") => {
-    if (!accounts || accounts.length === 0) return "";
-    if (nature === "INPUT") {
-      const match = accounts.find(
-        (a) =>
-          a.accountCode === "2200" ||
-          a.accountName.toLowerCase().includes("vat input") ||
-          a.accountName.toLowerCase().includes("input tax"),
-      );
-      return match?.id || accounts[0]?.id || "";
-    } else {
-      const match = accounts.find(
-        (a) =>
-          a.accountCode === "2210" ||
-          a.accountName.toLowerCase().includes("vat output") ||
-          a.accountName.toLowerCase().includes("output tax"),
-      );
-      return match?.id || accounts[0]?.id || "";
+  useEffect(() => {
+    if (urlSearch) {
+      setSearch(urlSearch);
     }
-  };
+  }, [urlSearch]);
 
-  const getEntryProject = useCallback(
-    (je: any) => {
-      if (!projects || projects.length === 0) return null;
-      return (
-        projects.find((p) => {
-          if (
-            je.reference &&
-            (je.reference === p.projectCode ||
-              je.reference.includes(p.projectCode))
-          )
-            return true;
-          if (
-            je.description &&
-            (je.description.includes(`[${p.projectCode}`) ||
-              je.description.includes(p.name))
-          )
-            return true;
-          return false;
-        }) || null
-      );
-    },
-    [projects],
-  );
+  // Warm up other finance pages for instant transitions
+  useEffect(() => {
+    router.prefetch("/finance/reports/profit-and-loss");
+    router.prefetch("/finance/general-ledger");
+    router.prefetch("/finance/accounts");
+  }, [router]);
 
-  const form = useForm({
-    defaultValues: {
-      entryNumber: `JE-${Date.now().toString().slice(-6)}`,
-      entryDate: new Date().toISOString().split("T")[0],
-      projectId: "",
-      description: "",
-      reference: "",
-      isPosted: true,
-      lines: [
-        { accountId: "", debit: 0, credit: 0 },
-        { accountId: "", debit: 0, credit: 0 },
-      ] as JournalLineFormItem[],
-    },
-    onSubmit: async ({ value }) => {
-      setFormError("");
-
-      if (!value.entryNumber.trim() || !value.entryDate) {
-        setFormError("Entry number and date are required.");
-        return;
-      }
-
-      if (value.lines.some((l) => !l.accountId)) {
-        setFormError("Please select an account for all lines.");
-        return;
-      }
-
-      const payloadLines: Array<{
-        accountId: string;
-        debit: number;
-        credit: number;
-        vatType?: "INPUT" | "OUTPUT" | null;
-        taxableAmount?: number;
-        vatAmount?: number;
-      }> = [];
-
-      for (const l of value.lines) {
-        const isDeb = Number(l.debit) > 0;
-        const isCred = Number(l.credit) > 0;
-        const baseAmt = isDeb ? Number(l.debit) : Number(l.credit);
-        const hasVat = !!l.vatType && baseAmt > 0;
-        const vatVal = hasVat ? Number((baseAmt * 0.05).toFixed(2)) : 0;
-
-        payloadLines.push({
-          accountId: l.accountId,
-          debit: Number(l.debit) || 0,
-          credit: Number(l.credit) || 0,
-          vatType: l.vatType || null,
-          taxableAmount: hasVat ? baseAmt : undefined,
-          vatAmount: hasVat ? vatVal : undefined,
-        });
-
-        if (hasVat && vatVal > 0) {
-          const vatType = l.vatType || (isDeb ? "INPUT" : "OUTPUT");
-          const vatAccId = getVatAccount(vatType);
-          const alreadyHasVat = value.lines.some(
-            (other) =>
-              other.accountId === vatAccId &&
-              (isDeb
-                ? Number(other.debit) === vatVal
-                : Number(other.credit) === vatVal),
-          );
-          if (!alreadyHasVat && vatAccId) {
-            payloadLines.push({
-              accountId: vatAccId,
-              debit: isDeb ? vatVal : 0,
-              credit: isCred ? vatVal : 0,
-              vatType,
-              taxableAmount: baseAmt,
-              vatAmount: vatVal,
-            });
-          }
-        }
-      }
-
-      const totalDebit = payloadLines.reduce(
-        (s, l) => s + (Number(l.debit) || 0),
-        0,
-      );
-      const totalCredit = payloadLines.reduce(
-        (s, l) => s + (Number(l.credit) || 0),
-        0,
-      );
-
-      if (Math.abs(totalDebit - totalCredit) > 0.01) {
-        setFormError(
-          `Journal entry is unbalanced. Total Debit (${formatAed(totalDebit)}) must equal Total Credit (${formatAed(totalCredit)}).`,
-        );
-        return;
-      }
-
-      if (totalDebit <= 0) {
-        setFormError("Total amount must be greater than zero.");
-        return;
-      }
-
-      const selectedProj = projects.find((p) => p.id === value.projectId);
-      let desc = value.description.trim();
-      let ref = value.reference.trim();
-
-      if (selectedProj) {
-        if (!ref) {
-          ref = selectedProj.projectCode;
-        }
-        if (desc && !desc.includes(selectedProj.projectCode)) {
-          desc = `[${selectedProj.projectCode}: ${selectedProj.name}] ${desc}`;
-        } else if (!desc) {
-          desc = `[${selectedProj.projectCode}: ${selectedProj.name}] Project ledger adjustment`;
-        }
-      }
-
-      try {
-        if (editingId) {
-          await updateJournalEntryMutation.mutateAsync({
-            id: editingId,
-            entryNumber: value.entryNumber,
-            entryDate: value.entryDate,
-            description: desc,
-            reference: ref,
-            isPosted: value.isPosted,
-            lines: payloadLines,
-          });
-        } else {
-          await createJournalEntryMutation.mutateAsync({
-            entryNumber: value.entryNumber,
-            entryDate: value.entryDate,
-            description: desc,
-            reference: ref,
-            isPosted: value.isPosted,
-            createdBy: user?.id,
-            lines: payloadLines,
-          });
-        }
-
-        toast.success(
-          editingId
-            ? `Journal entry ${value.entryNumber} updated successfully`
-            : `Journal entry ${value.entryNumber} recorded successfully`,
-        );
-        setIsModalOpen(false);
-      } catch (err: any) {
-        setFormError(err.message || "Failed to save journal entry");
-        toast.error(err.message || "Failed to save journal entry");
-      }
-    },
-  });
-
-  const filteredEntries = useMemo(() => {
-    const q = search.toLowerCase();
-    return (journalEntries || []).filter((entry) => {
-      const matchedProj = getEntryProject(entry);
+  const filtered = useMemo(() => {
+    return journalEntries.filter((je: any) => {
+      const q = search.toLowerCase().trim();
       const matchesSearch =
-        entry.entryNumber.toLowerCase().includes(q) ||
-        (entry.description && entry.description.toLowerCase().includes(q)) ||
-        (entry.reference && entry.reference.toLowerCase().includes(q)) ||
-        (matchedProj &&
-          (matchedProj.projectCode.toLowerCase().includes(q) ||
-            matchedProj.name.toLowerCase().includes(q) ||
-            (matchedProj.customer?.name &&
-              matchedProj.customer.name.toLowerCase().includes(q)) ||
-            (matchedProj.customer?.companyName &&
-              matchedProj.customer.companyName.toLowerCase().includes(q))));
+        !q ||
+        je.entryNumber?.toLowerCase().includes(q) ||
+        je.reference?.toLowerCase().includes(q) ||
+        je.description?.toLowerCase().includes(q) ||
+        je.id?.toLowerCase().includes(q) ||
+        je.lines?.some(
+          (l: any) =>
+            l.account?.accountCode?.toLowerCase().includes(q) ||
+            l.account?.accountName?.toLowerCase().includes(q)
+        );
 
-      if (statusFilter === "POSTED") return matchesSearch && entry.isPosted;
-      if (statusFilter === "DRAFT") return matchesSearch && !entry.isPosted;
-      return matchesSearch;
+      const matchesStatus =
+        statusFilter === "ALL" ||
+        (statusFilter === "POSTED" && je.isPosted) ||
+        (statusFilter === "DRAFT" && !je.isPosted);
+
+      return matchesSearch && matchesStatus;
     });
-  }, [journalEntries, search, statusFilter, getEntryProject]);
+  }, [journalEntries, search, statusFilter]);
 
-  const handleOpenAddModal = () => {
-    setEditingId(null);
-    setFormError("");
-
-    form.reset({
-      entryNumber: `JE-${Date.now().toString().slice(-6)}`,
-      entryDate: new Date().toISOString().split("T")[0],
-      projectId: "",
-      description: "",
-      reference: "",
-      isPosted: true,
-      lines: [
-        { accountId: accounts?.[0]?.id || "", debit: 0, credit: 0 },
-        { accountId: accounts?.[1]?.id || "", debit: 0, credit: 0 },
-      ],
+  const handleExportCsv = () => {
+    if (!filtered.length) return;
+    const headers = ["Serial Number", "Status", "Date", "Reference", "Notes", "Total AED"];
+    const rows = filtered.map((e: any) => {
+      const total = e.lines?.reduce((s: number, l: any) => s + Number(l.debit || 0), 0) || 0;
+      return [
+        e.entryNumber,
+        e.isPosted ? "POSTED" : "DRAFT",
+        new Date(e.entryDate).toISOString().split("T")[0],
+        `"${e.reference || ""}"`,
+        `"${e.description || ""}"`,
+        total.toFixed(2),
+      ];
     });
-    setIsModalOpen(true);
-  };
 
-  const handleOpenEditModal = (je: any, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setEditingId(je.id);
-    setFormError("");
-
-    const matchedProj = getEntryProject(je);
-    let cleanDesc = je.description || "";
-    if (matchedProj && cleanDesc.startsWith(`[${matchedProj.projectCode}`)) {
-      const idx = cleanDesc.indexOf("] ");
-      if (idx !== -1) {
-        cleanDesc = cleanDesc.slice(idx + 2);
-      }
-    }
-
-    form.reset({
-      entryNumber: je.entryNumber,
-      entryDate: je.entryDate
-        ? new Date(je.entryDate).toISOString().split("T")[0]
-        : new Date().toISOString().split("T")[0],
-      projectId: matchedProj?.id || "",
-      description: cleanDesc,
-      reference: je.reference || "",
-      isPosted: Boolean(je.isPosted),
-      lines:
-        je.lines && je.lines.length > 0
-          ? je.lines.map((l: any) => ({
-              accountId: l.accountId,
-              debit: Number(l.debit) || 0,
-              credit: Number(l.credit) || 0,
-              vatType: l.vatEntry?.vatType || l.vatType,
-              taxableAmount: l.vatEntry?.taxableAmount || l.taxableAmount,
-              vatAmount: l.vatEntry?.vatAmount || l.vatAmount,
-            }))
-          : [
-              { accountId: accounts?.[0]?.id || "", debit: 0, credit: 0 },
-              { accountId: accounts?.[1]?.id || "", debit: 0, credit: 0 },
-            ],
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleToggleStatus = async (je: any, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    try {
-      await updateJournalEntryMutation.mutateAsync({
-        id: je.id,
-        isPosted: !je.isPosted,
-      });
-      toast.success(
-        je.isPosted
-          ? `Journal entry ${je.entryNumber} unposted to Draft`
-          : `Journal entry ${je.entryNumber} posted to General Ledger`,
-      );
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update entry status");
-    }
-  };
-
-  const handleDelete = async (
-    id: string,
-    entryNum: string,
-    e?: React.MouseEvent,
-  ) => {
-    if (e) e.stopPropagation();
-    const isConfirmed = await confirm({
-      title: "Delete Journal Entry",
-      message: `Are you sure you want to delete journal entry "${entryNum}"? This will reverse all associated line items.`,
-      variant: "danger",
-      confirmText: "Delete",
-    });
-    if (isConfirmed) {
-      try {
-        await deleteJournalEntryMutation.mutateAsync(id);
-        toast.success(`Journal entry "${entryNum}" deleted successfully`);
-      } catch (err: any) {
-        toast.error(err.message || "Failed to delete journal entry");
-      }
-    }
+    const csvContent = [headers.join(","), ...rows.map((r: any) => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Manual_Journals_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Journal Entries"
-        description="Record double-entry transactions, link active project scopes, make ledger adjustments, and track financial movements."
-        actions={
-          <Button
-            onClick={handleOpenAddModal}
-            variant="primary"
-            size="sm"
-            icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
-          >
-            New Journal Entry
-          </Button>
-        }
-      />
-
-      <DashboardCardGrid cols={4}>
-        <DashboardCard
-          title="Total Journal Vouchers"
-          value={journalEntries?.length || 0}
-          subtitle="All ledger adjustments"
-          variant="default"
-        />
-        <DashboardCard
-          title="Posted Entries"
-          value={journalEntries?.filter((j) => j.isPosted).length || 0}
-          subtitle="Active in General Ledger"
-          variant="success"
-        />
-        <DashboardCard
-          title="Draft Entries"
-          value={journalEntries?.filter((j) => !j.isPosted).length || 0}
-          subtitle="Pending posting approval"
-          variant={
-            (journalEntries?.filter((j) => !j.isPosted).length || 0) > 0
-              ? "warning"
-              : "default"
-          }
-        />
-        <DashboardCard
-          title="Audit Integrity"
-          value="100% Balanced"
-          subtitle="Double-entry equality"
-          badge={
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200">
-              GAAP
+    <div className="w-full min-h-full bg-white flex flex-col">
+      {/* Sleek Modern Header matching Chart of Accounts */}
+      <div className="w-full bg-white px-6 pt-4 pb-3 space-y-3 shrink-0">
+        {/* Top Row: Breadcrumb + Action Buttons */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-slate-500 font-medium">Accounting</span>
+            <span className="text-slate-400">&gt;</span>
+            <span className="text-slate-900 font-bold text-sm tracking-tight">
+              Manual Journals
             </span>
-          }
-          variant="default"
-        />
-      </DashboardCardGrid>
-
-      <FilterBar
-        tabs={[
-          { id: "ALL", label: "All Entries" },
-          { id: "POSTED", label: "Posted to GL" },
-          { id: "DRAFT", label: "Drafts" },
-        ]}
-        activeTab={statusFilter}
-        onTabChange={(id) => setStatusFilter(id as any)}
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search entry #, project, reference, memo..."
-        totalCount={filteredEntries.length}
-        countLabel="Vouchers Listed"
-      />
-
-      <div className="space-y-3">
-        {isLoading ? (
-          <div className="py-16 text-center text-xs text-slate-400 bg-white rounded-2xl border border-slate-200 animate-pulse space-y-2">
-            <div className="w-8 h-8 rounded-full border-2 border-teal-500 border-t-transparent animate-spin mx-auto" />
-            <p>Loading journal transactions...</p>
           </div>
-        ) : error ? (
-          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-2xl border border-rose-200">
-            Error loading entries: {(error as any).message}
-          </div>
-        ) : filteredEntries.length === 0 ? (
-          <div className="py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 space-y-2">
-            <FileSpreadsheetIcon className="w-8 h-8 mx-auto opacity-40 text-slate-500" />
-            <p className="text-sm font-semibold text-slate-600">
-              No journal entries found
-            </p>
-            <p className="text-xs">
-              Click &quot;New Journal Entry&quot; to log your first transaction.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredEntries.map((je) => {
-              const isExpanded = expandedId === je.id;
-              const totalDebit =
-                je.lines?.reduce((s, l) => s + Number(l.debit || 0), 0) || 0;
-              const matchedProj = getEntryProject(je);
 
-              return (
-                <div
-                  key={je.id}
-                  className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden transition-all hover:border-slate-300"
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExportCsv}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Export filtered records to CSV"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span>Export CSV</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
+              title="Refresh journal entries"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => router.push("/finance/journal-entries/new")}
+              className="px-4 py-1.5 rounded-lg bg-[#5046e5] hover:bg-[#4338ca] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>+ Add Journal</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Controls Row: Clean Search + Active Filter Pills + Segmented Status Pill Filter */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {/* Search Input */}
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search serial, ref, notes..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    router.replace("/finance/journal-entries");
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600 cursor-pointer"
+                  title="Clear search"
                 >
-                  <div
-                    className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none"
-                    onClick={() => setExpandedId(isExpanded ? null : je.id)}
-                  >
-                    <div className="flex items-start sm:items-center gap-3.5">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="w-8 h-8 !p-0 rounded-xl shrink-0 cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExpandedId(isExpanded ? null : je.id);
-                        }}
-                      >
-                        {isExpanded ? (
-                          <ChevronUpIcon size={16} />
-                        ) : (
-                          <ChevronDownIcon size={16} />
-                        )}
-                      </Button>
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
 
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                            <FileSpreadsheetIcon
-                              size={14}
-                              className="text-teal-700 shrink-0"
-                            />
-                            {je.entryNumber}
-                          </span>
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                              je.isPosted
-                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                                : "bg-amber-50 text-amber-800 border border-amber-200"
-                            }`}
-                          >
-                            {je.isPosted ? "Posted to GL" : "Draft"}
-                          </span>
-                          {matchedProj && (
-                            <span className="text-[11px] font-bold text-teal-800 bg-teal-50 border border-teal-200/90 px-2 py-0.5 rounded-md flex items-center gap-1.5 shadow-2xs">
-                              <span className="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
-                              {matchedProj.projectCode} — {matchedProj.name}
-                            </span>
-                          )}
-                          {je.reference && (
-                            <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
-                              Ref: {je.reference}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 mt-1">
-                          <span>
-                            Date:{" "}
-                            <strong className="text-slate-700 font-mono font-semibold">
-                              {new Date(je.entryDate).toLocaleDateString(
-                                "en-GB",
-                              )}
-                            </strong>
-                          </span>
-                          {je.description && (
-                            <>
-                              <span>•</span>
-                              <span className="text-slate-600 truncate max-w-[280px]">
-                                {je.description}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-end gap-4">
-                      <div className="text-right">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                          Total Amount
-                        </span>
-                        <span className="font-mono font-black text-slate-900 text-sm">
-                          {formatAed(totalDebit)}
-                        </span>
-                      </div>
-
-                      <div
-                        className="flex items-center gap-1.5"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {!canModify(je.createdBy, ["ACCOUNTANT"]) ? (
-                          <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
-                            View Only
-                          </span>
-                        ) : (
-                          <>
-                            <Button
-                              size="sm"
-                              variant={je.isPosted ? "secondary" : "primary"}
-                              onClick={(e) => handleToggleStatus(je, e)}
-                              className="cursor-pointer text-xs font-bold"
-                            >
-                              {je.isPosted ? "Unpost" : "Post to GL"}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="w-8 h-8 !p-0 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer"
-                              onClick={(e) => handleOpenEditModal(je, e)}
-                              title="Edit"
-                            >
-                              <EditIcon size={14} />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="w-8 h-8 !p-0 rounded-lg text-slate-400 hover:text-rose-600 cursor-pointer"
-                              onClick={(e) =>
-                                handleDelete(je.id, je.entryNumber, e)
-                              }
-                              title="Delete"
-                            >
-                              <TrashIcon size={14} />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {isExpanded && (
-                    <div className="border-t border-slate-100 bg-slate-50/70 p-4 sm:p-5 space-y-4">
-                      {matchedProj && (
-                        <div className="p-3 bg-white rounded-xl border border-teal-200/90 shadow-2xs flex flex-wrap items-center justify-between gap-2 text-xs">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-teal-600 shrink-0" />
-                            <span className="font-bold text-slate-900">
-                              Associated Project:
-                            </span>
-                            <span className="font-bold text-teal-800">
-                              {matchedProj.projectCode} — {matchedProj.name}
-                            </span>
-                          </div>
-                          {(matchedProj.customer?.companyName ||
-                            matchedProj.customer?.name) && (
-                            <div className="text-slate-500 font-medium">
-                              Client:{" "}
-                              <span className="font-bold text-slate-700">
-                                {matchedProj.customer?.companyName ||
-                                  matchedProj.customer?.name}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      <div>
-                        <div className="flex items-center justify-between mb-2.5 text-xs">
-                          <span className="font-bold text-slate-800 uppercase text-[10.5px] tracking-wider">
-                            Line Items Breakdown
-                          </span>
-                          <span className="text-slate-500 text-xs">
-                            Created by:{" "}
-                            <span className="font-semibold text-slate-700">
-                              {je.user?.fullName || "System Admin"}
-                            </span>
-                          </span>
-                        </div>
-                        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-                          <table className="w-full text-xs text-left">
-                            <thead className="bg-slate-50 border-b border-slate-200">
-                              <tr className="text-slate-600 font-bold uppercase text-[10px] tracking-wider">
-                                <th className="py-2.5 px-3">
-                                  Account Code &amp; Name
-                                </th>
-                                <th className="py-2.5 px-3">Classification</th>
-                                <th className="py-2.5 px-3 text-right">
-                                  Debit (AED)
-                                </th>
-                                <th className="py-2.5 px-3 text-right">
-                                  Credit (AED)
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 font-medium">
-                              {je.lines?.map((line: any) => (
-                                <tr
-                                  key={line.id}
-                                  className="hover:bg-slate-50/50"
-                                >
-                                  <td className="py-2.5 px-3 font-medium text-slate-800">
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-mono text-teal-800 font-bold bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded text-[11px]">
-                                        {line.account?.accountCode}
-                                      </span>
-                                      <span className="font-bold text-slate-900">
-                                        {line.account?.accountName}
-                                      </span>
-                                      {line.vatEntry && (
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                                          5% {line.vatEntry.vatType} VAT
-                                        </span>
-                                      )}
-                                    </div>
-                                  </td>
-                                  <td className="py-2.5 px-3 text-slate-500 text-[11px] font-semibold">
-                                    {line.account?.type}
-                                  </td>
-                                  <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                                    {Number(line.debit) > 0
-                                      ? formatAed(line.debit)
-                                      : "—"}
-                                  </td>
-                                  <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
-                                    {Number(line.credit) > 0
-                                      ? formatAed(line.credit)
-                                      : "—"}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                            <tfoot>
-                              <tr className="border-t border-slate-200 font-black bg-slate-100/80">
-                                <td
-                                  colSpan={2}
-                                  className="py-2.5 px-3 text-right text-slate-700 uppercase text-[10px] tracking-wider"
-                                >
-                                  BALANCED TOTALS:
-                                </td>
-                                <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-xs">
-                                  {formatAed(totalDebit)}
-                                </td>
-                                <td className="py-2.5 px-3 text-right font-mono text-emerald-800 text-xs">
-                                  {formatAed(totalDebit)}
-                                </td>
-                              </tr>
-                            </tfoot>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {/* Active Journal Filter Pill matching Image 4 */}
+            {search && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-medium shadow-2xs">
+                <span># Journal ID is <strong>{search}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    router.replace("/finance/journal-entries");
+                  }}
+                  className="hover:text-indigo-900 cursor-pointer ml-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
           </div>
-        )}
+
+          {/* Segmented Status Filter: [ All | Posted | Draft ] */}
+          <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs">
+            {(["ALL", "POSTED", "DRAFT"] as const).map((st) => (
+              <button
+                key={st}
+                type="button"
+                onClick={() => setStatusFilter(st)}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                  statusFilter === st
+                    ? "bg-white text-slate-900 shadow-2xs font-bold"
+                    : "text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                {st === "ALL" ? "All" : st === "POSTED" ? "Posted" : "Draft"}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingId ? "Edit Journal Entry" : "Record Journal Entry"}
-        maxWidth="2xl"
-      >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
-          className="space-y-4 text-xs"
-        >
-          {formError && (
-            <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
-              {formError}
-            </div>
-          )}
+      {/* Main Full-Viewport Table matching Chart of Accounts */}
+      <div className="w-full border-t border-slate-200/90 flex-1 bg-white overflow-x-auto shadow-2xs">
+        <table className="w-full text-left border-collapse min-w-[1100px]">
+          <thead>
+            <tr className="bg-slate-50/90 border-b border-slate-200/90 text-slate-600 font-semibold text-[11px] uppercase tracking-wider select-none">
+              <th className="py-3 px-4 w-24">Status</th>
+              <th className="py-3 px-4 w-28">Date</th>
+              <th className="py-3 px-4 w-44">Serial Number</th>
+              <th className="py-3 px-4 min-w-[130px]">Reference</th>
+              <th className="py-3 px-4 min-w-[160px]">Notes</th>
+              <th className="py-3 px-4 min-w-[340px]">Journal Lines Preview</th>
+              <th className="py-3 px-4 text-right w-32">Total AED</th>
+              <th className="py-3 px-4 text-right w-36">Created By</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 bg-white">
+            {isLoading ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-16 text-center text-slate-400 text-xs">
+                  Loading manual journals...
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-16 text-center text-slate-400 text-xs">
+                  No manual journals found matching your filter.
+                </td>
+              </tr>
+            ) : (
+              filtered.map((entry: any) => {
+                const total =
+                  entry.lines?.reduce((s: number, l: any) => s + Number(l.debit || 0), 0) || 0;
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <form.Field
-              name="entryNumber"
-              validators={{
-                onChange: ({ value }) =>
-                  !value.trim() ? "Entry number is required" : undefined,
-              }}
-            >
-              {(field) => {
-                const error =
-                  field.state.meta.isTouched && field.state.meta.errors[0];
                 return (
-                  <Input
-                    label="Entry Number *"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    error={error ? String(error) : undefined}
-                    className="font-mono font-bold"
-                  />
-                );
-              }}
-            </form.Field>
-
-            <form.Field
-              name="entryDate"
-              validators={{
-                onChange: ({ value }) =>
-                  !value ? "Date is required" : undefined,
-              }}
-            >
-              {(field) => (
-                <Input
-                  label="Date *"
-                  type="date"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-              )}
-            </form.Field>
-
-            <form.Field name="isPosted">
-              {(field) => (
-                <Select
-                  label="Status"
-                  value={field.state.value ? "POSTED" : "DRAFT"}
-                  onChange={(e) =>
-                    field.handleChange(e.target.value === "POSTED")
-                  }
-                  options={[
-                    { value: "POSTED", label: "Posted (General Ledger)" },
-                    { value: "DRAFT", label: "Draft (Unposted)" },
-                  ]}
-                />
-              )}
-            </form.Field>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <form.Field name="projectId">
-              {(field) => (
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1 text-xs">
-                    Associated Project (Optional)
-                  </label>
-                  <select
-                    value={field.state.value}
-                    onChange={(e) => {
-                      const pId = e.target.value;
-                      field.handleChange(pId);
-                      if (pId) {
-                        const p = projects.find((proj) => proj.id === pId);
-                        if (p && !form.getFieldValue("reference")) {
-                          form.setFieldValue("reference", p.projectCode);
-                        }
-                      }
-                    }}
-                    className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
+                  <tr
+                    key={entry.id}
+                    onClick={() => setSelectedEntry(entry)}
+                    className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors cursor-pointer text-xs"
                   >
-                    <option value="">— General / No Project Assigned —</option>
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.projectCode} — {p.name} (
-                        {p.customer?.companyName ||
-                          p.customer?.name ||
-                          "Client"}
-                        )
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </form.Field>
+                    <td className="px-4 py-3">
+                      {entry.isPosted ? (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          POSTED
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                          DRAFT
+                        </span>
+                      )}
+                    </td>
 
-            <form.Field name="reference">
-              {(field) => (
-                <Input
-                  label="Reference"
-                  placeholder="e.g. INV-2026-001 or PO-102"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-              )}
-            </form.Field>
-          </div>
+                    <td className="px-4 py-3 font-mono text-slate-600">
+                      {new Date(entry.entryDate).toISOString().split("T")[0]}
+                    </td>
 
-          <form.Field name="description">
-            {(field) => (
-              <Input
-                label="Description / Memo"
-                placeholder="e.g. Office rent payment, site contractor settlement, or project material adjustment"
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-              />
+                    <td className="px-4 py-3 font-mono font-bold text-slate-900">
+                      {entry.entryNumber}
+                    </td>
+
+                    <td className="px-4 py-3 text-slate-700 font-medium">
+                      {entry.reference || "—"}
+                    </td>
+
+                    <td className="px-4 py-3 text-slate-500 max-w-xs truncate">
+                      {entry.description || "—"}
+                    </td>
+
+                    <td className="px-4 py-2 text-[11px]">
+                      <div className="space-y-1">
+                        {entry.lines?.slice(0, 3).map((line: any, lIdx: number) => {
+                          const isDr = Number(line.debit) > 0;
+                          const amt = isDr ? line.debit : line.credit;
+                          return (
+                            <div key={line.id || lIdx} className="flex items-center gap-2">
+                              <span
+                                className={`w-5 font-bold font-mono ${
+                                  isDr ? "text-blue-600" : "text-amber-600"
+                                }`}
+                              >
+                                {isDr ? "Dr" : "Cr"}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200/60 text-slate-800 font-medium truncate max-w-[200px]">
+                                {line.account?.accountCode} - {line.account?.accountName}
+                              </span>
+                              <span className="font-mono text-slate-500 ml-auto font-medium">
+                                {Number(amt).toFixed(2)}
+                              </span>
+                            </div>
+                          );
+                        })}
+                        {entry.lines?.length > 3 && (
+                          <span className="text-[10px] text-slate-400 italic">
+                            + {entry.lines.length - 3} more lines...
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                      {formatAed(total)}
+                    </td>
+
+                    <td className="px-4 py-3 text-right text-slate-500 text-[11px]">
+                      {entry.user?.fullName || "Accountant"}
+                    </td>
+                  </tr>
+                );
+              })
             )}
-          </form.Field>
+          </tbody>
+        </table>
+      </div>
 
-          <form.Field name="lines">
-            {(linesField) => {
-              const currentLines = linesField.state.value;
+      {/* Footer bar */}
+      <div className="px-6 py-3 bg-slate-50/60 border-t border-slate-200/90 flex justify-between items-center text-xs text-slate-500 shrink-0">
+        <span>Showing {filtered.length} of {journalEntries.length} records</span>
+        <span className="font-mono">UAE FTA Double-Entry Standard</span>
+      </div>
 
-              const addLine = () => {
-                linesField.handleChange([
-                  ...currentLines,
-                  { accountId: accounts?.[0]?.id || "", debit: 0, credit: 0 },
-                ]);
-              };
-
-              const removeLine = (idx: number) => {
-                if (currentLines.length <= 2) return;
-                linesField.handleChange(
-                  currentLines.filter((_, i) => i !== idx),
-                );
-              };
-
-              const updateLineFields = (
-                idx: number,
-                updates: Partial<JournalLineFormItem>,
-              ) => {
-                const next = currentLines.map((l, i) =>
-                  i === idx ? { ...l, ...updates } : l,
-                );
-                linesField.handleChange(next);
-              };
-
-              const totalDebits = currentLines.reduce((s, l) => {
-                const isDeb = Number(l.debit) > 0;
-                const vat =
-                  l.vatType && isDeb
-                    ? Number((Number(l.debit) * 0.05).toFixed(2))
-                    : 0;
-                return s + (Number(l.debit) || 0) + vat;
-              }, 0);
-
-              const totalCredits = currentLines.reduce((s, l) => {
-                const isCred = Number(l.credit) > 0;
-                const vat =
-                  l.vatType && isCred
-                    ? Number((Number(l.credit) * 0.05).toFixed(2))
-                    : 0;
-                return s + (Number(l.credit) || 0) + vat;
-              }, 0);
-
-              const isBalanced =
-                Math.abs(totalDebits - totalCredits) < 0.001 && totalDebits > 0;
-
-              return (
-                <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-slate-800">
-                      Transaction Lines
-                    </h4>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="primary"
-                      onClick={addLine}
-                      icon={<PlusIcon size={13} strokeWidth={2.2} />}
-                      className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
-                    >
-                      Add Line
-                    </Button>
-                  </div>
-
-                  <div className="hidden sm:flex items-center gap-2 px-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    <span className="flex-1">Account</span>
-                    <span className="w-20 sm:w-24 text-right">Debit</span>
-                    <span className="w-20 sm:w-24 text-right">Credit</span>
-                    <span className="w-28 sm:w-32">VAT / Tax</span>
-                    <span className="w-24 sm:w-28 text-right">Line Total</span>
-                    <span className="w-7"></span>
-                  </div>
-
-                  <div className="space-y-2">
-                    {currentLines.map((line, idx) => {
-                      const isDeb = Number(line.debit) > 0;
-                      const isCred = Number(line.credit) > 0;
-                      const baseAmt = isDeb
-                        ? Number(line.debit)
-                        : Number(line.credit);
-                      const vatAmt = Number(line.vatAmount) || 0;
-                      const totalWithVat = baseAmt + vatAmt;
-                      const isLineVat = Boolean(line.vatType);
-
-                      return (
-                        <div
-                          key={idx}
-                          className={`p-2 sm:p-2.5 rounded-xl border flex items-center gap-2 transition ${
-                            isLineVat
-                              ? "bg-emerald-50/50 border-emerald-300"
-                              : "bg-slate-50/70 border-slate-200"
-                          }`}
-                        >
-                          <div className="flex-1 min-w-[120px]">
-                            <Select
-                              value={line.accountId}
-                              onChange={(e) =>
-                                updateLineFields(idx, {
-                                  accountId: e.target.value,
-                                })
-                              }
-                              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-700 font-medium cursor-pointer truncate"
-                            >
-                              <option value="">Select Account...</option>
-                              {accounts?.map((acc) => (
-                                <option key={acc.id} value={acc.id}>
-                                  {acc.accountCode} - {acc.accountName} (
-                                  {acc.type})
-                                </option>
-                              ))}
-                            </Select>
-                          </div>
-
-                          <div className="w-20 sm:w-24">
-                            <Input
-                              type="number"
-                              step="any"
-                              placeholder="Debit"
-                              value={line.debit === 0 ? "" : line.debit}
-                              onChange={(e) => {
-                                const raw = e.target.value;
-                                const num = raw === "" ? 0 : parseFloat(raw);
-                                const debVal = isNaN(num) ? 0 : num;
-                                const calculatedVat = line.vatType
-                                  ? Number((debVal * 0.05).toFixed(2))
-                                  : 0;
-                                updateLineFields(idx, {
-                                  debit: debVal,
-                                  credit: debVal > 0 ? 0 : line.credit,
-                                  taxableAmount: line.vatType ? debVal : 0,
-                                  vatAmount: calculatedVat,
-                                });
-                              }}
-                              className="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono text-right focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                            />
-                          </div>
-
-                          <div className="w-20 sm:w-24">
-                            <Input
-                              type="number"
-                              step="any"
-                              placeholder="Credit"
-                              value={line.credit === 0 ? "" : line.credit}
-                              onChange={(e) => {
-                                const raw = e.target.value;
-                                const num = raw === "" ? 0 : parseFloat(raw);
-                                const credVal = isNaN(num) ? 0 : num;
-                                const calculatedVat = line.vatType
-                                  ? Number((credVal * 0.05).toFixed(2))
-                                  : 0;
-                                updateLineFields(idx, {
-                                  credit: credVal,
-                                  debit: credVal > 0 ? 0 : line.debit,
-                                  taxableAmount: line.vatType ? credVal : 0,
-                                  vatAmount: calculatedVat,
-                                });
-                              }}
-                              className="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-mono text-right focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                            />
-                          </div>
-
-                          <div className="w-28 sm:w-32">
-                            <Select
-                              value={line.vatType ? "VAT_5" : ""}
-                              onChange={(e) => {
-                                const isVat = e.target.value === "VAT_5";
-                                const currentBase = isDeb
-                                  ? Number(line.debit)
-                                  : Number(line.credit);
-                                const calculatedVat = isVat
-                                  ? Number((currentBase * 0.05).toFixed(2))
-                                  : 0;
-                                const resolvedType = isVat
-                                  ? isDeb
-                                    ? "INPUT"
-                                    : "OUTPUT"
-                                  : null;
-                                updateLineFields(idx, {
-                                  vatType: resolvedType,
-                                  taxableAmount: isVat ? currentBase : 0,
-                                  vatAmount: calculatedVat,
-                                });
-                              }}
-                              className={`w-full px-2 py-1.5 text-[11px] rounded-lg border font-semibold focus:outline-none cursor-pointer transition ${
-                                line.vatType
-                                  ? "border-emerald-500 bg-emerald-50 text-emerald-900"
-                                  : "border-slate-200 bg-white text-slate-600"
-                              }`}
-                            >
-                              <option value="">Non-VAT (0%)</option>
-                              <option value="VAT_5">VAT (5%)</option>
-                            </Select>
-                          </div>
-
-                          <div
-                            className={`w-24 sm:w-28 px-2 py-1.5 text-xs rounded-lg border font-mono font-bold text-right truncate ${
-                              line.vatType
-                                ? "bg-emerald-100/70 border-emerald-300 text-emerald-950"
-                                : "bg-slate-100 border-slate-200 text-slate-700"
-                            }`}
-                            title={`Base: ${baseAmt.toFixed(2)} | VAT: ${vatAmt.toFixed(2)} | Gross: ${totalWithVat.toFixed(2)}`}
-                          >
-                            {totalWithVat > 0
-                              ? formatAed(totalWithVat)
-                              : "AED 0.00"}
-                          </div>
-
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => removeLine(idx)}
-                            disabled={currentLines.length <= 2}
-                            className="w-7 h-7 !p-0 text-slate-400 hover:text-rose-600 disabled:opacity-30 flex-shrink-0 cursor-pointer"
-                            title="Remove line"
-                          >
-                            <CloseIcon size={13} />
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-between text-xs font-bold">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`w-2.5 h-2.5 rounded-full ${isBalanced ? "bg-emerald-500" : "bg-rose-500"}`}
-                      />
-                      <span
-                        className={
-                          isBalanced ? "text-emerald-800" : "text-rose-700"
-                        }
-                      >
-                        {isBalanced
-                          ? "Balanced"
-                          : `Out of balance: ${(totalDebits - totalCredits).toFixed(2)} AED`}
-                      </span>
-                    </div>
-                    <div className="flex gap-4 font-mono">
-                      <span>Total Debits: {totalDebits.toFixed(2)}</span>
-                      <span>Total Credits: {totalCredits.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            }}
-          </form.Field>
-
-          <div className="pt-2 flex items-center justify-end gap-2.5">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsModalOpen(false)}
-              className="cursor-pointer"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              loading={
-                createJournalEntryMutation.isPending ||
-                updateJournalEntryMutation.isPending
-              }
-              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
-            >
-              {editingId ? "Update Entry" : "Post Entry"}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      {/* Journal Details Modal */}
+      <JournalDetailsModal
+        isOpen={!!selectedEntry}
+        entry={selectedEntry}
+        onClose={() => setSelectedEntry(null)}
+      />
     </div>
+  );
+}
+
+export default function ManualJournalsListingPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading journals...</div>}>
+      <ManualJournalsContent />
+    </Suspense>
   );
 }

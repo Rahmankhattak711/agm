@@ -32,7 +32,7 @@ const safeUserSelect = {
 
 export async function GET(request: Request) {
   try {
-    const actor = await requireUser(["SUPER_ADMIN"], { isApi: true });
+    const actor = await requireUser(["SUPER_ADMIN", "ADMIN"], { isApi: true });
 
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
@@ -126,7 +126,7 @@ export async function POST(request: Request) {
   if (originCheck) return originCheck;
 
   try {
-    const actor = await requireUser(["SUPER_ADMIN"], { isApi: true });
+    const actor = await requireUser(["SUPER_ADMIN", "ADMIN"], { isApi: true });
 
     const body = await request.json().catch(() => ({}));
     const fullName =

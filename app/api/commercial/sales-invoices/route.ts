@@ -45,6 +45,7 @@ export async function GET(request: Request) {
         },
         payments: true,
         creditNotes: true,
+        discountAccount: true,
         journalEntry: {
           include: {
             lines: {
@@ -156,6 +157,7 @@ export async function POST(request: Request) {
       projectScope,
       items = [],
       discount = 0,
+      discountAccountId = null,
       notes,
       terms,
       autoPost = false,
@@ -237,6 +239,7 @@ export async function POST(request: Request) {
         status: autoPost ? "POSTED" : "DRAFT",
         subtotal: netSubtotal,
         discount: discTotal,
+        discountAccountId: discountAccountId || null,
         vatRate,
         vatAmount,
         totalAmount,
@@ -252,6 +255,7 @@ export async function POST(request: Request) {
       include: {
         items: true,
         customerRel: true,
+        discountAccount: true,
       },
     });
 
@@ -261,7 +265,9 @@ export async function POST(request: Request) {
         invoiceNumber: invoice.invoiceNumber,
         invoiceDate: invDate,
         customerName: invoice.customerName,
-        subtotal: netSubtotal,
+        subtotal: subtotal,
+        discount: discTotal,
+        discountAccountId: discountAccountId || null,
         vatAmount,
         totalAmount,
         userId: authUser.id,

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import {
   useSalesInvoices,
@@ -8,6 +9,7 @@ import {
   useCreateCustomerPayment,
   useUpdateSalesInvoice,
   useDeleteSalesInvoice,
+  useProducts,
   SalesInvoice,
 } from "@/lib/hooks/api-hooks";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -16,6 +18,8 @@ import {
   printWithDocumentTitle,
 } from "@/lib/utils/format";
 import { PageHeader } from "@/components/ui";
+import { PlusIcon, ChevronLeftIcon } from "@/components/icons";
+import SalesInvoiceTemplate from "@/components/SalesInvoiceTemplate";
 import {
   SalesInvoiceKPIs,
   SalesInvoiceFilters,
@@ -25,8 +29,13 @@ import {
   EditSalesInvoiceModal,
 } from "@/app/(workspace)/commercial/sales-invoices/components";
 
-export default function SalesInvoicesPage() {
+function SalesInvoicesContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams.get("search") || "";
+
   const { data: invoices = [], isLoading, error } = useSalesInvoices();
+  const { data: products = [] } = useProducts();
 
   const postInvoiceMutation = usePostSalesInvoice();
   const paymentMutation = useCreateCustomerPayment();
@@ -34,7 +43,11 @@ export default function SalesInvoicesPage() {
   const deleteInvoiceMutation = useDeleteSalesInvoice();
   const { confirm } = useConfirm();
 
-  const [search, setSearch] = useState("");
+  const [activeView, setActiveView] = useState<"LIST" | "EDITOR">("LIST");
+  const [selectedInvoiceForEditor, setSelectedInvoiceForEditor] =
+    useState<SalesInvoice | null>(null);
+
+  const [search, setSearch] = useState(urlSearch);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(
     null,
@@ -48,6 +61,25 @@ export default function SalesInvoicesPage() {
   const [expandedInvoiceId, setExpandedInvoiceId] = useState<string | null>(
     null,
   );
+
+  useEffect(() => {
+    if (urlSearch) {
+      setSearch(urlSearch);
+    }
+  }, [urlSearch]);
+
+  useEffect(() => {
+    if (urlSearch && invoices.length > 0) {
+      const match = invoices.find(
+        (inv) =>
+          inv.invoiceNumber.toLowerCase() === urlSearch.toLowerCase() ||
+          inv.id.toLowerCase() === urlSearch.toLowerCase(),
+      );
+      if (match) {
+        router.push(`/commercial/sales-invoices/${match.id}`);
+      }
+    }
+  }, [urlSearch, invoices, router]);
 
   const handlePostInvoice = async (invoiceId: string) => {
     try {
@@ -156,44 +188,100 @@ export default function SalesInvoicesPage() {
     <div className="space-y-6">
       <div className={`space-y-6 ${selectedInvoice ? "print:hidden" : ""}`}>
         <PageHeader
-          title="Sales Invoices"
-          description="Issue tax-compliant sales invoices, calculate 5% output VAT, and track customer receivables."
+          title={
+            activeView === "EDITOR" ? "Tax Invoice Editor" : "Sales Invoices"
+          }
+          description={
+            activeView === "EDITOR"
+              ? "Create and customize official UAE FTA tax-compliant sales invoices with terms & conditions."
+              : "Issue tax-compliant sales invoices, calculate 5% output VAT, and track customer receivables."
+          }
+          actions={
+            activeView === "EDITOR" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedInvoiceForEditor(null);
+                  setActiveView("LIST");
+                }}
+                className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/80 shadow-2xs transition-all duration-200 cursor-pointer"
+              >
+                <span className="flex items-center justify-center w-5 h-5 rounded-lg bg-slate-100 text-slate-700 group-hover:bg-slate-200 group-hover:-translate-x-0.5 transition-all duration-200 shadow-2xs">
+                  <ChevronLeftIcon size={13} strokeWidth={2.6} />
+                </span>
+                <span className="tracking-wide">Back to Invoices</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedInvoiceForEditor(null);
+                  setActiveView("EDITOR");
+                }}
+                className="group relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 hover:from-emerald-500 hover:via-emerald-600 hover:to-teal-700 active:scale-[0.98] shadow-sm hover:shadow-md hover:shadow-emerald-900/25 border border-emerald-400/25 transition-all duration-200 cursor-pointer select-none"
+              >
+                <span className="flex items-center justify-center w-5 h-5 rounded-lg bg-white/20 text-white group-hover:bg-white/30 group-hover:rotate-90 transition-all duration-300 shadow-2xs">
+                  <PlusIcon size={12} strokeWidth={2.6} />
+                </span>
+                <span className="tracking-wide">New Invoice</span>
+              </button>
+            )
+          }
         />
 
-        <SalesInvoiceKPIs
-          totalBilled={totalBilled}
-          totalOutstanding={totalOutstanding}
-          totalSettled={totalSettled}
-          totalVatOutput={totalVatOutput}
-        />
+        {activeView === "EDITOR" ? (
+          <div className="overflow-visible">
+            <SalesInvoiceTemplate
+              initialInvoice={selectedInvoiceForEditor}
+              availableProducts={products}
+              onSuccess={() => {
+                setActiveView("LIST");
+                setSelectedInvoiceForEditor(null);
+              }}
+              onCancel={() => {
+                setActiveView("LIST");
+                setSelectedInvoiceForEditor(null);
+              }}
+            />
+          </div>
+        ) : (
+          <>
+            <SalesInvoiceKPIs
+              totalBilled={totalBilled}
+              totalOutstanding={totalOutstanding}
+              totalSettled={totalSettled}
+              totalVatOutput={totalVatOutput}
+            />
 
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 print:p-0 print:border-none print:shadow-none min-w-0 max-w-full">
-          <SalesInvoiceFilters
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            search={search}
-            onSearchChange={setSearch}
-            totalCount={filteredInvoices.length}
-          />
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 print:p-0 print:border-none print:shadow-none min-w-0 max-w-full">
+              <SalesInvoiceFilters
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+                search={search}
+                onSearchChange={setSearch}
+                totalCount={filteredInvoices.length}
+              />
 
-          <SalesInvoiceTable
-            invoices={filteredInvoices}
-            isLoading={isLoading}
-            error={error}
-            expandedInvoiceId={expandedInvoiceId}
-            onToggleExpand={handleToggleExpand}
-            onPrint={handlePrintTaxInvoice}
-            onPost={handlePostInvoice}
-            onOpenPayment={(inv) => setPaymentModalInv(inv)}
-            onEdit={handleEditInvoice}
-            onDelete={handleDeleteInvoice}
-            isFiltered={search.trim() !== "" || statusFilter !== "ALL"}
-            onClearFilters={() => {
-              setSearch("");
-              setStatusFilter("ALL");
-            }}
-          />
-        </div>
+              <SalesInvoiceTable
+                invoices={filteredInvoices}
+                isLoading={isLoading}
+                error={error}
+                expandedInvoiceId={expandedInvoiceId}
+                onToggleExpand={handleToggleExpand}
+                onPrint={handlePrintTaxInvoice}
+                onPost={handlePostInvoice}
+                onOpenPayment={(inv) => setPaymentModalInv(inv)}
+                onEdit={handleEditInvoice}
+                onDelete={handleDeleteInvoice}
+                isFiltered={search.trim() !== "" || statusFilter !== "ALL"}
+                onClearFilters={() => {
+                  setSearch("");
+                  setStatusFilter("ALL");
+                }}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <RecordPaymentModal
@@ -213,5 +301,13 @@ export default function SalesInvoicesPage() {
 
       <PrintableTaxInvoice invoice={selectedInvoice} />
     </div>
+  );
+}
+
+export default function SalesInvoicesPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading Sales Invoices...</div>}>
+      <SalesInvoicesContent />
+    </Suspense>
   );
 }

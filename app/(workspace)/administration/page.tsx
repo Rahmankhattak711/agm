@@ -130,7 +130,7 @@ export default function AdministrationPage() {
   }
 
   const isEffectiveSuperAdmin =
-    isSuperAdmin || currentUser?.role === "SUPER_ADMIN";
+    isSuperAdmin || currentUser?.role === "SUPER_ADMIN" || currentUser?.role === "ADMIN";
 
   if (!isEffectiveSuperAdmin) {
     return (
@@ -138,7 +138,7 @@ export default function AdministrationPage() {
         <ProtectedIcon size={36} className="mx-auto text-agm-navy" />
         <h2 className="text-sm font-bold text-agm-text">Access Restricted</h2>
         <p className="text-xs text-agm-muted max-w-sm mx-auto">
-          User provisioning is restricted to the Super Administrator.
+          User provisioning is restricted to Administrators.
         </p>
       </div>
     );

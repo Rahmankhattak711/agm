@@ -5,8 +5,8 @@ import {
   hasRole,
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
-import { postCustomerPaymentJournalEntry } from "@/lib/commercial-accounting";
 import { NextResponse } from "next/server";
+import { RecordCustomerPaymentCommandHandler } from "@/lib/modules/accounting";
 
 export async function GET(request: Request) {
   try {
@@ -67,7 +67,6 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const {
-      receiptNumber,
       customerId,
       customerName,
       salesInvoiceId,
@@ -76,6 +75,8 @@ export async function POST(request: Request) {
       paymentMethod = "BANK_TRANSFER",
       referenceNumber,
       notes,
+      settlementDiscount,
+      discountAccountId,
     } = body;
 
     const payAmount = parseFloat(amount);
@@ -86,98 +87,19 @@ export async function POST(request: Request) {
       );
     }
 
-    let custId = customerId;
-    let custName = customerName;
-    let invNumber = "";
-
-    if (salesInvoiceId) {
-      const invoice = await prisma.salesInvoice.findUnique({
-        where: { id: salesInvoiceId },
-      });
-      if (invoice) {
-        invNumber = invoice.invoiceNumber;
-        if (!custId) custId = invoice.customerId;
-        if (!custName) custName = invoice.customerName;
-      }
-    }
-
-    if (!custName && custId) {
-      const c = await prisma.customer.findUnique({ where: { id: custId } });
-      if (c) custName = c.name;
-    }
-
-    let recNo = receiptNumber;
-    if (!recNo) {
-      const count = await prisma.customerPayment.count();
-      recNo = `REC-2026-${(count + 1).toString().padStart(4, "0")}`;
-    }
-
-    const pmtDate = paymentDate ? new Date(paymentDate) : new Date();
-
-    const je = await postCustomerPaymentJournalEntry({
-      paymentId: "",
-      receiptNumber: recNo,
-      paymentDate: pmtDate,
-      customerName: custName || "Customer",
+    const payment = await RecordCustomerPaymentCommandHandler.execute({
+      salesInvoiceId,
+      customerId,
+      customerName,
       amount: payAmount,
       paymentMethod,
-      invoiceNumber: invNumber,
+      paymentDate,
+      referenceNumber,
+      notes,
+      settlementDiscount: settlementDiscount ? parseFloat(settlementDiscount) : 0,
+      discountAccountId: discountAccountId || null,
       userId: authUser.id,
     });
-
-    const payment = await prisma.customerPayment.create({
-      data: {
-        receiptNumber: recNo,
-        customerId: custId || null,
-        customerName: custName || "Valued Customer",
-        salesInvoiceId: salesInvoiceId || null,
-        paymentDate: pmtDate,
-        amount: payAmount,
-        paymentMethod: paymentMethod as any,
-        referenceNumber,
-        notes,
-        journalEntryId: je.id,
-        createdById: authUser.id,
-      },
-      include: {
-        salesInvoice: true,
-        customerRel: true,
-      },
-    });
-
-    if (salesInvoiceId) {
-      const invoice = await prisma.salesInvoice.findUnique({
-        where: { id: salesInvoiceId },
-      });
-      if (invoice) {
-        const newPaid = Number(invoice.paidAmount) + payAmount;
-        const newRem = Math.max(0, Number(invoice.totalAmount) - newPaid);
-        const newStatus =
-          newRem <= 0
-            ? "PAID"
-            : newPaid > 0
-              ? "PARTIALLY_PAID"
-              : invoice.status;
-
-        await prisma.salesInvoice.update({
-          where: { id: salesInvoiceId },
-          data: {
-            paidAmount: newPaid,
-            remainingBalance: newRem,
-            status: newStatus as any,
-          },
-        });
-      }
-    }
-
-    if (custId) {
-      await prisma.customer.update({
-        where: { id: custId },
-        data: {
-          currentBalance: { decrement: payAmount },
-        },
-      });
-    }
 
     return NextResponse.json(payment, { status: 201 });
   } catch (error: any) {

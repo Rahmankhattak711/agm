@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchJson } from "./api-base";
 import type {
+  Vat201ReturnResult,
+  TaxReportResult,
+  CorporateTaxResult,
+} from "@/lib/modules/accounting";
+import type {
   ChartOfAccount,
   JournalEntry,
   Expense,
@@ -18,7 +23,7 @@ import type {
 export function useAccounts() {
   return useQuery<ChartOfAccount[]>({
     queryKey: ["accounts"],
-    queryFn: () => fetchJson<ChartOfAccount[]>("/api/accounts"),
+    queryFn: () => fetchJson<ChartOfAccount[]>("/api/finance/accounts"),
   });
 }
 
@@ -42,7 +47,7 @@ export interface AccountWithLedger extends ChartOfAccount {
 export function useAccountLedger(id: string) {
   return useQuery<AccountWithLedger>({
     queryKey: ["account-ledger", id],
-    queryFn: () => fetchJson<AccountWithLedger>(`/api/accounts/${id}`),
+    queryFn: () => fetchJson<AccountWithLedger>(`/api/finance/accounts/${id}`),
     enabled: Boolean(id),
   });
 }
@@ -57,7 +62,7 @@ export function useCreateAccount() {
       parentId?: string | null;
       isActive?: boolean;
     }) =>
-      fetchJson<ChartOfAccount>("/api/accounts", {
+      fetchJson<ChartOfAccount>("/api/finance/accounts", {
         method: "POST",
         body: JSON.stringify(data),
       }),
@@ -72,7 +77,7 @@ export function useUpdateAccount() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<ChartOfAccount> }) =>
-      fetchJson<ChartOfAccount>(`/api/accounts/${id}`, {
+      fetchJson<ChartOfAccount>(`/api/finance/accounts/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
       }),
@@ -88,7 +93,7 @@ export function useDeleteAccount() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      fetchJson<{ message: string }>(`/api/accounts/${id}`, {
+      fetchJson<{ message: string }>(`/api/finance/accounts/${id}`, {
         method: "DELETE",
       }),
     onSuccess: () => {
@@ -101,7 +106,7 @@ export function useDeleteAccount() {
 export function useJournalEntries() {
   return useQuery<JournalEntry[]>({
     queryKey: ["journal-entries"],
-    queryFn: () => fetchJson<JournalEntry[]>("/api/journal-entries"),
+    queryFn: () => fetchJson<JournalEntry[]>("/api/finance/journal-entries"),
   });
 }
 
@@ -124,7 +129,7 @@ export function useCreateJournalEntry() {
         vatAmount?: number;
       }>;
     }) =>
-      fetchJson<JournalEntry>("/api/journal-entries", {
+      fetchJson<JournalEntry>("/api/finance/journal-entries", {
         method: "POST",
         body: JSON.stringify(data),
       }),
@@ -154,7 +159,7 @@ export function useUpdateJournalEntry() {
         vatAmount?: number;
       }>;
     }) =>
-      fetchJson<JournalEntry>("/api/journal-entries", {
+      fetchJson<JournalEntry>("/api/finance/journal-entries", {
         method: "PATCH",
         body: JSON.stringify(data),
       }),
@@ -169,7 +174,7 @@ export function useDeleteJournalEntry() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      fetchJson<{ ok: boolean }>("/api/journal-entries", {
+      fetchJson<{ ok: boolean }>("/api/finance/journal-entries", {
         method: "DELETE",
         body: JSON.stringify({ id }),
       }),
@@ -355,6 +360,40 @@ export function useVatSummary() {
   });
 }
 
+export function useVatReturn(params?: { startDate?: string; endDate?: string; year?: number }) {
+  const q = new URLSearchParams();
+  if (params?.startDate) q.set("startDate", params.startDate);
+  if (params?.endDate) q.set("endDate", params.endDate);
+  if (params?.year) q.set("year", params.year.toString());
+  const qs = q.toString() ? `?${q.toString()}` : "";
+
+  return useQuery<Vat201ReturnResult>({
+    queryKey: ["reports", "vat-return", params],
+    queryFn: () => fetchJson<Vat201ReturnResult>(`/api/finance/reports/vat-return${qs}`),
+  });
+}
+
+export function useTaxReport(params?: { startDate?: string; endDate?: string; year?: number }) {
+  const q = new URLSearchParams();
+  if (params?.startDate) q.set("startDate", params.startDate);
+  if (params?.endDate) q.set("endDate", params.endDate);
+  if (params?.year) q.set("year", params.year.toString());
+  const qs = q.toString() ? `?${q.toString()}` : "";
+
+  return useQuery<TaxReportResult>({
+    queryKey: ["reports", "tax-report", params],
+    queryFn: () => fetchJson<TaxReportResult>(`/api/finance/reports/tax-report${qs}`),
+  });
+}
+
+export function useCorporateTax(params?: { year?: number }) {
+  const qs = params?.year ? `?year=${params.year}` : "";
+  return useQuery<CorporateTaxResult>({
+    queryKey: ["reports", "corporate-tax", params],
+    queryFn: () => fetchJson<CorporateTaxResult>(`/api/finance/reports/corporate-tax${qs}`),
+  });
+}
+
 export function useLedger(accountId: string | null) {
   return useQuery<LedgerReport>({
     queryKey: ["reports", "ledger", accountId],
@@ -412,5 +451,77 @@ export function useStatementOfAccount(params?: {
         `/api/reports/statement-of-account${queryString}`,
       ),
     enabled: Boolean(params?.customerId),
+  });
+}
+
+export interface AccountSubtypeItem {
+  id: string;
+  name: string;
+  nameAr?: string | null;
+  type: "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE";
+  cashFlowType: string;
+  description?: string | null;
+  parentCodePrefix?: string | null;
+  enablePayments: boolean;
+  showInExpenseClaims: boolean;
+  isSystem: boolean;
+  usageCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function useAccountSubtypes(params?: { type?: string; search?: string }) {
+  const q = new URLSearchParams();
+  if (params?.type) q.append("type", params.type);
+  if (params?.search) q.append("search", params.search);
+  const qStr = q.toString() ? "?" + q.toString() : "";
+
+  return useQuery<AccountSubtypeItem[]>({
+    queryKey: ["account-types", params],
+    queryFn: () => fetchJson<AccountSubtypeItem[]>("/api/finance/account-types" + qStr),
+  });
+}
+
+export function useCreateAccountSubtype() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<AccountSubtypeItem>) =>
+      fetchJson<AccountSubtypeItem>("/api/finance/account-types", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["account-types"] });
+      qc.invalidateQueries({ queryKey: ["accounts"] });
+    },
+  });
+}
+
+export function useUpdateAccountSubtype() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<AccountSubtypeItem> }) =>
+      fetchJson<AccountSubtypeItem>("/api/finance/account-types/" + id, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["account-types"] });
+      qc.invalidateQueries({ queryKey: ["accounts"] });
+    },
+  });
+}
+
+export function useDeleteAccountSubtype() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson<{ success: boolean; message: string }>("/api/finance/account-types/" + id, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["account-types"] });
+      qc.invalidateQueries({ queryKey: ["accounts"] });
+    },
   });
 }

@@ -7,6 +7,7 @@ import {
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { round2 } from "@/lib/utils/math";
+import { UpdatePostedInvoiceCommandHandler } from "@/lib/modules/accounting";
 
 export async function GET(
   request: Request,
@@ -17,9 +18,22 @@ export async function GET(
     if (!authUser) return unauthorized();
 
     const { id } = await params;
+    const cleanId = decodeURIComponent(id || "").trim();
+    const shortId = cleanId.replace(/^INV-2026-/i, "INV-");
 
-    const invoice = await prisma.salesInvoice.findUnique({
-      where: { id },
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
+    const where: any = isUuid
+      ? { OR: [{ id: cleanId }, { invoiceNumber: { equals: cleanId, mode: "insensitive" as const } }] }
+      : {
+          OR: [
+            { invoiceNumber: { equals: cleanId, mode: "insensitive" as const } },
+            { invoiceNumber: { equals: shortId, mode: "insensitive" as const } },
+            { invoiceNumber: { contains: cleanId, mode: "insensitive" as const } },
+          ],
+        };
+
+    let invoice = await prisma.salesInvoice.findFirst({
+      where,
       include: {
         customerRel: true,
         salesOrder: true,
@@ -28,9 +42,20 @@ export async function GET(
             product: true,
           },
         },
-        payments: true,
+        payments: {
+          orderBy: { paymentDate: "desc" },
+        },
         creditNotes: true,
-        journalEntry: true,
+        discountAccount: true,
+        journalEntry: {
+          include: {
+            lines: {
+              include: {
+                account: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -39,6 +64,29 @@ export async function GET(
         { error: "Sales invoice not found" },
         { status: 404 },
       );
+    }
+
+    // If journalEntry is missing on relation, look up by reference or entryNumber
+    if (!invoice.journalEntry || !(invoice.journalEntry as any).lines?.length) {
+      const je = await prisma.journalEntry.findFirst({
+        where: {
+          OR: [
+            { reference: invoice.invoiceNumber },
+            { entryNumber: { contains: invoice.invoiceNumber } },
+            { description: { contains: invoice.invoiceNumber, mode: "insensitive" } },
+          ],
+        },
+        include: {
+          lines: {
+            include: {
+              account: true,
+            },
+          },
+        },
+      });
+      if (je) {
+        (invoice as any).journalEntry = je;
+      }
     }
 
     const itemsSum = invoice.items?.reduce(
@@ -127,6 +175,7 @@ export async function PATCH(
       customerName,
       customerTrn,
       discount,
+      discountAccountId,
       vatRate,
       vatAmount,
       totalAmount,
@@ -153,6 +202,7 @@ export async function PATCH(
       projectScope: projectScope !== undefined ? projectScope : undefined,
       customerName: customerName !== undefined ? customerName : undefined,
       customerTrn: customerTrn !== undefined ? customerTrn : undefined,
+      discountAccountId: discountAccountId !== undefined ? (discountAccountId || null) : undefined,
     };
 
     if (Array.isArray(items)) {
@@ -245,8 +295,23 @@ export async function PATCH(
       include: {
         items: true,
         customerRel: true,
+        discountAccount: true,
       },
     });
+
+    // If invoice is already posted, re-sync its General Ledger journal entry lines
+    if (existingInvoice.status === "POSTED" && existingInvoice.journalEntryId) {
+      await UpdatePostedInvoiceCommandHandler.execute({
+        invoiceId: id,
+        subtotal: Number(updated.subtotal || 0),
+        discount: Number(updated.discount || 0),
+        discountAccountId: updated.discountAccountId,
+        vatRate: Number(updated.vatRate || 0),
+        vatAmount: Number(updated.vatAmount || 0),
+        totalAmount: Number(updated.totalAmount || 0),
+        userId: authUser.id,
+      });
+    }
 
     return NextResponse.json(updated);
   } catch (error: any) {
@@ -281,6 +346,16 @@ export async function DELETE(
       return NextResponse.json(
         { error: "Sales invoice not found" },
         { status: 404 },
+      );
+    }
+
+    if (existing.status !== "DRAFT" || existing.journalEntryId) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot delete a posted or finalized sales invoice. In accordance with UAE FTA and accounting audit standards, posted transactions cannot be deleted. Please cancel or issue a credit note instead.",
+        },
+        { status: 400 },
       );
     }
 

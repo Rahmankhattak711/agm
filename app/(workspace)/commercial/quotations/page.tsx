@@ -220,31 +220,33 @@ export default function CommercialQuotationsPage() {
         }
         actions={
           activeView === "EDITOR" ? (
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={() => {
                 setSelectedQuotation(null);
                 setActiveView("LIST");
               }}
-              icon={<ChevronLeftIcon size={14} />}
-              className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border-slate-200 shadow-xs cursor-pointer"
+              className="group relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-800 bg-white hover:bg-slate-50 active:scale-[0.98] border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer select-none"
             >
-              Back to Proposals
-            </Button>
+              <span className="flex items-center justify-center w-5 h-5 rounded-lg bg-slate-100 text-slate-700 group-hover:bg-slate-200 group-hover:-translate-x-0.5 transition-all duration-200 shadow-2xs">
+                <ChevronLeftIcon size={13} strokeWidth={2.6} />
+              </span>
+              <span className="tracking-wide">Back to Proposals</span>
+            </button>
           ) : (
-            <Button
-              variant="primary"
-              size="sm"
+            <button
+              type="button"
               onClick={() => {
                 setSelectedQuotation(null);
                 setActiveView("EDITOR");
               }}
-              icon={<PlusIcon size={14} strokeWidth={2.5} />}
-              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
+              className="group relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 hover:from-emerald-500 hover:via-emerald-600 hover:to-teal-700 active:scale-[0.98] shadow-sm hover:shadow-md hover:shadow-emerald-900/25 border border-emerald-400/25 transition-all duration-200 cursor-pointer select-none"
             >
-              New Quotation
-            </Button>
+              <span className="flex items-center justify-center w-5 h-5 rounded-lg bg-white/20 text-white group-hover:bg-white/30 group-hover:rotate-90 transition-all duration-300 shadow-2xs">
+                <PlusIcon size={12} strokeWidth={2.6} />
+              </span>
+              <span className="tracking-wide">New Quotation</span>
+            </button>
           )
         }
       />
