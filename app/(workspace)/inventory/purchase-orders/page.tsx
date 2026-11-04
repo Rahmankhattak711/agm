@@ -87,7 +87,7 @@ const getStatusBadge = (status: PurchaseOrderStatus) => {
   switch (status) {
     case "DRAFT":
       return (
-        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+        <span className="py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
           Draft
         </span>
       );
@@ -309,27 +309,27 @@ export default function PurchaseOrdersPage() {
                       title="No purchase orders found"
                       description={
                         search.trim() !== "" ||
-                        statusFilter !== "ALL" ||
-                        supplierFilter !== ""
+                          statusFilter !== "ALL" ||
+                          supplierFilter !== ""
                           ? "No purchase orders matched your search criteria."
                           : "No purchase orders in database. Click 'Create Purchase Order' to create one."
                       }
                       actionLabel={
                         search.trim() !== "" ||
-                        statusFilter !== "ALL" ||
-                        supplierFilter !== ""
+                          statusFilter !== "ALL" ||
+                          supplierFilter !== ""
                           ? "Reset Filters"
                           : "Create Purchase Order"
                       }
                       onAction={
                         search.trim() !== "" ||
-                        statusFilter !== "ALL" ||
-                        supplierFilter !== ""
+                          statusFilter !== "ALL" ||
+                          supplierFilter !== ""
                           ? () => {
-                              setSearch("");
-                              setStatusFilter("ALL");
-                              setSupplierFilter("");
-                            }
+                            setSearch("");
+                            setStatusFilter("ALL");
+                            setSupplierFilter("");
+                          }
                           : () => setIsCreateOpen(true)
                       }
                     />
@@ -358,10 +358,10 @@ export default function PurchaseOrdersPage() {
                       onSend={
                         isDraft && canEdit
                           ? () =>
-                              updatePO.mutate({
-                                id: po.id,
-                                status: "ORDERED",
-                              })
+                            updatePO.mutate({
+                              id: po.id,
+                              status: "ORDERED",
+                            })
                           : undefined
                       }
                       onReceive={
