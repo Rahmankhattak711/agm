@@ -93,7 +93,7 @@ const getStatusBadge = (status: PurchaseOrderStatus) => {
       );
     case "ORDERED":
       return (
-        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">
+        <span className="px-2.5  rounded-full text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">
           Ordered
         </span>
       );
