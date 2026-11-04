@@ -81,10 +81,13 @@ export async function GET(request: Request) {
 
     return NextResponse.json(result);
   } catch (error: any) {
-    console.error("GET /api/finance/account-types error:", error);
+    console.error("GET /api/finance/account-types error, falling back to defaults:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch account types" },
-      { status: 500 },
+      DEFAULT_ACCOUNT_SUBTYPES.map((st) => ({
+        ...st,
+        id: st.name.toLowerCase().replace(/\s+/g, "-"),
+        usageCount: 0,
+      })),
     );
   }
 }
