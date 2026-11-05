@@ -4,17 +4,33 @@ import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAccounts } from "@/lib/hooks/api-hooks";
 import { useProjects } from "@/lib/hooks/projects-hooks";
+import { useCustomers } from "@/lib/hooks/commercial-hooks";
+import { useSuppliers } from "@/lib/hooks/inventory-hooks";
 import { JournalEntryGrid, JournalGridRow } from "../components/JournalEntryGrid";
 import { JournalSummaryCard } from "../components/JournalSummaryCard";
 import { QuickCreateModal } from "../components/QuickCreateModal";
 import { AccountSlideOverDrawer } from "../../accounts/components/AccountSlideOverDrawer";
 import { toast } from "@/lib/toast";
-import { ChevronLeft, ArrowLeft } from "lucide-react";
+import { ArrowLeft, BookOpen, Send, CheckCircle2, AlertTriangle, Calendar, FileText } from "lucide-react";
 
 export default function CreateJournalPage() {
   const router = useRouter();
   const { data: accounts = [], refetch: refetchAccounts } = useAccounts();
   const { data: projects = [], refetch: refetchProjects } = useProjects();
+  const { data: customers = [] } = useCustomers();
+  const { data: suppliers = [] } = useSuppliers();
+
+  // Unified contacts list
+  const contacts = useMemo(() => {
+    const list: Array<{ id: string; name: string; type: "Customer" | "Supplier" }> = [];
+    customers.forEach((c) => {
+      list.push({ id: c.id, name: c.name, type: "Customer" });
+    });
+    suppliers.forEach((s) => {
+      list.push({ id: s.id, name: s.name, type: "Supplier" });
+    });
+    return list;
+  }, [customers, suppliers]);
 
   // Form Header State
   const [entryDate, setEntryDate] = useState<string>(
@@ -22,7 +38,7 @@ export default function CreateJournalPage() {
   );
   const [reference, setReference] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
-  const [taxInclusive, setTaxInclusive] = useState<string>("exclusive");
+  const [taxInclusive, setTaxInclusive] = useState<"exclusive" | "inclusive" | "no_tax">("exclusive");
   const [saving, setSaving] = useState<boolean>(false);
 
   // Quick Create Modals State
@@ -30,7 +46,7 @@ export default function CreateJournalPage() {
   const [activeRowIdx, setActiveRowIdx] = useState<number>(0);
   const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState<boolean>(false);
 
-  // Initial Rows (Default 4 rows)
+  // Initial Rows (4 rows)
   const [rows, setRows] = useState<JournalGridRow[]>([
     {
       id: "row-1",
@@ -48,6 +64,7 @@ export default function CreateJournalPage() {
       projectId: "",
       branch: "",
       costCenter: "",
+      corporateTaxTreatment: "TAXABLE_9",
     },
     {
       id: "row-2",
@@ -65,6 +82,7 @@ export default function CreateJournalPage() {
       projectId: "",
       branch: "",
       costCenter: "",
+      corporateTaxTreatment: "TAXABLE_9",
     },
     {
       id: "row-3",
@@ -82,6 +100,7 @@ export default function CreateJournalPage() {
       projectId: "",
       branch: "",
       costCenter: "",
+      corporateTaxTreatment: "TAXABLE_9",
     },
     {
       id: "row-4",
@@ -99,10 +118,11 @@ export default function CreateJournalPage() {
       projectId: "",
       branch: "",
       costCenter: "",
+      corporateTaxTreatment: "TAXABLE_9",
     },
   ]);
 
-  // Real-time Math Summary calculation
+  // Real-time Math Summary calculation strictly based on posted line values
   const mathSummary = useMemo(() => {
     let subtotalDebit = 0;
     let subtotalCredit = 0;
@@ -110,7 +130,7 @@ export default function CreateJournalPage() {
     let taxCredit = 0;
 
     for (const r of rows) {
-      const fx = Number(r.fxRate) || 1;
+      const fx = Number(r.fxRate) > 0 ? Number(r.fxRate) : 1;
       const deb = Number(r.debit) || 0;
       const cre = Number(r.credit) || 0;
       const tax = Number(r.taxAmount) || 0;
@@ -125,8 +145,8 @@ export default function CreateJournalPage() {
       }
     }
 
-    const totalDebitAed = Math.round((subtotalDebit + taxDebit) * 100) / 100;
-    const totalCreditAed = Math.round((subtotalCredit + taxCredit) * 100) / 100;
+    const totalDebitAed = Math.round(subtotalDebit * 100) / 100;
+    const totalCreditAed = Math.round(subtotalCredit * 100) / 100;
     const difference = Math.round(Math.abs(totalDebitAed - totalCreditAed) * 100) / 100;
     const isBalanced = difference === 0 && (totalDebitAed > 0 || totalCreditAed > 0);
 
@@ -139,8 +159,117 @@ export default function CreateJournalPage() {
       totalCreditAed,
       difference,
       isBalanced,
+      hasUnpostedTax: (taxDebit > 0 || taxCredit > 0),
     };
   }, [rows]);
+
+  // Auto-Balance Helper: fills the difference in the last row or adds a new balancing row
+  const handleAutoBalance = () => {
+    const diff = mathSummary.totalDebitAed - mathSummary.totalCreditAed;
+    if (Math.abs(diff) < 0.01) {
+      toast.info("Journal entry is already balanced!");
+      return;
+    }
+
+    const updated = [...rows];
+    const absDiff = Math.abs(diff);
+
+    // Look for an unfilled row first
+    const emptyRowIdx = updated.findIndex((r) => !r.accountId && !r.debit && !r.credit);
+
+    if (emptyRowIdx >= 0) {
+      if (diff > 0) {
+        // Debit is greater -> needs Credit
+        updated[emptyRowIdx] = {
+          ...updated[emptyRowIdx],
+          credit: absDiff,
+          creditAed: absDiff,
+          debit: "",
+          debitAed: 0,
+        };
+      } else {
+        // Credit is greater -> needs Debit
+        updated[emptyRowIdx] = {
+          ...updated[emptyRowIdx],
+          debit: absDiff,
+          debitAed: absDiff,
+          credit: "",
+          creditAed: 0,
+        };
+      }
+    } else {
+      // Append a new row with the difference
+      updated.push({
+        id: `row-autobalance-${Date.now()}`,
+        description: "Balancing Entry",
+        accountId: "",
+        currency: "AED",
+        fxRate: 1,
+        debit: diff < 0 ? absDiff : "",
+        credit: diff > 0 ? absDiff : "",
+        debitAed: diff < 0 ? absDiff : 0,
+        creditAed: diff > 0 ? absDiff : 0,
+        taxType: "OUT_OF_SCOPE",
+        taxRate: 0,
+        taxAmount: 0,
+        projectId: "",
+        branch: "",
+        costCenter: "",
+        corporateTaxTreatment: "TAXABLE_9",
+      });
+    }
+
+    setRows(updated);
+    toast.success(`Auto-balanced with AED ${absDiff.toFixed(2)}`);
+  };
+
+  // Auto-Add VAT Line Helper
+  const handleAddVatLine = () => {
+    const vatDeb = mathSummary.taxDebit;
+    const vatCre = mathSummary.taxCredit;
+    const netVat = Math.round(Math.abs(vatDeb - vatCre) * 100) / 100;
+
+    if (netVat <= 0) {
+      toast.info("No tax amount detected to add.");
+      return;
+    }
+
+    // Try finding VAT Input (2200) or VAT Output (2210)
+    let vatAcc = accounts.find((a: any) =>
+      vatDeb > vatCre
+        ? a.accountCode === "2200" || a.accountName.toLowerCase().includes("input tax")
+        : a.accountCode === "2210" || a.accountName.toLowerCase().includes("output tax")
+    );
+
+    if (!vatAcc) {
+      vatAcc = accounts.find((a: any) => a.accountName.toLowerCase().includes("vat"));
+    }
+
+    const updated = [...rows];
+    updated.push({
+      id: `row-vat-${Date.now()}`,
+      description: vatDeb > vatCre ? "5% Input VAT Claimable" : "5% Output VAT Payable",
+      accountId: vatAcc ? vatAcc.id : "",
+      accountName: vatAcc?.accountName,
+      accountCode: vatAcc?.accountCode,
+      currency: "AED",
+      fxRate: 1,
+      debit: vatDeb > vatCre ? netVat : "",
+      credit: vatCre >= vatDeb ? netVat : "",
+      debitAed: vatDeb > vatCre ? netVat : 0,
+      creditAed: vatCre >= vatDeb ? netVat : 0,
+      taxType: "OUT_OF_SCOPE",
+      taxRate: 0,
+      taxAmount: 0,
+      projectId: "",
+      branch: "",
+      costCenter: "",
+      corporateTaxTreatment: "TAXABLE_9",
+    });
+
+    setRows(updated);
+    toast.success(`Added VAT Line for AED ${netVat.toFixed(2)}`);
+  };
 
   const handleSave = async (isPosted: boolean) => {
     const activeLines = rows.filter(
@@ -148,13 +277,13 @@ export default function CreateJournalPage() {
     );
 
     if (activeLines.length < 2) {
-      toast.error("A journal entry requires at least 2 lines with accounts and amounts");
+      toast.error("A journal entry requires at least 2 lines with accounts and amounts.");
       return;
     }
 
     if (isPosted && !mathSummary.isBalanced) {
       toast.error(
-        `Debits and Credits must be equal to Post. Current Difference: AED ${mathSummary.difference.toFixed(2)}`
+        `Debits and Credits must balance to Post. Current Difference: AED ${mathSummary.difference.toFixed(2)}`
       );
       return;
     }
@@ -177,6 +306,8 @@ export default function CreateJournalPage() {
           taxType: r.taxType,
           taxAmount: r.taxAmount || 0,
           projectId: r.projectId || null,
+          contactId: r.contactId || null,
+          contactName: r.contactName || null,
           branch: r.branch || null,
           costCenter: r.costCenter || null,
         })),
@@ -208,103 +339,142 @@ export default function CreateJournalPage() {
   };
 
   return (
-    <div className="w-full min-h-full bg-white flex flex-col">
-      {/* Sleek Top Bar matching Chart of Accounts */}
-      <div className="w-full bg-white px-6 pt-4 pb-3 border-b border-slate-200/90 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => router.push("/finance/journal-entries")}
-            className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
-            title="Back to manual journals"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-500 font-medium">Accounting</span>
-              <span className="text-slate-400">&gt;</span>
-              <span className="text-slate-500">Manual Journals</span>
-              <span className="text-slate-400">&gt;</span>
-              <span className="text-slate-900 font-bold tracking-tight">New Entry</span>
+    <div className="w-full min-h-screen bg-slate-50/50 flex flex-col font-sans">
+      {/* 2-Tier Header matching Chart of Accounts */}
+      <div className="w-full bg-white border-b border-slate-200/90 sticky top-0 z-20 shadow-2xs">
+        {/* Tier 1: Title & Actions */}
+        <div className="px-6 py-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => router.push("/finance/journal-entries")}
+              className="p-1.5 rounded-lg border border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
+              title="Back to manual journals"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <div className="w-9 h-9 rounded-xl bg-[#5046e5]/10 text-[#5046e5] flex items-center justify-center font-bold shadow-2xs">
+              <BookOpen className="w-4 h-4" />
             </div>
-            <h1 className="text-lg font-bold text-slate-900 tracking-tight mt-0.5">
-              Create Journal
-            </h1>
+            <div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                <span>Finance &amp; Accounts</span>
+                <span className="text-slate-300">/</span>
+                <span className="hover:text-slate-800 cursor-pointer" onClick={() => router.push("/finance/journal-entries")}>
+                  Journal Entries
+                </span>
+                <span className="text-slate-300">/</span>
+                <span className="text-slate-900 font-semibold">New Entry</span>
+              </div>
+              <h1 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2 mt-0.5">
+                <span>Create Journal</span>
+                <span className="text-[11px] font-mono px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md font-medium border border-slate-200">
+                  Manual Entry
+                </span>
+              </h1>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => handleSave(false)}
-            disabled={saving}
-            className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
-          >
-            Save draft
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSave(true)}
-            disabled={saving || !mathSummary.isBalanced}
-            className={`px-4 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5 ${
-              mathSummary.isBalanced
-                ? "bg-[#5046e5] hover:bg-[#4338ca] text-white"
-                : "bg-slate-200 text-slate-400 cursor-not-allowed"
-            }`}
-          >
-            {saving ? "Posting..." : "Post"}
-          </button>
+          {/* Action CTAs */}
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => router.push("/finance/journal-entries")}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-semibold transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSave(false)}
+              disabled={saving}
+              className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Save draft
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSave(true)}
+              disabled={saving || !mathSummary.isBalanced}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold shadow-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+                mathSummary.isBalanced
+                  ? "bg-[#5046e5] hover:bg-[#4338ca] text-white shadow-[#5046e5]/20"
+                  : "bg-slate-200 text-slate-400 cursor-not-allowed"
+              }`}
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>{saving ? "Posting..." : "Post Journal"}</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Main Form Body */}
-      <div className="flex-1 bg-slate-50/30 p-6 space-y-6">
-        {/* Top Header Card: Inputs + Summary */}
+      {/* Main Body */}
+      <div className="flex-1 p-6 space-y-6 max-w-[1600px] w-full mx-auto">
+        {/* Top Controls Grid: Form Inputs + Live Double-Entry Summary */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Inputs Card */}
-          <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-4">
+          <div className="lg:col-span-8 bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-100 text-xs font-bold text-slate-800">
+              <FileText className="w-3.5 h-3.5 text-[#5046e5]" />
+              <span>Transaction Parameters</span>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Date */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Date *</label>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-slate-400" />
+                  <span>Date *</span>
+                </label>
                 <input
                   type="date"
                   value={entryDate}
                   onChange={(e) => setEntryDate(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:border-[#5046e5] focus:ring-1 focus:ring-[#5046e5] outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:border-[#5046e5] focus:ring-1 focus:ring-[#5046e5] outline-none font-mono"
                   required
                 />
               </div>
 
+              {/* Reference */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Reference</label>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                  Reference
+                </label>
                 <input
                   type="text"
-                  placeholder="e.g. 000234 or INV-REF"
+                  placeholder="e.g. INV-0042 or REF-2026"
                   value={reference}
                   onChange={(e) => setReference(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-[#5046e5] focus:ring-1 focus:ring-[#5046e5] outline-none"
                 />
               </div>
 
+              {/* Tax Treatment / Amounts are */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">Amounts are</label>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                  Amounts are
+                </label>
                 <select
                   value={taxInclusive}
-                  onChange={(e) => setTaxInclusive(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:border-[#5046e5] focus:ring-1 focus:ring-[#5046e5] outline-none cursor-pointer"
+                  onChange={(e) => setTaxInclusive(e.target.value as any)}
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:border-[#5046e5] focus:ring-1 focus:ring-[#5046e5] outline-none cursor-pointer font-medium"
                 >
-                  <option value="exclusive">Tax Exclusive</option>
-                  <option value="inclusive">Tax Inclusive</option>
+                  <option value="exclusive">Tax Exclusive (Net + VAT)</option>
+                  <option value="inclusive">Tax Inclusive (VAT Included)</option>
+                  <option value="no_tax">No Tax (Out of Scope)</option>
                 </select>
               </div>
             </div>
 
+            {/* Notes / Narration */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700">Journal Notes</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                Journal Notes / Narration
+              </label>
               <textarea
                 rows={2}
-                placeholder="Solid notes describing reason for this manual journal entry..."
+                placeholder="Solid description of this journal transaction for audit and compliance..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-[#5046e5] focus:ring-1 focus:ring-[#5046e5] outline-none resize-none"
@@ -312,7 +482,7 @@ export default function CreateJournalPage() {
             </div>
           </div>
 
-          {/* Right Real-time Math Summary Card */}
+          {/* Right Live Summary Card */}
           <div className="lg:col-span-4 flex justify-end">
             <JournalSummaryCard
               subtotalDebit={mathSummary.subtotalDebit}
@@ -323,21 +493,28 @@ export default function CreateJournalPage() {
               totalCreditAed={mathSummary.totalCreditAed}
               difference={mathSummary.difference}
               isBalanced={mathSummary.isBalanced}
+              hasUnpostedTax={mathSummary.hasUnpostedTax}
+              onAutoBalance={handleAutoBalance}
+              onAddVatLine={handleAddVatLine}
             />
           </div>
         </div>
 
-        {/* Spreadsheet Table with Smart Auto-Balancing */}
+        {/* Spreadsheet Table */}
         <JournalEntryGrid
           rows={rows}
           onChange={setRows}
           accounts={accounts}
           projects={projects}
+          contacts={contacts}
+          taxInclusive={taxInclusive}
           onOpenCreateAccount={() => setIsAccountDrawerOpen(true)}
           onOpenCreateProject={(rowIndex) => {
             setActiveRowIdx(rowIndex);
             setQuickCreateType("project");
           }}
+          onAutoBalance={handleAutoBalance}
+          onAddVatLine={handleAddVatLine}
         />
       </div>
 
