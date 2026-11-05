@@ -928,7 +928,7 @@ export default function TrialBalancePage() {
         {/* 5. Main Hierarchical Trial Balance Table */}
         <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
           <div className="w-full overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs whitespace-nowrap min-w-[1240px]">
+            <table className="w-full text-left border-collapse text-xs whitespace-nowrap min-w-[960px]">
               <thead>
                 {/* Header Row 1: Section Categories */}
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold text-[11px] select-none">

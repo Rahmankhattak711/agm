@@ -4,10 +4,9 @@ import React, { Fragment } from "react";
 import { ChartOfAccount } from "@/lib/hooks/api-hooks";
 import { HierarchicalAccount } from "./types";
 import { AccountHierarchyRow } from "./AccountHierarchyRow";
-import { AccountInlineLedger } from "./AccountInlineLedger";
 import { EmptyState } from "@/components/ui";
 import { AccountsIcon } from "@/components/icons";
-import { Plus } from "lucide-react";
+import { Info } from "lucide-react";
 
 interface AccountsHierarchyViewProps {
   rootAccounts: HierarchicalAccount[];
@@ -49,8 +48,8 @@ export function AccountsHierarchyView({
       <div className="p-12">
         <EmptyState
           icon={<AccountsIcon size={32} className="text-slate-400" />}
-          title="No accounts match your criteria"
-          description="Try adjusting your search query, selecting another category, or creating a new account."
+          title="No accounts found"
+          description="Try selecting another category, clearing your search keywords, or adding a new account."
           actionLabel="Add New Account"
           onAction={onOpenCreate}
         />
@@ -58,13 +57,24 @@ export function AccountsHierarchyView({
     );
   }
 
+  // Count total displayed nodes
+  let totalVisibleCount = 0;
+  const countNodes = (items: HierarchicalAccount[]) => {
+    items.forEach((item) => {
+      totalVisibleCount++;
+      if (!collapsedNodes[item.id] && item.subAccounts) {
+        countNodes(item.subAccounts);
+      }
+    });
+  };
+  countNodes(rootAccounts);
+
   // Recursive tree node renderer
   const renderAccountNode = (
     acc: HierarchicalAccount,
     level: number = 1,
   ): React.ReactNode => {
     const isCollapsed = collapsedNodes[acc.id] ?? false;
-    const isLedgerOpen = false;
     const hasChildren = acc.subAccounts && acc.subAccounts.length > 0;
 
     return (
@@ -73,7 +83,6 @@ export function AccountsHierarchyView({
           acc={acc}
           level={level}
           isCollapsed={isCollapsed}
-          isLedgerOpen={isLedgerOpen}
           toggleCollapse={onToggleCollapse}
           toggleLedgerAccount={toggleLedgerAccount}
           onOpenEdit={onOpenEdit}
@@ -93,40 +102,70 @@ export function AccountsHierarchyView({
   };
 
   return (
-    <div className="w-full bg-white overflow-x-auto shadow-2xs">
-      <table className="w-full text-left border-collapse min-w-[1080px]">
-        <thead>
-          <tr className="bg-slate-50/90 border-b border-slate-200/90 text-slate-600 font-semibold text-[11px] uppercase tracking-wider select-none">
-            <th className="py-3 px-2 text-center w-12">
-              <span className="sr-only">Toggle</span>
-            </th>
-            <th className="py-3 px-3 text-left font-bold text-slate-700 w-24">
-              Code
-            </th>
-            <th className="py-3 px-3 text-left font-bold text-slate-700 min-w-[280px]">
-              Account Name
-            </th>
-            <th className="py-3 px-3 text-left font-bold text-slate-700 min-w-[190px] w-52">
-              Cash Flow Type
-            </th>
-            <th className="py-3 px-3 text-left font-bold text-slate-700 w-36 min-w-[130px]">
-              Payments
-            </th>
-            <th className="py-3 px-3 text-left font-bold text-slate-700 w-36 min-w-[130px]">
-              Expense Claims
-            </th>
-            <th className="py-3 px-3 text-left font-bold text-slate-700 w-40 min-w-[150px]">
-              Account Type
-            </th>
-            <th className="py-3 px-3 text-right font-bold text-slate-700 w-28">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {rootAccounts.map((rootAcc) => renderAccountNode(rootAcc, 1))}
-        </tbody>
-      </table>
+    <div className="w-full bg-white flex flex-col">
+      <div className="w-full overflow-x-hidden">
+        <table className="w-full text-left border-collapse table-fixed select-none">
+          <colgroup>
+            <col className="w-10" />
+            <col className="w-20" />
+            <col className="" />
+            <col className="w-40" />
+            <col className="w-24" />
+            <col className="w-24" />
+            <col className="w-36" />
+            <col className="w-20" />
+          </colgroup>
+          <thead>
+            <tr className="bg-slate-50/90 border-b border-slate-200/90 text-slate-500 font-bold text-[10px] uppercase tracking-wider select-none sticky top-0 z-10 backdrop-blur-xs">
+              <th className="py-2.5 px-1 text-center w-10">
+                <span className="sr-only">Toggle</span>
+              </th>
+              <th className="py-2.5 px-3 text-left w-20">
+                Code
+              </th>
+              <th className="py-2.5 px-3 text-left">
+                Account Name
+              </th>
+              <th className="py-2.5 px-3 text-left w-40">
+                Cash Flow
+              </th>
+              <th className="py-2.5 px-2 text-center w-24">
+                Payments
+              </th>
+              <th className="py-2.5 px-2 text-center w-24">
+                Expense Claims
+              </th>
+              <th className="py-2.5 px-3 text-left w-36">
+                Classification
+              </th>
+              <th className="py-2.5 px-3 text-right w-20">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {rootAccounts.map((rootAcc) => renderAccountNode(rootAcc, 1))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modern Status Footer */}
+      <div className="px-6 py-2.5 bg-slate-50 border-t border-slate-200/80 text-xs text-slate-500 font-medium flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <span>
+            Visible rows: <strong className="text-slate-800 font-mono font-bold">{totalVisibleCount}</strong>
+          </span>
+          <span className="text-slate-300">•</span>
+          <span>
+            Pillars: <strong className="text-slate-800 font-semibold">{rootAccounts.length} Root Groups</strong>
+          </span>
+        </div>
+
+        <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
+          <Info className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Click any account row to open details and ledger configuration</span>
+        </div>
+      </div>
     </div>
   );
 }
