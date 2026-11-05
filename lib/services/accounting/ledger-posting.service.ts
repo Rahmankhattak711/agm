@@ -33,7 +33,7 @@ export class LedgerPostingService {
    */
   static async generateEntryNumber(): Promise<string> {
     const count = await prisma.journalEntry.count();
-    return `SYS-MJ-${count + 1}`;
+    return `JE-${(count + 1).toString().padStart(4, "0")}`;
   }
 
   /**

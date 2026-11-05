@@ -4,8 +4,44 @@ import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useJournalEntries } from "@/lib/hooks/api-hooks";
 import { formatAed } from "@/lib/utils/format";
-import { Plus, Search, Download, X, RefreshCw, Filter } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Download,
+  X,
+  RefreshCw,
+  BookOpen,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  Clock,
+} from "lucide-react";
 import { JournalDetailsModal } from "./components/JournalDetailsModal";
+
+// Helper to format any legacy or long serial number into clean short format
+function formatJournalSerial(entryNumber: string): string {
+  if (!entryNumber) return "—";
+  
+  // Clean up legacy doubled prefixes e.g. JE-INV-INV-2026-0001-3809 => JE-INV-0001
+  if (entryNumber.includes("INV")) {
+    const match = entryNumber.match(/(\d+)(?:-\d+)?$/);
+    if (match) return `JE-INV-${match[1].padStart(4, "0")}`;
+  }
+  if (entryNumber.includes("REC")) {
+    const match = entryNumber.match(/(\d+)(?:-\d+)?$/);
+    if (match) return `JE-REC-${match[1].padStart(4, "0")}`;
+  }
+  if (entryNumber.includes("BILL")) {
+    const match = entryNumber.match(/(\d+)(?:-\d+)?$/);
+    if (match) return `JE-BILL-${match[1].padStart(4, "0")}`;
+  }
+  if (entryNumber.startsWith("SYS-MJ-")) {
+    const match = entryNumber.match(/SYS-MJ-(\d+)/);
+    if (match) return `JE-${match[1].padStart(4, "0")}`;
+  }
+
+  return entryNumber;
+}
 
 function ManualJournalsContent() {
   const router = useRouter();
@@ -34,8 +70,10 @@ function ManualJournalsContent() {
   const filtered = useMemo(() => {
     return journalEntries.filter((je: any) => {
       const q = search.toLowerCase().trim();
+      const serial = formatJournalSerial(je.entryNumber || "");
       const matchesSearch =
         !q ||
+        serial.toLowerCase().includes(q) ||
         je.entryNumber?.toLowerCase().includes(q) ||
         je.reference?.toLowerCase().includes(q) ||
         je.description?.toLowerCase().includes(q) ||
@@ -55,13 +93,36 @@ function ManualJournalsContent() {
     });
   }, [journalEntries, search, statusFilter]);
 
+  // Status counts
+  const statusCounts = useMemo(() => {
+    let posted = 0;
+    let draft = 0;
+    journalEntries.forEach((je: any) => {
+      if (je.isPosted) posted++;
+      else draft++;
+    });
+    return {
+      all: journalEntries.length,
+      posted,
+      draft,
+    };
+  }, [journalEntries]);
+
+  // Total amount in view
+  const totalAmountInView = useMemo(() => {
+    return filtered.reduce((sum: number, je: any) => {
+      const entryTotal = je.lines?.reduce((s: number, l: any) => s + Number(l.debit || 0), 0) || 0;
+      return sum + entryTotal;
+    }, 0);
+  }, [filtered]);
+
   const handleExportCsv = () => {
     if (!filtered.length) return;
     const headers = ["Serial Number", "Status", "Date", "Reference", "Notes", "Total AED"];
     const rows = filtered.map((e: any) => {
       const total = e.lines?.reduce((s: number, l: any) => s + Number(l.debit || 0), 0) || 0;
       return [
-        e.entryNumber,
+        formatJournalSerial(e.entryNumber),
         e.isPosted ? "POSTED" : "DRAFT",
         new Date(e.entryDate).toISOString().split("T")[0],
         `"${e.reference || ""}"`,
@@ -74,225 +135,309 @@ function ManualJournalsContent() {
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `Manual_Journals_${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `Journal_Entries_${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
   };
 
   return (
-    <div className="w-full min-h-full bg-white flex flex-col">
-      {/* Sleek Modern Header matching Chart of Accounts */}
-      <div className="w-full bg-white px-6 pt-4 pb-3 space-y-3 shrink-0">
-        {/* Top Row: Breadcrumb + Action Buttons */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-500 font-medium">Accounting</span>
-            <span className="text-slate-400">&gt;</span>
-            <span className="text-slate-900 font-bold text-sm tracking-tight">
-              Manual Journals
-            </span>
+    <div className="w-full min-h-full bg-white flex flex-col font-sans select-none">
+      {/* ── Tier 1: Page Title & Executive Actions Bar ────────────────── */}
+      <div className="px-6 py-4 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
+        {/* Title & Metadata */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-2xs">
+            <BookOpen className="w-5 h-5" />
           </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold text-slate-900 tracking-tight">
+                Journal Entries
+              </h1>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 font-mono">
+                {journalEntries.length} entries
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              General ledger journal vouchers, double-entry audit trail, and posted accounting movements
+            </p>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-2">
+        {/* Primary Action Buttons */}
+        <div className="flex items-center gap-2">
+          {/* Export CSV */}
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs hover:border-slate-300 flex items-center gap-1.5 transition-all cursor-pointer"
+            title="Download CSV Spreadsheet"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span>Export</span>
+          </button>
+
+          {/* Refresh */}
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 shadow-2xs transition-colors cursor-pointer"
+            title="Refresh Journal Entries"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Add Journal Primary CTA */}
+          <button
+            type="button"
+            onClick={() => router.push("/finance/journal-entries/new")}
+            className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white text-xs font-semibold shadow-xs hover:shadow-indigo-500/20 flex items-center gap-1.5 transition-all cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Add Journal</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Tier 2: Status Navigation & Search Strip ───────────────────── */}
+      <div className="px-6 py-2.5 bg-slate-50/60 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-3">
+        {/* Left: Status Filter Segmented Control */}
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+          <div className="inline-flex items-center p-1 rounded-xl bg-slate-100/80 border border-slate-200/70 gap-0.5 shadow-2xs">
+            {/* All */}
             <button
               type="button"
-              onClick={handleExportCsv}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
-              title="Export filtered records to CSV"
+              onClick={() => setStatusFilter("ALL")}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap ${
+                statusFilter === "ALL"
+                  ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200/80"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
+              }`}
             >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Export CSV</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+              <span>All Entries</span>
+              <span
+                className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
+                  statusFilter === "ALL"
+                    ? "bg-indigo-50 text-indigo-700 border border-indigo-200/60"
+                    : "bg-slate-200/70 text-slate-500"
+                }`}
+              >
+                {statusCounts.all}
+              </span>
             </button>
 
+            {/* Posted */}
             <button
               type="button"
-              onClick={() => refetch()}
-              className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
-              title="Refresh journal entries"
+              onClick={() => setStatusFilter("POSTED")}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap ${
+                statusFilter === "POSTED"
+                  ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200/80"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
+              }`}
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>Posted</span>
+              <span
+                className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
+                  statusFilter === "POSTED"
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                    : "bg-slate-200/70 text-slate-500"
+                }`}
+              >
+                {statusCounts.posted}
+              </span>
             </button>
 
+            {/* Draft */}
             <button
               type="button"
-              onClick={() => router.push("/finance/journal-entries/new")}
-              className="px-4 py-1.5 rounded-lg bg-[#5046e5] hover:bg-[#4338ca] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              onClick={() => setStatusFilter("DRAFT")}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap ${
+                statusFilter === "DRAFT"
+                  ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200/80"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 font-medium"
+              }`}
             >
-              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>+ Add Journal</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              <span>Drafts</span>
+              <span
+                className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ${
+                  statusFilter === "DRAFT"
+                    ? "bg-amber-50 text-amber-700 border border-amber-200/60"
+                    : "bg-slate-200/70 text-slate-500"
+                }`}
+              >
+                {statusCounts.draft}
+              </span>
             </button>
           </div>
         </div>
 
-        {/* Controls Row: Clean Search + Active Filter Pills + Segmented Status Pill Filter */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-            {/* Search Input */}
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search serial, ref, notes..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
-              />
-              {search && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearch("");
-                    router.replace("/finance/journal-entries");
-                  }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600 cursor-pointer"
-                  title="Clear search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Active Journal Filter Pill matching Image 4 */}
+        {/* Right: Search Input */}
+        <div className="flex items-center gap-2">
+          <div className="relative w-56 sm:w-72">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search serial, ref, accounts..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all shadow-2xs"
+            />
             {search && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-medium shadow-2xs">
-                <span># Journal ID is <strong>{search}</strong></span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearch("");
-                    router.replace("/finance/journal-entries");
-                  }}
-                  className="hover:text-indigo-900 cursor-pointer ml-0.5"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-          </div>
-
-          {/* Segmented Status Filter: [ All | Posted | Draft ] */}
-          <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs">
-            {(["ALL", "POSTED", "DRAFT"] as const).map((st) => (
               <button
-                key={st}
                 type="button"
-                onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                  statusFilter === st
-                    ? "bg-white text-slate-900 shadow-2xs font-bold"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
+                onClick={() => {
+                  setSearch("");
+                  router.replace("/finance/journal-entries");
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600 cursor-pointer"
+                title="Clear search"
               >
-                {st === "ALL" ? "All" : st === "POSTED" ? "Posted" : "Draft"}
+                <X className="w-3 h-3" />
               </button>
-            ))}
+            )}
           </div>
         </div>
       </div>
 
-      {/* Main Full-Viewport Table matching Chart of Accounts */}
-      <div className="w-full border-t border-slate-200/90 flex-1 bg-white overflow-x-auto shadow-2xs">
-        <table className="w-full text-left border-collapse min-w-[1100px]">
+      {/* ── Main Full-Viewport Table ─────────────────────────────────────── */}
+      <div className="w-full flex-1 bg-white overflow-x-hidden">
+        <table className="w-full text-left border-collapse table-fixed select-none">
+          <colgroup>
+            <col className="w-24" /> {/* Status */}
+            <col className="w-28" /> {/* Date */}
+            <col className="w-32" /> {/* Serial Number */}
+            <col className="w-32" /> {/* Reference */}
+            <col className="w-44" /> {/* Notes */}
+            <col className="" />     {/* Lines Preview (Fluid) */}
+            <col className="w-32" /> {/* Total AED */}
+            <col className="w-28" /> {/* Created By */}
+          </colgroup>
           <thead>
-            <tr className="bg-slate-50/90 border-b border-slate-200/90 text-slate-600 font-semibold text-[11px] uppercase tracking-wider select-none">
-              <th className="py-3 px-4 w-24">Status</th>
-              <th className="py-3 px-4 w-28">Date</th>
-              <th className="py-3 px-4 w-44">Serial Number</th>
-              <th className="py-3 px-4 min-w-[130px]">Reference</th>
-              <th className="py-3 px-4 min-w-[160px]">Notes</th>
-              <th className="py-3 px-4 min-w-[340px]">Journal Lines Preview</th>
-              <th className="py-3 px-4 text-right w-32">Total AED</th>
-              <th className="py-3 px-4 text-right w-36">Created By</th>
+            <tr className="bg-slate-50/90 border-b border-slate-200/90 text-slate-500 font-bold text-[10px] uppercase tracking-wider select-none sticky top-0 z-10 backdrop-blur-xs">
+              <th className="py-2.5 px-3 text-left w-24">Status</th>
+              <th className="py-2.5 px-3 text-left w-28">Date</th>
+              <th className="py-2.5 px-3 text-left w-32">Serial Number</th>
+              <th className="py-2.5 px-3 text-left w-32">Reference</th>
+              <th className="py-2.5 px-3 text-left w-44">Notes</th>
+              <th className="py-2.5 px-3 text-left">Journal Lines Preview</th>
+              <th className="py-2.5 px-3 text-right w-32">Total AED</th>
+              <th className="py-2.5 px-3 text-right w-28">Created By</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 bg-white">
             {isLoading ? (
               <tr>
-                <td colSpan={8} className="px-4 py-16 text-center text-slate-400 text-xs">
-                  Loading manual journals...
+                <td colSpan={8} className="px-4 py-20 text-center text-slate-400 text-xs font-medium">
+                  <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                  Loading journal vouchers...
                 </td>
               </tr>
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-16 text-center text-slate-400 text-xs">
-                  No manual journals found matching your filter.
+                <td colSpan={8} className="px-4 py-20 text-center">
+                  <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <div className="text-slate-700 font-semibold text-xs">No journal entries found</div>
+                  <div className="text-slate-400 text-[11px] mt-0.5">
+                    {search ? "Try adjusting your search criteria" : "Create your first journal voucher to get started."}
+                  </div>
                 </td>
               </tr>
             ) : (
               filtered.map((entry: any) => {
                 const total =
                   entry.lines?.reduce((s: number, l: any) => s + Number(l.debit || 0), 0) || 0;
+                const shortSerial = formatJournalSerial(entry.entryNumber);
 
                 return (
                   <tr
                     key={entry.id}
                     onClick={() => setSelectedEntry(entry)}
-                    className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors cursor-pointer text-xs"
+                    className="border-b border-slate-100 hover:bg-indigo-50/20 transition-colors cursor-pointer text-xs group"
                   >
-                    <td className="px-4 py-3">
+                    {/* 1. Status Badge */}
+                    <td className="px-3 py-2.5 align-middle">
                       {entry.isPosted ? (
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                          POSTED
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span>POSTED</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                          DRAFT
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          <span>DRAFT</span>
                         </span>
                       )}
                     </td>
 
-                    <td className="px-4 py-3 font-mono text-slate-600">
+                    {/* 2. Date */}
+                    <td className="px-3 py-2.5 font-mono text-slate-600 align-middle">
                       {new Date(entry.entryDate).toISOString().split("T")[0]}
                     </td>
 
-                    <td className="px-4 py-3 font-mono font-bold text-slate-900">
-                      {entry.entryNumber}
+                    {/* 3. Short Serial Number */}
+                    <td className="px-3 py-2.5 align-middle whitespace-nowrap">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded font-mono font-bold text-xs bg-slate-100 text-slate-800 border border-slate-200/60 group-hover:border-indigo-300 group-hover:bg-indigo-50/50 group-hover:text-indigo-700 transition-colors">
+                        {shortSerial}
+                      </span>
                     </td>
 
-                    <td className="px-4 py-3 text-slate-700 font-medium">
+                    {/* 4. Reference */}
+                    <td className="px-3 py-2.5 font-medium text-slate-700 align-middle truncate" title={entry.reference}>
                       {entry.reference || "—"}
                     </td>
 
-                    <td className="px-4 py-3 text-slate-500 max-w-xs truncate">
+                    {/* 5. Notes / Description */}
+                    <td className="px-3 py-2.5 text-slate-500 align-middle truncate" title={entry.description}>
                       {entry.description || "—"}
                     </td>
 
-                    <td className="px-4 py-2 text-[11px]">
+                    {/* 6. Journal Lines Preview (Fluid) */}
+                    <td className="px-3 py-2 align-middle min-w-0">
                       <div className="space-y-1">
                         {entry.lines?.slice(0, 3).map((line: any, lIdx: number) => {
                           const isDr = Number(line.debit) > 0;
                           const amt = isDr ? line.debit : line.credit;
                           return (
-                            <div key={line.id || lIdx} className="flex items-center gap-2">
+                            <div key={line.id || lIdx} className="flex items-center gap-1.5 min-w-0">
                               <span
-                                className={`w-5 font-bold font-mono ${
-                                  isDr ? "text-blue-600" : "text-amber-600"
+                                className={`w-5 text-center text-[10px] font-bold font-mono px-1 py-0.2 rounded shrink-0 ${
+                                  isDr
+                                    ? "bg-blue-50 text-blue-700 border border-blue-200/60"
+                                    : "bg-amber-50 text-amber-700 border border-amber-200/60"
                                 }`}
                               >
                                 {isDr ? "Dr" : "Cr"}
                               </span>
-                              <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200/60 text-slate-800 font-medium truncate max-w-[200px]">
+                              <span
+                                className="px-1.5 py-0.2 rounded bg-slate-50 border border-slate-200/70 text-slate-700 text-[10.5px] font-medium truncate max-w-[200px]"
+                                title={`${line.account?.accountCode} - ${line.account?.accountName}`}
+                              >
                                 {line.account?.accountCode} - {line.account?.accountName}
                               </span>
-                              <span className="font-mono text-slate-500 ml-auto font-medium">
-                                {Number(amt).toFixed(2)}
+                              <span className="font-mono text-slate-700 ml-auto font-medium text-[11px] tabular-nums shrink-0">
+                                {Number(amt).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </span>
                             </div>
                           );
                         })}
                         {entry.lines?.length > 3 && (
-                          <span className="text-[10px] text-slate-400 italic">
-                            + {entry.lines.length - 3} more lines...
-                          </span>
+                          <div className="text-[10px] text-slate-400 font-medium">
+                            + {entry.lines.length - 3} more account lines...
+                          </div>
                         )}
                       </div>
                     </td>
 
-                    <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                    {/* 7. Total AED */}
+                    <td className="px-3 py-2.5 text-right font-mono font-bold text-slate-900 align-middle whitespace-nowrap">
                       {formatAed(total)}
                     </td>
 
-                    <td className="px-4 py-3 text-right text-slate-500 text-[11px]">
+                    {/* 8. Created By */}
+                    <td className="px-3 py-2.5 text-right text-slate-500 text-[11px] align-middle truncate" title={entry.user?.fullName}>
                       {entry.user?.fullName || "Accountant"}
                     </td>
                   </tr>
@@ -303,10 +448,22 @@ function ManualJournalsContent() {
         </table>
       </div>
 
-      {/* Footer bar */}
-      <div className="px-6 py-3 bg-slate-50/60 border-t border-slate-200/90 flex justify-between items-center text-xs text-slate-500 shrink-0">
-        <span>Showing {filtered.length} of {journalEntries.length} records</span>
-        <span className="font-mono">UAE FTA Double-Entry Standard</span>
+      {/* ── Status Footer Bar ────────────────────────────────────────────── */}
+      <div className="px-6 py-2.5 bg-slate-50 border-t border-slate-200/80 text-xs text-slate-600 font-medium flex flex-wrap items-center justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-4">
+          <span>
+            Displaying: <strong className="text-slate-900 font-mono font-bold">{filtered.length}</strong> of {journalEntries.length} journals
+          </span>
+          <span className="text-slate-300">•</span>
+          <span>
+            Total Turnover: <strong className="text-indigo-700 font-mono font-bold">{formatAed(totalAmountInView)}</strong>
+          </span>
+        </div>
+
+        <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          <span>UAE FTA Accrual Basis · Double-Entry Standard</span>
+        </div>
       </div>
 
       {/* Journal Details Modal */}

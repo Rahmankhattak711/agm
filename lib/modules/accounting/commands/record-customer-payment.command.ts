@@ -69,7 +69,7 @@ export class RecordCustomerPaymentCommandHandler {
     const accounts = await getStandardAccounts();
     const debitAccount = paymentMethod === "CASH" ? accounts.cash : accounts.bank;
 
-    const cleanRec = recNo.replace(/^REC-(?:20\d{2}-)?/i, "").replace(/^REC-/i, "");
+    const cleanRec = recNo.replace(/[^0-9]/g, "").padStart(4, "0");
     const entryNumber = `JE-REC-${cleanRec}`;
 
     const journalLines: any[] = [];

@@ -30,6 +30,12 @@ export async function findOrCreateAccount(
   return account;
 }
 
+export function extractCleanSeq(val: string): string {
+  if (!val) return "0001";
+  const match = val.match(/(\d+)$/);
+  return match ? match[1].padStart(4, "0") : val.replace(/[^a-zA-Z0-9]/g, "").slice(-4);
+}
+
 export async function getStandardAccounts() {
   return await AccountResolverService.getCommercialSystemAccounts();
 }
@@ -59,7 +65,7 @@ export async function postSalesInvoiceJournalEntry(params: {
 
   const accounts = await getStandardAccounts();
 
-  const cleanInv = params.invoiceNumber.replace(/^INV-(?:20\d{2}-)?/i, "").replace(/^INV-/i, "");
+  const cleanInv = extractCleanSeq(params.invoiceNumber);
   const entryNumber = `JE-INV-${cleanInv}`;
 
   const discountAmount = Math.max(0, Math.round(Number(params.discount || 0) * 100) / 100);
@@ -202,7 +208,7 @@ export async function postCustomerPaymentJournalEntry(params: {
   const debitAccount =
     params.paymentMethod === "CASH" ? accounts.cash : accounts.bank;
 
-  const cleanRec = params.receiptNumber.replace(/^REC-(?:20\d{2}-)?/i, "").replace(/^REC-/i, "");
+  const cleanRec = extractCleanSeq(params.receiptNumber);
   const entryNumber = `JE-REC-${cleanRec}`;
   const amt = Math.round(Number(params.amount) * 100) / 100;
 
@@ -278,7 +284,7 @@ export async function postSupplierBillJournalEntry(params: {
   await FiscalLockService.assertPeriodNotLocked(params.billDate);
 
   const accounts = await getStandardAccounts();
-  const cleanBill = params.billNumber.replace(/^BILL-(?:20\d{2}-)?/i, "").replace(/^BILL-/i, "");
+  const cleanBill = extractCleanSeq(params.billNumber);
   const entryNumber = `JE-BILL-${cleanBill}`;
 
   const discountAmount = Math.max(0, Math.round(Number(params.discount || 0) * 100) / 100);
@@ -410,7 +416,7 @@ export async function postSupplierPaymentJournalEntry(params: {
   const creditAccount =
     params.paymentMethod === "CASH" ? accounts.cash : accounts.bank;
 
-  const cleanPay = params.paymentNumber.replace(/^PAY-(?:20\d{2}-)?/i, "").replace(/^PAY-/i, "");
+  const cleanPay = extractCleanSeq(params.paymentNumber);
   const entryNumber = `JE-PAY-${cleanPay}`;
   const amt = Math.round(Number(params.amount) * 100) / 100;
 
@@ -485,7 +491,7 @@ export async function postCreditNoteJournalEntry(params: {
   await FiscalLockService.assertPeriodNotLocked(params.returnDate);
 
   const accounts = await getStandardAccounts();
-  const cleanCn = params.creditNoteNumber.replace(/^CN-(?:20\d{2}-)?/i, "").replace(/^CN-/i, "");
+  const cleanCn = extractCleanSeq(params.creditNoteNumber);
   const entryNumber = `JE-CN-${cleanCn}`;
 
   const vatAmount = Math.max(0, Math.round(Number(params.vatAmount || 0) * 100) / 100);
@@ -583,7 +589,7 @@ export async function postDebitNoteJournalEntry(params: {
   await FiscalLockService.assertPeriodNotLocked(params.returnDate);
 
   const accounts = await getStandardAccounts();
-  const cleanDn = params.debitNoteNumber.replace(/^DN-(?:20\d{2}-)?/i, "").replace(/^DN-/i, "");
+  const cleanDn = extractCleanSeq(params.debitNoteNumber);
   const entryNumber = `JE-DN-${cleanDn}`;
 
   const vatAmount = Math.max(0, Math.round(Number(params.vatAmount || 0) * 100) / 100);
