@@ -7,6 +7,7 @@ import {
   TaxEngineService,
 } from "@/lib/services/accounting/tax-engine.service";
 import { Trash2, Plus, Info, Sparkles, PlusCircle } from "lucide-react";
+import { HierarchicalAccountSelect } from "./HierarchicalAccountSelect";
 
 export interface JournalGridRow {
   id: string;
@@ -172,7 +173,7 @@ export function JournalEntryGrid({
   return (
     <div className="space-y-3">
       {/* Table Container */}
-      <div className="border border-slate-200/90 rounded-2xl overflow-x-auto bg-white shadow-xs">
+      <div className="border border-slate-200/90 rounded-2xl overflow-x-auto bg-white shadow-xs min-h-[460px] pb-28">
         <table className="w-full text-left text-xs whitespace-nowrap border-collapse min-w-[1280px]">
           <thead>
             <tr className="bg-slate-50/90 border-b border-slate-200 text-slate-600 uppercase text-[11px] tracking-wider font-semibold">
@@ -219,32 +220,13 @@ export function JournalEntryGrid({
                 </td>
 
                 {/* Account */}
-                <td className="px-2 py-1.5">
-                  <select
+                <td className="px-2 py-1.5 min-w-[240px]">
+                  <HierarchicalAccountSelect
                     value={row.accountId}
-                    onChange={(e) => {
-                      if (e.target.value === "__create__") {
-                        onOpenCreateAccount();
-                      } else {
-                        handleAccountChange(idx, e.target.value);
-                      }
-                    }}
-                    className={`w-full bg-white border rounded-lg px-2.5 py-1.5 text-xs outline-none font-medium truncate transition-all cursor-pointer ${
-                      !row.accountId
-                        ? "border-amber-300 bg-amber-50/20 text-slate-500"
-                        : "border-slate-200 hover:border-slate-300 text-slate-800 focus:border-[#5046e5]"
-                    }`}
-                  >
-                    <option value="">Select account...</option>
-                    <option value="__create__" className="text-[#5046e5] font-bold">
-                      + Create new account...
-                    </option>
-                    {postableAccounts.map((acc) => (
-                      <option key={acc.id} value={acc.id}>
-                        {acc.accountCode} - {acc.accountName}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(accountId) => handleAccountChange(idx, accountId)}
+                    accounts={accounts}
+                    onOpenCreateAccount={onOpenCreateAccount}
+                  />
                 </td>
 
                 {/* Currency */}
