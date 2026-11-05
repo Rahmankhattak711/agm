@@ -63,7 +63,6 @@ export default function CreateJournalPage() {
       taxAmount: 0,
       projectId: "",
       branch: "",
-      costCenter: "",
       corporateTaxTreatment: "TAXABLE_9",
     },
     {
@@ -81,7 +80,6 @@ export default function CreateJournalPage() {
       taxAmount: 0,
       projectId: "",
       branch: "",
-      costCenter: "",
       corporateTaxTreatment: "TAXABLE_9",
     },
     {
@@ -99,7 +97,6 @@ export default function CreateJournalPage() {
       taxAmount: 0,
       projectId: "",
       branch: "",
-      costCenter: "",
       corporateTaxTreatment: "TAXABLE_9",
     },
     {
@@ -117,7 +114,6 @@ export default function CreateJournalPage() {
       taxAmount: 0,
       projectId: "",
       branch: "",
-      costCenter: "",
       corporateTaxTreatment: "TAXABLE_9",
     },
   ]);
@@ -214,7 +210,6 @@ export default function CreateJournalPage() {
         taxAmount: 0,
         projectId: "",
         branch: "",
-        costCenter: "",
         corporateTaxTreatment: "TAXABLE_9",
       });
     }
@@ -263,7 +258,6 @@ export default function CreateJournalPage() {
       taxAmount: 0,
       projectId: "",
       branch: "",
-      costCenter: "",
       corporateTaxTreatment: "TAXABLE_9",
     });
 
@@ -309,8 +303,7 @@ export default function CreateJournalPage() {
           contactId: r.contactId || null,
           contactName: r.contactName || null,
           branch: r.branch || null,
-          costCenter: r.costCenter || null,
-        })),
+          })),
       };
 
       const res = await fetch("/api/journal-entries", {

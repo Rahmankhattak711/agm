@@ -8,6 +8,7 @@ import {
 } from "@/lib/services/accounting/tax-engine.service";
 import { Trash2, Plus, Info, Sparkles, PlusCircle } from "lucide-react";
 import { HierarchicalAccountSelect } from "./HierarchicalAccountSelect";
+import { TaxRateDropdown } from "./TaxRateDropdown";
 
 export interface JournalGridRow {
   id: string;
@@ -17,8 +18,8 @@ export interface JournalGridRow {
   accountCode?: string;
   currency: string;
   fxRate: number;
-  debit: number | "";
-  credit: number | "";
+  debit: number | string;
+  credit: number | string;
   debitAed: number;
   creditAed: number;
   taxType: TaxCategoryType;
@@ -29,7 +30,7 @@ export interface JournalGridRow {
   projectId: string;
   projectName?: string;
   branch: string;
-  costCenter: string;
+  costCenter?: string;
   corporateTaxTreatment?: string;
 }
 
@@ -156,7 +157,6 @@ export function JournalEntryGrid({
       taxAmount: 0,
       projectId: "",
       branch: "",
-      costCenter: "",
       corporateTaxTreatment: "TAXABLE_9",
     }));
     onChange([...rows, ...newRows]);
@@ -174,28 +174,19 @@ export function JournalEntryGrid({
     <div className="space-y-3">
       {/* Table Container */}
       <div className="border border-slate-200/90 rounded-2xl overflow-x-auto bg-white shadow-xs min-h-[460px] pb-28">
-        <table className="w-full text-left text-xs whitespace-nowrap border-collapse min-w-[1280px]">
+        <table className="w-full text-left text-xs whitespace-nowrap border-collapse w-full min-w-[1100px]">
           <thead>
             <tr className="bg-slate-50/90 border-b border-slate-200 text-slate-600 uppercase text-[11px] tracking-wider font-semibold">
               <th className="px-2 py-3 w-8 text-center text-slate-400">#</th>
               <th className="px-3 py-3 w-48 min-w-[180px]">Description</th>
               <th className="px-3 py-3 w-56 min-w-[220px]">Account *</th>
-              <th className="px-2 py-3 w-16 text-center">Currency</th>
-              <th className="px-2 py-3 w-20 text-center">
-                <div className="inline-flex items-center gap-1 justify-center" title="Foreign exchange multiplier to AED">
-                  <span>FX rate</span>
-                  <Info className="w-3 h-3 text-slate-400" />
-                </div>
-              </th>
-              <th className="px-3 py-3 w-28 text-right">Debit</th>
-              <th className="px-3 py-3 w-28 text-right">Credit</th>
+              <th className="px-3 py-3 w-32 min-w-[130px] text-right">Debit (AED)</th>
+              <th className="px-3 py-3 w-32 min-w-[130px] text-right">Credit (AED)</th>
               <th className="px-3 py-3 w-28 text-right bg-slate-100/40 text-slate-700">Debit AED</th>
               <th className="px-3 py-3 w-28 text-right bg-slate-100/40 text-slate-700">Credit AED</th>
               <th className="px-3 py-3 w-48 min-w-[190px]">Tax Rate</th>
-              <th className="px-3 py-3 w-40 min-w-[150px]">Contact</th>
               <th className="px-3 py-3 w-44 min-w-[160px]">Project</th>
               <th className="px-3 py-3 w-32 min-w-[130px]">Branch</th>
-              <th className="px-3 py-3 w-32 min-w-[120px]">Cost center</th>
               <th className="px-3 py-3 w-44 min-w-[170px]">Corporate tax treatment</th>
               <th className="px-2 py-3 w-10 text-center"></th>
             </tr>
@@ -229,59 +220,66 @@ export function JournalEntryGrid({
                   />
                 </td>
 
-                {/* Currency */}
-                <td className="px-2 py-1.5 text-center">
-                  <span className="font-mono text-[11px] px-2 py-1 rounded-md bg-slate-100 border border-slate-200 font-semibold text-slate-600">
-                    {row.currency || "AED"}
-                  </span>
+                {/* Debit (with inline AED prefix) */}
+                <td className="px-2 py-1.5 min-w-[140px]">
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 select-none pointer-events-none">
+                      AED
+                    </span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={row.debit}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateRow(idx, {
+                          debit: val,
+                          credit: val && parseFloat(val) > 0 ? "" : row.credit,
+                        });
+                      }}
+                      onBlur={() => {
+                        if (row.debit !== "" && row.debit !== undefined) {
+                          const num = parseFloat(String(row.debit));
+                          if (!isNaN(num) && num > 0) {
+                            updateRow(idx, { debit: num.toFixed(2) });
+                          }
+                        }
+                      }}
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 focus:border-[#5046e5] focus:ring-1 focus:ring-[#5046e5] rounded-lg pl-10 pr-2.5 py-1.5 text-xs text-right font-mono text-slate-900 font-bold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-all shadow-2xs"
+                    />
+                  </div>
                 </td>
 
-                {/* FX Rate */}
-                <td className="px-2 py-1.5 text-center">
-                  <input
-                    type="number"
-                    step="0.0001"
-                    min="0"
-                    value={row.fxRate}
-                    onChange={(e) => updateRow(idx, { fxRate: parseFloat(e.target.value) || 1 })}
-                    className="w-16 bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-2 py-1.5 text-xs text-right font-mono focus:border-[#5046e5] outline-none text-slate-700"
-                  />
-                </td>
-
-                {/* Debit */}
-                <td className="px-2 py-1.5">
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="—"
-                    value={row.debit}
-                    onChange={(e) => {
-                      const val = e.target.value === "" ? "" : parseFloat(e.target.value);
-                      updateRow(idx, {
-                        debit: val,
-                        credit: val !== "" && val > 0 ? "" : row.credit,
-                      });
-                    }}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 focus:border-[#5046e5] rounded-lg px-2.5 py-1.5 text-xs text-right font-mono text-slate-900 font-semibold outline-none"
-                  />
-                </td>
-
-                {/* Credit */}
-                <td className="px-2 py-1.5">
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="—"
-                    value={row.credit}
-                    onChange={(e) => {
-                      const val = e.target.value === "" ? "" : parseFloat(e.target.value);
-                      updateRow(idx, {
-                        credit: val,
-                        debit: val !== "" && val > 0 ? "" : row.debit,
-                      });
-                    }}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 focus:border-[#5046e5] rounded-lg px-2.5 py-1.5 text-xs text-right font-mono text-slate-900 font-semibold outline-none"
-                  />
+                {/* Credit (with inline AED prefix) */}
+                <td className="px-2 py-1.5 min-w-[140px]">
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 select-none pointer-events-none">
+                      AED
+                    </span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={row.credit}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateRow(idx, {
+                          credit: val,
+                          debit: val && parseFloat(val) > 0 ? "" : row.debit,
+                        });
+                      }}
+                      onBlur={() => {
+                        if (row.credit !== "" && row.credit !== undefined) {
+                          const num = parseFloat(String(row.credit));
+                          if (!isNaN(num) && num > 0) {
+                            updateRow(idx, { credit: num.toFixed(2) });
+                          }
+                        }
+                      }}
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 focus:border-[#5046e5] focus:ring-1 focus:ring-[#5046e5] rounded-lg pl-10 pr-2.5 py-1.5 text-xs text-right font-mono text-slate-900 font-bold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-all shadow-2xs"
+                    />
+                  </div>
                 </td>
 
                 {/* Debit AED */}
@@ -294,57 +292,17 @@ export function JournalEntryGrid({
                   {row.creditAed > 0 ? row.creditAed.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"}
                 </td>
 
-                {/* Tax Rate (Grouped as in User's screenshot) */}
-                <td className="px-2 py-1.5">
-                  <div className="relative">
-                    <select
-                      value={row.taxType}
-                      onChange={(e) => updateRow(idx, { taxType: e.target.value as TaxCategoryType })}
-                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 focus:border-[#5046e5] outline-none cursor-pointer font-medium"
-                    >
-                      <optgroup label="OUT OF SCOPE">
-                        <option value="OUT_OF_SCOPE">0% - Out of Scope</option>
-                        <option value="EXEMPT">0% - Exempt</option>
-                      </optgroup>
-                      <optgroup label="PURCHASES">
-                        <option value="STANDARD_PURCHASES">5% - VAT on Purchases</option>
-                      </optgroup>
-                      <optgroup label="REVERSE CHARGE">
-                        <option value="REVERSE_CHARGE">5% - Reverse Charge</option>
-                      </optgroup>
-                      <optgroup label="SALES">
-                        <option value="STANDARD_SALES">5% - Standard Rated</option>
-                        <option value="ZERO_RATED">0% - Zero-Rated Sales</option>
-                      </optgroup>
-                    </select>
-                    {row.taxAmount > 0 && (
-                      <span className="text-[10px] text-indigo-600 font-mono font-semibold block mt-0.5 px-1">
-                        VAT: AED {row.taxAmount.toFixed(2)}
-                      </span>
-                    )}
-                  </div>
-                </td>
-
-                {/* Contact */}
-                <td className="px-2 py-1.5">
-                  <select
-                    value={row.contactId || ""}
-                    onChange={(e) => {
-                      const c = contacts.find((item) => item.id === e.target.value);
-                      updateRow(idx, {
-                        contactId: e.target.value || undefined,
-                        contactName: c?.name || undefined,
-                      });
-                    }}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 focus:border-[#5046e5] outline-none truncate cursor-pointer"
-                  >
-                    <option value="">Select contact...</option>
-                    {contacts.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} {c.type ? `(${c.type})` : ""}
-                      </option>
-                    ))}
-                  </select>
+                {/* Tax Rate (Custom Dropdown matching user screenshot) */}
+                <td className="px-2 py-1.5 min-w-[200px]">
+                  <TaxRateDropdown
+                    value={row.taxType}
+                    onChange={(newTaxType) => updateRow(idx, { taxType: newTaxType })}
+                  />
+                  {row.taxAmount > 0 && (
+                    <span className="text-[10px] text-indigo-600 font-mono font-semibold block mt-0.5 px-1">
+                      VAT: AED {row.taxAmount.toFixed(2)}
+                    </span>
+                  )}
                 </td>
 
                 {/* Project */}
@@ -391,17 +349,6 @@ export function JournalEntryGrid({
                       </option>
                     ))}
                   </select>
-                </td>
-
-                {/* Cost Center */}
-                <td className="px-2 py-1.5">
-                  <input
-                    type="text"
-                    placeholder="—"
-                    value={row.costCenter}
-                    onChange={(e) => updateRow(idx, { costCenter: e.target.value })}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-[#5046e5] outline-none"
-                  />
                 </td>
 
                 {/* Corporate Tax Treatment */}
