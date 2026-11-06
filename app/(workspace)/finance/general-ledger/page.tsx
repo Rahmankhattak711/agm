@@ -152,8 +152,21 @@ function GeneralLedgerContent() {
   const { data: records = [], isLoading, refetch } = useQuery({
     queryKey: ["general-ledger", selectedRange, selectedAccountId, search, journalIdFilter],
     queryFn: async () => {
-      const from = `${selectedRange[0]}-01`;
-      const to = `${selectedRange[1]}-31`;
+      const sanitizeDate = (val: string, isEnd: boolean): string => {
+        if (!val) return "";
+        const clean = val.trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
+        if (/^\d{4}-\d{2}$/.test(clean)) {
+          if (!isEnd) return `${clean}-01`;
+          const [y, m] = clean.split("-").map(Number);
+          const lastDay = new Date(y, m, 0).getDate();
+          return `${clean}-${lastDay.toString().padStart(2, "0")}`;
+        }
+        return clean.slice(0, 10);
+      };
+
+      const from = sanitizeDate(selectedRange[0], false);
+      const to = sanitizeDate(selectedRange[1], true);
       const params = new URLSearchParams();
 
       if (journalIdFilter) {

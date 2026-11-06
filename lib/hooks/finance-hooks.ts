@@ -107,6 +107,8 @@ export function useJournalEntries() {
   return useQuery<JournalEntry[]>({
     queryKey: ["journal-entries"],
     queryFn: () => fetchJson<JournalEntry[]>("/api/finance/journal-entries"),
+    staleTime: 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 }
 

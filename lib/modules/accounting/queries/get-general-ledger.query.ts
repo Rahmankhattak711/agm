@@ -3,6 +3,29 @@ import { OffsetResolverService } from "@/lib/services/accounting/offset-resolver
 import { microCache } from "../cache/micro-cache";
 import { GeneralLedgerQueryParams, GeneralLedgerRowDto } from "./types";
 
+function parseSafeDate(dStr: string | null | undefined, isEnd: boolean): Date | null {
+  if (!dStr) return null;
+  const clean = dStr.trim();
+  let isoStr = clean;
+
+  if (/^\d{4}-\d{2}$/.test(clean)) {
+    if (isEnd) {
+      const [y, m] = clean.split("-").map(Number);
+      const lastDay = new Date(y, m, 0).getDate();
+      isoStr = `${clean}-${lastDay.toString().padStart(2, "0")}T23:59:59.999Z`;
+    } else {
+      isoStr = `${clean}-01T00:00:00.000Z`;
+    }
+  } else if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+    isoStr = isEnd ? `${clean}T23:59:59.999Z` : `${clean}T00:00:00.000Z`;
+  } else if (!clean.includes("T")) {
+    isoStr = isEnd ? `${clean.slice(0, 10)}T23:59:59.999Z` : `${clean.slice(0, 10)}T00:00:00.000Z`;
+  }
+
+  const d = new Date(isoStr);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 export class GetGeneralLedgerQueryHandler {
   static async execute(params: GeneralLedgerQueryParams): Promise<GeneralLedgerRowDto[]> {
     const cacheKey = `gl:${params.journalId || "all"}:${params.accountId || "all"}:${params.from || ""}:${params.to || ""}:${params.search || ""}`;
@@ -39,12 +62,12 @@ export class GetGeneralLedgerQueryHandler {
 
     // Scoped date range utilizing DB composite index [isPosted, entryDate]
     if ((from || to) && !journalId) {
-      whereEntry.entryDate = {};
-      if (from) {
-        whereEntry.entryDate.gte = new Date(from.includes("T") ? from : `${from}T00:00:00.000Z`);
-      }
-      if (to) {
-        whereEntry.entryDate.lte = new Date(to.includes("T") ? to : `${to}T23:59:59.999Z`);
+      const fromDate = parseSafeDate(from, false);
+      const toDate = parseSafeDate(to, true);
+      if (fromDate || toDate) {
+        whereEntry.entryDate = {};
+        if (fromDate) whereEntry.entryDate.gte = fromDate;
+        if (toDate) whereEntry.entryDate.lte = toDate;
       }
     }
 
@@ -129,36 +152,27 @@ export class GetGeneralLedgerQueryHandler {
         let sourceUrl = `/finance/journal-entries?search=${encodeURIComponent(entry.entryNumber || "")}`;
         const num = entry.entryNumber || "";
         const ref = entry.reference || "";
-        const desc = (entry.description || "").toLowerCase();
 
-        if (num.startsWith("JE-INV-") || ref.startsWith("INV-") || desc.includes("sales invoice")) {
+        if (num.startsWith("JE-INV-")) {
           source = "Sales invoice";
-          const invMatch = ref.match(/INV-(?:\d{4}-)?\d+/i) || num.match(/INV-(?:\d{4}-)?\d+/i) || desc.match(/INV-(?:\d{4}-)?\d+/i);
+          const invMatch = ref.match(/INV-(?:\d{4}-)?\d+/i) || num.match(/INV-(?:\d{4}-)?\d+/i);
           const invoiceNum = invMatch ? invMatch[0] : (ref || num);
           sourceUrl = `/commercial/sales-invoices/${encodeURIComponent(invoiceNum)}`;
-        } else if (
-          num.startsWith("JE-REC-") ||
-          ref.startsWith("REC-") ||
-          desc.includes("customer receipt") ||
-          desc.includes("payment received")
-        ) {
+        } else if (num.startsWith("JE-REC-")) {
           source = "Customer payment";
-          const invMatch = ref.match(/INV-(?:\d{4}-)?\d+/i) || desc.match(/INV-(?:\d{4}-)?\d+/i);
-          sourceUrl = invMatch
-            ? `/commercial/sales-invoices/${encodeURIComponent(invMatch[0])}`
-            : `/commercial/sales-invoices?search=${encodeURIComponent(ref || num)}`;
-        } else if (num.startsWith("JE-BILL-") || ref.startsWith("BILL-") || desc.includes("supplier bill")) {
+          sourceUrl = `/commercial/sales-invoices?search=${encodeURIComponent(ref || num)}`;
+        } else if (num.startsWith("JE-BILL-")) {
           source = "Bill";
-          sourceUrl = `/finance/purchase-expenses?search=${encodeURIComponent(ref || num)}`;
-        } else if (num.startsWith("JE-PAY-") || ref.startsWith("PAY-") || desc.includes("supplier payment")) {
+          sourceUrl = `/commercial/supplier-bills?search=${encodeURIComponent(ref || num)}`;
+        } else if (num.startsWith("JE-PAY-")) {
           source = "Bill payment";
-          sourceUrl = `/finance/purchase-expenses?search=${encodeURIComponent(ref || num)}`;
-        } else if (num.startsWith("JE-CN-") || ref.startsWith("CN-") || desc.includes("credit note")) {
+          sourceUrl = `/commercial/supplier-bills?search=${encodeURIComponent(ref || num)}`;
+        } else if (num.startsWith("JE-CN-")) {
           source = "Credit note";
           sourceUrl = `/commercial/sales-invoices?search=${encodeURIComponent(ref || num)}`;
-        } else if (num.startsWith("JE-DN-") || ref.startsWith("DN-") || desc.includes("debit note")) {
+        } else if (num.startsWith("JE-DN-")) {
           source = "Debit note";
-          sourceUrl = `/finance/purchase-expenses?search=${encodeURIComponent(ref || num)}`;
+          sourceUrl = `/commercial/supplier-bills?search=${encodeURIComponent(ref || num)}`;
         }
 
         glRecords.push({

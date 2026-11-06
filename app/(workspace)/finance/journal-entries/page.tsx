@@ -57,8 +57,21 @@ function ManualJournalsContent() {
   useEffect(() => {
     if (urlSearch) {
       setSearch(urlSearch);
+      if (journalEntries.length > 0) {
+        const q = urlSearch.toLowerCase().trim();
+        const found = journalEntries.find(
+          (je: any) =>
+            je.entryNumber?.toLowerCase() === q ||
+            formatJournalSerial(je.entryNumber || "").toLowerCase() === q ||
+            je.reference?.toLowerCase() === q ||
+            je.id?.toLowerCase() === q
+        );
+        if (found) {
+          setSelectedEntry(found);
+        }
+      }
     }
-  }, [urlSearch]);
+  }, [urlSearch, journalEntries]);
 
   // Warm up other finance pages for instant transitions
   useEffect(() => {

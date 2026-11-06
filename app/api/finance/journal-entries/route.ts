@@ -1,3 +1,4 @@
+import { microCache } from "@/lib/modules/accounting/cache/micro-cache";
 import {
   canModifyResource,
   forbidden,
@@ -108,6 +109,9 @@ export async function POST(request: Request) {
       },
     });
 
+    microCache.invalidatePrefix("journal-entries:");
+    microCache.invalidatePrefix("gl:");
+    microCache.invalidatePrefix("pnl:");
     return NextResponse.json(created, { status: 201 });
   } catch (error: any) {
     console.error("POST /api/journal-entries error:", error);
@@ -140,6 +144,12 @@ export async function GET(request: Request) {
       ];
     }
 
+    const cacheKey = `journal-entries:${isPostedParam ?? "all"}:${search ?? ""}`;
+    const cached = microCache.get<any[]>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     const entries = await prisma.journalEntry.findMany({
       where: whereClause,
       orderBy: { entryDate: "desc" },
@@ -156,6 +166,7 @@ export async function GET(request: Request) {
       },
     });
 
+    microCache.set(cacheKey, entries, 45);
     return NextResponse.json(entries);
   } catch (error: any) {
     console.error("GET /api/journal-entries error:", error);
@@ -293,6 +304,9 @@ async function handleUpdate(request: Request) {
       }
     );
 
+    microCache.invalidatePrefix("journal-entries:");
+    microCache.invalidatePrefix("gl:");
+    microCache.invalidatePrefix("pnl:");
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error("PATCH /api/journal-entries error:", error);
@@ -338,6 +352,9 @@ export async function DELETE(request: Request) {
       where: { id },
     });
 
+    microCache.invalidatePrefix("journal-entries:");
+    microCache.invalidatePrefix("gl:");
+    microCache.invalidatePrefix("pnl:");
     return NextResponse.json({ success: true, message: "Journal entry deleted" });
   } catch (error: any) {
     console.error("DELETE /api/journal-entries error:", error);
