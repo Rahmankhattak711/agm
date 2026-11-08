@@ -152,11 +152,6 @@ const navGroups: NavGroup[] = [
             label: "General Ledger",
             href: "/finance/general-ledger",
           },
-          {
-            id: "expenses",
-            label: "Purchase Expenses",
-            href: "/finance/expenses",
-          },
         ],
       },
       {
