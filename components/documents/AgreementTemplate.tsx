@@ -1,5 +1,5 @@
-import { formatUaePhone } from "@/lib/utils/phone";
 "use client";
+import { formatUaePhone } from "@/lib/utils/phone";
 
 import React, { useRef, useState, useEffect } from "react";
 import { Button, Input, Textarea } from "@/components/ui";

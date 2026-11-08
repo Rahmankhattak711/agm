@@ -1,5 +1,5 @@
-import { formatUaePhone } from "@/lib/utils/phone";
 "use client";
+import { formatUaePhone } from "@/lib/utils/phone";
 
 import React, { useState } from "react";
 import { QuotationMeta } from "./constants";

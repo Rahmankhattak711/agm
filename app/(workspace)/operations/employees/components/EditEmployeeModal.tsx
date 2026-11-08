@@ -1,5 +1,5 @@
-import { cleanUaePhone } from "@/lib/utils/phone";
 "use client";
+import { cleanUaePhone } from "@/lib/utils/phone";
 
 import { useEffect, useState } from "react";
 import { useForm } from "@tanstack/react-form";

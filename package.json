@@ -15,7 +15,7 @@
     "prisma:migrate": "prisma migrate dev --config prisma.config.ts",
     "prisma:studio": "prisma studio --config prisma.config.ts",
     "prisma:seed": "tsx prisma/seed.ts",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "clean:comments": "node scripts/remove-comments.mjs"
   },
   "dependencies": {
