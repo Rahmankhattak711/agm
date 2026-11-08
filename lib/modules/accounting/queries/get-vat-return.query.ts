@@ -69,59 +69,54 @@ export class GetVatReturnQueryHandler {
     const cached = microCache.get<Vat201ReturnResult>(cacheKey);
     if (cached) return cached;
 
-    // 1. Fetch posted Sales Invoices within period
-    const salesInvoices = await prisma.salesInvoice.findMany({
-      where: {
-        status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
-        invoiceDate: { gte: startDate, lte: endDate },
-      },
-      include: {
-        customerRel: {
-          select: { id: true, name: true, address: true },
-        },
-      },
-    });
-
-    // 2. Fetch posted Credit Notes within period (reduces output VAT)
-    const creditNotes = await prisma.creditNote.findMany({
-      where: {
-        status: "POSTED",
-        returnDate: { gte: startDate, lte: endDate },
-      },
-      include: {
-        customerRel: {
-          select: { id: true, name: true, address: true },
-        },
-      },
-    });
-
-    // 3. Fetch posted Supplier Bills within period
-    const supplierBills = await prisma.supplierBill.findMany({
-      where: {
-        status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
-        billDate: { gte: startDate, lte: endDate },
-      },
-    });
-
-    // 4. Fetch Expenses within period
-    const expenses = await prisma.expense.findMany({
-      where: {
-        expenseDate: { gte: startDate, lte: endDate },
-      },
-    });
-
-    // 5. Fetch Debit Notes within period (reduces input VAT)
-    const debitNotes = await prisma.debitNote.findMany({
-      where: {
-        status: "POSTED",
-        returnDate: { gte: startDate, lte: endDate },
-      },
-      include: {
-        supplier: {
-          select: { name: true },
-        },
-      },
-    });
+    // Parallel fetch all 5 data sources across a single roundtrip
+    const [salesInvoices, creditNotes, supplierBills, expenses, debitNotes] =
+      await Promise.all([
+        prisma.salesInvoice.findMany({
+          where: {
+            status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
+            invoiceDate: { gte: startDate, lte: endDate },
+          },
+          include: {
+            customerRel: {
+              select: { id: true, name: true, address: true },
+            },
+          },
+        }),
+        prisma.creditNote.findMany({
+          where: {
+            status: "POSTED",
+            returnDate: { gte: startDate, lte: endDate },
+          },
+          include: {
+            customerRel: {
+              select: { id: true, name: true, address: true },
+            },
+          },
+        }),
+        prisma.supplierBill.findMany({
+          where: {
+            status: { in: ["POSTED", "PARTIALLY_PAID", "PAID"] },
+            billDate: { gte: startDate, lte: endDate },
+          },
+        }),
+        prisma.expense.findMany({
+          where: {
+            expenseDate: { gte: startDate, lte: endDate },
+          },
+        }),
+        prisma.debitNote.findMany({
+          where: {
+            status: "POSTED",
+            returnDate: { gte: startDate, lte: endDate },
+          },
+          include: {
+            supplier: {
+              select: { name: true },
+            },
+          },
+        }),
+      ]);
 
     // Emirates tracking map
     type EmirateKey = "abu_dhabi" | "dubai" | "sharjah" | "ajman" | "umm_al_quwain" | "ras_al_khaimah" | "fujairah";
@@ -450,7 +445,7 @@ export class GetVatReturnQueryHandler {
       },
     };
 
-    microCache.set(cacheKey, result, 60_000); // 1 minute TTL
+    microCache.set(cacheKey, result, 60); // 60 seconds TTL
     return result;
   }
 }

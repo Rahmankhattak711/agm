@@ -17,6 +17,9 @@ import { PlusIcon, CloseIcon } from "@/components/icons";
 import { Supplier, Product } from "@/lib/hooks/api-hooks";
 import { ItemRow } from "./types";
 import { QuickAddProductModal } from "./QuickAddProductModal";
+import { QuickAddVendorModal } from "@/components/common/QuickAddVendorModal";
+import { SearchableProductSelect } from "./SearchableProductSelect";
+import { UserPlus, ExternalLink } from "lucide-react";
 
 export interface CreatePurchaseOrderData {
   poNumber: string;
@@ -57,9 +60,11 @@ export const CreatePurchaseOrderModal: React.FC<
 }) => {
   const [formError, setFormError] = useState("");
   const [isQuickProductOpen, setIsQuickProductOpen] = useState(false);
+  const [isQuickVendorOpen, setIsQuickVendorOpen] = useState(false);
   const [quickProductTargetIdx, setQuickProductTargetIdx] = useState<
     number | null
   >(null);
+  const [quickProductName, setQuickProductName] = useState("");
   const prevOpenRef = useRef(false);
 
   const poForm = useForm({
@@ -150,8 +155,9 @@ export const CreatePurchaseOrderModal: React.FC<
     prevOpenRef.current = isOpen;
   }, [isOpen, suppliers, poForm]);
 
-  const handleOpenQuickProduct = (idx: number | null) => {
+  const handleOpenQuickProduct = (idx: number | null, name: string = "") => {
     setQuickProductTargetIdx(idx);
+    setQuickProductName(name);
     setIsQuickProductOpen(true);
   };
 
@@ -221,28 +227,59 @@ export const CreatePurchaseOrderModal: React.FC<
                 )}
               </poForm.Field>
 
-              <poForm.Field
-                name="supplierId"
-                validators={{
-                  onChange: ({ value }) =>
-                    !value ? "Supplier / Vendor is required" : undefined,
-                }}
-              >
-                {(field) => (
-                  <FormSelect
-                    field={field}
-                    label="Supplier / Vendor Company *"
-                    required
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block font-bold text-slate-700 text-xs">
+                    Supplier / Vendor *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsQuickVendorOpen(true)}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#5046e5] hover:text-[#4338ca] hover:underline cursor-pointer"
                   >
-                    <option value="">-- Select Vendor --</option>
-                    {suppliers.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} ({s.supplierCode})
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>+ New Vendor</span>
+                  </button>
+                </div>
+                <poForm.Field
+                  name="supplierId"
+                  validators={{
+                    onChange: ({ value }) =>
+                      !value || value === "__NEW__"
+                        ? "Supplier / Vendor is required"
+                        : undefined,
+                  }}
+                >
+                  {(field) => (
+                    <FormSelect
+                      field={field}
+                      label=""
+                      required
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "__NEW__") {
+                          setIsQuickVendorOpen(true);
+                        } else {
+                          field.handleChange(val);
+                        }
+                      }}
+                    >
+                      <option value="">-- Select Vendor --</option>
+                      <option
+                        value="__NEW__"
+                        className="font-bold text-[#5046e5]"
+                      >
+                        + Add New Vendor to Directory...
                       </option>
-                    ))}
-                  </FormSelect>
-                )}
-              </poForm.Field>
+                      {suppliers.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} ({s.supplierCode})
+                        </option>
+                      ))}
+                    </FormSelect>
+                  )}
+                </poForm.Field>
+              </div>
 
               <poForm.Field
                 name="orderDate"
@@ -369,15 +406,25 @@ export const CreatePurchaseOrderModal: React.FC<
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
+                      <a
+                        href="/inventory/products"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-[#5046e5] border border-slate-200 bg-white hover:bg-slate-50 px-2.5 py-1.5 rounded-lg shadow-2xs transition-colors cursor-pointer"
+                        title="Open dedicated Shop Products & Materials catalog in a new tab"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Products Page ↗</span>
+                      </a>
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenQuickProduct(null)}
-                        className="text-xs font-semibold text-emerald-800 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 cursor-pointer shadow-2xs"
+                        className="text-xs font-bold text-[#5046e5] border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 cursor-pointer shadow-2xs"
                         icon={<PlusIcon className="w-3.5 h-3.5" />}
                       >
-                        + New Product
+                        + Quick Add Product
                       </Button>
                       <Button
                         type="button"
@@ -422,33 +469,39 @@ export const CreatePurchaseOrderModal: React.FC<
                                   Product / Item{" "}
                                   <span className="text-rose-500">*</span>
                                 </label>
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenQuickProduct(idx)}
-                                  className="text-[10.5px] font-bold text-agm-green hover:underline cursor-pointer"
-                                >
-                                  + New Shop Product
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenQuickProduct(idx)}
+                                    className="text-[10.5px] font-bold text-[#5046e5] hover:text-[#4338ca] hover:underline cursor-pointer"
+                                  >
+                                    + New Shop Product
+                                  </button>
+                                  <span className="text-slate-300 text-[10px]">|</span>
+                                  <a
+                                    href="/inventory/products"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[10.5px] font-medium text-slate-500 hover:text-slate-800 hover:underline cursor-pointer inline-flex items-center gap-0.5"
+                                    title="Open dedicated products catalog page"
+                                  >
+                                    <span>Products Page</span>
+                                    <ExternalLink className="w-2.5 h-2.5" />
+                                  </a>
+                                </div>
                               </div>
-                              <Select
+                              <SearchableProductSelect
                                 required
                                 value={row.productId}
-                                onChange={(e) =>
-                                  updateItem(idx, "productId", e.target.value)
+                                onChange={(val) =>
+                                  updateItem(idx, "productId", val)
                                 }
-                                className="w-full py-2 text-xs font-medium rounded-xl border-slate-200"
-                              >
-                                <option value="">-- Select Product --</option>
-                                {products.map((p) => (
-                                  <option key={p.id} value={p.id}>
-                                    {p.name} {p.brand ? `[${p.brand}]` : ""} (
-                                    {p.sku}){" "}
-                                    {p.supplierSku
-                                      ? `• Ref: ${p.supplierSku}`
-                                      : ""}
-                                  </option>
-                                ))}
-                              </Select>
+                                products={products}
+                                onAddNewProduct={(name) =>
+                                  handleOpenQuickProduct(idx, name)
+                                }
+                                placeholder="Type or select product..."
+                              />
                             </div>
 
                             <div className="md:col-span-2 space-y-1">
@@ -579,12 +632,20 @@ export const CreatePurchaseOrderModal: React.FC<
             </FormSubmit>
           </div>
         </form>
-      </Modal>
+      <QuickAddVendorModal
+        isOpen={isQuickVendorOpen}
+        onClose={() => setIsQuickVendorOpen(false)}
+        onSuccess={(newSup) => {
+          poForm.setFieldValue("supplierId", newSup.id);
+        }}
+      />
+    </Modal>
 
       <QuickAddProductModal
         isOpen={isQuickProductOpen}
         onClose={() => setIsQuickProductOpen(false)}
         defaultSupplierId={poForm.getFieldValue("supplierId")}
+        initialName={quickProductName}
         onSuccess={handleQuickProductSuccess}
       />
     </>

@@ -35,12 +35,15 @@ import {
   FormSubmit,
   PageHeader,
   FilterBar,
+  DashboardCard,
+  DashboardCardGrid,
 } from "@/components/ui";
+import { RefreshCw, Package, Plus } from "lucide-react";
 
 export default function ProductsPage() {
   const { hasRole, isAdmin } = useAuth();
   const { confirm } = useConfirm();
-  const canManageInventory = hasRole("INVENTORY_MANAGER") || isAdmin;
+  const canManageInventory = hasRole("INVENTORY_MANAGER") || isAdmin || hasRole("ACCOUNTANT");
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [selectedType, setSelectedType] = useState<string>("ALL");
@@ -55,6 +58,8 @@ export default function ProductsPage() {
   const {
     data: products = [],
     isLoading,
+    isFetching,
+    refetch,
     error,
   } = useProducts({
     categoryId: selectedCategory !== "ALL" ? selectedCategory : undefined,
@@ -451,60 +456,81 @@ export default function ProductsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Products & Materials"
-        description="Manage product inventory, material specifications, SKU codes, and stock reorder levels."
-        actions={
-          canManageInventory && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleOpenCreate}
-              icon={<PlusIcon className="w-4 h-4" strokeWidth={2.2} />}
-              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
-            >
-              Add Product / SKU
-            </Button>
-          )
-        }
-      />
+    <div className="w-full min-h-full flex flex-col font-sans">
+      {/* Executive Header - Clean alignment, zero overlap */}
+      <div className="w-full bg-white border-b border-slate-200/90 px-6 py-4 shrink-0 shadow-2xs">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#5046e5] shadow-2xs">
+                <Package className="w-4 h-4" />
+              </div>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Shop Products & Materials
+                </h1>
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-mono">
+                  {totalProducts} Items
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500">
+              Manage procured materials, catalog specifications, shop items, unit costs, and inventory stock.
+            </p>
+          </div>
 
-      <ReportKpiGrid cols={3}>
-        <ReportKpiCard
-          title="1. Total Unique SKUs"
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-2xs transition-colors cursor-pointer"
+              title="Refresh products list"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#5046e5]" : ""}`} />
+            </button>
+            {canManageInventory && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleOpenCreate}
+                icon={<Plus size={14} strokeWidth={2.5} />}
+                className="bg-[#5046e5] hover:bg-[#4338ca] text-white font-bold text-xs shadow-xs cursor-pointer"
+              >
+                + Add Product / SKU
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 space-y-6 flex-1 bg-slate-50/40">
+
+      <DashboardCardGrid cols={4}>
+        <DashboardCard
+          title="Total Catalog SKUs"
+          value={totalProducts.toString()}
           subtitle="Active stock keeping units"
-          value={totalProducts}
-          currency={false}
-          accentColor="sky"
-          footerText="SKUs"
+          variant="default"
         />
-        <ReportKpiCard
-          title="2. Total Units on Hand"
-          subtitle="Across all facilities"
-          value={totalStockItems}
-          currency={false}
-          accentColor="blue"
-          footerText="Units"
+        <DashboardCard
+          title="Total Units on Hand"
+          value={totalStockItems.toString()}
+          subtitle="Across all warehouse facilities"
+          variant="default"
         />
-        <ReportKpiCard
-          title="3. Low Stock Alerts"
-          subtitle="Below reorder trigger"
-          value={lowStockCount}
-          currency={false}
-          accentColor="amber"
-          valueColor="text-amber-600"
-          footerText="Alerts"
+        <DashboardCard
+          title="Low Stock Alerts"
+          value={lowStockCount.toString()}
+          subtitle="Items below reorder trigger"
+          variant={lowStockCount > 0 ? "danger" : "default"}
         />
-        <ReportKpiCard
-          title="4. Inventory Valuation"
-          subtitle="Based on cost price"
+        <DashboardCard
+          title="Total Valuation"
           value={formatCurrency(totalInventoryValue)}
-          currency={false}
-          accentColor="emerald"
-          valueColor="text-emerald-800"
+          subtitle="Based on material unit cost"
+          variant="default"
         />
-      </ReportKpiGrid>
+      </DashboardCardGrid>
 
       <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
         <div>
@@ -601,6 +627,8 @@ export default function ProductsPage() {
             emptyMessage='Click "Add Product / SKU" to create your first stock item.'
           />
         )}
+      </div>
+
       </div>
 
       <Modal

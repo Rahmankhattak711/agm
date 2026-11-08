@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "@/lib/toast";
-import { PlusIcon, ReceiptIcon } from "@/components/icons";
+import { Plus, Receipt, Download, RefreshCw, FileText } from "lucide-react";
 import {
   Button,
   PageHeader,
@@ -78,8 +78,8 @@ const COLUMNS: RegisterColumn[] = [
   },
 ];
 
-export default function SupplierBillsPage() {
-  const { data: bills = [], isLoading, error } = useSupplierBills();
+export default function PurchaseBillsPage() {
+  const { data: bills = [], isLoading, isFetching, error, refetch } = useSupplierBills();
   const { data: suppliers = [] } = useSuppliers();
   const { data: products = [] } = useProducts();
 
@@ -102,8 +102,8 @@ export default function SupplierBillsPage() {
   const triggerPrint = useReactToPrint({
     contentRef: printDocumentRef,
     documentTitle: billToPrint?.billNumber
-      ? `Supplier-Bill-${billToPrint.billNumber}`
-      : "Supplier-Bill-Voucher",
+      ? `Purchase-Bill-${billToPrint.billNumber}`
+      : "Purchase-Bill-Voucher",
   });
 
   const handlePrintBill = (bill: SupplierBill) => {
@@ -116,7 +116,7 @@ export default function SupplierBillsPage() {
   const handlePostBill = async (id: string) => {
     try {
       await postBillMutation.mutateAsync(id);
-      toast.success("Supplier bill posted to General Ledger successfully!");
+      toast.success("Purchase bill posted to General Ledger successfully!");
     } catch (err: any) {
       toast.error(`Error posting bill: ${err.message}`);
     }
@@ -170,22 +170,52 @@ export default function SupplierBillsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Supplier Bills"
-        description="Log vendor invoices, claim 5% input tax, track settlement disbursements, and post to General Ledger."
-        actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setIsCreateOpen(true)}
-            icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
-          >
-            Record Supplier Bill
-          </Button>
-        }
-      />
+    <div className="w-full min-h-full flex flex-col font-sans">
+      {/* Executive Header - Clean alignment, zero overlap */}
+      <div className="w-full bg-white border-b border-slate-200/90 px-6 py-4 shrink-0 shadow-2xs">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#5046e5] shadow-2xs">
+                <Receipt className="w-4 h-4" />
+              </div>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Purchase Bills
+                </h1>
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-mono">
+                  {bills.length} Records
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500">
+              Log vendor invoices, claim 5% input tax, track settlement disbursements, and post to General Ledger.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-2xs transition-colors cursor-pointer"
+              title="Refresh bills"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#5046e5]" : ""}`} />
+            </button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsCreateOpen(true)}
+              icon={<Plus size={14} strokeWidth={2.5} />}
+              className="bg-[#5046e5] hover:bg-[#4338ca] text-white font-bold text-xs shadow-xs cursor-pointer"
+            >
+              Record Purchase Bill
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 space-y-6 flex-1 bg-slate-50/40">
 
       <SupplierBillsKpis
         totalPayables={totalPayables}
@@ -209,16 +239,16 @@ export default function SupplierBillsPage() {
           onSearchChange={setSearch}
           searchPlaceholder="Search bill number, vendor, TRN..."
           totalCount={filteredBills.length}
-          countLabel="Invoices Found"
+          countLabel="Bills Found"
         />
 
         {error ? (
           <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
-            Error loading supplier bills: {(error as any).message}
+            Error loading purchase bills: {(error as any).message}
           </div>
         ) : (
           <RegisterTable
-            title="Accounts Payable & Vendor Invoices Register"
+            title="Purchase Bills & Accounts Payable Register"
             countLabel={`${filteredBills.length} Active Records`}
             columns={COLUMNS}
           >
@@ -230,18 +260,18 @@ export default function SupplierBillsPage() {
                   <TableCell colSpan={8} className="p-0 border-0">
                     <EmptyState
                       icon={
-                        <ReceiptIcon size={20} className="text-slate-400" />
+                        <Receipt className="w-5 h-5 text-slate-400" />
                       }
-                      title="No supplier bills found"
+                      title="No purchase bills found"
                       description={
                         search.trim() !== "" || statusFilter !== "ALL"
-                          ? "No supplier bills matched your search criteria."
-                          : "No supplier bills in database. Click 'Record Supplier Bill' to create one."
+                          ? "No purchase bills matched your search criteria."
+                          : "No purchase bills in database. Click 'Record Purchase Bill' to create one."
                       }
                       actionLabel={
                         search.trim() !== "" || statusFilter !== "ALL"
                           ? "Reset Filters"
-                          : "Record Supplier Bill"
+                          : "Record Purchase Bill"
                       }
                       onAction={
                         search.trim() !== "" || statusFilter !== "ALL"
@@ -284,6 +314,8 @@ export default function SupplierBillsPage() {
             </TableBody>
           </RegisterTable>
         )}
+      </div>
+
       </div>
 
       <CreateSupplierBillModal

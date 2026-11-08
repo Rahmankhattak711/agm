@@ -5,6 +5,7 @@ import {
   hasRole,
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
+import { microCache } from "@/lib/modules/accounting/cache/micro-cache";
 import { postDebitNoteJournalEntry } from "@/lib/commercial-accounting";
 import { NextResponse } from "next/server";
 
@@ -15,6 +16,12 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
+
+    const cacheKey = `debit-notes:${search.toLowerCase().trim()}`;
+    const cached = microCache.get<any[]>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
 
     const debitNotes = await prisma.debitNote.findMany({
       where: {
@@ -53,6 +60,7 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" },
     });
 
+    microCache.set(cacheKey, debitNotes, 45);
     return NextResponse.json(debitNotes);
   } catch (error: any) {
     console.error("GET /api/commercial/debit-notes error:", error);
@@ -170,6 +178,7 @@ export async function POST(request: Request) {
       },
     });
 
+    microCache.invalidatePrefix("debit-notes:");
     return NextResponse.json(debitNote, { status: 201 });
   } catch (error: any) {
     console.error("POST /api/commercial/debit-notes error:", error);

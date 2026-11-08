@@ -1,10 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  ReportKpiCard,
-  ReportKpiGrid,
-} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
+import { DashboardCard, DashboardCardGrid } from "@/components/ui";
 import { formatNumber } from "@/lib/utils/format";
 
 export interface SupplierBillsKpisProps {
@@ -21,40 +18,37 @@ export const SupplierBillsKpis: React.FC<SupplierBillsKpisProps> = ({
   totalInputVat,
 }) => {
   return (
-    <ReportKpiGrid cols={4}>
-      <ReportKpiCard
-        title="1. Gross Vendor Payables"
+    <DashboardCardGrid cols={4}>
+      <DashboardCard
+        title="Total Purchases Billed"
+        value={`AED ${formatNumber(totalPayables)}`}
         subtitle="Cumulative procurement billed"
-        value={formatNumber(totalPayables)}
-        currency="AED"
-        accentColor="sky"
-        valueColor="text-sky-900"
+        variant="default"
       />
-      <ReportKpiCard
-        title="2. Open AP Balance Due"
+      <DashboardCard
+        title="Open AP Balance Due"
+        value={`AED ${formatNumber(totalOutstanding)}`}
         subtitle="Pending vendor disbursements"
-        value={formatNumber(totalOutstanding)}
-        currency="AED"
-        accentColor="rose"
-        valueColor="text-rose-700"
+        variant={totalOutstanding > 0 ? "danger" : "default"}
       />
-      <ReportKpiCard
-        title="3. Settled Disbursements"
+      <DashboardCard
+        title="Settled Disbursements"
+        value={`AED ${formatNumber(totalSettled)}`}
         subtitle="Disbursed vendor liabilities"
-        value={formatNumber(totalSettled)}
-        currency="AED"
-        accentColor="emerald"
-        valueColor="text-emerald-800"
+        variant="default"
       />
-      <ReportKpiCard
-        title="4. Recoverable VAT (5%)"
-        subtitle="Input tax claimable from FTA"
-        value={formatNumber(totalInputVat)}
-        currency="AED"
-        accentColor="purple"
-        valueColor="text-purple-800"
+      <DashboardCard
+        title="Recoverable Input VAT (5%)"
+        value={`AED ${formatNumber(totalInputVat)}`}
+        subtitle="FTA Form 201 claimable"
+        badge={
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200">
+            Box 9
+          </span>
+        }
+        variant="default"
       />
-    </ReportKpiGrid>
+    </DashboardCardGrid>
   );
 };
 

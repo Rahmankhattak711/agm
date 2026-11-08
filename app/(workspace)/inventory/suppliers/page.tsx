@@ -1,5 +1,6 @@
 "use client";
 
+import { cleanUaePhone } from "@/lib/utils/phone";
 import { useMemo, useState, useCallback, Fragment } from "react";
 import { useForm } from "@tanstack/react-form";
 import {
@@ -20,6 +21,7 @@ import {
   Button,
   Modal,
   FormInput,
+  FormUaePhoneInput,
   FormSubmit,
   PageHeader,
   FilterBar,
@@ -29,7 +31,10 @@ import {
   TableRow,
   TableCell,
   TableLoading,
+  DashboardCard,
+  DashboardCardGrid,
 } from "@/components/ui";
+import { RefreshCw, Users, Plus } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
 import {
@@ -77,7 +82,7 @@ export default function SuppliersPage() {
   );
   const [formError, setFormError] = useState("");
 
-  const { data: suppliers = [], isLoading, error } = useSuppliers();
+  const { data: suppliers = [], isLoading, isFetching, refetch, error } = useSuppliers();
   const createSupplier = useCreateSupplier();
   const updateSupplier = useUpdateSupplier();
   const deleteSupplier = useDeleteSupplier();
@@ -135,7 +140,7 @@ export default function SuppliersPage() {
             supplierCode: value.supplierCode.trim(),
             name: value.name.trim(),
             contactPerson: value.contactPerson.trim() || null,
-            phone: value.phone.trim() || null,
+            phone: cleanUaePhone(value.phone) || null,
             email: value.email.trim() || null,
             address: value.address.trim() || null,
             trn: value.trn.trim() || null,
@@ -145,7 +150,7 @@ export default function SuppliersPage() {
             supplierCode: value.supplierCode.trim(),
             name: value.name.trim(),
             contactPerson: value.contactPerson.trim() || undefined,
-            phone: value.phone.trim() || undefined,
+            phone: cleanUaePhone(value.phone) || undefined,
             email: value.email.trim() || undefined,
             address: value.address.trim() || undefined,
             trn: value.trn.trim() || undefined,
@@ -216,64 +221,84 @@ export default function SuppliersPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Suppliers"
-        description="Manage vendor profiles, tax registration numbers (TRN), payment terms, and procurement records."
-        actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleOpenCreate}
-            icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
-          >
-            Add New Supplier
-          </Button>
-        }
-      />
+    <div className="w-full min-h-full flex flex-col font-sans">
+      {/* Executive Header - Clean alignment, zero overlap */}
+      <div className="w-full bg-white border-b border-slate-200/90 px-6 py-4 shrink-0 shadow-2xs">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#5046e5] shadow-2xs">
+                <Users className="w-4 h-4" />
+              </div>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Vendors Directory
+                </h1>
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-mono">
+                  {suppliers.length} Vendors
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500">
+              Manage trade vendors, UAE FTA tax registration (TRN), contact details, and procurement links.
+            </p>
+          </div>
 
-      <ReportKpiGrid cols={4}>
-        <ReportKpiCard
-          title="1. Total Approved Suppliers"
-          subtitle="Active vendor network"
-          value={suppliers.length}
-          currency={false}
-          accentColor="sky"
-          footerText="Vendors"
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-2xs transition-colors cursor-pointer"
+              title="Refresh vendors list"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#5046e5]" : ""}`} />
+            </button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleOpenCreate}
+              icon={<Plus size={14} strokeWidth={2.5} />}
+              className="bg-[#5046e5] hover:bg-[#4338ca] text-white font-bold text-xs shadow-xs cursor-pointer"
+            >
+              + Add New Vendor
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 space-y-6 flex-1 bg-slate-50/40">
+
+      <DashboardCardGrid cols={4}>
+        <DashboardCard
+          title="Total Approved Vendors"
+          value={suppliers.length.toString()}
+          subtitle="Active trade vendor network"
+          variant="default"
         />
-        <ReportKpiCard
-          title="2. VAT Registered (TRN)"
-          subtitle="VAT compliant invoices"
-          value={trnCount}
-          currency={false}
-          accentColor="emerald"
-          valueColor="text-emerald-800"
-          footerText="Tax Compliant"
-        />
-        <ReportKpiCard
-          title="3. Sourced Catalog SKUs"
-          subtitle="Supplied materials catalog"
-          value={totalCatalogSkus}
-          currency={false}
-          accentColor="purple"
-          valueColor="text-purple-800"
-          footerText="Products"
-        />
-        <ReportKpiCard
-          title="4. Partner Status"
-          subtitle="Direct supplier relations"
+        <DashboardCard
+          title="VAT Registered (TRN)"
+          value={trnCount.toString()}
+          subtitle="FTA tax compliant vendors"
           badge={
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-teal-50 text-teal-800 border border-teal-200">
-              Verified
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+              15-Digit TRN
             </span>
           }
-          value="100% Direct"
-          currency={false}
-          accentColor="teal"
-          valueColor="text-teal-900"
+          variant="default"
         />
-      </ReportKpiGrid>
+        <DashboardCard
+          title="Linked Catalog SKUs"
+          value={totalCatalogSkus.toString()}
+          subtitle="Supplied materials & items"
+          variant="default"
+        />
+        <DashboardCard
+          title="Direct Partner Status"
+          value="100% Direct"
+          subtitle="Verified trade procurement"
+          variant="default"
+        />
+      </DashboardCardGrid>
 
       <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
         <div>
@@ -515,10 +540,12 @@ export default function SuppliersPage() {
         )}
       </div>
 
+      </div>
+
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingSupplier ? "Edit Supplier" : "Add New Supplier"}
+        title={editingSupplier ? "Edit Vendor Profile" : "Register New Trade Vendor"}
         maxWidth="lg"
       >
         <form
@@ -584,10 +611,9 @@ export default function SuppliersPage() {
 
             <form.Field name="phone">
               {(field) => (
-                <FormInput
+                <FormUaePhoneInput
                   field={field}
                   label="Phone Number"
-                  placeholder="+971 50 000 0000"
                 />
               )}
             </form.Field>

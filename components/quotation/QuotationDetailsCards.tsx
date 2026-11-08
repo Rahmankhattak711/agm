@@ -1,3 +1,4 @@
+import { formatUaePhone } from "@/lib/utils/phone";
 "use client";
 
 import React, { useState } from "react";
@@ -214,7 +215,7 @@ export const QuotationDetailsCards: React.FC<QuotationDetailsCardsProps> = ({
                 placeholder="+971 50 000 0000"
                 className={inputBase}
                 value={meta.mobile}
-                onChange={(e) => onUpdateMeta("mobile", e.target.value)}
+                onChange={(e) => onUpdateMeta("mobile", formatUaePhone(e.target.value))}
               />
             </div>
           </div>

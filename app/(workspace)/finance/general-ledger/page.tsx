@@ -591,7 +591,7 @@ function GeneralLedgerContent() {
                 <col className="w-64" />
                 <col className="w-32" />
                 <col className="w-32" />
-                {selectedAccountId && <col className="w-32" />}
+                {selectedAccountId ? <col className="w-32" /> : null}
               </colgroup>
               <thead>
                 <tr className="bg-slate-50/90 border-b border-slate-200 text-slate-600 font-bold text-[11px] uppercase tracking-wider select-none">

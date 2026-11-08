@@ -3,6 +3,7 @@
 import React, { useCallback, useMemo, useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon } from "@/components/icons";
+import { RotateCcw, RefreshCw, Plus } from "lucide-react";
 import { Button, PageHeader } from "@/components/ui";
 import { useSuppliers } from "@/lib/hooks/api-hooks";
 import { useProjects } from "@/lib/hooks/projects-hooks";
@@ -34,7 +35,7 @@ export default function PurchaseReturnsPage() {
   );
   const [form, setForm] = useState<ReturnFormState>(EMPTY_FORM);
 
-  const { data: debitNotes = [], isLoading } = useDebitNotes(search);
+  const { data: debitNotes = [], isLoading, isFetching, refetch } = useDebitNotes(search);
   const { data: suppliers = [] } = useSuppliers();
   const { data: projects = [] } = useProjects();
   const { data: supplierBills = [] } = useSupplierBills();
@@ -245,22 +246,52 @@ export default function PurchaseReturnsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Purchase Returns (Debit Notes)"
-        description="Log rejected vendor supplies, link active projects, process Accounts Payable debit notes, and deduct supplier balances."
-        actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleOpenCreate}
-            icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
-          >
-            Log Purchase Return
-          </Button>
-        }
-      />
+    <div className="w-full min-h-full flex flex-col font-sans">
+      {/* Executive Header - Clean alignment, zero overlap */}
+      <div className="w-full bg-white border-b border-slate-200/90 px-6 py-4 shrink-0 shadow-2xs">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#5046e5] shadow-2xs">
+                <RotateCcw className="w-4 h-4" />
+              </div>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Purchase Returns (Debit Notes)
+                </h1>
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-mono">
+                  {returnsList.length} Records
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500">
+              Log rejected vendor supplies, link active projects, process Accounts Payable debit notes, and deduct supplier balances.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-2xs transition-colors cursor-pointer"
+              title="Refresh returns list"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#5046e5]" : ""}`} />
+            </button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleOpenCreate}
+              icon={<Plus size={14} strokeWidth={2.5} />}
+              className="bg-[#5046e5] hover:bg-[#4338ca] text-white font-bold text-xs shadow-xs cursor-pointer"
+            >
+              Log Purchase Return
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 space-y-6 flex-1 bg-slate-50/40">
 
       <PurchaseReturnsKpis
         totalReturnVal={totalReturnVal}
@@ -291,6 +322,8 @@ export default function PurchaseReturnsPage() {
             setStatusFilter("ALL");
           }}
         />
+      </div>
+
       </div>
 
       <LogReturnModal

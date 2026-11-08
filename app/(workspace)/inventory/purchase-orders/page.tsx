@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useMemo, useState, useCallback, useRef } from "react";
+import React, { useMemo, useState, useCallback, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { useReactToPrint } from "react-to-print";
 import { useAuth } from "@/context/AuthContext";
 import { useConfirm } from "@/context/ConfirmContext";
@@ -16,7 +18,8 @@ import {
   PurchaseOrder,
   PurchaseOrderStatus,
 } from "@/lib/hooks/api-hooks";
-import { PlusIcon, ShoppingCartIcon } from "@/components/icons";
+import { PlusIcon, ShoppingCartIcon, PrintIcon, EyeIcon, TrashIcon } from "@/components/icons";
+import { Plus, RefreshCw, PackageCheck } from "lucide-react";
 import {
   Button,
   Select,
@@ -115,6 +118,7 @@ const getStatusBadge = (status: PurchaseOrderStatus) => {
 };
 
 export default function PurchaseOrdersPage() {
+  const router = useRouter();
   const { canModify } = useAuth();
   const { confirm } = useConfirm();
   const [search, setSearch] = useState("");
@@ -123,7 +127,62 @@ export default function PurchaseOrdersPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [printModalPO, setPrintModalPO] = useState<PurchaseOrder | null>(null);
-  const [expandedPOId, setExpandedPOId] = useState<string | null>(null);
+  const [activeMenu, setActiveMenu] = useState<{
+    id: string;
+    po: PurchaseOrder;
+    top: number;
+    right: number;
+    openUpwards: boolean;
+  } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const handleOpenMenu = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    po: PurchaseOrder,
+  ) => {
+    e.stopPropagation();
+    if (activeMenu?.id === po.id) {
+      setActiveMenu(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const menuHeight = 160;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openUpwards = spaceBelow < menuHeight && rect.top > menuHeight;
+
+    setActiveMenu({
+      id: po.id,
+      po,
+      top: openUpwards ? rect.top - 4 : rect.bottom + 4,
+      right: Math.max(8, window.innerWidth - rect.right),
+      openUpwards,
+    });
+  };
+
+  useEffect(() => {
+    if (!activeMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setActiveMenu(null);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActiveMenu(null);
+    };
+    const handleScroll = () => setActiveMenu(null);
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleScroll);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [activeMenu]);
   const [printingPO, setPrintingPO] = useState<PurchaseOrder | null>(null);
   const [receiveModalPO, setReceiveModalPO] = useState<PurchaseOrder | null>(
     null,
@@ -148,6 +207,8 @@ export default function PurchaseOrdersPage() {
   const {
     data: purchaseOrders = [],
     isLoading,
+    isFetching,
+    refetch,
     error,
   } = usePurchaseOrders({
     status: statusFilter !== "ALL" ? statusFilter : undefined,
@@ -199,9 +260,7 @@ export default function PurchaseOrdersPage() {
       deletePO.mutate(po.id, {
         onSuccess: () => {
           toast.success(`Purchase Order ${po.poNumber} deleted`);
-          if (expandedPOId === po.id) {
-            setExpandedPOId(null);
-          }
+          setActiveMenu(null);
         },
         onError: (err: any) => {
           toast.error(err.message || "Failed to delete PO");
@@ -224,22 +283,52 @@ export default function PurchaseOrdersPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Purchase Orders"
-        description="Create supplier purchase orders, track delivery milestones, and manage material procurement."
-        actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setIsCreateOpen(true)}
-            icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer"
-          >
-            Create Purchase Order
-          </Button>
-        }
-      />
+    <div className="w-full min-h-full flex flex-col font-sans">
+      {/* Executive Header - Clean alignment, zero overlap */}
+      <div className="w-full bg-white border-b border-slate-200/90 px-6 py-4 shrink-0 shadow-2xs">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#5046e5] shadow-2xs">
+                <ShoppingCartIcon size={16} />
+              </div>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Purchase Orders
+                </h1>
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-mono">
+                  {purchaseOrders.length} Records
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500">
+              Create supplier purchase orders, track delivery milestones, and manage material procurement.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-2xs transition-colors cursor-pointer"
+              title="Refresh purchase orders"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#5046e5]" : ""}`} />
+            </button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => router.push("/inventory/purchase-orders/new")}
+              icon={<Plus size={14} strokeWidth={2.5} />}
+              className="bg-[#5046e5] hover:bg-[#4338ca] text-white font-bold text-xs shadow-xs cursor-pointer"
+            >
+              Create Purchase Order
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 space-y-6 flex-1 bg-slate-50/40">
 
       <PurchaseOrdersKpis
         totalPOs={totalPOs}
@@ -330,51 +419,22 @@ export default function PurchaseOrdersPage() {
                             setStatusFilter("ALL");
                             setSupplierFilter("");
                           }
-                          : () => setIsCreateOpen(true)
+                          : () => router.push("/inventory/purchase-orders/new")
                       }
                     />
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredPOs.map((po) => {
-                  const isExpanded = expandedPOId === po.id;
-                  const isDraft = po.status === "DRAFT";
-                  const isOrdered = po.status === "ORDERED";
-                  const canEdit = canModify(po.createdBy, [
-                    "INVENTORY_MANAGER",
-                  ]);
-
-                  return (
-                    <PurchaseOrderRow
-                      key={po.id}
-                      po={po}
-                      isExpanded={isExpanded}
-                      canEdit={canEdit}
-                      onToggleExpand={() =>
-                        setExpandedPOId(isExpanded ? null : po.id)
-                      }
-                      onPrint={() => handlePrintPO(po)}
-                      onDelete={() => handleDeletePO(po)}
-                      onSend={
-                        isDraft && canEdit
-                          ? () =>
-                            updatePO.mutate({
-                              id: po.id,
-                              status: "ORDERED",
-                            })
-                          : undefined
-                      }
-                      onReceive={
-                        isOrdered && canEdit
-                          ? () => setReceiveModalPO(po)
-                          : undefined
-                      }
-                      isUpdating={updatePO.isPending}
-                      onCloseExpand={() => setExpandedPOId(null)}
-                      getStatusBadge={getStatusBadge}
-                    />
-                  );
-                })
+                filteredPOs.map((po) => (
+                  <PurchaseOrderRow
+                    key={po.id}
+                    po={po}
+                    onView={(target) => setSelectedPO(target)}
+                    onOpenMenu={handleOpenMenu}
+                    isMenuOpen={activeMenu?.id === po.id}
+                    getStatusBadge={getStatusBadge}
+                  />
+                ))
               )}
             </TableBody>
           </RegisterTable>
@@ -405,6 +465,8 @@ export default function PurchaseOrdersPage() {
         getStatusBadge={getStatusBadge}
       />
 
+      </div>
+
       <PurchaseOrderPrintModal
         isOpen={!!printModalPO}
         onClose={() => setPrintModalPO(null)}
@@ -423,6 +485,88 @@ export default function PurchaseOrdersPage() {
           {printingPO && <PurchaseOrderDocument po={printingPO} />}
         </div>
       </div>
+      {activeMenu &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={{
+              position: "fixed",
+              top: activeMenu.openUpwards ? undefined : `${activeMenu.top}px`,
+              bottom: activeMenu.openUpwards
+                ? `${window.innerHeight - activeMenu.top}px`
+                : undefined,
+              right: `${activeMenu.right}px`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-[185px] rounded-xl bg-white border border-slate-200/90 shadow-xl shadow-slate-900/10 p-1 z-[9999] animate-in fade-in zoom-in-95 duration-100 select-none"
+          >
+            {/* Print PO */}
+            <button
+              type="button"
+              onClick={() => {
+                const po = activeMenu.po;
+                setActiveMenu(null);
+                handlePrintPO(po);
+              }}
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100/70 transition-colors cursor-pointer text-left group"
+            >
+              <PrintIcon size={14} className="text-slate-500 shrink-0" />
+              <span className="truncate">Print PO Voucher</span>
+            </button>
+
+            {/* View Details */}
+            <button
+              type="button"
+              onClick={() => {
+                const po = activeMenu.po;
+                setActiveMenu(null);
+                setSelectedPO(po);
+              }}
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:bg-indigo-50 transition-colors cursor-pointer text-left group"
+            >
+              <EyeIcon size={14} className="text-indigo-600 shrink-0" />
+              <span className="truncate">View PO Details</span>
+            </button>
+
+            {/* Receive Goods (if ORDERED) */}
+            {activeMenu.po.status === "ORDERED" && (
+              <button
+                type="button"
+                onClick={() => {
+                  const po = activeMenu.po;
+                  setActiveMenu(null);
+                  setReceiveModalPO(po);
+                }}
+                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/70 transition-colors cursor-pointer text-left group"
+              >
+                <PackageCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="truncate">Receive Goods</span>
+              </button>
+            )}
+
+            {/* Delete PO (Draft only) */}
+            {activeMenu.po.status === "DRAFT" &&
+              canModify(activeMenu.po.createdBy, ["INVENTORY_MANAGER"]) && (
+                <>
+                  <div className="my-1 border-t border-slate-100" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const po = activeMenu.po;
+                      setActiveMenu(null);
+                      handleDeletePO(po);
+                    }}
+                    className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-50/70 transition-colors cursor-pointer text-left group"
+                  >
+                    <TrashIcon size={14} className="text-rose-500 shrink-0" />
+                    <span className="truncate">Delete PO</span>
+                  </button>
+                </>
+              )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

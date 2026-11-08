@@ -1,3 +1,4 @@
+import { UaePhoneInput, UaePhoneInputProps } from "../UaePhoneInput";
 import {
   Input,
   InputProps,
@@ -192,6 +193,47 @@ export function FormDatePicker({
         field.handleChange(val);
         if (onChange) onChange(val);
       }}
+      error={errorMessage}
+      {...props}
+    />
+  );
+}
+
+export interface FormUaePhoneInputProps extends Omit<
+  UaePhoneInputProps,
+  "value" | "onChange" | "onBlur" | "error"
+> {
+  field: any;
+  onChange?: (val: string) => void;
+}
+
+export function FormUaePhoneInput({
+  field,
+  onChange,
+  ...props
+}: FormUaePhoneInputProps) {
+  const isTouched = field.state.meta.isTouched;
+  const errors = field.state.meta.errors;
+  const errorMessage =
+    isTouched && errors && errors.length > 0
+      ? errors
+          .map((err: any) =>
+            typeof err === "object" && err !== null && "message" in err
+              ? err.message
+              : String(err),
+          )
+          .join(", ")
+      : undefined;
+
+  return (
+    <UaePhoneInput
+      name={field.name}
+      value={field.state.value ?? ""}
+      onChange={(val) => {
+        field.handleChange(val);
+        if (onChange) onChange(val);
+      }}
+      onBlur={field.handleBlur}
       error={errorMessage}
       {...props}
     />

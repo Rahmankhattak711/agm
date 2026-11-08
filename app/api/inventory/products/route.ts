@@ -78,9 +78,9 @@ export async function POST(request: Request) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
-    if (!hasRole(authUser, "INVENTORY_MANAGER")) {
+    if (!hasRole(authUser, "INVENTORY_MANAGER") && !hasRole(authUser, "ACCOUNTANT")) {
       return forbidden(
-        "Forbidden: Only Inventory Managers and Admins can create products",
+        "Forbidden: Only Inventory Managers, Accountants and Admins can create products",
       );
     }
 

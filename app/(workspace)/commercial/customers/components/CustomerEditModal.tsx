@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useForm } from "@tanstack/react-form";
-import { Modal, Button, FormInput, FormSubmit } from "@/components/ui";
+import { Modal, Button, FormInput, FormSubmit, FormUaePhoneInput } from "@/components/ui";
+import { cleanUaePhone } from "@/lib/utils/phone";
 import { useUpdateCustomer, Customer } from "@/lib/hooks/api-hooks";
 import { toast } from "@/lib/toast";
 
@@ -45,7 +46,7 @@ export function CustomerEditModal({
             customerCode: value.customerCode.trim() || undefined,
             name: value.name.trim(),
             companyName: value.companyName.trim() || null,
-            phone: value.phone.trim() || null,
+            phone: cleanUaePhone(value.phone) || null,
             email: value.email.trim() || null,
             address: value.address.trim() || null,
             creditLimit: parseFloat(value.creditLimit) || 0,
@@ -142,10 +143,9 @@ export function CustomerEditModal({
 
           <form.Field name="phone">
             {(field) => (
-              <FormInput
+              <FormUaePhoneInput
                 field={field}
                 label="Phone / Mobile"
-                placeholder="+971 50 XXXXXXX"
               />
             )}
           </form.Field>

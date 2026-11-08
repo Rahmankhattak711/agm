@@ -86,11 +86,10 @@ export default function SalesInvoiceTemplate({
       return initialInvoice.invoiceNumber;
     }
     let nextNum = 1;
-    const year = new Date().getFullYear();
-    const prefix = `INV-${year}-`;
+    const prefix = "INV-";
     const nums = allInvoices
       .map((inv) => {
-        const match = inv.invoiceNumber?.match(/-(\d+)$/);
+        const match = inv.invoiceNumber?.match(/(?:INV-)?(?:20\d{2}-)?(\d+)$/i);
         return match ? parseInt(match[1], 10) : 0;
       })
       .filter(Boolean);
@@ -345,11 +344,10 @@ export default function SalesInvoiceTemplate({
   // New Blank Reset
   const handleNewBlank = () => {
     let nextNum = 1;
-    const year = new Date().getFullYear();
-    const prefix = `INV-${year}-`;
+    const prefix = "INV-";
     const nums = allInvoices
       .map((inv) => {
-        const match = inv.invoiceNumber?.match(/-(\d+)$/);
+        const match = inv.invoiceNumber?.match(/(?:INV-)?(?:20\d{2}-)?(\d+)$/i);
         return match ? parseInt(match[1], 10) : 0;
       })
       .filter(Boolean);
