@@ -15,3 +15,4 @@ export * from "./GlobalLoading";
 export * from "./EmptyState";
 export * from "./CustomRowExpand";
 export * from "./CollapsibleMenu";
+export * from "./UaePhoneInput";

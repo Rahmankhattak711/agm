@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ExternalLink, BookOpen, FileText, ShoppingBag, CreditCard } from "lucide-react";
+import { ExternalLink, BookOpen, FileText, ShoppingBag, CreditCard, ReceiptText } from "lucide-react";
 
 export interface TopEntryItem {
   lineId: string;
@@ -58,6 +58,8 @@ export function PnlHoverPopover({
         return <CreditCard className="w-3 h-3 text-emerald-600" />;
       case "Bill":
         return <ShoppingBag className="w-3 h-3 text-amber-600" />;
+      case "Purchase expense":
+        return <ReceiptText className="w-3 h-3 text-rose-600" />;
       default:
         return <BookOpen className="w-3 h-3 text-indigo-600" />;
     }
@@ -71,6 +73,8 @@ export function PnlHoverPopover({
         return "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100";
       case "Bill":
         return "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100";
+      case "Purchase expense":
+        return "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100";
       default:
         return "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100";
     }
@@ -81,7 +85,7 @@ export function PnlHoverPopover({
       className="w-[420px] max-w-[calc(100vw-32px)] bg-white border border-slate-200/90 rounded-xl shadow-2xl overflow-hidden text-xs z-50 animate-in fade-in zoom-in-95 duration-100"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Popover Header matching Image 2 */}
+      {/* Popover Header */}
       <div className="px-3.5 py-2.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/90">
         <div className="flex items-center gap-1.5">
           <span className="font-bold text-slate-800 text-xs tracking-tight">

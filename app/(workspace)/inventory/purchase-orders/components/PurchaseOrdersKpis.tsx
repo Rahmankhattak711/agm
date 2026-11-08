@@ -1,10 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  ReportKpiCard,
-  ReportKpiGrid,
-} from "@/app/(workspace)/finance/reports/components/ReportKpiCard";
+import { DashboardCard, DashboardCardGrid } from "@/components/ui";
 import { formatNumber } from "@/lib/utils/format";
 
 export interface PurchaseOrdersKpisProps {
@@ -22,47 +19,37 @@ export const PurchaseOrdersKpis: React.FC<PurchaseOrdersKpisProps> = ({
 }) => {
   return (
     <>
-      <ReportKpiGrid cols={4}>
-        <ReportKpiCard
-          title="1. Total Purchase Orders"
+      <DashboardCardGrid cols={4}>
+        <DashboardCard
+          title="Total Purchase Orders"
+          value={totalPOs.toString()}
           subtitle="All procurement records"
-          value={totalPOs}
-          currency={false}
-          accentColor="sky"
-          footerText="Orders"
+          variant="default"
         />
-        <ReportKpiCard
-          title="2. Draft Orders"
+        <DashboardCard
+          title="Draft Orders"
+          value={draftCount.toString()}
           subtitle="Awaiting supplier issuance"
-          value={draftCount}
-          currency={false}
-          accentColor="amber"
-          valueColor="text-amber-700"
-          footerText="Drafts"
+          variant={draftCount > 0 ? "warning" : "default"}
         />
-        <ReportKpiCard
-          title="3. Pending Deliveries"
+        <DashboardCard
+          title="Pending Deliveries"
+          value={orderedCount.toString()}
           subtitle="Awaiting warehouse receipt"
-          value={orderedCount}
-          currency={false}
-          accentColor="blue"
-          valueColor="text-blue-800"
-          footerText="Ordered"
+          variant={orderedCount > 0 ? "default" : "default"}
         />
-        <ReportKpiCard
-          title="4. Procurement Spend"
+        <DashboardCard
+          title="Total Procurement Spend"
+          value={`AED ${formatNumber(totalPurchasesValue)}`}
           subtitle="Cumulative purchase volume"
           badge={
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-              Active
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+              Committed
             </span>
           }
-          value={formatNumber(totalPurchasesValue)}
-          currency="AED"
-          accentColor="emerald"
-          valueColor="text-emerald-800"
+          variant="default"
         />
-      </ReportKpiGrid>
+      </DashboardCardGrid>
 
       <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
         <div>

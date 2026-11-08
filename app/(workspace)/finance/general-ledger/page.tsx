@@ -152,8 +152,21 @@ function GeneralLedgerContent() {
   const { data: records = [], isLoading, refetch } = useQuery({
     queryKey: ["general-ledger", selectedRange, selectedAccountId, search, journalIdFilter],
     queryFn: async () => {
-      const from = `${selectedRange[0]}-01`;
-      const to = `${selectedRange[1]}-31`;
+      const sanitizeDate = (val: string, isEnd: boolean): string => {
+        if (!val) return "";
+        const clean = val.trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
+        if (/^\d{4}-\d{2}$/.test(clean)) {
+          if (!isEnd) return `${clean}-01`;
+          const [y, m] = clean.split("-").map(Number);
+          const lastDay = new Date(y, m, 0).getDate();
+          return `${clean}-${lastDay.toString().padStart(2, "0")}`;
+        }
+        return clean.slice(0, 10);
+      };
+
+      const from = sanitizeDate(selectedRange[0], false);
+      const to = sanitizeDate(selectedRange[1], true);
       const params = new URLSearchParams();
 
       if (journalIdFilter) {
@@ -578,7 +591,7 @@ function GeneralLedgerContent() {
                 <col className="w-64" />
                 <col className="w-32" />
                 <col className="w-32" />
-                {selectedAccountId && <col className="w-32" />}
+                {selectedAccountId ? <col className="w-32" /> : null}
               </colgroup>
               <thead>
                 <tr className="bg-slate-50/90 border-b border-slate-200 text-slate-600 font-bold text-[11px] uppercase tracking-wider select-none">

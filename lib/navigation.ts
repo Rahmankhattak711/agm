@@ -121,8 +121,8 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: "Goods Received",
   },
   "/commercial/supplier-bills": {
-    eyebrow: "Commercial",
-    title: "Supplier Bills",
+    eyebrow: "Purchases",
+    title: "Purchase Bills",
   },
   "/commercial/supplier-payments": {
     eyebrow: "Commercial",
@@ -167,11 +167,19 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: "Stock Movements",
   },
   "/inventory/purchase-orders": {
-    eyebrow: "Inventory",
+    eyebrow: "Purchases",
     title: "Purchase Orders",
   },
+  "/inventory/purchase-orders/new": {
+    eyebrow: "Purchases",
+    title: "New Purchase Order",
+  },
+  "/commercial/purchase-orders/new": {
+    eyebrow: "Purchases",
+    title: "New Purchase Order",
+  },
   "/inventory/purchase-returns": {
-    eyebrow: "Inventory",
+    eyebrow: "Purchases",
     title: "Purchase Returns",
   },
   "/inventory/sales-vouchers": {
@@ -183,8 +191,8 @@ export const PAGE_META: Record<string, PageMeta> = {
     title: "Sales Returns",
   },
   "/inventory/suppliers": {
-    eyebrow: "Inventory",
-    title: "Suppliers",
+    eyebrow: "Purchases",
+    title: "Vendors",
   },
   "/inventory/warehouses": {
     eyebrow: "Inventory",

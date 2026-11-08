@@ -47,16 +47,20 @@ export async function POST(request: Request) {
     const { supplierCode, name, contactPerson, phone, email, address, trn } =
       body;
 
-    if (!supplierCode?.trim() || !name?.trim()) {
+    if (!name?.trim()) {
       return NextResponse.json(
-        { error: "Supplier code and name are required" },
+        { error: "Supplier name is required" },
         { status: 400 },
       );
     }
 
+    const resolvedCode =
+      supplierCode?.trim() ||
+      `SUP-${Math.floor(1000 + Math.random() * 9000)}`;
+
     const created = await prisma.supplier.create({
       data: {
-        supplierCode: supplierCode.trim().toUpperCase(),
+        supplierCode: resolvedCode.toUpperCase(),
         name: name.trim(),
         contactPerson: contactPerson?.trim() || null,
         phone: phone?.trim() || null,

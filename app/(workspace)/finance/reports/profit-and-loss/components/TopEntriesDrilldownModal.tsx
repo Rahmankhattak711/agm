@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, ExternalLink, BookOpen, FileText, ShoppingBag, CreditCard, ArrowRight, ChevronRight } from "lucide-react";
+import { X, ExternalLink, BookOpen, FileText, ShoppingBag, CreditCard, ReceiptText, ArrowRight, ChevronRight } from "lucide-react";
 import { TopEntryItem } from "./PnlHoverPopover";
 import { formatAed } from "@/lib/utils/format";
 
@@ -42,6 +42,8 @@ export function TopEntriesDrilldownModal({
         return <CreditCard className="w-3.5 h-3.5 text-emerald-600" />;
       case "Bill":
         return <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />;
+      case "Purchase expense":
+        return <ReceiptText className="w-3.5 h-3.5 text-rose-600" />;
       default:
         return <BookOpen className="w-3.5 h-3.5 text-indigo-600" />;
     }
@@ -55,6 +57,8 @@ export function TopEntriesDrilldownModal({
         return "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100";
       case "Bill":
         return "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100";
+      case "Purchase expense":
+        return "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100";
       default:
         return "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100";
     }
@@ -87,7 +91,7 @@ export function TopEntriesDrilldownModal({
           </button>
         </div>
 
-        {/* 2-Column Split Body matching Image 3 */}
+        {/* 2-Column Split Body */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden divide-y md:divide-y-0 md:divide-x divide-slate-100">
           {/* Left Column: Account Summary & Entries List */}
           <div className="w-full md:w-[58%] flex flex-col overflow-hidden">
@@ -100,101 +104,96 @@ export function TopEntriesDrilldownModal({
                 </span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px] mb-0.5 font-medium">Total</span>
+                <span className="text-slate-400 block text-[11px] mb-0.5 font-medium">Total for period</span>
                 <span className="font-bold text-slate-900 font-mono">
-                  {formatAed(totalAmount)}
+                  AED {formatAed(totalAmount)}
                 </span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[11px] mb-0.5 font-medium">Period</span>
-                <span className="font-medium text-slate-700">
-                  {periodLabel}
-                </span>
+                <span className="font-medium text-slate-700">{periodLabel}</span>
               </div>
             </div>
 
-            {/* Entries Table */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-slate-50/90 sticky top-0 z-10 border-b border-slate-200/90 text-[10px] font-semibold text-slate-600 uppercase tracking-wider">
-                  <tr>
-                    <th className="px-4 py-2.5">Date</th>
-                    <th className="px-4 py-2.5">Description</th>
-                    <th className="px-4 py-2.5">Source</th>
-                    <th className="px-4 py-2.5 text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
-                  {entries.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="px-4 py-12 text-center text-slate-400 font-sans">
-                        No transactions found for this account.
-                      </td>
-                    </tr>
-                  ) : (
-                    entries.map((entry, idx) => {
-                      const isSelected = idx === selectedEntryIdx;
-                      return (
-                        <tr
-                          key={entry.lineId || idx}
-                          onClick={() => setSelectedEntryIdx(idx)}
-                          className={`transition-colors cursor-pointer ${
-                            isSelected
-                              ? "bg-indigo-50/70 font-semibold"
-                              : "hover:bg-slate-50/70"
-                          }`}
-                        >
-                          <td className="px-4 py-3 text-slate-700 whitespace-nowrap">
+            {/* List of Entries */}
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100 custom-scrollbar">
+              {entries.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 text-xs">
+                  No transaction records found for this period.
+                </div>
+              ) : (
+                entries.map((entry, idx) => {
+                  const isSelected = selectedEntryIdx === idx;
+                  return (
+                    <div
+                      key={entry.lineId || idx}
+                      onClick={() => setSelectedEntryIdx(idx)}
+                      className={`p-4 flex items-center justify-between cursor-pointer transition-colors text-xs ${
+                        isSelected
+                          ? "bg-indigo-50/70 border-l-4 border-[#5046e5]"
+                          : "hover:bg-slate-50/80 bg-white"
+                      }`}
+                    >
+                      <div className="space-y-1 min-w-0 pr-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900 truncate">
+                            {entry.description || "—"}
+                          </span>
+                          <span
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-sans font-medium border shrink-0 ${getSourceBadgeStyle(
+                              entry.source
+                            )}`}
+                          >
+                            {getSourceIcon(entry.source)}
+                            <span>{entry.source}</span>
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-2">
+                          <span>
                             {new Date(entry.date).toLocaleDateString("en-GB", {
                               day: "2-digit",
                               month: "short",
                               year: "numeric",
                             })}
-                          </td>
-                          <td className="px-4 py-3 font-sans text-slate-600 max-w-[150px] truncate">
-                            {entry.description || "—"}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onNavigateSource(entry);
-                              }}
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-sans font-medium border transition-colors cursor-pointer ${getSourceBadgeStyle(
-                                entry.source
-                              )}`}
-                              title={`Go to ${entry.source}`}
-                            >
-                              {getSourceIcon(entry.source)}
-                              <span>{entry.source}</span>
-                            </button>
-                          </td>
-                          <td className="px-4 py-3 text-right font-bold text-slate-900 whitespace-nowrap">
-                            {entry.amount.toFixed(2)}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                          </span>
+                          <span>•</span>
+                          <span className="font-mono">{entry.journalNumber}</span>
+                          {entry.reference && entry.reference !== "—" && (
+                            <>
+                              <span>•</span>
+                              <span className="truncate">Ref: {entry.reference}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
 
-            {/* Left Footer Counter */}
-            <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/60 text-[11px] text-slate-500 flex justify-between shrink-0">
-              <span>Showing <strong>{entries.length}</strong> transactions</span>
-              <span>1 selected</span>
+                      <div className="text-right shrink-0 flex items-center gap-3">
+                        <span className="font-bold text-slate-900 font-mono text-sm">
+                          {entry.amount.toFixed(2)}
+                        </span>
+                        <ChevronRight
+                          className={`w-4 h-4 transition-transform ${
+                            isSelected ? "text-[#5046e5] translate-x-0.5" : "text-slate-300"
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
-          {/* Right Column: Active Entry Preview Voucher matching Image 3 */}
-          <div className="w-full md:w-[42%] bg-slate-50/30 p-6 flex flex-col justify-between overflow-y-auto custom-scrollbar">
+          {/* Right Column: Transaction Detail Preview */}
+          <div className="w-full md:w-[42%] bg-slate-50/50 flex flex-col overflow-y-auto p-5 custom-scrollbar">
             {activeEntry ? (
               <div className="space-y-5">
-                {/* Header Badge & Meta */}
-                <div>
-                  <div className="flex items-center gap-2 mb-1.5">
+                {/* Source Badge with interactive Link */}
+                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      Source Transaction
+                    </span>
                     <button
                       type="button"
                       onClick={() => onNavigateSource(activeEntry)}

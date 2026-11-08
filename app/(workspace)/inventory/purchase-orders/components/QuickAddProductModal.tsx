@@ -16,6 +16,7 @@ export interface QuickAddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultSupplierId?: string;
+  initialName?: string;
   onSuccess: (newProd: Product) => void;
 }
 
@@ -23,6 +24,7 @@ export const QuickAddProductModal: React.FC<QuickAddProductModalProps> = ({
   isOpen,
   onClose,
   defaultSupplierId,
+  initialName,
   onSuccess,
 }) => {
   const createProduct = useCreateProduct();
@@ -30,7 +32,7 @@ export const QuickAddProductModal: React.FC<QuickAddProductModalProps> = ({
 
   const quickProductForm = useForm({
     defaultValues: {
-      name: "",
+      name: initialName || "",
       brand: "",
       supplierSku: "",
       originCompany: "",
@@ -77,6 +79,17 @@ export const QuickAddProductModal: React.FC<QuickAddProductModalProps> = ({
       }
     },
   });
+
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialName) {
+        quickProductForm.setFieldValue("name", initialName);
+      }
+      if (defaultSupplierId) {
+        quickProductForm.setFieldValue("supplierId", defaultSupplierId);
+      }
+    }
+  }, [isOpen, initialName, defaultSupplierId]);
 
   return (
     <Modal

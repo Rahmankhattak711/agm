@@ -111,18 +111,23 @@ const navGroups: NavGroup[] = [
           },
           {
             id: "supplier-bills",
-            label: "Purchase Invoices",
+            label: "Purchase Bills",
             href: "/commercial/supplier-bills",
+          },
+          {
+            id: "suppliers",
+            label: "Vendors",
+            href: "/inventory/suppliers",
+          },
+          {
+            id: "products",
+            label: "Shop Products & Materials",
+            href: "/inventory/products",
           },
           {
             id: "purchase-returns",
             label: "Purchase Returns",
             href: "/inventory/purchase-returns",
-          },
-          {
-            id: "suppliers",
-            label: "Suppliers",
-            href: "/inventory/suppliers",
           },
         ],
       },

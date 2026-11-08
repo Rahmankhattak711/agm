@@ -57,8 +57,21 @@ function ManualJournalsContent() {
   useEffect(() => {
     if (urlSearch) {
       setSearch(urlSearch);
+      if (journalEntries.length > 0) {
+        const q = urlSearch.toLowerCase().trim();
+        const found = journalEntries.find(
+          (je: any) =>
+            je.entryNumber?.toLowerCase() === q ||
+            formatJournalSerial(je.entryNumber || "").toLowerCase() === q ||
+            je.reference?.toLowerCase() === q ||
+            je.id?.toLowerCase() === q
+        );
+        if (found) {
+          setSelectedEntry(found);
+        }
+      }
     }
-  }, [urlSearch]);
+  }, [urlSearch, journalEntries]);
 
   // Warm up other finance pages for instant transitions
   useEffect(() => {
@@ -306,14 +319,14 @@ function ManualJournalsContent() {
       <div className="w-full flex-1 bg-white overflow-x-hidden">
         <table className="w-full text-left border-collapse table-fixed select-none">
           <colgroup>
-            <col className="w-24" /> {/* Status */}
-            <col className="w-28" /> {/* Date */}
-            <col className="w-32" /> {/* Serial Number */}
-            <col className="w-32" /> {/* Reference */}
-            <col className="w-44" /> {/* Notes */}
-            <col className="" />     {/* Lines Preview (Fluid) */}
-            <col className="w-32" /> {/* Total AED */}
-            <col className="w-28" /> {/* Created By */}
+            <col className="w-24" />
+            <col className="w-28" />
+            <col className="w-32" />
+            <col className="w-32" />
+            <col className="w-44" />
+            <col className="" />
+            <col className="w-32" />
+            <col className="w-28" />
           </colgroup>
           <thead>
             <tr className="bg-slate-50/90 border-b border-slate-200/90 text-slate-500 font-bold text-[10px] uppercase tracking-wider select-none sticky top-0 z-10 backdrop-blur-xs">

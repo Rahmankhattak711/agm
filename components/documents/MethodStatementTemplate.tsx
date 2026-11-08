@@ -1,3 +1,4 @@
+import { formatUaePhone } from "@/lib/utils/phone";
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -456,7 +457,7 @@ export default function MethodStatementTemplate({
                                   onChange={(e) =>
                                     setData({
                                       ...data,
-                                      phoneNumber: e.target.value,
+                                      phoneNumber: formatUaePhone(e.target.value),
                                     })
                                   }
                                   className="h-7 text-xs bg-white"

@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
 
-    const warehouses = await prisma.warehouse.findMany({
+    let warehouses = await prisma.warehouse.findMany({
       include: {
         stockLevels: {
           include: {
@@ -25,6 +25,32 @@ export async function GET(request: Request) {
       },
       orderBy: { name: "asc" },
     });
+
+    if (warehouses.length === 0) {
+      await prisma.warehouse.create({
+        data: {
+          code: "WH-DXB-01",
+          name: "Main Central Warehouse",
+          location: "Al Quoz Industrial Area 3, Dubai",
+          isActive: true,
+        },
+      });
+
+      warehouses = await prisma.warehouse.findMany({
+        include: {
+          stockLevels: {
+            include: {
+              product: {
+                select: { id: true, name: true, sku: true, unit: true },
+              },
+            },
+          },
+          _count: { select: { stockMovements: true } },
+        },
+        orderBy: { name: "asc" },
+      });
+    }
+
     return NextResponse.json(warehouses);
   } catch (error) {
     console.error("Error fetching warehouses:", error);

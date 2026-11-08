@@ -1,3 +1,4 @@
+import { cleanUaePhone } from "@/lib/utils/phone";
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,7 +12,7 @@ import {
   useUpdateEmployee,
 } from "@/lib/hooks/api-hooks";
 import { Modal, Button } from "@/components/ui";
-import { FormInput, FormSubmit } from "@/components/ui/form";
+import { FormInput, FormSubmit, FormUaePhoneInput } from "@/components/ui/form";
 import { toast } from "@/lib/toast";
 
 export interface EditEmployeeModalProps {
@@ -72,7 +73,7 @@ export function EditEmployeeModal({
           firstName: value.firstName.trim(),
           lastName: value.lastName.trim(),
           email: value.email.trim() || undefined,
-          phone: value.phone.trim() || undefined,
+          phone: cleanUaePhone(value.phone) || undefined,
           department: value.department.trim() || undefined,
           designation: value.designation.trim() || undefined,
           joiningDate: value.joiningDate,
@@ -238,10 +239,9 @@ export function EditEmployeeModal({
           </form.Field>
           <form.Field name="phone">
             {(field) => (
-              <FormInput
+              <FormUaePhoneInput
                 field={field}
                 label="Phone Number"
-                placeholder="+971 50 000 0000"
               />
             )}
           </form.Field>

@@ -1,3 +1,4 @@
+import { formatUaePhone } from "@/lib/utils/phone";
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
@@ -806,7 +807,7 @@ export default function AgreementTemplate({
                                   ...data,
                                   contractor: {
                                     ...data.contractor,
-                                    phone: e.target.value,
+                                    phone: formatUaePhone(e.target.value),
                                   },
                                 })
                               }
@@ -904,7 +905,7 @@ export default function AgreementTemplate({
                                 ...data,
                                 client: {
                                   ...data.client,
-                                  phone: e.target.value,
+                                  phone: formatUaePhone(e.target.value),
                                 },
                               })
                             }
