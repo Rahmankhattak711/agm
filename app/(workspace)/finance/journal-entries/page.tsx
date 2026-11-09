@@ -399,7 +399,7 @@ function ManualJournalsContent() {
 
                     {/* 4. Reference */}
                     <td className="px-3 py-2.5 font-medium text-slate-700 align-middle truncate" title={entry.reference}>
-                      {entry.reference || "—"}
+                      {entry.reference || entry.lines?.find((l: any) => l.costCenter || l.invoiceNumber)?.costCenter || entry.lines?.find((l: any) => l.costCenter || l.invoiceNumber)?.invoiceNumber || "—"}
                     </td>
 
                     {/* 5. Notes / Description */}

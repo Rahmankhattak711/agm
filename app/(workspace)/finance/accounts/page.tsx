@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   useAccounts,
   useCreateAccount,
@@ -47,6 +48,7 @@ function buildMultiLevelTree(accounts: ChartOfAccount[]): HierarchicalAccount[] 
 }
 
 export default function AccountsPage() {
+  const router = useRouter();
   const { user, isSuperAdmin, hasRole } = useAuth();
   const isFinancialUser = isSuperAdmin || hasRole("ADMIN", "ACCOUNTANT");
 
@@ -173,10 +175,7 @@ export default function AccountsPage() {
   }, [activeDepthLevel, treeData.length]);
 
   const handleOpenCreate = () => {
-    setDrawerMode("CREATE");
-    setDrawerAccount(null);
-    setDrawerParentAccount(null);
-    setIsDrawerOpen(true);
+    router.push("/finance/accounts/new");
   };
 
   const handleOpenCreateChild = (parentAcc: ChartOfAccount) => {
@@ -184,17 +183,11 @@ export default function AccountsPage() {
       toast.warning("Level 1 root categories cannot have direct child accounts. Please select a Level 2 Group.");
       return;
     }
-    setDrawerMode("CREATE");
-    setDrawerAccount(null);
-    setDrawerParentAccount(parentAcc);
-    setIsDrawerOpen(true);
+    router.push(`/finance/accounts/new?parentId=${parentAcc.id}`);
   };
 
   const handleOpenEdit = (acc: ChartOfAccount) => {
-    setDrawerMode("EDIT");
-    setDrawerAccount(acc);
-    setDrawerParentAccount(null);
-    setIsDrawerOpen(true);
+    router.push(`/finance/accounts/new?editId=${acc.id}`);
   };
 
   const handleSaveAccount = async (formData: any) => {
@@ -249,8 +242,8 @@ export default function AccountsPage() {
   };
 
   return (
-    <div className="w-full min-h-full bg-white flex flex-col">
-      {/* Sleek Modern Header & Controls Toolbar */}
+    <div className="w-full min-h-full bg-white text-slate-700 font-sans px-4 sm:px-5 py-3.5 space-y-3.5">
+      {/* 1-3. Header, Light-Blue Search/Filter Bar, and Pastel Pillar KPI Cards */}
       <CleanAccountsHeader
         search={search}
         setSearch={setSearch}
@@ -269,31 +262,29 @@ export default function AccountsPage() {
         onOpenAccountTypes={() => setIsAccountTypesModalOpen(true)}
       />
 
-      {/* Main Full-Viewport Hierarchy Table matching Wafeq Image 1 */}
-      <div className="w-full border-t border-slate-200/90 flex-1 bg-white">
-        {error ? (
-          <div className="p-6 text-center text-xs text-rose-600 bg-rose-50/50">
-            Error loading accounts: {(error as any).message}
-          </div>
-        ) : (
-          <AccountsHierarchyView
-            rootAccounts={treeData}
-            collapsedNodes={collapsedNodes}
-            onToggleCollapse={toggleCollapse}
-            onOpenEdit={handleOpenEdit}
-            onOpenCreateChild={handleOpenCreateChild}
-            onDelete={handleDeleteAccount}
-            hasAccounts={accounts.length > 0}
-            onOpenCreate={handleOpenCreate}
-            formatNumber={formatNumber}
-            formatCurrency={formatCurrency}
-            activeDepthLevel={activeDepthLevel}
-            onSelectDepthLevel={handleSelectDepthLevel}
-            isSuperAdmin={isSuperAdmin}
-            isFinancialUser={isFinancialUser}
-          />
-        )}
-      </div>
+      {/* 4. Account Records Hierarchy Table with Light-Blue Top Bar */}
+      {error ? (
+        <div className="py-8 text-center text-xs text-rose-600 bg-rose-50/60 rounded-xl border border-rose-200">
+          Error loading accounts: {(error as any).message}
+        </div>
+      ) : (
+        <AccountsHierarchyView
+          rootAccounts={treeData}
+          collapsedNodes={collapsedNodes}
+          onToggleCollapse={toggleCollapse}
+          onOpenEdit={handleOpenEdit}
+          onOpenCreateChild={handleOpenCreateChild}
+          onDelete={handleDeleteAccount}
+          hasAccounts={accounts.length > 0}
+          onOpenCreate={handleOpenCreate}
+          formatNumber={formatNumber}
+          formatCurrency={formatCurrency}
+          activeDepthLevel={activeDepthLevel}
+          onSelectDepthLevel={handleSelectDepthLevel}
+          isSuperAdmin={isSuperAdmin}
+          isFinancialUser={isFinancialUser}
+        />
+      )}
 
       {/* Right Slide-Over Drawer for Adding/Editing Accounts */}
       <AccountSlideOverDrawer

@@ -4,8 +4,6 @@ import React, { Fragment } from "react";
 import { ChartOfAccount } from "@/lib/hooks/api-hooks";
 import { HierarchicalAccount } from "./types";
 import { AccountHierarchyRow } from "./AccountHierarchyRow";
-import { EmptyState } from "@/components/ui";
-import { AccountsIcon } from "@/components/icons";
 import { Info } from "lucide-react";
 
 interface AccountsHierarchyViewProps {
@@ -31,7 +29,6 @@ export function AccountsHierarchyView({
   rootAccounts,
   collapsedNodes,
   onToggleCollapse,
-  expandedLedgerAccounts,
   toggleLedgerAccount,
   onOpenEdit,
   onOpenCreateChild,
@@ -39,24 +36,9 @@ export function AccountsHierarchyView({
   hasAccounts,
   onOpenCreate,
   formatNumber,
-  formatCurrency,
   isSuperAdmin = false,
   isFinancialUser = false,
 }: AccountsHierarchyViewProps) {
-  if (!hasAccounts || rootAccounts.length === 0) {
-    return (
-      <div className="p-12">
-        <EmptyState
-          icon={<AccountsIcon size={32} className="text-slate-400" />}
-          title="No accounts found"
-          description="Try selecting another category, clearing your search keywords, or adding a new account."
-          actionLabel="Add New Account"
-          onAction={onOpenCreate}
-        />
-      </div>
-    );
-  }
-
   // Count total displayed nodes
   let totalVisibleCount = 0;
   const countNodes = (items: HierarchicalAccount[]) => {
@@ -102,67 +84,112 @@ export function AccountsHierarchyView({
   };
 
   return (
-    <div className="w-full bg-white flex flex-col">
-      <div className="w-full overflow-x-hidden">
-        <table className="w-full text-left border-collapse table-fixed select-none">
-          <colgroup>
-            <col className="w-10" />
-            <col className="w-20" />
-            <col className="" />
-            <col className="w-40" />
-            <col className="w-24" />
-            <col className="w-24" />
-            <col className="w-36" />
-            <col className="w-20" />
-          </colgroup>
+    <div
+      className="bg-white rounded-xl overflow-hidden"
+      style={{ border: "1px solid #cbd5e1" }}
+    >
+      {/* Soft Light-Blue Top Bar (Matching Fixed Assets) */}
+      <div
+        className="px-4 py-2.5 flex items-center justify-between"
+        style={{
+          backgroundColor: "#f4f7fb",
+          borderBottom: "1px solid #cbd5e1",
+        }}
+      >
+        <h3 className="text-xs font-semibold text-slate-800">
+          Account records
+        </h3>
+        <span className="text-[11px] text-slate-500 font-normal">
+          {totalVisibleCount} {totalVisibleCount === 1 ? "record" : "records"}
+        </span>
+      </div>
+
+      <div className="w-full overflow-x-auto custom-scrollbar">
+        <table className="w-full min-w-[780px] text-left text-xs border-collapse select-none">
           <thead>
-            <tr className="bg-slate-50/90 border-b border-slate-200/90 text-slate-500 font-bold text-[10px] uppercase tracking-wider select-none sticky top-0 z-10 backdrop-blur-xs">
-              <th className="py-2.5 px-1 text-center w-10">
+            <tr
+              className="bg-white text-[9.5px] font-medium uppercase tracking-wider text-slate-500"
+              style={{ borderBottom: "1px solid #e2e8f0" }}
+            >
+              <th className="py-2.5 px-2 text-center w-10">
                 <span className="sr-only">Toggle</span>
               </th>
-              <th className="py-2.5 px-3 text-left w-20">
-                Code
+              <th className="py-2.5 px-3 text-left w-24 whitespace-nowrap">
+                CODE
               </th>
-              <th className="py-2.5 px-3 text-left">
-                Account Name
+              <th className="py-2.5 px-3 text-left whitespace-nowrap">
+                ACCOUNT NAME
               </th>
-              <th className="py-2.5 px-3 text-left w-40">
-                Cash Flow
+              <th className="py-2.5 px-3 text-left w-40 whitespace-nowrap">
+                CASH FLOW
               </th>
-              <th className="py-2.5 px-2 text-center w-24">
-                Payments
+              <th className="py-2.5 px-2 text-center w-24 whitespace-nowrap">
+                PAYMENTS
               </th>
-              <th className="py-2.5 px-2 text-center w-24">
-                Expense Claims
+              <th className="py-2.5 px-2 text-center w-28 whitespace-nowrap">
+                EXPENSE CLAIMS
               </th>
-              <th className="py-2.5 px-3 text-left w-36">
-                Classification
+              <th className="py-2.5 px-3 text-left w-40 whitespace-nowrap">
+                CLASSIFICATION
               </th>
-              <th className="py-2.5 px-3 text-right w-20">
-                Actions
+              <th className="py-2.5 px-4 text-right w-24 whitespace-nowrap">
+                ACTIONS
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {rootAccounts.map((rootAcc) => renderAccountNode(rootAcc, 1))}
+            {!hasAccounts || rootAccounts.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <div className="flex flex-col items-center justify-center gap-1.5 max-w-sm mx-auto">
+                    <h4 className="font-medium text-slate-700 text-xs">
+                      No account records found
+                    </h4>
+                    <p className="text-[11px] font-normal text-slate-400">
+                      Try selecting another account pillar, clearing your search keywords, or adding a new account.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={onOpenCreate}
+                      style={{
+                        backgroundColor: "#1d4ed8",
+                        color: "#ffffff",
+                        border: "1px solid #1e40af",
+                      }}
+                      className="mt-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer"
+                    >
+                      + Add Account
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              rootAccounts.map((rootAcc) => renderAccountNode(rootAcc, 1))
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Modern Status Footer */}
-      <div className="px-6 py-2.5 bg-slate-50 border-t border-slate-200/80 text-xs text-slate-500 font-medium flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      {/* Subtle Bottom Bar */}
+      <div
+        className="px-4 py-2 text-[11px] text-slate-500 font-normal flex flex-wrap items-center justify-between gap-2"
+        style={{
+          backgroundColor: "#f8fafc",
+          borderTop: "1px solid #e2e8f0",
+        }}
+      >
+        <div className="flex items-center gap-3">
           <span>
-            Visible rows: <strong className="text-slate-800 font-mono font-bold">{totalVisibleCount}</strong>
+            Visible rows: <span className="text-slate-700 font-medium">{totalVisibleCount}</span>
           </span>
           <span className="text-slate-300">•</span>
           <span>
-            Pillars: <strong className="text-slate-800 font-semibold">{rootAccounts.length} Root Groups</strong>
+            Pillars: <span className="text-slate-700 font-medium">{rootAccounts.length} Root Groups</span>
           </span>
         </div>
 
-        <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-          <Info className="w-3.5 h-3.5 text-indigo-400" />
+        <div className="text-[10.5px] text-slate-400 flex items-center gap-1.5">
+          <Info className="w-3.5 h-3.5 text-blue-600" />
           <span>Click any account row to open details and ledger configuration</span>
         </div>
       </div>

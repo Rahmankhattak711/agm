@@ -24,11 +24,13 @@ import PurchaseReturnsKpis from "./components/PurchaseReturnsKpis";
 import PurchaseReturnsFilters from "./components/PurchaseReturnsFilters";
 import PurchaseReturnsTable from "./components/PurchaseReturnsTable";
 import LogReturnModal from "./components/LogReturnModal";
+import PurchaseReturnDetailModal from "./components/PurchaseReturnDetailModal";
 
 export default function PurchaseReturnsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedReturn, setSelectedReturn] = useState<PurchaseReturnItem | null>(null);
   const [expandedReturnId, setExpandedReturnId] = useState<string | null>(null);
   const [returnToPrint, setReturnToPrint] = useState<PurchaseReturnItem | null>(
     null,
@@ -314,6 +316,7 @@ export default function PurchaseReturnsPage() {
           expandedReturnId={expandedReturnId}
           onToggleExpand={handleToggleExpand}
           onPrintReturn={handlePrintReturn}
+          onViewReturn={(item) => setSelectedReturn(item)}
           isLoading={isLoading}
           onOpenCreate={handleOpenCreate}
           isFiltered={search.trim() !== "" || statusFilter !== "ALL"}
@@ -325,6 +328,12 @@ export default function PurchaseReturnsPage() {
       </div>
 
       </div>
+
+      <PurchaseReturnDetailModal
+        item={selectedReturn}
+        onClose={() => setSelectedReturn(null)}
+        onPrint={handlePrintReturn}
+      />
 
       <LogReturnModal
         isOpen={isCreateOpen}

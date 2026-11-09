@@ -26,7 +26,7 @@ export function JournalDetailsModal({
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div
-        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[88vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-5xl lg:max-w-6xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -92,7 +92,7 @@ export function JournalDetailsModal({
           <div>
             <span className="text-slate-400 block text-[11px]">Reference</span>
             <span className="font-semibold text-slate-800">
-              {entry.reference || "—"}
+              {entry.reference || lines.find((l: any) => l.invoiceNumber || l.costCenter)?.invoiceNumber || lines.find((l: any) => l.invoiceNumber || l.costCenter)?.costCenter || "—"}
             </span>
           </div>
 
@@ -113,16 +113,17 @@ export function JournalDetailsModal({
 
         {/* Lines Table */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-slate-50/20">
-          <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs bg-white">
-            <table className="w-full text-xs text-left border-collapse">
+          <div className="border border-slate-200 rounded-xl overflow-x-auto shadow-2xs bg-white custom-scrollbar">
+            <table className="w-full text-xs text-left border-collapse min-w-[850px]">
               <thead className="bg-slate-50/90 border-b border-slate-200/90 text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
                 <tr>
                   <th className="px-4 py-2.5 w-16">Type</th>
-                  <th className="px-4 py-2.5 min-w-[200px]">Account</th>
-                  <th className="px-4 py-2.5 min-w-[200px]">Description / Note</th>
+                  <th className="px-4 py-2.5 min-w-[120px]">Invoice #</th>
+                  <th className="px-4 py-2.5 min-w-[180px]">Account</th>
+                  <th className="px-4 py-2.5 min-w-[180px]">Description / Note</th>
                   <th className="px-4 py-2.5 min-w-[140px]">Project / Site</th>
-                  <th className="px-4 py-2.5 text-right w-28">Debit (AED)</th>
-                  <th className="px-4 py-2.5 text-right w-28">Credit (AED)</th>
+                  <th className="px-4 py-2.5 text-right w-28 whitespace-nowrap">Debit (AED)</th>
+                  <th className="px-4 py-2.5 text-right w-28 whitespace-nowrap pr-5">Credit (AED)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white font-mono">
@@ -141,6 +142,15 @@ export function JournalDetailsModal({
                           {isDr ? "Debit" : "Credit"}
                         </span>
                       </td>
+                      <td className="px-4 py-2.5 font-sans font-mono text-xs font-semibold text-slate-800">
+                        {line.invoiceNumber || line.costCenter || entry.reference ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[11px] font-bold border border-slate-200">
+                            {line.invoiceNumber || line.costCenter || entry.reference}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-2.5 font-sans">
                         <div className="font-bold text-slate-900">
                           {line.account?.accountCode || "—"}
@@ -150,7 +160,7 @@ export function JournalDetailsModal({
                         </div>
                       </td>
                       <td className="px-4 py-2.5 font-sans text-slate-600">
-                        {line.description || "—"}
+                        {line.description || (line.invoiceNumber || line.costCenter || entry.reference ? `Invoice ${line.invoiceNumber || line.costCenter || entry.reference}` : "—")}
                         {line.taxAmount > 0 && (
                           <div className="text-[10px] text-[#5046e5] font-semibold mt-0.5">
                             VAT: {line.taxRate}% ({formatAed(line.taxAmount)})
@@ -166,10 +176,10 @@ export function JournalDetailsModal({
                           <span className="text-slate-400">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-2.5 text-right font-bold text-blue-700">
+                      <td className="px-4 py-2.5 text-right font-bold text-blue-700 whitespace-nowrap">
                         {isDr ? formatAed(line.debit) : "—"}
                       </td>
-                      <td className="px-4 py-2.5 text-right font-bold text-amber-700">
+                      <td className="px-4 py-2.5 text-right font-bold text-amber-700 whitespace-nowrap pr-5">
                         {!isDr ? formatAed(line.credit) : "—"}
                       </td>
                     </tr>
@@ -178,13 +188,13 @@ export function JournalDetailsModal({
               </tbody>
               <tfoot className="bg-slate-50/80 border-t-2 border-slate-200 font-mono font-bold text-xs">
                 <tr>
-                  <td colSpan={4} className="px-4 py-3 text-right font-sans text-slate-700">
+                  <td colSpan={5} className="px-4 py-3 text-right font-sans text-slate-700">
                     Totals:
                   </td>
-                  <td className="px-4 py-3 text-right text-blue-700">
+                  <td className="px-4 py-3 text-right text-blue-700 whitespace-nowrap">
                     {formatAed(totalDebit)}
                   </td>
-                  <td className="px-4 py-3 text-right text-amber-700">
+                  <td className="px-4 py-3 text-right text-amber-700 whitespace-nowrap pr-5">
                     {formatAed(totalCredit)}
                   </td>
                 </tr>

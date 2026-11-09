@@ -9,6 +9,14 @@ export function useUsers() {
   });
 }
 
+export function useUser(id: string | undefined | null) {
+  return useQuery<UserItem>({
+    queryKey: ["user", id],
+    queryFn: () => fetchJson<UserItem>(`/api/users/${id}`),
+    enabled: !!id,
+  });
+}
+
 export function useCreateUser() {
   const qc = useQueryClient();
   return useMutation({

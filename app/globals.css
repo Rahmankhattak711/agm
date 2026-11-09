@@ -87,6 +87,22 @@ textarea {
   font-family: inherit;
 }
 
+/* ==========================================================================
+   GLOBAL NUMBER INPUT STYLES
+   Remove browser native spin buttons (up/down stepper arrows) and prevent
+   accidental mouse wheel / keyboard increment/decrement project-wide.
+   ========================================================================== */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
 @media screen {
   .print-page-footer-group,
   tfoot.print-page-footer-group {

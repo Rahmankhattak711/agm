@@ -12,6 +12,7 @@ import { TaxRateDropdown } from "./TaxRateDropdown";
 
 export interface JournalGridRow {
   id: string;
+  invoiceNumber?: string;
   description: string;
   accountId: string;
   accountName?: string;
@@ -90,7 +91,30 @@ export function JournalEntryGrid({
 
   const updateRow = (index: number, updates: Partial<JournalGridRow>) => {
     const updated = [...rows];
-    const row = { ...updated[index], ...updates };
+    let row = { ...updated[index], ...updates };
+
+    // Auto-inherit Invoice #, Project, Branch, Tax Rate, and Corporate Tax from prior row if index > 0
+    if (index > 0) {
+      const template = updated.slice(0, index).reverse().find((r) => r.invoiceNumber || r.projectId || r.branch || (r.taxType && r.taxType !== "OUT_OF_SCOPE"));
+      if (template) {
+        if (!row.invoiceNumber && template.invoiceNumber) {
+          row.invoiceNumber = template.invoiceNumber;
+        }
+        if (!row.projectId && template.projectId) {
+          row.projectId = template.projectId;
+          row.projectName = template.projectName;
+        }
+        if (!row.branch && template.branch) {
+          row.branch = template.branch;
+        }
+        if ((!row.taxType || row.taxType === "OUT_OF_SCOPE") && template.taxType && template.taxType !== "OUT_OF_SCOPE" && updates.taxType === undefined) {
+          row.taxType = template.taxType;
+        }
+        if ((!row.corporateTaxTreatment || row.corporateTaxTreatment === "TAXABLE_9") && template.corporateTaxTreatment && updates.corporateTaxTreatment === undefined) {
+          row.corporateTaxTreatment = template.corporateTaxTreatment;
+        }
+      }
+    }
 
     const fx = Number(row.fxRate) > 0 ? Number(row.fxRate) : 1;
     const debitNum = Number(row.debit) || 0;
@@ -121,29 +145,35 @@ export function JournalEntryGrid({
     if (!acc) return;
 
     const row = rows[index];
-    const isPaymentAccount =
-      acc.accountCode.startsWith("111") ||
-      acc.accountCode.startsWith("101") ||
-      acc.accountCode.startsWith("102") ||
-      acc.accountName.toLowerCase().includes("cash") ||
-      acc.accountName.toLowerCase().includes("bank");
+    const template = index > 0
+      ? rows.slice(0, index).reverse().find((r) => r.invoiceNumber || r.projectId || r.branch || (r.taxType && r.taxType !== "OUT_OF_SCOPE"))
+      : null;
 
-    let defaultTax: TaxCategoryType = row.taxType;
-    if (isPaymentAccount || taxInclusive === "no_tax") {
-      defaultTax = "OUT_OF_SCOPE";
+    let targetTax: TaxCategoryType = row.taxType;
+    if (template?.taxType && template.taxType !== "OUT_OF_SCOPE") {
+      targetTax = template.taxType;
+    } else if (taxInclusive === "no_tax") {
+      targetTax = "OUT_OF_SCOPE";
     }
 
     updateRow(index, {
       accountId: acc.id,
       accountName: acc.accountName,
       accountCode: acc.accountCode,
-      taxType: defaultTax,
+      taxType: targetTax,
+      invoiceNumber: row.invoiceNumber || template?.invoiceNumber || "",
+      projectId: row.projectId || template?.projectId || "",
+      projectName: row.projectName || template?.projectName || "",
+      branch: row.branch || template?.branch || "",
+      corporateTaxTreatment: row.corporateTaxTreatment || template?.corporateTaxTreatment || "TAXABLE_9",
     });
   };
 
   const addRows = (count: number = 1) => {
+    const template = [...rows].reverse().find((r) => r.invoiceNumber || r.projectId || r.branch);
     const newRows: JournalGridRow[] = Array.from({ length: count }, (_, i) => ({
       id: `row-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
+      invoiceNumber: template?.invoiceNumber || "",
       description: "",
       accountId: "",
       currency: "AED",
@@ -152,12 +182,13 @@ export function JournalEntryGrid({
       credit: "",
       debitAed: 0,
       creditAed: 0,
-      taxType: "OUT_OF_SCOPE",
-      taxRate: 0,
+      taxType: template?.taxType || "OUT_OF_SCOPE",
+      taxRate: template?.taxRate || 0,
       taxAmount: 0,
-      projectId: "",
-      branch: "",
-      corporateTaxTreatment: "TAXABLE_9",
+      projectId: template?.projectId || "",
+      projectName: template?.projectName || "",
+      branch: template?.branch || "",
+      corporateTaxTreatment: template?.corporateTaxTreatment || "TAXABLE_9",
     }));
     onChange([...rows, ...newRows]);
   };
@@ -174,11 +205,11 @@ export function JournalEntryGrid({
     <div className="space-y-3">
       {/* Table Container */}
       <div className="border border-slate-200/90 rounded-2xl overflow-x-auto bg-white shadow-xs min-h-[460px] pb-28">
-        <table className="w-full text-left text-xs whitespace-nowrap border-collapse w-full min-w-[1100px]">
+        <table className="w-full text-left text-xs whitespace-nowrap border-collapse min-w-[1260px]">
           <thead>
             <tr className="bg-slate-50/90 border-b border-slate-200 text-slate-600 uppercase text-[11px] tracking-wider font-semibold">
               <th className="px-2 py-3 w-8 text-center text-slate-400">#</th>
-              <th className="px-3 py-3 w-48 min-w-[180px]">Description</th>
+              <th className="px-3 py-3 w-36 min-w-[140px]">Invoice #</th>
               <th className="px-3 py-3 w-56 min-w-[220px]">Account *</th>
               <th className="px-3 py-3 w-32 min-w-[130px] text-right">Debit (AED)</th>
               <th className="px-3 py-3 w-32 min-w-[130px] text-right">Credit (AED)</th>
@@ -188,6 +219,7 @@ export function JournalEntryGrid({
               <th className="px-3 py-3 w-44 min-w-[160px]">Project</th>
               <th className="px-3 py-3 w-32 min-w-[130px]">Branch</th>
               <th className="px-3 py-3 w-44 min-w-[170px]">Corporate tax treatment</th>
+              <th className="px-3 py-3 w-48 min-w-[180px]">Description</th>
               <th className="px-2 py-3 w-10 text-center"></th>
             </tr>
           </thead>
@@ -199,15 +231,39 @@ export function JournalEntryGrid({
                   {idx + 1}
                 </td>
 
-                {/* Description */}
-                <td className="px-2 py-1.5">
+                {/* Invoice # (First column) */}
+                <td className="px-2 py-1.5 min-w-[145px]">
                   <input
                     type="text"
-                    placeholder="Description / Narration"
-                    value={row.description}
-                    onChange={(e) => updateRow(idx, { description: e.target.value })}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 focus:border-[#5046e5] px-2.5 py-1.5 rounded-lg text-xs text-slate-800 placeholder:text-slate-400 outline-none transition-all"
+                    placeholder="INV-001 / Ref"
+                    value={row.invoiceNumber || ""}
+                    onChange={(e) => updateRow(idx, { invoiceNumber: e.target.value })}
+                    className="w-full bg-white border border-slate-200 hover:border-slate-300 focus:border-[#5046e5] px-2.5 py-1 rounded-lg text-xs font-mono font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all shadow-2xs"
                   />
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cur = (row.invoiceNumber || "").replace(/^(INV-|INV\/|REF-|REF\/)/i, "");
+                        updateRow(idx, { invoiceNumber: `INV-${cur}` });
+                      }}
+                      className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 border border-slate-200 text-slate-600 transition-colors cursor-pointer select-none"
+                      title="Set INV- prefix"
+                    >
+                      INV-
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cur = (row.invoiceNumber || "").replace(/^(INV-|INV\/|REF-|REF\/)/i, "");
+                        updateRow(idx, { invoiceNumber: `REF-${cur}` });
+                      }}
+                      className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 border border-slate-200 text-slate-600 transition-colors cursor-pointer select-none"
+                      title="Set REF- prefix"
+                    >
+                      REF-
+                    </button>
+                  </div>
                 </td>
 
                 {/* Account */}
@@ -364,6 +420,17 @@ export function JournalEntryGrid({
                       </option>
                     ))}
                   </select>
+                </td>
+
+                {/* Description (moved to last before action) */}
+                <td className="px-2 py-1.5 min-w-[180px]">
+                  <input
+                    type="text"
+                    placeholder="Description / Narration"
+                    value={row.description}
+                    onChange={(e) => updateRow(idx, { description: e.target.value })}
+                    className="w-full bg-white border border-slate-200 hover:border-slate-300 focus:border-[#5046e5] px-2.5 py-1.5 rounded-lg text-xs text-slate-800 placeholder:text-slate-400 outline-none transition-all shadow-2xs"
+                  />
                 </td>
 
                 {/* Delete line */}

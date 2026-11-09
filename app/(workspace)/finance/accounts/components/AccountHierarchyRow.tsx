@@ -50,7 +50,6 @@ export function AccountHierarchyRow({
   const isLevel1 = level === 1 || acc.level === 1;
   const isLevel2 = level === 2 || acc.level === 2;
   const isLevel3 = level === 3 || acc.level === 3;
-  const isLevel4 = level >= 4 || acc.level === 4;
 
   // Role & Level Security Enforcement
   const canEdit = !isLevel1 || Boolean(isSuperAdmin);
@@ -64,66 +63,144 @@ export function AccountHierarchyRow({
         ? Boolean(isSuperAdmin || isFinancialUser)
         : false;
 
-  // Level 1 Pillars
+  // Level 1 Pillars with Soft Pastel Colors (Matching Fixed Assets)
   const getLevel1Theme = (type: string) => {
     switch (type) {
       case "ASSET":
         return {
-          rowClass:
-            "border-l-4 border-l-purple-600 bg-purple-50/30 hover:bg-purple-50/60 text-purple-950 border-b border-purple-200/60 font-bold",
-          badgeClass: "bg-purple-100 text-purple-800 border-purple-200",
-          iconClass: "text-purple-600 fill-purple-100",
-          pillarLabel: "Pillar 1 · Asset",
+          rowStyle: {
+            backgroundColor: "#f8faff",
+            borderLeft: "3px solid #1d4ed8",
+            borderBottom: "1px solid #dbeafe",
+          } as React.CSSProperties,
+          codeStyle: {
+            backgroundColor: "#eff6ff",
+            color: "#1d4ed8",
+            border: "1px solid #93c5fd",
+          } as React.CSSProperties,
+          pillStyle: {
+            backgroundColor: "#dbeafe",
+            color: "#1e40af",
+            border: "1px solid #93c5fd",
+          } as React.CSSProperties,
+          iconColor: "#1d4ed8",
+          pillarLabel: "PILLAR 1 · ASSET",
         };
       case "LIABILITY":
         return {
-          rowClass:
-            "border-l-4 border-l-rose-600 bg-rose-50/30 hover:bg-rose-50/60 text-rose-950 border-b border-rose-200/60 font-bold",
-          badgeClass: "bg-rose-100 text-rose-800 border-rose-200",
-          iconClass: "text-rose-600 fill-rose-100",
-          pillarLabel: "Pillar 2 · Liability",
+          rowStyle: {
+            backgroundColor: "#fffafb",
+            borderLeft: "3px solid #e11d48",
+            borderBottom: "1px solid #ffe4e6",
+          } as React.CSSProperties,
+          codeStyle: {
+            backgroundColor: "#fff1f2",
+            color: "#be123c",
+            border: "1px solid #fda4af",
+          } as React.CSSProperties,
+          pillStyle: {
+            backgroundColor: "#ffe4e6",
+            color: "#9f1239",
+            border: "1px solid #fda4af",
+          } as React.CSSProperties,
+          iconColor: "#be123c",
+          pillarLabel: "PILLAR 2 · LIABILITY",
         };
       case "EQUITY":
         return {
-          rowClass:
-            "border-l-4 border-l-amber-600 bg-amber-50/30 hover:bg-amber-50/60 text-amber-950 border-b border-amber-200/60 font-bold",
-          badgeClass: "bg-amber-100 text-amber-800 border-amber-200",
-          iconClass: "text-amber-600 fill-amber-100",
-          pillarLabel: "Pillar 3 · Equity",
+          rowStyle: {
+            backgroundColor: "#fffef5",
+            borderLeft: "3px solid #ca8a04",
+            borderBottom: "1px solid #fef08a",
+          } as React.CSSProperties,
+          codeStyle: {
+            backgroundColor: "#fefce8",
+            color: "#a16207",
+            border: "1px solid #fde047",
+          } as React.CSSProperties,
+          pillStyle: {
+            backgroundColor: "#fef9c3",
+            color: "#854d0e",
+            border: "1px solid #fde047",
+          } as React.CSSProperties,
+          iconColor: "#a16207",
+          pillarLabel: "PILLAR 3 · EQUITY",
         };
       case "REVENUE":
         return {
-          rowClass:
-            "border-l-4 border-l-emerald-600 bg-emerald-50/30 hover:bg-emerald-50/60 text-emerald-950 border-b border-emerald-200/60 font-bold",
-          badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
-          iconClass: "text-emerald-600 fill-emerald-100",
-          pillarLabel: "Pillar 4 · Revenue",
+          rowStyle: {
+            backgroundColor: "#f7fef9",
+            borderLeft: "3px solid #16a34a",
+            borderBottom: "1px solid #dcfce7",
+          } as React.CSSProperties,
+          codeStyle: {
+            backgroundColor: "#f0fdf4",
+            color: "#15803d",
+            border: "1px solid #86efac",
+          } as React.CSSProperties,
+          pillStyle: {
+            backgroundColor: "#dcfce7",
+            color: "#166534",
+            border: "1px solid #86efac",
+          } as React.CSSProperties,
+          iconColor: "#15803d",
+          pillarLabel: "PILLAR 4 · REVENUE",
         };
       case "EXPENSE":
         return {
-          rowClass:
-            "border-l-4 border-l-blue-600 bg-blue-50/30 hover:bg-blue-50/60 text-blue-950 border-b border-blue-200/60 font-bold",
-          badgeClass: "bg-blue-100 text-blue-800 border-blue-200",
-          iconClass: "text-blue-600 fill-blue-100",
-          pillarLabel: "Pillar 5 · Expense",
+          rowStyle: {
+            backgroundColor: "#fffaf5",
+            borderLeft: "3px solid #ea580c",
+            borderBottom: "1px solid #ffedd5",
+          } as React.CSSProperties,
+          codeStyle: {
+            backgroundColor: "#fff7ed",
+            color: "#c2410c",
+            border: "1px solid #fdba74",
+          } as React.CSSProperties,
+          pillStyle: {
+            backgroundColor: "#ffedd5",
+            color: "#9a3412",
+            border: "1px solid #fdba74",
+          } as React.CSSProperties,
+          iconColor: "#c2410c",
+          pillarLabel: "PILLAR 5 · EXPENSE",
         };
       default:
         return {
-          rowClass:
-            "border-l-4 border-l-slate-600 bg-slate-50 hover:bg-slate-100 text-slate-900 border-b border-slate-200 font-bold",
-          badgeClass: "bg-slate-100 text-slate-800 border-slate-200",
-          iconClass: "text-slate-600 fill-slate-100",
-          pillarLabel: "Root Pillar",
+          rowStyle: {
+            backgroundColor: "#f8fafc",
+            borderLeft: "3px solid #475569",
+            borderBottom: "1px solid #e2e8f0",
+          } as React.CSSProperties,
+          codeStyle: {
+            backgroundColor: "#f1f5f9",
+            color: "#334155",
+            border: "1px solid #cbd5e1",
+          } as React.CSSProperties,
+          pillStyle: {
+            backgroundColor: "#f1f5f9",
+            color: "#334155",
+            border: "1px solid #cbd5e1",
+          } as React.CSSProperties,
+          iconColor: "#475569",
+          pillarLabel: "ROOT PILLAR",
         };
     }
   };
 
-  // Modern Semantic Cash Flow Badge
+  // Soft Pastel Cash Flow Badge
   const renderCashFlowBadge = (cashFlowType?: string) => {
     if (!cashFlowType) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-slate-100 text-slate-600 border border-slate-200/70 truncate">
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+        <span
+          style={{
+            backgroundColor: "#f1f5f9",
+            color: "#475569",
+            border: "1px solid #cbd5e1",
+          }}
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-medium uppercase tracking-wide truncate"
+        >
           <span>Operating</span>
         </span>
       );
@@ -132,31 +209,55 @@ export function AccountHierarchyRow({
     const lower = cashFlowType.toLowerCase();
     if (lower.includes("cash") || lower.includes("equivalent")) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs truncate max-w-[150px]">
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
-          <span className="truncate">Cash & cash equiv</span>
+        <span
+          style={{
+            backgroundColor: "#eff6ff",
+            color: "#1d4ed8",
+            border: "1px solid #93c5fd",
+          }}
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-medium uppercase tracking-wide truncate max-w-[150px]"
+        >
+          <span className="truncate">Cash &amp; cash eq.</span>
         </span>
       );
     }
     if (lower.includes("invest")) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-purple-50 text-purple-700 border border-purple-200/80 shadow-2xs truncate max-w-[150px]">
-          <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
+        <span
+          style={{
+            backgroundColor: "#f3e8ff",
+            color: "#7e22ce",
+            border: "1px solid #d8b4fe",
+          }}
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-medium uppercase tracking-wide truncate max-w-[150px]"
+        >
           <span className="truncate">Investing</span>
         </span>
       );
     }
     if (lower.includes("financ")) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 shadow-2xs truncate max-w-[150px]">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+        <span
+          style={{
+            backgroundColor: "#fefce8",
+            color: "#a16207",
+            border: "1px solid #fde047",
+          }}
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-medium uppercase tracking-wide truncate max-w-[150px]"
+        >
           <span className="truncate">Financing</span>
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-sky-50 text-sky-700 border border-sky-200/80 shadow-2xs truncate max-w-[150px]">
-        <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
+      <span
+        style={{
+          backgroundColor: "#e0f2fe",
+          color: "#0369a1",
+          border: "1px solid #bae6fd",
+        }}
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-medium uppercase tracking-wide truncate max-w-[150px]"
+      >
         <span className="truncate">{cashFlowType}</span>
       </span>
     );
@@ -171,7 +272,7 @@ export function AccountHierarchyRow({
       return <Banknote className="w-3.5 h-3.5 text-emerald-600 shrink-0" />;
     }
     if (subtype.includes("receivable") || name.includes("receivable") || name.includes("customer")) {
-      return <Users className="w-3.5 h-3.5 text-indigo-600 shrink-0" />;
+      return <Users className="w-3.5 h-3.5 text-blue-600 shrink-0" />;
     }
     if (subtype.includes("payable") || name.includes("payable") || name.includes("supplier") || name.includes("vendor")) {
       return <CreditCard className="w-3.5 h-3.5 text-amber-600 shrink-0" />;
@@ -188,18 +289,23 @@ export function AccountHierarchyRow({
   return (
     <tr
       onClick={() => onOpenEdit(acc)}
+      style={
+        isLevel1
+          ? level1Theme?.rowStyle
+          : isLevel2
+            ? { backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0" }
+            : undefined
+      }
       className={`group transition-colors text-xs select-none cursor-pointer ${
         isLevel1
-          ? level1Theme?.rowClass
+          ? "hover:opacity-95"
           : isLevel2
-            ? "bg-slate-50/50 hover:bg-slate-100/70 border-b border-slate-200/80 text-slate-900 font-semibold"
-            : isLevel3
-              ? "bg-white hover:bg-slate-50/80 border-b border-slate-100 text-slate-800"
-              : "bg-white hover:bg-indigo-50/30 border-b border-slate-100/70 text-slate-700"
+            ? "hover:bg-slate-100/70 text-slate-800"
+            : "bg-white hover:bg-slate-50 text-slate-700"
       }`}
     >
-      {/* 1. Expand / Collapse Chevron (w-10) */}
-      <td className="py-2 px-1 text-center w-10 align-middle">
+      {/* 1. Expand / Collapse Chevron */}
+      <td className="py-2.5 px-2 text-center w-10 align-middle">
         {hasChildren ? (
           <button
             type="button"
@@ -207,13 +313,13 @@ export function AccountHierarchyRow({
               e.stopPropagation();
               toggleCollapse(acc.id);
             }}
-            className="p-1 rounded-md text-slate-500 hover:text-slate-900 hover:bg-black/5 transition-colors cursor-pointer inline-flex items-center justify-center"
+            className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-black/5 transition-colors cursor-pointer inline-flex items-center justify-center"
             title={isCollapsed ? "Expand sub-accounts" : "Collapse sub-accounts"}
           >
             {isCollapsed ? (
-              <ChevronRight className="w-3.5 h-3.5 stroke-[2.25]" />
+              <ChevronRight className="w-3.5 h-3.5" />
             ) : (
-              <ChevronDown className="w-3.5 h-3.5 stroke-[2.25]" />
+              <ChevronDown className="w-3.5 h-3.5" />
             )}
           </button>
         ) : (
@@ -221,23 +327,24 @@ export function AccountHierarchyRow({
         )}
       </td>
 
-      {/* 2. Account Code (w-20) */}
-      <td className="py-2 px-3 whitespace-nowrap font-mono w-20 align-middle">
+      {/* 2. Account Code */}
+      <td className="py-2.5 px-3 whitespace-nowrap font-mono w-24 align-middle">
         <div className="flex items-center gap-1.5">
-          {isLevel1 ? (
+          {isLevel1 && level1Theme ? (
             <span
-              className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded font-mono font-black text-xs border shadow-2xs ${level1Theme?.badgeClass}`}
+              style={level1Theme.codeStyle}
+              className="inline-flex items-center justify-center px-2 py-0.5 rounded-md font-mono font-medium text-[11px]"
             >
               {acc.accountCode}
             </span>
           ) : (
             <span
-              className={`font-mono text-xs ${
+              className={`font-mono text-[11.5px] ${
                 isLevel2
-                  ? "font-bold text-slate-900"
+                  ? "font-medium text-slate-800"
                   : isLevel3
-                    ? "font-semibold text-slate-800"
-                    : "font-medium text-slate-600"
+                    ? "font-medium text-slate-600"
+                    : "font-normal text-slate-500"
               }`}
             >
               {acc.accountCode}
@@ -252,8 +359,8 @@ export function AccountHierarchyRow({
         </div>
       </td>
 
-      {/* 3. Account Name (Fluid Width) */}
-      <td className="py-2 px-3 align-middle min-w-0">
+      {/* 3. Account Name */}
+      <td className="py-2.5 px-3 align-middle min-w-0">
         <div
           className="flex items-center gap-2 min-w-0"
           style={{
@@ -278,7 +385,7 @@ export function AccountHierarchyRow({
               >
                 <path
                   d="M4 0v8a3 3 0 003 3h8"
-                  strokeWidth="1.75"
+                  strokeWidth="1.5"
                   strokeLinecap="round"
                 />
               </svg>
@@ -286,13 +393,16 @@ export function AccountHierarchyRow({
           )}
 
           {/* Icon */}
-          {isLevel1 ? (
-            <Folder className={`w-4 h-4 shrink-0 ${level1Theme?.iconClass}`} />
+          {isLevel1 && level1Theme ? (
+            <Folder
+              className="w-4 h-4 shrink-0"
+              style={{ color: level1Theme.iconColor }}
+            />
           ) : isLevel2 || isLevel3 || hasChildren ? (
             isCollapsed ? (
-              <Folder className="w-3.5 h-3.5 text-slate-600 shrink-0 stroke-[1.75]" />
+              <Folder className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             ) : (
-              <FolderOpen className="w-3.5 h-3.5 text-indigo-600 shrink-0 stroke-[1.75]" />
+              <FolderOpen className="w-3.5 h-3.5 text-blue-600 shrink-0" />
             )
           ) : (
             renderLeafIcon()
@@ -301,14 +411,19 @@ export function AccountHierarchyRow({
           {/* Account Title + Badges */}
           <div className="flex items-center gap-2 min-w-0 truncate">
             <span
+              style={
+                !isLevel1 && !isLevel2 && !hasChildren
+                  ? { color: "#1d4ed8" }
+                  : undefined
+              }
               className={`truncate ${
                 isLevel1
-                  ? "font-bold text-sm text-slate-900"
+                  ? "font-semibold text-xs text-slate-800"
                   : isLevel2
-                    ? "font-semibold text-xs text-slate-900"
+                    ? "font-medium text-xs text-slate-800"
                     : isLevel3
-                      ? "font-medium text-xs text-slate-800"
-                      : "text-xs text-slate-700"
+                      ? "font-medium text-xs text-slate-700"
+                      : "font-medium text-xs"
               }`}
             >
               {acc.accountName}
@@ -316,7 +431,10 @@ export function AccountHierarchyRow({
 
             {/* Pillar label on Level 1 */}
             {isLevel1 && level1Theme && (
-              <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/5 text-slate-700 shrink-0">
+              <span
+                style={level1Theme.pillStyle}
+                className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-medium uppercase tracking-wide shrink-0"
+              >
                 {level1Theme.pillarLabel}
               </span>
             )}
@@ -331,54 +449,87 @@ export function AccountHierarchyRow({
         </div>
       </td>
 
-      {/* 4. Cash Flow Type (w-40) */}
-      <td className="py-2 px-3 whitespace-nowrap text-left align-middle w-40 truncate">
+      {/* 4. Cash Flow Type */}
+      <td className="py-2.5 px-3 whitespace-nowrap text-left align-middle w-40 truncate">
         {isLevel1 ? (
-          <span className="text-slate-300 font-light select-none text-xs">—</span>
+          <span className="text-slate-300 font-normal select-none text-xs">-</span>
         ) : (
           renderCashFlowBadge((acc as any).cashFlowType)
         )}
       </td>
 
-      {/* 5. Enable Payments (w-24) */}
-      <td className="py-2 px-2 whitespace-nowrap text-center align-middle w-24">
+      {/* 5. Enable Payments */}
+      <td className="py-2.5 px-2 whitespace-nowrap text-center align-middle w-24">
         {isLevel1 || isLevel2 ? (
-          <span className="text-slate-300 font-light select-none text-xs">—</span>
+          <span className="text-slate-300 font-normal select-none text-xs">-</span>
         ) : (acc as any).enablePayments ? (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-2xs">
-            <Check className="w-3 h-3 text-emerald-600 stroke-[3]" />
+          <span
+            style={{
+              backgroundColor: "#f0fdf4",
+              color: "#15803d",
+              border: "1px solid #86efac",
+            }}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-medium"
+          >
+            <Check className="w-3 h-3 text-emerald-600" />
             <span>Yes</span>
           </span>
-        ) : (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-medium text-slate-400 bg-slate-50 border border-slate-200/60">
-            No
-          </span>
-        )}
-      </td>
-
-      {/* 6. Show in Expense Claims (w-24) */}
-      <td className="py-2 px-2 whitespace-nowrap text-center align-middle w-24">
-        {isLevel1 || isLevel2 ? (
-          <span className="text-slate-300 font-light select-none text-xs">—</span>
-        ) : (acc as any).showInExpenseClaims ? (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs">
-            <Check className="w-3 h-3 text-blue-600 stroke-[3]" />
-            <span>Yes</span>
-          </span>
-        ) : (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-medium text-slate-400 bg-slate-50 border border-slate-200/60">
-            No
-          </span>
-        )}
-      </td>
-
-      {/* 7. Classification / Account Subtype (w-36) */}
-      <td className="py-2 px-3 whitespace-nowrap text-left align-middle w-36 truncate">
-        {isLevel1 || isLevel2 || !subtype ? (
-          <span className="text-slate-300 font-light select-none text-xs">—</span>
         ) : (
           <span
-            className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-slate-100 text-slate-700 border border-slate-200/70 truncate max-w-[130px]"
+            style={{
+              backgroundColor: "#f8fafc",
+              color: "#64748b",
+              border: "1px solid #e2e8f0",
+            }}
+            className="inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-normal"
+          >
+            No
+          </span>
+        )}
+      </td>
+
+      {/* 6. Show in Expense Claims */}
+      <td className="py-2.5 px-2 whitespace-nowrap text-center align-middle w-28">
+        {isLevel1 || isLevel2 ? (
+          <span className="text-slate-300 font-normal select-none text-xs">-</span>
+        ) : (acc as any).showInExpenseClaims ? (
+          <span
+            style={{
+              backgroundColor: "#eff6ff",
+              color: "#1d4ed8",
+              border: "1px solid #93c5fd",
+            }}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-medium"
+          >
+            <Check className="w-3 h-3 text-blue-600" />
+            <span>Yes</span>
+          </span>
+        ) : (
+          <span
+            style={{
+              backgroundColor: "#f8fafc",
+              color: "#64748b",
+              border: "1px solid #e2e8f0",
+            }}
+            className="inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-normal"
+          >
+            No
+          </span>
+        )}
+      </td>
+
+      {/* 7. Classification / Account Subtype */}
+      <td className="py-2.5 px-3 whitespace-nowrap text-left align-middle w-40 truncate">
+        {isLevel1 || isLevel2 || !subtype ? (
+          <span className="text-slate-300 font-normal select-none text-xs">-</span>
+        ) : (
+          <span
+            style={{
+              backgroundColor: "#fef3c7",
+              color: "#b45309",
+              border: "1px solid #fde68a",
+            }}
+            className="inline-flex items-center px-2 py-0.5 rounded-full text-[9.5px] font-medium uppercase tracking-wide truncate max-w-[140px]"
             title={subtype}
           >
             {subtype}
@@ -386,9 +537,12 @@ export function AccountHierarchyRow({
         )}
       </td>
 
-      {/* 8. Dedicated Hover Actions (w-20) */}
-      <td className="py-2 px-3 whitespace-nowrap text-right align-middle w-20">
-        <div className="inline-flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* 8. Actions (Matching Fixed Assets Icon Buttons) */}
+      <td className="py-2.5 px-4 whitespace-nowrap text-right align-middle w-24">
+        <div
+          className="inline-flex items-center justify-end gap-1"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Add Sub-account */}
           {canAddSub && (
             <button
@@ -397,14 +551,14 @@ export function AccountHierarchyRow({
                 e.stopPropagation();
                 onOpenCreateChild(acc);
               }}
-              className="p-1 rounded-md text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 transition-colors cursor-pointer"
+              className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
               title={
                 isLevel2
                   ? "Add Level 3 Sub-group"
                   : "Add Level 4 Ledger Account"
               }
             >
-              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <Plus className="w-3.5 h-3.5" />
             </button>
           )}
 
@@ -416,7 +570,7 @@ export function AccountHierarchyRow({
                 e.stopPropagation();
                 onOpenEdit(acc);
               }}
-              className="p-1 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+              className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               title="Edit Account"
             >
               <Pencil className="w-3.5 h-3.5" />
@@ -431,7 +585,7 @@ export function AccountHierarchyRow({
                 e.stopPropagation();
                 onDelete(acc);
               }}
-              className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+              className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
               title="Delete Account"
             >
               <Trash2 className="w-3.5 h-3.5" />

@@ -124,6 +124,10 @@ export interface FixedAsset {
   plateNumber?: string | null;
   assignedTo?: string | null;
   driverName?: string | null;
+  imageUrl?: string | null;
+  fileName?: string | null;
+  fileType?: string | null;
+  notes?: string | null;
   assetAccountId: string;
   accumulatedDeprAccountId: string;
   deprExpenseAccountId: string;
@@ -461,6 +465,12 @@ export interface PurchaseOrder {
   createdBy?: string | null;
   creator?: { fullName: string; email: string } | null;
   items: PurchaseOrderItem[];
+  supplierBills?: Array<{
+    id: string;
+    billNumber: string;
+    status: string;
+    journalEntryId?: string | null;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -477,6 +487,8 @@ export interface UserItem {
     | "INVENTORY_MANAGER"
     | "USER";
   isActive: boolean;
+  lastLoginAt?: string | null;
+  mustChangePassword?: boolean;
   createdAt: string;
   updatedAt: string;
 }

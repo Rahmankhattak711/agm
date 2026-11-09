@@ -19,7 +19,7 @@ import {
   PurchaseOrderStatus,
 } from "@/lib/hooks/api-hooks";
 import { PlusIcon, ShoppingCartIcon, PrintIcon, EyeIcon, TrashIcon } from "@/components/icons";
-import { Plus, RefreshCw, PackageCheck } from "lucide-react";
+import { Plus, RefreshCw, PackageCheck, FileText } from "lucide-react";
 import {
   Button,
   Select,
@@ -86,7 +86,16 @@ const COLUMNS: RegisterColumn[] = [
   },
 ];
 
-const getStatusBadge = (status: PurchaseOrderStatus) => {
+const getStatusBadge = (status: PurchaseOrderStatus, po?: any) => {
+  const isBilled = po?.supplierBills && po.supplierBills.length > 0;
+  if (isBilled) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-2xs">
+        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+        <span>Billed</span>
+      </span>
+    );
+  }
   switch (status) {
     case "DRAFT":
       return (
@@ -96,7 +105,7 @@ const getStatusBadge = (status: PurchaseOrderStatus) => {
       );
     case "ORDERED":
       return (
-        <span className="px-2.5  rounded-full text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">
+        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">
           Ordered
         </span>
       );
@@ -282,6 +291,33 @@ export default function PurchaseOrdersPage() {
     });
   };
 
+  const handleConvertToBill = async (po: PurchaseOrder) => {
+    try {
+      const res = await fetch(`/api/inventory/purchase-orders/${po.id}/convert-to-bill`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to convert PO to Bill");
+      }
+      if (data.alreadyConverted) {
+        toast.info(`Bill ${data.bill?.billNumber || ""} is already posted.`);
+      } else {
+        toast.success(`Generated Bill ${data.bill?.billNumber} and posted Journal Entry!`);
+      }
+      if (data.bill) {
+        setSelectedPO((prev) =>
+          prev && prev.id === po.id
+            ? { ...prev, supplierBills: [data.bill] }
+            : prev,
+        );
+      }
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to convert PO to bill");
+    }
+  };
+
   return (
     <div className="w-full min-h-full flex flex-col font-sans">
       {/* Executive Header - Clean alignment, zero overlap */}
@@ -463,6 +499,7 @@ export default function PurchaseOrdersPage() {
         onClose={() => setSelectedPO(null)}
         onPrint={(po) => setPrintModalPO(po)}
         getStatusBadge={getStatusBadge}
+        onConvertToBill={handleConvertToBill}
       />
 
       </div>
@@ -544,6 +581,47 @@ export default function PurchaseOrdersPage() {
                 <span className="truncate">Receive Goods</span>
               </button>
             )}
+
+            {/* If already Billed -> View Linked Bill */}
+            {Boolean(
+              activeMenu.po.supplierBills &&
+                activeMenu.po.supplierBills.length > 0,
+            ) && (
+              <button
+                type="button"
+                onClick={() => {
+                  const bill = activeMenu.po.supplierBills![0];
+                  setActiveMenu(null);
+                  router.push(`/commercial/supplier-bills/${bill.id}`);
+                }}
+                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:bg-indigo-50 transition-colors cursor-pointer text-left group"
+              >
+                <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                <span className="truncate">
+                  View Bill ({activeMenu.po.supplierBills![0].billNumber})
+                </span>
+              </button>
+            )}
+
+            {/* Convert to Bill & Post JE (only if RECEIVED and NOT yet billed) */}
+            {activeMenu.po.status === "RECEIVED" &&
+              !(
+                activeMenu.po.supplierBills &&
+                activeMenu.po.supplierBills.length > 0
+              ) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const po = activeMenu.po;
+                    setActiveMenu(null);
+                    handleConvertToBill(po);
+                  }}
+                  className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 transition-colors cursor-pointer text-left group"
+                >
+                  <PackageCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="truncate">Convert to Bill & Post</span>
+                </button>
+              )}
 
             {/* Delete PO (Draft only) */}
             {activeMenu.po.status === "DRAFT" &&

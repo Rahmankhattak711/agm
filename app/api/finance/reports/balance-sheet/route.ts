@@ -1,6 +1,7 @@
 import { getAuthUser, unauthorized } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { microCache } from "@/lib/modules/accounting/cache/micro-cache";
 
 export async function GET(request: Request) {
   try {
@@ -8,11 +9,19 @@ export async function GET(request: Request) {
     if (!authUser) return unauthorized();
 
     const { searchParams } = new URL(request.url);
-    const asAtDate = searchParams.get("asAt")
-      ? new Date(searchParams.get("asAt")!)
-      : new Date("2026-10-31T23:59:59.999Z");
+    const todayStr = new Date().toISOString().split("T")[0];
+    const asAtParam = searchParams.get("asAt") || todayStr;
+    const forceRefresh = searchParams.get("refresh") === "true";
 
-    // Fetch all accounts
+    const cacheKey = `bs:${asAtParam}`;
+    const cached = microCache.get<any>(cacheKey);
+    if (cached && !forceRefresh) {
+      return NextResponse.json(cached);
+    }
+
+    const asAtDate = new Date(`${asAtParam}T23:59:59.999Z`);
+
+    // Single-query fetch: All accounts with posted journal lines up to asAtDate
     const accounts = await prisma.chartOfAccount.findMany({
       orderBy: { accountCode: "asc" },
       include: {
@@ -27,23 +36,34 @@ export async function GET(request: Request) {
       },
     });
 
-    // Compute balance per account
+    let currentYearNetProfit = 0;
+
+    // Compute balance per account and aggregate P&L net profit in a single in-memory pass
     const accountsWithBalance = accounts.map((acc) => {
       let balance = 0;
-      for (const l of acc.journalLines) {
-        const isAssetOrExpense = acc.type === "ASSET" || acc.accountCode.startsWith("1");
-        const isLiabilityOrEquityOrRevenue =
-          acc.type === "LIABILITY" ||
-          acc.type === "EQUITY" ||
-          acc.accountCode.startsWith("2") ||
-          acc.accountCode.startsWith("3");
+      const isAsset = acc.type === "ASSET" || acc.accountCode.startsWith("1");
+      const isLiability = acc.type === "LIABILITY" || acc.accountCode.startsWith("2");
+      const isEquity = acc.type === "EQUITY" || acc.accountCode.startsWith("3");
+      const isRevenue = acc.type === "REVENUE" || acc.accountCode.startsWith("4");
+      const isExpense = acc.type === "EXPENSE" || acc.accountCode.startsWith("5");
 
-        if (isAssetOrExpense) {
-          balance += Number(l.debit) - Number(l.credit);
-        } else if (isLiabilityOrEquityOrRevenue) {
-          balance += Number(l.credit) - Number(l.debit);
+      for (const l of acc.journalLines) {
+        const dr = Number(l.debit || 0);
+        const cr = Number(l.credit || 0);
+
+        if (isAsset) {
+          balance += dr - cr;
+        } else if (isLiability || isEquity) {
+          balance += cr - dr;
         } else {
-          balance += Number(l.debit) - Number(l.credit);
+          balance += dr - cr;
+        }
+
+        // P&L Contribution
+        if (isRevenue) {
+          currentYearNetProfit += cr - dr;
+        } else if (isExpense) {
+          currentYearNetProfit -= dr - cr;
         }
       }
 
@@ -59,33 +79,6 @@ export async function GET(request: Request) {
       };
     });
 
-    // Also calculate Retained Earnings (Net Profit/Loss up to asAtDate)
-    const pnlLines = await prisma.journalEntryLine.findMany({
-      where: {
-        journalEntry: {
-          isPosted: true,
-          entryDate: { lte: asAtDate },
-        },
-        account: {
-          OR: [
-            { type: "REVENUE" },
-            { type: "EXPENSE" },
-            { accountCode: { startsWith: "4" } },
-            { accountCode: { startsWith: "5" } },
-          ],
-        },
-      },
-      include: { account: true },
-    });
-
-    let currentYearNetProfit = 0;
-    for (const l of pnlLines) {
-      if (l.account.type === "REVENUE" || l.account.accountCode.startsWith("4")) {
-        currentYearNetProfit += Number(l.credit) - Number(l.debit);
-      } else {
-        currentYearNetProfit -= Number(l.debit) - Number(l.credit);
-      }
-    }
     currentYearNetProfit = Math.round(currentYearNetProfit * 100) / 100;
 
     // Filter into 3 Balance Sheet Pillars: Assets (1), Liabilities (2), Equity (3)
@@ -99,29 +92,80 @@ export async function GET(request: Request) {
       (a) => a.type === "EQUITY" || a.code.startsWith("3")
     );
 
-    const totalAssets = assetAccounts.reduce((s, a) => s + a.balance, 0);
-    const totalLiabilities = liabilityAccounts.reduce((s, a) => s + a.balance, 0);
-    const baseEquity = equityAccounts.reduce((s, a) => s + a.balance, 0);
-    const totalEquity = baseEquity + currentYearNetProfit;
+    // Classify into Current vs Non-Current Assets
+    const currentAssetAccounts = assetAccounts.filter((a) => {
+      const code = a.code;
+      const sub = (a.subtype || "").toLowerCase();
+      if (sub.includes("fixed") || sub.includes("non-current") || code.startsWith("12") || code.startsWith("15")) {
+        return false;
+      }
+      return true;
+    });
 
-    return NextResponse.json({
-      asAt: asAtDate.toISOString().split("T")[0],
+    const fixedAssetAccounts = assetAccounts.filter((a) => {
+      const code = a.code;
+      const sub = (a.subtype || "").toLowerCase();
+      return sub.includes("fixed") || sub.includes("non-current") || code.startsWith("12") || code.startsWith("15");
+    });
+
+    // Classify into Current vs Non-Current Liabilities
+    const currentLiabilityAccounts = liabilityAccounts.filter((a) => {
+      const code = a.code;
+      const sub = (a.subtype || "").toLowerCase();
+      if (sub.includes("non-current") || sub.includes("long-term") || code.startsWith("25")) {
+        return false;
+      }
+      return true;
+    });
+
+    const nonCurrentLiabilityAccounts = liabilityAccounts.filter((a) => {
+      const code = a.code;
+      const sub = (a.subtype || "").toLowerCase();
+      return sub.includes("non-current") || sub.includes("long-term") || code.startsWith("25");
+    });
+
+    const currentAssetsTotal = Math.round(currentAssetAccounts.reduce((s, a) => s + a.balance, 0) * 100) / 100;
+    const fixedAssetsTotal = Math.round(fixedAssetAccounts.reduce((s, a) => s + a.balance, 0) * 100) / 100;
+    const currentLiabilitiesTotal = Math.round(currentLiabilityAccounts.reduce((s, a) => s + a.balance, 0) * 100) / 100;
+    const nonCurrentLiabilitiesTotal = Math.round(nonCurrentLiabilityAccounts.reduce((s, a) => s + a.balance, 0) * 100) / 100;
+
+    const totalAssets = Math.round((currentAssetsTotal + fixedAssetsTotal) * 100) / 100;
+    const totalLiabilities = Math.round((currentLiabilitiesTotal + nonCurrentLiabilitiesTotal) * 100) / 100;
+    const baseEquity = Math.round(equityAccounts.reduce((s, a) => s + a.balance, 0) * 100) / 100;
+    const totalEquity = Math.round((baseEquity + currentYearNetProfit) * 100) / 100;
+    const totalLiabilitiesAndEquity = Math.round((totalLiabilities + totalEquity) * 100) / 100;
+    const difference = Math.round(Math.abs(totalAssets - totalLiabilitiesAndEquity) * 100) / 100;
+
+    const result = {
+      asAt: asAtParam,
       assets: {
         accounts: assetAccounts,
-        total: Math.round(totalAssets * 100) / 100,
+        currentAccounts: currentAssetAccounts,
+        fixedAccounts: fixedAssetAccounts,
+        currentTotal: currentAssetsTotal,
+        fixedTotal: fixedAssetsTotal,
+        total: totalAssets,
       },
       liabilities: {
         accounts: liabilityAccounts,
-        total: Math.round(totalLiabilities * 100) / 100,
+        currentAccounts: currentLiabilityAccounts,
+        nonCurrentAccounts: nonCurrentLiabilityAccounts,
+        currentTotal: currentLiabilitiesTotal,
+        nonCurrentTotal: nonCurrentLiabilitiesTotal,
+        total: totalLiabilities,
       },
       equity: {
         accounts: equityAccounts,
         currentYearNetProfit,
-        total: Math.round(totalEquity * 100) / 100,
+        total: totalEquity,
       },
-      totalLiabilitiesAndEquity: Math.round((totalLiabilities + totalEquity) * 100) / 100,
-      isBalanced: Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 0.01,
-    });
+      totalLiabilitiesAndEquity,
+      difference,
+      isBalanced: difference < 0.05,
+    };
+
+    microCache.set(cacheKey, result, 45);
+    return NextResponse.json(result);
   } catch (error: any) {
     console.error("GET /api/finance/reports/balance-sheet error:", error);
     return NextResponse.json(

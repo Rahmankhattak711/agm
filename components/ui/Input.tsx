@@ -27,6 +27,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       containerClassName = "w-full",
       labelClassName = "block text-xs font-bold text-agm-text mb-1",
       id,
+      type,
+      onWheel,
+      onKeyDown,
       ...props
     },
     ref,
@@ -47,9 +50,26 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={id}
+            type={type}
+            onWheel={(e) => {
+              if (type === "number") {
+                e.currentTarget.blur();
+              }
+              onWheel?.(e);
+            }}
+            onKeyDown={(e) => {
+              if (type === "number" && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+                e.preventDefault();
+              }
+              onKeyDown?.(e);
+            }}
             className={`w-full ${
               leftIcon ? "pl-9" : "px-3"
             } ${rightElement ? "pr-10" : "px-3"} py-2 text-xs rounded-xl border border-agm-box-border bg-white focus:outline-none focus:ring-2 focus:ring-agm-green/20 focus:border-agm-green text-agm-text disabled:bg-agm-box-bg disabled:text-agm-subtle placeholder:text-agm-subtle ${
+              type === "number"
+                ? "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none "
+                : ""
+            }${
               error
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
                 : ""

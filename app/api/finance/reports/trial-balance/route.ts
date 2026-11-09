@@ -9,12 +9,14 @@ export async function GET(request: Request) {
     if (!authUser) return unauthorized();
 
     const { searchParams } = new URL(request.url);
-    const fromStr = searchParams.get("from") || "2026-07-01";
-    const toStr = searchParams.get("to") || "2026-10-31";
+    const todayStr = new Date().toISOString().split("T")[0];
+    const fromStr = searchParams.get("from") || "2026-01-01";
+    const toStr = searchParams.get("to") || todayStr;
+    const forceRefresh = searchParams.get("refresh") === "true";
 
     const cacheKey = `tb:${fromStr}:${toStr}`;
     const cached = microCache.get<any>(cacheKey);
-    if (cached) return NextResponse.json(cached);
+    if (cached && !forceRefresh) return NextResponse.json(cached);
 
     const fromDate = new Date(`${fromStr}T00:00:00.000Z`);
     const toDate = new Date(`${toStr}T23:59:59.999Z`);
@@ -73,8 +75,13 @@ export async function GET(request: Request) {
         }
       }
 
-      const netClosing =
-        openingDr - openingCr + (movementDr - movementCr);
+      // Standard GAAP/IFRS Opening Balance: Net opening for the account as of fromDate
+      const netOpening = openingDr - openingCr;
+      const finalOpeningDr = netOpening > 0 ? netOpening : 0;
+      const finalOpeningCr = netOpening < 0 ? Math.abs(netOpening) : 0;
+
+      // Closing Balance: Net Opening + (Period Movements Dr - Cr)
+      const netClosing = netOpening + (movementDr - movementCr);
       const closingDr = netClosing > 0 ? netClosing : 0;
       const closingCr = netClosing < 0 ? Math.abs(netClosing) : 0;
 
@@ -99,8 +106,8 @@ export async function GET(request: Request) {
         level: acc.level,
         parentId: acc.parentId,
         hasChildren: (acc.children && acc.children.length > 0) || false,
-        openingDebit: Math.round(openingDr * 100) / 100,
-        openingCredit: Math.round(openingCr * 100) / 100,
+        openingDebit: Math.round(finalOpeningDr * 100) / 100,
+        openingCredit: Math.round(finalOpeningCr * 100) / 100,
         movementDebit: Math.round(movementDr * 100) / 100,
         movementCredit: Math.round(movementCr * 100) / 100,
         closingDebit: Math.round(closingDr * 100) / 100,
@@ -110,8 +117,8 @@ export async function GET(request: Request) {
         revaluedClosingDebit: Math.round(closingDr * 100) / 100,
         revaluedClosingCredit: Math.round(closingCr * 100) / 100,
         hasDirectActivity:
-          openingDr > 0 ||
-          openingCr > 0 ||
+          finalOpeningDr > 0 ||
+          finalOpeningCr > 0 ||
           movementDr > 0 ||
           movementCr > 0,
       });

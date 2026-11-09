@@ -374,6 +374,10 @@ model FixedAsset {
   plateNumber        String? @map("plate_number")
   assignedTo         String? @map("assigned_to")
   driverName         String? @map("driver_name")
+  imageUrl           String? @map("image_url") @db.Text
+  fileName           String? @map("file_name")
+  fileType           String? @map("file_type")
+  notes              String? @map("notes") @db.Text
 
   assetAccountId           String @map("asset_account_id") @db.Uuid
   accumulatedDeprAccountId String @map("accumulated_depr_account_id") @db.Uuid

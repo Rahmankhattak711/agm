@@ -663,3 +663,124 @@ export async function postDebitNoteJournalEntry(params: {
 
   return journalEntry;
 }
+
+/**
+ * Converts a Received Purchase Order into a Supplier Bill and automatically posts the Journal Entry:
+ * Dr. 5010 Purchase Materials (Net subtotal)
+ * Dr. 2200 Input VAT (5% tax)
+ *   Cr. 2000 Accounts Payable (Gross total)
+ */
+export async function convertPurchaseOrderToBill(poId: string, userId: string) {
+  const po = await prisma.purchaseOrder.findUnique({
+    where: { id: poId },
+    include: {
+      supplier: true,
+      items: {
+        include: { product: true },
+      },
+      supplierBills: {
+        include: { journalEntry: true },
+      },
+    },
+  });
+
+  if (!po) {
+    throw new Error("Purchase order not found");
+  }
+
+  // Idempotency: If a posted bill already exists for this PO, return it
+  const existingBill = po.supplierBills.find((b) => b.status === "POSTED" || b.journalEntryId);
+  if (existingBill) {
+    return {
+      success: true,
+      alreadyConverted: true,
+      bill: existingBill,
+      journalEntryId: existingBill.journalEntryId,
+    };
+  }
+
+  let subtotal = 0;
+  const billItems = po.items.map((item) => {
+    const qty = Math.max(1, Number(item.quantityOrdered) || 1);
+    const unitCost = Number(item.unitCost) || 0;
+    const total = Math.round(qty * unitCost * 100) / 100;
+    subtotal += total;
+
+    return {
+      productId: item.productId,
+      description: item.product?.name || item.itemNotes || `Item from PO ${po.poNumber}`,
+      quantity: qty,
+      unit: item.product?.unit || "PCS",
+      unitCost,
+      totalAmount: total,
+    };
+  });
+
+  // Calculate 5% UAE VAT
+  const vatRate = 5.0;
+  const vatAmount = Math.round(subtotal * 0.05 * 100) / 100;
+  const totalAmount = Math.round((subtotal + vatAmount) * 100) / 100;
+
+  const cleanSeq = extractCleanSeq(po.poNumber);
+  const billNumber = `BILL-${cleanSeq}`;
+
+  const billDate = po.orderDate ? new Date(po.orderDate) : new Date();
+
+  // Create SupplierBill
+  const bill = await prisma.supplierBill.create({
+    data: {
+      billNumber,
+      supplierId: po.supplierId,
+      supplierName: po.supplier?.name || po.shopName || "Vendor",
+      supplierTrn: po.supplier?.trn || null,
+      purchaseOrderId: po.id,
+      billDate,
+      dueDate: new Date(billDate.getTime() + 30 * 24 * 60 * 60 * 1000),
+      status: "POSTED",
+      subtotal,
+      discount: 0,
+      vatRate,
+      vatAmount,
+      totalAmount,
+      paidAmount: 0,
+      remainingBalance: totalAmount,
+      createdById: userId,
+      items: {
+        create: billItems,
+      },
+    },
+  });
+
+  // Post Journal Entry
+  const je = await postSupplierBillJournalEntry({
+    billId: bill.id,
+    billNumber: bill.billNumber,
+    billDate: bill.billDate,
+    supplierName: bill.supplierName,
+    supplierId: bill.supplierId,
+    subtotal: Number(bill.subtotal),
+    vatAmount: Number(bill.vatAmount),
+    totalAmount: Number(bill.totalAmount),
+    userId,
+  });
+
+  // Link Journal Entry back to the bill
+  const updatedBill = await prisma.supplierBill.update({
+    where: { id: bill.id },
+    data: {
+      journalEntryId: je.id,
+      postedAt: new Date(),
+    },
+    include: {
+      items: true,
+      journalEntry: true,
+    },
+  });
+
+  return {
+    success: true,
+    alreadyConverted: false,
+    bill: updatedBill,
+    journalEntryId: je.id,
+  };
+}

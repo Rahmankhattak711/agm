@@ -238,7 +238,8 @@ export default function WorkspaceLayout({ children }: { children: ReactNode }) {
             pathname.startsWith("/reports") ||
             pathname.startsWith("/commercial") ||
             pathname.startsWith("/inventory") ||
-            pathname.startsWith("/administration")
+            pathname.startsWith("/administration") ||
+            pathname.startsWith("/operations/fixed-assets")
               ? "p-0 overflow-y-auto bg-white"
               : "overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 md:p-6 lg:p-8"
           } print:p-0 print:m-0 print:!bg-white print:!bg-none print:overflow-visible`}

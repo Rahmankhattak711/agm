@@ -80,7 +80,7 @@ export async function POST(request: Request) {
         contactId: l.contactId || null,
         contactName: l.contactName || null,
         branch: l.branch || null,
-        costCenter: l.costCenter || null,
+        costCenter: l.invoiceNumber || l.costCenter || null,
       };
     });
 
@@ -280,7 +280,7 @@ async function handleUpdate(request: Request) {
                 contactId: l.contactId || null,
                 contactName: l.contactName || null,
                 branch: l.branch || null,
-                costCenter: l.costCenter || null,
+                costCenter: l.invoiceNumber || l.costCenter || null,
               };
             }),
           };

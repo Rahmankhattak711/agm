@@ -6,6 +6,7 @@ import {
   getAuthUser,
   unauthorized,
 } from "@/lib/auth-server";
+import { convertPurchaseOrderToBill } from "@/lib/commercial-accounting";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -29,6 +30,14 @@ export async function GET(request: Request) {
         items: {
           include: {
             product: true,
+          },
+        },
+        supplierBills: {
+          select: {
+            id: true,
+            billNumber: true,
+            status: true,
+            journalEntryId: true,
           },
         },
       },
@@ -241,6 +250,14 @@ export async function PATCH(request: Request) {
         return po;
       },
     );
+
+    if (status === "RECEIVED") {
+      try {
+        await convertPurchaseOrderToBill(id, user.id);
+      } catch (err: any) {
+        console.error("Auto convert PO to bill on receipt error:", err);
+      }
+    }
 
     return NextResponse.json(updated);
   } catch (error: any) {

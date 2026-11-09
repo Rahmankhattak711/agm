@@ -11,7 +11,7 @@ export interface PurchaseOrderRowProps {
   onView: (po: PurchaseOrder) => void;
   onOpenMenu: (e: React.MouseEvent<HTMLButtonElement>, po: PurchaseOrder) => void;
   isMenuOpen: boolean;
-  getStatusBadge: (status: PurchaseOrderStatus) => React.ReactNode;
+  getStatusBadge: (status: PurchaseOrderStatus, po?: any) => React.ReactNode;
 }
 
 export const PurchaseOrderRow: React.FC<PurchaseOrderRowProps> = ({
@@ -76,7 +76,7 @@ export const PurchaseOrderRow: React.FC<PurchaseOrderRowProps> = ({
       </TableCell>
 
       <TableCell className="py-2.5 px-2.5 text-center whitespace-nowrap">
-        {getStatusBadge(po.status)}
+        {getStatusBadge(po.status, po)}
       </TableCell>
 
       <TableCell className="py-2.5 px-2 sm:pr-3 text-right print:hidden whitespace-nowrap">

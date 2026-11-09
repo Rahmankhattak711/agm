@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "@/lib/toast";
-import { Plus, Receipt, Download, RefreshCw, FileText } from "lucide-react";
+import { Plus, Receipt, Download, RefreshCw, FileText, Eye, Printer, FileCheck2, Banknote } from "lucide-react";
 import {
   Button,
   PageHeader,
@@ -79,6 +81,7 @@ const COLUMNS: RegisterColumn[] = [
 ];
 
 export default function PurchaseBillsPage() {
+  const router = useRouter();
   const { data: bills = [], isLoading, isFetching, error, refetch } = useSupplierBills();
   const { data: suppliers = [] } = useSuppliers();
   const { data: products = [] } = useProducts();
@@ -95,6 +98,63 @@ export default function PurchaseBillsPage() {
     null,
   );
   const [expandedBillId, setExpandedBillId] = useState<string | null>(null);
+
+  const [activeMenu, setActiveMenu] = useState<{
+    id: string;
+    bill: SupplierBill;
+    top: number;
+    right: number;
+    openUpwards: boolean;
+  } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const handleOpenMenu = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    bill: SupplierBill,
+  ) => {
+    e.stopPropagation();
+    if (activeMenu?.id === bill.id) {
+      setActiveMenu(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const menuHeight = 160;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openUpwards = spaceBelow < menuHeight && rect.top > menuHeight;
+
+    setActiveMenu({
+      id: bill.id,
+      bill,
+      top: openUpwards ? rect.top - 4 : rect.bottom + 4,
+      right: Math.max(8, window.innerWidth - rect.right),
+      openUpwards,
+    });
+  };
+
+  useEffect(() => {
+    if (!activeMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setActiveMenu(null);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActiveMenu(null);
+    };
+    const handleScroll = () => setActiveMenu(null);
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleScroll);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [activeMenu]);
 
   const [billToPrint, setBillToPrint] = useState<SupplierBill | null>(null);
   const printDocumentRef = useRef<HTMLDivElement>(null);
@@ -285,31 +345,15 @@ export default function PurchaseBillsPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredBills.map((b) => {
-                  const isExpanded = expandedBillId === b.id;
-                  return (
-                    <SupplierBillRow
-                      key={b.id}
-                      bill={b}
-                      isExpanded={isExpanded}
-                      onToggleExpand={() =>
-                        setExpandedBillId(isExpanded ? null : b.id)
-                      }
-                      onPrint={() => handlePrintBill(b)}
-                      onPost={
-                        b.status === "DRAFT"
-                          ? () => handlePostBill(b.id)
-                          : undefined
-                      }
-                      onDisburse={
-                        b.status !== "DRAFT" && b.status !== "PAID"
-                          ? () => setPaymentModalBill(b)
-                          : undefined
-                      }
-                      onCloseExpand={() => setExpandedBillId(null)}
-                    />
-                  );
-                })
+                filteredBills.map((b) => (
+                  <SupplierBillRow
+                    key={b.id}
+                    bill={b}
+                    onView={() => router.push(`/commercial/supplier-bills/${b.id}`)}
+                    onOpenMenu={(e) => handleOpenMenu(e, b)}
+                    isMenuOpen={activeMenu?.id === b.id}
+                  />
+                ))
               )}
             </TableBody>
           </RegisterTable>
@@ -352,6 +396,86 @@ export default function PurchaseBillsPage() {
           {billToPrint && <SupplierBillDocument bill={billToPrint} />}
         </div>
       </div>
+
+      {activeMenu &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={{
+              position: "fixed",
+              top: activeMenu.openUpwards ? undefined : `${activeMenu.top}px`,
+              bottom: activeMenu.openUpwards
+                ? `${window.innerHeight - activeMenu.top}px`
+                : undefined,
+              right: `${activeMenu.right}px`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-[195px] rounded-xl bg-white border border-slate-200/90 shadow-xl shadow-slate-900/10 p-1 z-[9999] animate-in fade-in zoom-in-95 duration-100 select-none"
+          >
+            {/* View Bill Details */}
+            <button
+              type="button"
+              onClick={() => {
+                const bill = activeMenu.bill;
+                setActiveMenu(null);
+                router.push(`/commercial/supplier-bills/${bill.id}`);
+              }}
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:bg-indigo-50 transition-colors cursor-pointer text-left group"
+            >
+              <Eye className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+              <span className="truncate">View Bill Details</span>
+            </button>
+
+            {/* Print Voucher */}
+            <button
+              type="button"
+              onClick={() => {
+                const bill = activeMenu.bill;
+                setActiveMenu(null);
+                handlePrintBill(bill);
+              }}
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100/70 transition-colors cursor-pointer text-left group"
+            >
+              <Printer className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+              <span className="truncate">Print Voucher (PDF)</span>
+            </button>
+
+            {/* Post to GL (if Draft) */}
+            {activeMenu.bill.status === "DRAFT" && (
+              <button
+                type="button"
+                onClick={() => {
+                  const bill = activeMenu.bill;
+                  setActiveMenu(null);
+                  handlePostBill(bill.id);
+                }}
+                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 transition-colors cursor-pointer text-left group"
+              >
+                <FileCheck2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="truncate">Post to General Ledger</span>
+              </button>
+            )}
+
+            {/* Record Disbursement / Payment (if not Draft and not Paid) */}
+            {activeMenu.bill.status !== "DRAFT" &&
+              activeMenu.bill.status !== "PAID" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const bill = activeMenu.bill;
+                    setActiveMenu(null);
+                    setPaymentModalBill(bill);
+                  }}
+                  className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium text-teal-700 hover:text-teal-900 hover:bg-teal-50 transition-colors cursor-pointer text-left group"
+                >
+                  <Banknote className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                  <span className="truncate">Record Disbursement</span>
+                </button>
+              )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

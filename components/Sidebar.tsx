@@ -280,9 +280,25 @@ const navGroups: NavGroup[] = [
     items: [
       {
         id: "admin",
-        label: "User Management",
+        label: "Users & Access",
         icon: <UserAdminIcon />,
-        href: "/administration",
+        children: [
+          {
+            id: "admin-users",
+            label: "Users",
+            href: "/administration/users",
+          },
+          {
+            id: "admin-roles",
+            label: "Roles",
+            href: "/administration/roles",
+          },
+          {
+            id: "admin-permissions",
+            label: "Permissions",
+            href: "/administration/permissions",
+          },
+        ],
       },
     ],
   },

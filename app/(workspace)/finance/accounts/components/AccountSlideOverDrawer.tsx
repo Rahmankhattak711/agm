@@ -618,24 +618,33 @@ export function AccountSlideOverDrawer({
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-xl bg-white shadow-2xl flex flex-col border-l border-slate-200 animate-in slide-in-from-right duration-300">
-          {/* Header matching Wafeq Screenshot */}
-          <div className="px-6 py-3.5 border-b border-slate-200 flex items-center justify-between bg-white shrink-0">
+        <div
+          className="w-screen max-w-xl bg-white shadow-xl flex flex-col animate-in slide-in-from-right duration-300"
+          style={{ borderLeft: "1px solid #cbd5e1" }}
+        >
+          {/* Header (Soft Light-Blue matching Fixed Assets) */}
+          <div
+            className="px-5 py-3.5 flex items-center justify-between shrink-0"
+            style={{
+              backgroundColor: "#f4f7fb",
+              borderBottom: "1px solid #cbd5e1",
+            }}
+          >
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1 rounded-md hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                className="h-7 w-7 rounded-lg hover:bg-slate-50 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5 stroke-[2]" />
+                <X className="w-4 h-4" />
               </button>
-              <div className="h-5 w-px bg-slate-200" />
               <div>
-                <h2 className="text-base font-semibold text-slate-900 tracking-tight">
-                  {mode === "CREATE" ? "Create account" : "Edit account"}
+                <h2 className="text-sm font-semibold text-slate-800 tracking-tight">
+                  {mode === "CREATE" ? "Create Account" : "Edit Account"}
                 </h2>
                 {account && (
-                  <p className="text-[11px] text-slate-400 font-mono">
+                  <p className="text-[11px] text-slate-500 font-mono font-normal">
                     {account.accountCode} · Level {account.level || 1}
                   </p>
                 )}
@@ -646,18 +655,29 @@ export function AccountSlideOverDrawer({
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting || isLockedForCurrentUser}
-              className="inline-flex items-center justify-center px-5 py-2 rounded-lg text-sm font-semibold text-white bg-[#5546FF] hover:bg-[#4837F0] active:scale-[0.98] shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              style={{
+                backgroundColor: "#1d4ed8",
+                color: "#ffffff",
+                border: "1px solid #1e40af",
+              }}
+              className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer disabled:opacity-50"
             >
-              <span>{isSubmitting ? "Saving..." : "Save"}</span>
+              <span>{isSubmitting ? "Saving..." : "Save Account"}</span>
             </button>
           </div>
 
           {/* Form Body (Scrollable) */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar text-xs">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar text-xs">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {/* Security Banner if locked */}
               {isLockedForCurrentUser && (
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-center gap-2 font-medium">
+                <div
+                  className="p-3 rounded-xl text-xs text-amber-900 flex items-center gap-2 font-normal"
+                  style={{
+                    backgroundColor: "#fefce8",
+                    border: "1px solid #fde047",
+                  }}
+                >
                   <Lock className="w-4 h-4 text-amber-600 shrink-0" />
                   <span>
                     Level {account?.level || 1} system accounts are locked. Only Super Admin can modify or delete them.
@@ -665,485 +685,551 @@ export function AccountSlideOverDrawer({
                 </div>
               )}
 
-              {/* SECTION 1: Type of account and classification Required matching screenshot */}
-              <div className="space-y-4">
-                <div className="bg-[#f8f9fa] border border-slate-100/80 rounded-lg px-4 py-2.5 flex items-center justify-between">
-                  <span className="font-semibold text-slate-900 text-sm">
+              {/* SECTION 1: Type of account and classification */}
+              <div
+                className="rounded-xl overflow-hidden"
+                style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+              >
+                <div
+                  className="px-4 py-2.5 flex items-center justify-between"
+                  style={{
+                    backgroundColor: "#f0f7ff",
+                    borderBottom: "1px solid #dbeafe",
+                  }}
+                >
+                  <span className="font-semibold text-slate-800 text-xs">
                     Type of account and classification
                   </span>
-                  <span className="text-slate-500 text-xs font-normal">Required</span>
+                  <span className="text-slate-500 text-[11px] font-normal">Required</span>
                 </div>
 
-                {/* Parent account Row in 2-column layout */}
-                <div className="grid grid-cols-[130px_1fr] sm:grid-cols-[160px_1fr] items-center gap-3">
-                  <label className="text-slate-700 font-medium text-xs sm:text-sm">
-                    Parent account<span className="text-rose-500">*</span>
-                  </label>
+                <div className="p-4 space-y-3.5">
+                  {/* Parent account Row */}
+                  <div className="grid grid-cols-[130px_1fr] sm:grid-cols-[150px_1fr] items-center gap-3">
+                    <label className="text-slate-600 font-medium text-xs">
+                      Parent account <span className="text-rose-500">*</span>
+                    </label>
 
-                  <div className="relative w-full" ref={parentDropdownRef}>
-                    <button
-                      type="button"
-                      onClick={() => setIsParentDropdownOpen((prev) => !prev)}
-                      className={`w-full px-3.5 py-2.5 bg-white border rounded-lg text-xs sm:text-sm flex items-center justify-between transition-all cursor-pointer ${
-                        isParentDropdownOpen
-                          ? "border-[#5546FF] ring-2 ring-[#5546FF]/20"
-                          : "border-slate-300 hover:border-slate-400"
-                      }`}
-                    >
-                      {selectedParent ? (
-                        <div className="flex items-center gap-2 truncate">
-                          <span className="font-mono font-bold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded text-xs">
-                            {selectedParent.accountCode}
-                          </span>
-                          <span className="text-slate-800 font-semibold truncate">
-                            {selectedParent.accountName}
-                          </span>
-                          <span
-                            className={`text-[9.5px] px-1.5 py-0.5 rounded font-bold ml-1 ${
-                              selectedParent.level === 2
-                                ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                : "bg-purple-50 text-purple-700 border border-purple-200"
-                            }`}
-                          >
-                            {selectedParent.level === 2 ? "Level 2 Group" : "Level 3 Sub-group"}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400">Select</span>
-                      )}
-                      <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
-                    </button>
-
-                    {/* Dropdown Menu with Search */}
-                    {isParentDropdownOpen && (
-                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-                        {/* Search Input Bar */}
-                        <div className="p-2 border-b border-slate-100 bg-slate-50/80 sticky top-0 z-10 flex items-center gap-2">
-                          <Search className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
-                          <input
-                            type="text"
-                            autoFocus
-                            placeholder="Type code or account name to search..."
-                            value={parentSearch}
-                            onChange={(e) => setParentSearch(e.target.value)}
-                            className="w-full bg-transparent text-xs text-slate-800 placeholder:text-slate-400 outline-none"
-                          />
-                          {parentSearch && (
-                            <button
-                              type="button"
-                              onClick={() => setParentSearch("")}
-                              className="p-0.5 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Hierarchically Grouped Parent Accounts by Root Category */}
-                        <div className="max-h-72 overflow-y-auto p-1 divide-y divide-slate-100/60 custom-scrollbar text-xs">
-                          {parentCategoryGroups.length === 0 ? (
-                            <div className="p-4 text-center text-slate-400 text-xs">
-                              No matching parent groups or sub-groups found
-                            </div>
-                          ) : (
-                            parentCategoryGroups.map((cat) => (
-                              <div key={cat.type} className="pb-1">
-                                <div
-                                  className={`px-2.5 py-1 text-[10.5px] uppercase tracking-wider flex items-center justify-between rounded-md my-1 ${cat.headerBg}`}
-                                >
-                                  <span>{cat.name}</span>
-                                  <span className="text-[9.5px] font-semibold opacity-75">
-                                    {cat.totalCount} {cat.totalCount === 1 ? "group" : "groups"}
-                                  </span>
-                                </div>
-
-                                <div className="space-y-0.5">
-                                  {cat.groups.map(({ lvl2, lvl3List }) => {
-                                    const isLvl2Selected = lvl2.id === parentId;
-                                    return (
-                                      <div key={lvl2.id} className="space-y-0.5">
-                                        <button
-                                          type="button"
-                                          onClick={() => handleSelectParent(lvl2)}
-                                          className={`w-full px-2.5 py-1.5 flex items-center justify-between text-left rounded-lg transition-colors cursor-pointer ${
-                                            isLvl2Selected
-                                              ? "bg-indigo-50 text-indigo-950 font-bold ring-1 ring-indigo-300"
-                                              : "hover:bg-slate-50 text-slate-900 font-semibold"
-                                          }`}
-                                        >
-                                          <div className="flex items-center gap-2 truncate">
-                                            <Folder className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-                                            <span className="font-mono font-bold text-slate-900 text-xs">
-                                              {lvl2.accountCode}
-                                            </span>
-                                            <span className="truncate">{lvl2.accountName}</span>
-                                          </div>
-
-                                          <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                                            <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                                              Level 2 Group
-                                            </span>
-                                            {isLvl2Selected && (
-                                              <Check className="w-3.5 h-3.5 text-indigo-600" />
-                                            )}
-                                          </div>
-                                        </button>
-
-                                        {lvl3List.map((lvl3) => {
-                                          const isLvl3Selected = lvl3.id === parentId;
-                                          return (
-                                            <button
-                                              key={lvl3.id}
-                                              type="button"
-                                              onClick={() => handleSelectParent(lvl3)}
-                                              className={`w-full pl-6 pr-2.5 py-1.5 flex items-center justify-between text-left rounded-lg transition-colors cursor-pointer ${
-                                                isLvl3Selected
-                                                  ? "bg-purple-50 text-purple-950 font-bold ring-1 ring-purple-300"
-                                                  : "hover:bg-slate-50 text-slate-700"
-                                              }`}
-                                            >
-                                              <div className="flex items-center gap-1.5 truncate">
-                                                <span className="text-slate-300 font-mono text-[11px] select-none shrink-0">
-                                                  └─
-                                                </span>
-                                                <span className="font-mono font-bold text-slate-800 text-xs">
-                                                  {lvl3.accountCode}
-                                                </span>
-                                                <span className="truncate font-medium">
-                                                  {lvl3.accountName}
-                                                </span>
-                                              </div>
-
-                                              <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                                                <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                                                  Level 3 Sub-group
-                                                </span>
-                                                {isLvl3Selected && (
-                                                  <Check className="w-3.5 h-3.5 text-purple-600" />
-                                                )}
-                                              </div>
-                                            </button>
-                                          );
-                                        })}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Account Type (Optional) - Shown when parent is selected */}
-                {selectedParent && (
-                  <div className="grid grid-cols-[130px_1fr] sm:grid-cols-[160px_1fr] items-center gap-3 pt-1">
-                    <div className="flex flex-col">
-                      <label className="text-slate-700 font-medium text-xs sm:text-sm">
-                        Account type
-                      </label>
-                      <span className="text-slate-400 text-[11px]">Optional</span>
-                    </div>
-
-                    <div className="relative w-full" ref={subtypeDropdownRef}>
+                    <div className="relative w-full" ref={parentDropdownRef}>
                       <button
                         type="button"
-                        onClick={() => {
-                          setIsSubtypeDropdownOpen(!isSubtypeDropdownOpen);
-                          setIsParentDropdownOpen(false);
-                        }}
-                        className={`w-full px-3.5 py-2.5 bg-white border rounded-lg text-xs sm:text-sm flex items-center justify-between text-left transition-all cursor-pointer ${
-                          isSubtypeDropdownOpen
-                            ? "border-[#5546FF] ring-2 ring-[#5546FF]/20"
-                            : "border-slate-300 hover:border-slate-400 text-slate-800"
-                        }`}
+                        onClick={() => setIsParentDropdownOpen((prev) => !prev)}
+                        style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                        className="w-full px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-all cursor-pointer hover:border-blue-500"
                       >
-                        <div className="flex items-center gap-2 truncate">
-                          {accountType ? (
-                            <>
-                              <span className="font-semibold text-slate-900 truncate">
-                                {accountType}
-                              </span>
-                              {cashFlowType && (
-                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
-                                  {cashFlowType}
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            <span className="text-slate-400 italic">None / General (Optional)</span>
-                          )}
-                        </div>
-                        <ChevronDown
-                          className={`w-4 h-4 text-slate-400 transition-transform shrink-0 ${
-                            isSubtypeDropdownOpen ? "rotate-180 text-[#5546FF]" : ""
-                          }`}
-                        />
+                        {selectedParent ? (
+                          <div className="flex items-center gap-2 truncate">
+                            <span
+                              style={{
+                                backgroundColor: "#eff6ff",
+                                color: "#1d4ed8",
+                                border: "1px solid #93c5fd",
+                              }}
+                              className="font-mono font-medium px-1.5 py-0.5 rounded text-[11px]"
+                            >
+                              {selectedParent.accountCode}
+                            </span>
+                            <span className="text-slate-800 font-medium truncate">
+                              {selectedParent.accountName}
+                            </span>
+                            <span
+                              style={{
+                                backgroundColor: "#f8fafc",
+                                color: "#475569",
+                                border: "1px solid #cbd5e1",
+                              }}
+                              className="text-[9.5px] px-1.5 py-0.5 rounded font-normal ml-1"
+                            >
+                              {selectedParent.level === 2 ? "Level 2 Group" : "Level 3 Sub-group"}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">Select parent group...</span>
+                        )}
+                        <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
                       </button>
 
-                      {/* Dropdown Menu with Search & Custom Add */}
-                      {isSubtypeDropdownOpen && (
-                        <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-                          {availableSubtypes.length > 3 && (
-                            <div className="p-2 border-b border-slate-100 bg-slate-50/80 sticky top-0 z-10 flex items-center gap-2">
-                              <Search className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
-                              <input
-                                type="text"
-                                autoFocus
-                                placeholder="Type to filter account types..."
-                                value={subtypeSearch}
-                                onChange={(e) => setSubtypeSearch(e.target.value)}
-                                className="w-full bg-transparent text-xs text-slate-800 placeholder:text-slate-400 outline-none"
-                              />
-                              {subtypeSearch && (
-                                <button
-                                  type="button"
-                                  onClick={() => setSubtypeSearch("")}
-                                  className="p-0.5 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Option to clear / keep optional */}
-                          <div className="p-1 border-b border-slate-100">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setAccountType("");
-                                setIsSubtypeDropdownOpen(false);
-                              }}
-                              className={`w-full px-3 py-2 flex items-center justify-between text-left rounded-lg transition-colors cursor-pointer ${
-                                !accountType ? "bg-slate-100 text-slate-900 font-bold" : "hover:bg-slate-50 text-slate-600"
-                              }`}
-                            >
-                              <span className="text-xs italic text-slate-500">None / General (No specific subtype)</span>
-                              {!accountType && <Check className="w-3.5 h-3.5 text-[#5546FF]" />}
-                            </button>
-                          </div>
-
-                          {/* Quick Add Custom Category button */}
-                          {subtypeSearch.trim() &&
-                            !availableSubtypes.some(
-                              (s) =>
-                                s.label.toLowerCase() === subtypeSearch.trim().toLowerCase(),
-                            ) && (
+                      {/* Dropdown Menu with Search */}
+                      {isParentDropdownOpen && (
+                        <div
+                          className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+                          style={{ border: "1px solid #cbd5e1" }}
+                        >
+                          {/* Search Input Bar */}
+                          <div
+                            className="p-2 sticky top-0 z-10 flex items-center gap-2"
+                            style={{
+                              backgroundColor: "#f4f7fb",
+                              borderBottom: "1px solid #cbd5e1",
+                            }}
+                          >
+                            <Search className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
+                            <input
+                              type="text"
+                              autoFocus
+                              placeholder="Type code or account name to search..."
+                              value={parentSearch}
+                              onChange={(e) => setParentSearch(e.target.value)}
+                              className="w-full bg-transparent text-xs font-normal text-slate-800 placeholder:text-slate-400 outline-none"
+                            />
+                            {parentSearch && (
                               <button
                                 type="button"
-                                onClick={() => handleCreateCustomCategory(subtypeSearch.trim())}
-                                className="w-full px-3 py-2.5 flex items-center justify-between text-left bg-indigo-50/90 hover:bg-indigo-100/90 text-indigo-900 border-b border-indigo-200 transition-colors cursor-pointer group"
+                                onClick={() => setParentSearch("")}
+                                className="p-0.5 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
                               >
-                                <div className="flex items-center gap-2 truncate">
-                                  <Plus className="w-4 h-4 text-indigo-600 shrink-0" />
-                                  <span className="text-xs font-bold truncate">
-                                    Add &ldquo;{subtypeSearch.trim()}&rdquo; as new category
-                                  </span>
-                                </div>
-                                <span className="text-[10px] bg-[#5546FF] text-white px-2 py-0.5 rounded font-bold shrink-0 shadow-2xs">
-                                  + Add &amp; Select
-                                </span>
+                                <X className="w-3 h-3" />
                               </button>
-                            )}
-
-                          {/* Subtypes List */}
-                          <div className="max-h-56 overflow-y-auto p-1 divide-y divide-slate-100/60 custom-scrollbar text-xs">
-                            {filteredSubtypes.length === 0 && !subtypeSearch.trim() ? (
-                              <div className="p-4 text-center text-slate-400 text-xs">
-                                No specific account types defined for {selectedParent.accountCode} (Optional)
-                              </div>
-                            ) : (
-                              filteredSubtypes.map((sub) => {
-                                const isSelected = sub.label === accountType;
-                                return (
-                                  <div
-                                    key={sub.id || sub.label}
-                                    onClick={() => handleSelectSubtype(sub)}
-                                    className={`w-full px-3 py-2 flex items-center justify-between text-left rounded-lg transition-colors cursor-pointer group/item ${
-                                      isSelected
-                                        ? "bg-indigo-50 text-indigo-900 font-bold"
-                                        : "hover:bg-slate-50 text-slate-700"
-                                    }`}
-                                  >
-                                    <div className="truncate pr-2 flex-1">
-                                      <div className="font-medium text-slate-900 text-xs truncate flex items-center gap-1.5">
-                                        <span>{sub.label}</span>
-                                        {sub.isSystem && (
-                                          <span className="text-[9px] px-1 py-0.2 rounded font-medium bg-slate-100 text-slate-500">
-                                            System
-                                          </span>
-                                        )}
-                                      </div>
-                                      {sub.description && (
-                                        <div className="text-[10px] text-slate-400 truncate font-normal">
-                                          {sub.description}
-                                        </div>
-                                      )}
-                                    </div>
-
-                                    <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                                        {sub.cashFlow}
-                                      </span>
-                                      {isSelected && (
-                                        <Check className="w-3.5 h-3.5 text-[#5546FF]" />
-                                      )}
-                                      {isFinancialUser && !sub.isSystem && sub.id && (
-                                        <button
-                                          type="button"
-                                          title="Delete Account Type"
-                                          onClick={async (e) => {
-                                            e.stopPropagation();
-                                            if (confirm(`Are you sure you want to delete Account Type "${sub.label}"?`)) {
-                                              try {
-                                                await deleteSubtypeMutation.mutateAsync(sub.id!);
-                                                if (accountType === sub.label) setAccountType("");
-                                                toast.success(`Account Type "${sub.label}" deleted.`);
-                                              } catch (err: any) {
-                                                toast.error(err.message || "Failed to delete account type");
-                                              }
-                                            }
-                                          }}
-                                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded opacity-0 group-hover/item:opacity-100 transition-opacity"
-                                        >
-                                          <Trash2 className="w-3 h-3" />
-                                        </button>
-                                      )}
-                                    </div>
-                                  </div>
-                                );
-                              })
                             )}
                           </div>
 
-                          {/* Bottom Footer: Add Custom Category & Manage All */}
-                          <div className="p-2 border-t border-slate-100 bg-slate-50/70 flex flex-col gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setModalTypeName(subtypeSearch || "");
-                                setModalCashFlow(selectedParent.cashFlowType || "Operating");
-                                setModalShowInClaims(selectedParent.type === "EXPENSE");
-                                setModalEnablePayments(false);
-                                setIsCreateTypeModalOpen(true);
-                                setIsSubtypeDropdownOpen(false);
-                              }}
-                              className="w-full py-1.5 px-3 text-xs font-semibold text-[#5546FF] hover:bg-indigo-50 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-indigo-200"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                              <span>+ Create New Account Type</span>
-                            </button>
-                            {onOpenManageSubtypes && (
+                          {/* Hierarchically Grouped Parent Accounts by Root Category */}
+                          <div className="max-h-72 overflow-y-auto p-1 divide-y divide-slate-100/60 custom-scrollbar text-xs">
+                            {parentCategoryGroups.length === 0 ? (
+                              <div className="p-4 text-center text-slate-400 text-xs font-normal">
+                                No matching parent groups or sub-groups found
+                              </div>
+                            ) : (
+                              parentCategoryGroups.map((cat) => (
+                                <div key={cat.type} className="pb-1">
+                                  <div
+                                    className={`px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider flex items-center justify-between rounded-md my-1 ${cat.headerBg}`}
+                                  >
+                                    <span>{cat.name}</span>
+                                    <span className="text-[9.5px] font-normal opacity-75">
+                                      {cat.totalCount} {cat.totalCount === 1 ? "group" : "groups"}
+                                    </span>
+                                  </div>
+
+                                  <div className="space-y-0.5">
+                                    {cat.groups.map(({ lvl2, lvl3List }) => {
+                                      const isLvl2Selected = lvl2.id === parentId;
+                                      return (
+                                        <div key={lvl2.id} className="space-y-0.5">
+                                          <button
+                                            type="button"
+                                            onClick={() => handleSelectParent(lvl2)}
+                                            className={`w-full px-2.5 py-1.5 flex items-center justify-between text-left rounded-lg transition-colors cursor-pointer ${
+                                              isLvl2Selected
+                                                ? "bg-blue-50 text-blue-900 font-medium ring-1 ring-blue-300"
+                                                : "hover:bg-slate-50 text-slate-800 font-medium"
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-2 truncate">
+                                              <Folder className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                              <span className="font-mono font-medium text-slate-800 text-xs">
+                                                {lvl2.accountCode}
+                                              </span>
+                                              <span className="truncate">{lvl2.accountName}</span>
+                                            </div>
+
+                                            <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                              <span className="text-[9px] px-1.5 py-0.5 rounded font-normal bg-blue-50 text-blue-700 border border-blue-200">
+                                                Level 2 Group
+                                              </span>
+                                              {isLvl2Selected && (
+                                                <Check className="w-3.5 h-3.5 text-blue-600" />
+                                              )}
+                                            </div>
+                                          </button>
+
+                                          {lvl3List.map((lvl3) => {
+                                            const isLvl3Selected = lvl3.id === parentId;
+                                            return (
+                                              <button
+                                                key={lvl3.id}
+                                                type="button"
+                                                onClick={() => handleSelectParent(lvl3)}
+                                                className={`w-full pl-6 pr-2.5 py-1.5 flex items-center justify-between text-left rounded-lg transition-colors cursor-pointer ${
+                                                  isLvl3Selected
+                                                    ? "bg-blue-50 text-blue-900 font-medium ring-1 ring-blue-300"
+                                                    : "hover:bg-slate-50 text-slate-700 font-normal"
+                                                }`}
+                                              >
+                                                <div className="flex items-center gap-1.5 truncate">
+                                                  <span className="text-slate-300 font-mono text-[11px] select-none shrink-0">
+                                                    └─
+                                                  </span>
+                                                  <span className="font-mono font-medium text-slate-700 text-xs">
+                                                    {lvl3.accountCode}
+                                                  </span>
+                                                  <span className="truncate font-normal">
+                                                    {lvl3.accountName}
+                                                  </span>
+                                                </div>
+
+                                                <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                                  <span className="text-[9px] px-1.5 py-0.5 rounded font-normal bg-slate-100 text-slate-600 border border-slate-200">
+                                                    Level 3 Sub-group
+                                                  </span>
+                                                  {isLvl3Selected && (
+                                                    <Check className="w-3.5 h-3.5 text-blue-600" />
+                                                  )}
+                                                </div>
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Account Type (Optional) */}
+                  {selectedParent && (
+                    <div className="grid grid-cols-[130px_1fr] sm:grid-cols-[150px_1fr] items-center gap-3 pt-1">
+                      <div className="flex flex-col">
+                        <label className="text-slate-600 font-medium text-xs">
+                          Account type
+                        </label>
+                        <span className="text-slate-400 text-[10.5px] font-normal">Optional</span>
+                      </div>
+
+                      <div className="relative w-full" ref={subtypeDropdownRef}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsSubtypeDropdownOpen(!isSubtypeDropdownOpen);
+                            setIsParentDropdownOpen(false);
+                          }}
+                          style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                          className="w-full px-3 py-2 rounded-lg text-xs flex items-center justify-between text-left transition-all cursor-pointer hover:border-blue-500 text-slate-800"
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            {accountType ? (
+                              <>
+                                <span className="font-medium text-slate-800 truncate">
+                                  {accountType}
+                                </span>
+                                {cashFlowType && (
+                                  <span className="text-[9.5px] font-normal px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                                    {cashFlowType}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-slate-400 font-normal">None / General (Optional)</span>
+                            )}
+                          </div>
+                          <ChevronDown
+                            className={`w-4 h-4 text-slate-400 transition-transform shrink-0 ${
+                              isSubtypeDropdownOpen ? "rotate-180 text-blue-600" : ""
+                            }`}
+                          />
+                        </button>
+
+                        {/* Dropdown Menu with Search & Custom Add */}
+                        {isSubtypeDropdownOpen && (
+                          <div
+                            className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+                            style={{ border: "1px solid #cbd5e1" }}
+                          >
+                            {availableSubtypes.length > 3 && (
+                              <div
+                                className="p-2 sticky top-0 z-10 flex items-center gap-2"
+                                style={{
+                                  backgroundColor: "#f4f7fb",
+                                  borderBottom: "1px solid #cbd5e1",
+                                }}
+                              >
+                                <Search className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" />
+                                <input
+                                  type="text"
+                                  autoFocus
+                                  placeholder="Type to filter account types..."
+                                  value={subtypeSearch}
+                                  onChange={(e) => setSubtypeSearch(e.target.value)}
+                                  className="w-full bg-transparent text-xs font-normal text-slate-800 placeholder:text-slate-400 outline-none"
+                                />
+                                {subtypeSearch && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setSubtypeSearch("")}
+                                    className="p-0.5 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Option to clear / keep optional */}
+                            <div className="p-1 border-b border-slate-100">
                               <button
                                 type="button"
                                 onClick={() => {
+                                  setAccountType("");
                                   setIsSubtypeDropdownOpen(false);
-                                  onOpenManageSubtypes();
                                 }}
-                                className="w-full py-1 px-3 text-[11px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                                className={`w-full px-3 py-1.5 flex items-center justify-between text-left rounded-lg transition-colors cursor-pointer ${
+                                  !accountType ? "bg-slate-100 text-slate-800 font-medium" : "hover:bg-slate-50 text-slate-600 font-normal"
+                                }`}
                               >
-                                <SlidersHorizontal className="w-3 h-3" />
-                                <span>Manage all account types ({dbSubtypes.length})</span>
+                                <span className="text-xs text-slate-500">None / General (No specific subtype)</span>
+                                {!accountType && <Check className="w-3.5 h-3.5 text-blue-600" />}
                               </button>
-                            )}
+                            </div>
+
+                            {/* Quick Add Custom Category button */}
+                            {subtypeSearch.trim() &&
+                              !availableSubtypes.some(
+                                (s) =>
+                                  s.label.toLowerCase() === subtypeSearch.trim().toLowerCase(),
+                              ) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCreateCustomCategory(subtypeSearch.trim())}
+                                  className="w-full px-3 py-2 flex items-center justify-between text-left bg-blue-50/80 hover:bg-blue-100/80 text-blue-900 border-b border-blue-200 transition-colors cursor-pointer"
+                                >
+                                  <div className="flex items-center gap-2 truncate">
+                                    <Plus className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                    <span className="text-xs font-medium truncate">
+                                      Add &ldquo;{subtypeSearch.trim()}&rdquo; as new category
+                                    </span>
+                                  </div>
+                                  <span
+                                    style={{ backgroundColor: "#1d4ed8", color: "#ffffff" }}
+                                    className="text-[10px] px-2 py-0.5 rounded font-medium shrink-0"
+                                  >
+                                    + Add &amp; Select
+                                  </span>
+                                </button>
+                              )}
+
+                            {/* Subtypes List */}
+                            <div className="max-h-56 overflow-y-auto p-1 divide-y divide-slate-100/60 custom-scrollbar text-xs">
+                              {filteredSubtypes.length === 0 && !subtypeSearch.trim() ? (
+                                <div className="p-4 text-center text-slate-400 text-xs font-normal">
+                                  No specific account types defined for {selectedParent.accountCode} (Optional)
+                                </div>
+                              ) : (
+                                filteredSubtypes.map((sub) => {
+                                  const isSelected = sub.label === accountType;
+                                  return (
+                                    <div
+                                      key={sub.id || sub.label}
+                                      onClick={() => handleSelectSubtype(sub)}
+                                      className={`w-full px-3 py-2 flex items-center justify-between text-left rounded-lg transition-colors cursor-pointer group/item ${
+                                        isSelected
+                                          ? "bg-blue-50 text-blue-900 font-medium"
+                                          : "hover:bg-slate-50 text-slate-700 font-normal"
+                                      }`}
+                                    >
+                                      <div className="truncate pr-2 flex-1">
+                                        <div className="font-medium text-slate-800 text-xs truncate flex items-center gap-1.5">
+                                          <span>{sub.label}</span>
+                                          {sub.isSystem && (
+                                            <span className="text-[9px] px-1 py-0.2 rounded font-normal bg-slate-100 text-slate-500">
+                                              System
+                                            </span>
+                                          )}
+                                        </div>
+                                        {sub.description && (
+                                          <div className="text-[10px] text-slate-400 truncate font-normal">
+                                            {sub.description}
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded font-normal bg-slate-100 text-slate-600 border border-slate-200">
+                                          {sub.cashFlow}
+                                        </span>
+                                        {isSelected && (
+                                          <Check className="w-3.5 h-3.5 text-blue-600" />
+                                        )}
+                                        {isFinancialUser && !sub.isSystem && sub.id && (
+                                          <button
+                                            type="button"
+                                            title="Delete Account Type"
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
+                                              if (confirm(`Are you sure you want to delete Account Type "${sub.label}"?`)) {
+                                                try {
+                                                  await deleteSubtypeMutation.mutateAsync(sub.id!);
+                                                  if (accountType === sub.label) setAccountType("");
+                                                  toast.success(`Account Type "${sub.label}" deleted.`);
+                                                } catch (err: any) {
+                                                  toast.error(err.message || "Failed to delete account type");
+                                                }
+                                              }
+                                            }}
+                                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                          >
+                                            <Trash2 className="w-3 h-3" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+
+                            {/* Bottom Footer: Add Custom Category & Manage All */}
+                            <div
+                              className="p-2 flex flex-col gap-1.5"
+                              style={{
+                                backgroundColor: "#f8fafc",
+                                borderTop: "1px solid #cbd5e1",
+                              }}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setModalTypeName(subtypeSearch || "");
+                                  setModalCashFlow(selectedParent.cashFlowType || "Operating");
+                                  setModalShowInClaims(selectedParent.type === "EXPENSE");
+                                  setModalEnablePayments(false);
+                                  setIsCreateTypeModalOpen(true);
+                                  setIsSubtypeDropdownOpen(false);
+                                }}
+                                style={{
+                                  backgroundColor: "#eff6ff",
+                                  color: "#1d4ed8",
+                                  border: "1px solid #93c5fd",
+                                }}
+                                className="w-full py-1.5 px-3 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>+ Create New Account Type</span>
+                              </button>
+                              {onOpenManageSubtypes && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setIsSubtypeDropdownOpen(false);
+                                    onOpenManageSubtypes();
+                                  }}
+                                  className="w-full py-1 px-3 text-[11px] font-normal text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                                >
+                                  <SlidersHorizontal className="w-3 h-3" />
+                                  <span>Manage all account types ({dbSubtypes.length})</span>
+                                </button>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
-              {/* SECTION 2: Account information Required */}
-              <div className="space-y-4 pt-2">
-                <div className="bg-[#f8f9fa] border border-slate-100/80 rounded-lg px-4 py-2.5 flex items-center justify-between">
-                  <span className="font-semibold text-slate-900 text-sm">
+              {/* SECTION 2: Account information */}
+              <div
+                className="rounded-xl overflow-hidden"
+                style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+              >
+                <div
+                  className="px-4 py-2.5 flex items-center justify-between"
+                  style={{
+                    backgroundColor: "#fffbeb",
+                    borderBottom: "1px solid #fde68a",
+                  }}
+                >
+                  <span className="font-semibold text-slate-800 text-xs">
                     Account information
                   </span>
-                  <span className="text-slate-500 text-xs font-normal">Required</span>
+                  <span className="text-slate-500 text-[11px] font-normal">Required</span>
                 </div>
 
-                {/* Name* */}
-                <div className="grid grid-cols-[130px_1fr] sm:grid-cols-[160px_1fr] items-center gap-3">
-                  <label className="text-slate-700 font-medium text-xs sm:text-sm">
-                    Name<span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={accountName}
-                    onChange={(e) => setAccountName(e.target.value)}
-                    placeholder="Empty"
-                    className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#5546FF] focus:ring-1 focus:ring-[#5546FF] shadow-2xs"
-                    required
-                  />
-                </div>
+                <div className="p-4 space-y-3.5">
+                  {/* Name* */}
+                  <div className="grid grid-cols-[130px_1fr] sm:grid-cols-[150px_1fr] items-center gap-3">
+                    <label className="text-slate-600 font-medium text-xs">
+                      Name <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={accountName}
+                      onChange={(e) => setAccountName(e.target.value)}
+                      placeholder="e.g. Petty Cash - Dubai Office"
+                      style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                      className="w-full px-3 py-2 rounded-lg text-slate-800 font-normal text-xs placeholder:text-slate-400 focus:outline-none focus:border-blue-600"
+                      required
+                    />
+                  </div>
 
-                {/* Code (i) */}
-                <div className="grid grid-cols-[130px_1fr] sm:grid-cols-[160px_1fr] items-center gap-3">
-                  <label className="text-slate-700 font-medium text-xs sm:text-sm flex items-center gap-1.5">
-                    <span>Code</span>
-                    <span
-                      className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-slate-200 text-slate-600 text-[10px] font-bold cursor-help"
-                      title="Unique numerical code for this account"
-                    >
-                      i
-                    </span>
-                  </label>
-                  <input
-                    type="text"
-                    value={accountCode}
-                    onChange={(e) => setAccountCode(e.target.value)}
-                    placeholder="Empty"
-                    className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg font-mono font-medium text-slate-800 text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:border-[#5546FF] focus:ring-1 focus:ring-[#5546FF] shadow-2xs"
-                  />
-                </div>
-
-                {/* Cash flow type* */}
-                <div className="grid grid-cols-[130px_1fr] sm:grid-cols-[160px_1fr] items-start gap-3">
-                  <label className="text-slate-700 font-medium text-xs sm:text-sm pt-2">
-                    Cash flow type<span className="text-rose-500">*</span>
-                  </label>
-                  <div className="space-y-1.5 w-full">
-                    <div className="relative">
-                      <select
-                        value={cashFlowType}
-                        onChange={(e) => setCashFlowType(e.target.value)}
-                        className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 text-xs sm:text-sm focus:outline-none focus:border-[#5546FF] focus:ring-1 focus:ring-[#5546FF] shadow-2xs appearance-none pr-9 cursor-pointer"
+                  {/* Code (i) */}
+                  <div className="grid grid-cols-[130px_1fr] sm:grid-cols-[150px_1fr] items-center gap-3">
+                    <label className="text-slate-600 font-medium text-xs flex items-center gap-1.5">
+                      <span>Code</span>
+                      <span
+                        className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-slate-200 text-slate-600 text-[9.5px] font-medium cursor-help"
+                        title="Unique numerical code for this account"
                       >
-                        <option value="Operating">Operating</option>
-                        <option value="Investing">Investing</option>
-                        <option value="Financing">Financing</option>
-                        <option value="Cash">Cash</option>
-                        <option value="None">None</option>
-                      </select>
-                      <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        i
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      value={accountCode}
+                      onChange={(e) => setAccountCode(e.target.value)}
+                      placeholder="Auto-generated"
+                      style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                      className="w-full px-3 py-2 rounded-lg font-mono font-normal text-slate-800 text-xs placeholder:text-slate-400 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+
+                  {/* Cash flow type* */}
+                  <div className="grid grid-cols-[130px_1fr] sm:grid-cols-[150px_1fr] items-start gap-3">
+                    <label className="text-slate-600 font-medium text-xs pt-2">
+                      Cash flow type <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="space-y-1.5 w-full">
+                      <div className="relative">
+                        <select
+                          value={cashFlowType}
+                          onChange={(e) => setCashFlowType(e.target.value)}
+                          style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                          className="w-full px-3 py-2 rounded-lg text-slate-800 font-normal text-xs focus:outline-none focus:border-blue-600 appearance-none pr-8 cursor-pointer"
+                        >
+                          <option value="Operating">Operating</option>
+                          <option value="Investing">Investing</option>
+                          <option value="Financing">Financing</option>
+                          <option value="Cash">Cash</option>
+                          <option value="None">None</option>
+                        </select>
+                        <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                      <p className="text-[11px] font-normal text-slate-500">
+                        Determines which section this account will appear in within the{" "}
+                        <span style={{ color: "#1d4ed8" }} className="hover:underline cursor-pointer">
+                          Cash Flow statement
+                        </span>.
+                      </p>
                     </div>
-                    <p className="text-[11px] text-slate-500">
-                      Determines which section this account will appear in within the{" "}
-                      <span className="text-[#5546FF] hover:underline cursor-pointer">
-                        Cash Flow statement
-                      </span>.
-                    </p>
                   </div>
                 </div>
               </div>
 
               {/* SECTION 3: How can this account be used? Optional */}
-              <div className="space-y-4 pt-2">
+              <div
+                className="rounded-xl overflow-hidden"
+                style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+              >
                 <button
                   type="button"
                   onClick={() => setIsHowCanBeUsedOpen((v) => !v)}
-                  className="w-full bg-[#f8f9fa] border border-slate-100/80 rounded-lg px-4 py-2.5 flex items-center justify-between cursor-pointer"
+                  className="w-full px-4 py-2.5 flex items-center justify-between cursor-pointer"
+                  style={{
+                    backgroundColor: "#f0fdf4",
+                    borderBottom: isHowCanBeUsedOpen ? "1px solid #bbf7d0" : "none",
+                  }}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-900 text-sm">
+                    <span className="font-semibold text-slate-800 text-xs">
                       How can this account be used?
                     </span>
-                    <span className="text-slate-500 text-xs font-normal">Optional</span>
+                    <span className="text-slate-500 text-[11px] font-normal">Optional</span>
                   </div>
                   <ChevronUp
                     className={`w-4 h-4 text-slate-500 transition-transform ${
@@ -1153,60 +1239,60 @@ export function AccountSlideOverDrawer({
                 </button>
 
                 {isHowCanBeUsedOpen && (
-                  <div className="space-y-4 pl-1">
+                  <div className="p-4 space-y-3.5">
                     {/* Allow posting to this account */}
-                    <label className="flex items-start gap-3 cursor-pointer select-none group">
+                    <label className="flex items-start gap-2.5 cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={allowPosting}
                         onChange={(e) => setAllowPosting(e.target.checked)}
-                        className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#5546FF] focus:ring-[#5546FF] cursor-pointer"
+                        className="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-600 cursor-pointer"
                       />
                       <div className="space-y-0.5">
-                        <div className="font-medium text-slate-800 text-xs sm:text-sm">
+                        <div className="font-medium text-slate-800 text-xs">
                           Allow posting to this account
                         </div>
-                        <div className="text-[11px] text-slate-500">
-                          <span className="text-[#5546FF]">Users</span> in this organization will be allowed to select this account when creating transactions.
+                        <div className="text-[11px] font-normal text-slate-500">
+                          <span style={{ color: "#1d4ed8" }}>Users</span> in this organization will be allowed to select this account when creating transactions.
                         </div>
                       </div>
                     </label>
 
                     {/* Enable account selection for payments */}
-                    <label className="flex items-start gap-3 cursor-pointer select-none group">
+                    <label className="flex items-start gap-2.5 cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={enablePayments}
                         onChange={(e) => setEnablePayments(e.target.checked)}
-                        className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#5546FF] focus:ring-[#5546FF] cursor-pointer"
+                        className="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-600 cursor-pointer"
                       />
                       <div className="space-y-0.5">
-                        <div className="font-medium text-slate-800 text-xs sm:text-sm">
+                        <div className="font-medium text-slate-800 text-xs">
                           Enable account selection for payments
                         </div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px] font-normal text-slate-500">
                           Allow this account to be selectable when recording any{" "}
-                          <span className="text-[#5546FF]">payments</span>.
+                          <span style={{ color: "#1d4ed8" }}>payments</span>.
                         </div>
                       </div>
                     </label>
 
                     {/* Show account for employee expense claims */}
-                    <label className="flex items-start gap-3 cursor-pointer select-none group">
+                    <label className="flex items-start gap-2.5 cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={showInExpenseClaims}
                         onChange={(e) => setShowInExpenseClaims(e.target.checked)}
-                        className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#5546FF] focus:ring-[#5546FF] cursor-pointer"
+                        className="mt-0.5 w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-600 cursor-pointer"
                       />
                       <div className="space-y-0.5">
-                        <div className="font-medium text-slate-800 text-xs sm:text-sm">
+                        <div className="font-medium text-slate-800 text-xs">
                           Show account for employee expense claims
                         </div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px] font-normal text-slate-500">
                           Make this account available as an option for{" "}
-                          <span className="text-[#5546FF]">employees</span> when they submit{" "}
-                          <span className="text-[#5546FF]">Expense claims</span> in AGM.
+                          <span style={{ color: "#1d4ed8" }}>employees</span> when they submit{" "}
+                          <span style={{ color: "#1d4ed8" }}>Expense claims</span> in AGM.
                         </div>
                       </div>
                     </label>
@@ -1216,23 +1302,29 @@ export function AccountSlideOverDrawer({
 
               {/* In Edit mode: Active status toggle & Delete account */}
               {mode === "EDIT" && (
-                <div className="pt-4 border-t border-slate-200 space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50/50">
+                <div className="space-y-3">
+                  <div
+                    className="flex items-center justify-between p-3.5 rounded-xl"
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      border: "1px solid #cbd5e1",
+                    }}
+                  >
                     <div>
-                      <div className="font-semibold text-slate-800 text-xs">Account status</div>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="font-medium text-slate-800 text-xs">Account status</div>
+                      <div className="text-[11px] font-normal text-slate-500">
                         Inactive accounts cannot receive new transactions.
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => setIsActive((v) => !v)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                         isActive ? "bg-emerald-600" : "bg-slate-300"
                       }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
                           isActive ? "translate-x-5" : "translate-x-0"
                         }`}
                       />
@@ -1240,12 +1332,17 @@ export function AccountSlideOverDrawer({
                   </div>
 
                   {account && account.level !== 1 && (
-                    <div className="pt-2">
+                    <div>
                       <button
                         type="button"
                         onClick={handleDelete}
                         disabled={isDeleting}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/80 rounded-lg transition-colors cursor-pointer border border-rose-200/80"
+                        style={{
+                          backgroundColor: "#fff1f2",
+                          color: "#be123c",
+                          border: "1px solid #fda4af",
+                        }}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium hover:bg-rose-100/80 rounded-xl transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         <span>{isDeleting ? "Deleting..." : "Delete account"}</span>
@@ -1258,11 +1355,18 @@ export function AccountSlideOverDrawer({
           </div>
 
           {/* Footer Action */}
-          <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+          <div
+            className="px-5 py-3.5 flex items-center justify-between"
+            style={{
+              backgroundColor: "#f8fafc",
+              borderTop: "1px solid #cbd5e1",
+            }}
+          >
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
+              style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+              className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -1270,7 +1374,12 @@ export function AccountSlideOverDrawer({
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting || isLockedForCurrentUser}
-              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg text-xs font-semibold text-white bg-[#5546FF] hover:bg-[#4837F0] active:scale-[0.98] shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              style={{
+                backgroundColor: "#1d4ed8",
+                color: "#ffffff",
+                border: "1px solid #1e40af",
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer disabled:opacity-50"
             >
               <span>{isSubmitting ? "Saving..." : "Save Account"}</span>
             </button>
@@ -1280,19 +1389,26 @@ export function AccountSlideOverDrawer({
 
       {/* Dedicated Modal: Create New Account Type */}
       {isCreateTypeModalOpen && selectedParent && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
           <div
-            className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-150"
+            className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-150"
+            style={{ border: "1px solid #cbd5e1" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+            <div
+              className="px-5 py-3.5 flex items-center justify-between"
+              style={{
+                backgroundColor: "#f4f7fb",
+                borderBottom: "1px solid #cbd5e1",
+              }}
+            >
               <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+                <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-blue-600"></span>
                   <span>Create New Account Type</span>
                 </h3>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-[11px] font-normal text-slate-500 mt-0.5">
                   Add a custom classification under {selectedParent.accountCode} - {selectedParent.accountName}
                 </p>
               </div>
@@ -1308,18 +1424,24 @@ export function AccountSlideOverDrawer({
             {/* Modal Body */}
             <div className="p-5 space-y-4">
               {/* Parent Category Badge */}
-              <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50/60 rounded-xl border border-indigo-100 text-xs text-indigo-900">
-                <span className="font-semibold text-indigo-600">Parent:</span>
-                <span className="font-mono font-bold">{selectedParent.accountCode}</span>
+              <div
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-blue-900"
+                style={{
+                  backgroundColor: "#eff6ff",
+                  border: "1px solid #93c5fd",
+                }}
+              >
+                <span className="font-medium text-blue-700">Parent:</span>
+                <span className="font-mono font-medium">{selectedParent.accountCode}</span>
                 <span className="text-slate-700 truncate">{selectedParent.accountName}</span>
-                <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
+                <span className="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded bg-white text-blue-700 border border-blue-200">
                   {selectedParent.type}
                 </span>
               </div>
 
               {/* Type Name Input */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
+                <label className="text-xs font-medium text-slate-600 flex items-center justify-between">
                   <span>Account Type Name *</span>
                   <span className="text-[10px] text-slate-400 font-normal">e.g. Discount, Software, Fleet</span>
                 </label>
@@ -1342,19 +1464,21 @@ export function AccountSlideOverDrawer({
                     }
                   }}
                   placeholder="e.g. Discount"
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all shadow-2xs"
+                  style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                  className="w-full px-3 py-2 text-xs rounded-lg font-normal text-slate-800 focus:outline-none focus:border-blue-600 transition-all"
                 />
               </div>
 
               {/* Cash Flow Classification */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700">
+                <label className="text-xs font-medium text-slate-600">
                   Cash Flow Classification
                 </label>
                 <select
                   value={modalCashFlow}
                   onChange={(e) => setModalCashFlow(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all cursor-pointer shadow-2xs"
+                  style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                  className="w-full px-3 py-2 text-xs rounded-lg font-normal text-slate-800 focus:outline-none focus:border-blue-600 transition-all cursor-pointer"
                 >
                   <option value="Operating">Operating Activities</option>
                   <option value="Cash">Cash &amp; Cash Equivalents</option>
@@ -1371,9 +1495,9 @@ export function AccountSlideOverDrawer({
                     type="checkbox"
                     checked={modalShowInClaims}
                     onChange={(e) => setModalShowInClaims(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer"
+                    className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer"
                   />
-                  <span className="text-xs font-medium text-slate-700">
+                  <span className="text-xs font-normal text-slate-700">
                     Show in expense claims
                   </span>
                 </label>
@@ -1382,9 +1506,9 @@ export function AccountSlideOverDrawer({
                     type="checkbox"
                     checked={modalEnablePayments}
                     onChange={(e) => setModalEnablePayments(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer"
+                    className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer"
                   />
-                  <span className="text-xs font-medium text-slate-700">
+                  <span className="text-xs font-normal text-slate-700">
                     Enable payments on this account type
                   </span>
                 </label>
@@ -1392,11 +1516,18 @@ export function AccountSlideOverDrawer({
             </div>
 
             {/* Modal Actions */}
-            <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+            <div
+              className="px-5 py-3 flex items-center justify-between gap-2"
+              style={{
+                backgroundColor: "#f8fafc",
+                borderTop: "1px solid #cbd5e1",
+              }}
+            >
               <button
                 type="button"
                 onClick={() => setIsCreateTypeModalOpen(false)}
-                className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer"
+                style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -1414,7 +1545,12 @@ export function AccountSlideOverDrawer({
                       );
                     }
                   }}
-                  className="px-4 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors shadow-xs cursor-pointer flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: "#1d4ed8",
+                    color: "#ffffff",
+                    border: "1px solid #1e40af",
+                  }}
+                  className="px-4 py-1.5 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>{createSubtypeMutation.isPending ? "Saving..." : "Save Account Type"}</span>

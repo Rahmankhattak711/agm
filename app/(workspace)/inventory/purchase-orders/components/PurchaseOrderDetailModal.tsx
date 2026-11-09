@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import {
   Modal,
   Button,
@@ -12,18 +13,24 @@ import {
   TableCell,
 } from "@/components/ui";
 import { PrintIcon } from "@/components/icons";
+import { FileText, ExternalLink } from "lucide-react";
 import { PurchaseOrder, PurchaseOrderStatus } from "@/lib/hooks/api-hooks";
 
 export interface PurchaseOrderDetailModalProps {
   po: PurchaseOrder | null;
   onClose: () => void;
   onPrint: (po: PurchaseOrder) => void;
-  getStatusBadge: (status: PurchaseOrderStatus) => React.ReactNode;
+  getStatusBadge: (status: PurchaseOrderStatus, po?: any) => React.ReactNode;
+  onConvertToBill?: (po: PurchaseOrder) => void;
 }
 
 export const PurchaseOrderDetailModal: React.FC<
   PurchaseOrderDetailModalProps
-> = ({ po, onClose, onPrint, getStatusBadge }) => {
+> = ({ po, onClose, onPrint, getStatusBadge, onConvertToBill }) => {
+  const router = useRouter();
+  const isBilled = Boolean(po?.supplierBills && po.supplierBills.length > 0);
+  const linkedBill = isBilled && po?.supplierBills ? po.supplierBills[0] : null;
+
   return (
     <Modal
       isOpen={!!po}
@@ -42,7 +49,23 @@ export const PurchaseOrderDetailModal: React.FC<
                 Order Date: {new Date(po.orderDate).toLocaleDateString("en-GB")}
               </p>
             </div>
-            <div>{getStatusBadge(po.status)}</div>
+            <div className="flex flex-col items-end gap-1">
+              <div>{getStatusBadge(po.status, po)}</div>
+              {isBilled && linkedBill && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    router.push(`/commercial/supplier-bills/${linkedBill.id}`);
+                  }}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 hover:underline cursor-pointer"
+                  title="View Linked Supplier Bill"
+                >
+                  <span>Bill: {linkedBill.billNumber}</span>
+                  <ExternalLink className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
@@ -150,6 +173,28 @@ export const PurchaseOrderDetailModal: React.FC<
             <Button variant="outline" size="md" onClick={onClose}>
               Close
             </Button>
+            {isBilled && linkedBill ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  router.push(`/commercial/supplier-bills/${linkedBill.id}`);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-colors cursor-pointer"
+              >
+                <FileText className="w-4 h-4" />
+                View Bill ({linkedBill.billNumber})
+              </button>
+            ) : onConvertToBill && po.status === "RECEIVED" ? (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => onConvertToBill(po)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer"
+              >
+                ⚡ Convert to Bill & Post
+              </Button>
+            ) : null}
             <Button
               variant="primary"
               size="md"

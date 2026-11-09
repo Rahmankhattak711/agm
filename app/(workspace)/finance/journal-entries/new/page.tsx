@@ -50,6 +50,7 @@ export default function CreateJournalPage() {
   const [rows, setRows] = useState<JournalGridRow[]>([
     {
       id: "row-1",
+      invoiceNumber: "",
       description: "",
       accountId: "",
       currency: "AED",
@@ -67,6 +68,7 @@ export default function CreateJournalPage() {
     },
     {
       id: "row-2",
+      invoiceNumber: "",
       description: "",
       accountId: "",
       currency: "AED",
@@ -84,6 +86,7 @@ export default function CreateJournalPage() {
     },
     {
       id: "row-3",
+      invoiceNumber: "",
       description: "",
       accountId: "",
       currency: "AED",
@@ -101,6 +104,7 @@ export default function CreateJournalPage() {
     },
     {
       id: "row-4",
+      invoiceNumber: "",
       description: "",
       accountId: "",
       currency: "AED",
@@ -170,33 +174,32 @@ export default function CreateJournalPage() {
     const updated = [...rows];
     const absDiff = Math.abs(diff);
 
+    // Find template row to inherit invoice, project, branch, tax
+    const template = updated.find((r) => r.invoiceNumber || r.projectId || r.branch);
+
     // Look for an unfilled row first
     const emptyRowIdx = updated.findIndex((r) => !r.accountId && !r.debit && !r.credit);
 
     if (emptyRowIdx >= 0) {
-      if (diff > 0) {
-        // Debit is greater -> needs Credit
-        updated[emptyRowIdx] = {
-          ...updated[emptyRowIdx],
-          credit: absDiff,
-          creditAed: absDiff,
-          debit: "",
-          debitAed: 0,
-        };
-      } else {
-        // Credit is greater -> needs Debit
-        updated[emptyRowIdx] = {
-          ...updated[emptyRowIdx],
-          debit: absDiff,
-          debitAed: absDiff,
-          credit: "",
-          creditAed: 0,
-        };
-      }
+      const target = updated[emptyRowIdx];
+      updated[emptyRowIdx] = {
+        ...target,
+        invoiceNumber: target.invoiceNumber || template?.invoiceNumber || "",
+        projectId: target.projectId || template?.projectId || "",
+        projectName: target.projectName || template?.projectName || "",
+        branch: target.branch || template?.branch || "",
+        taxType: target.taxType && target.taxType !== "OUT_OF_SCOPE" ? target.taxType : (template?.taxType || "OUT_OF_SCOPE"),
+        corporateTaxTreatment: target.corporateTaxTreatment || template?.corporateTaxTreatment || "TAXABLE_9",
+        credit: diff > 0 ? absDiff : "",
+        creditAed: diff > 0 ? absDiff : 0,
+        debit: diff < 0 ? absDiff : "",
+        debitAed: diff < 0 ? absDiff : 0,
+      };
     } else {
       // Append a new row with the difference
       updated.push({
         id: `row-autobalance-${Date.now()}`,
+        invoiceNumber: template?.invoiceNumber || "",
         description: "Balancing Entry",
         accountId: "",
         currency: "AED",
@@ -205,12 +208,13 @@ export default function CreateJournalPage() {
         credit: diff > 0 ? absDiff : "",
         debitAed: diff < 0 ? absDiff : 0,
         creditAed: diff > 0 ? absDiff : 0,
-        taxType: "OUT_OF_SCOPE",
+        taxType: template?.taxType || "OUT_OF_SCOPE",
         taxRate: 0,
         taxAmount: 0,
-        projectId: "",
-        branch: "",
-        corporateTaxTreatment: "TAXABLE_9",
+        projectId: template?.projectId || "",
+        projectName: template?.projectName || "",
+        branch: template?.branch || "",
+        corporateTaxTreatment: template?.corporateTaxTreatment || "TAXABLE_9",
       });
     }
 
@@ -240,9 +244,11 @@ export default function CreateJournalPage() {
       vatAcc = accounts.find((a: any) => a.accountName.toLowerCase().includes("vat"));
     }
 
+    const template = rows.find((r) => r.invoiceNumber || r.projectId || r.branch);
     const updated = [...rows];
     updated.push({
       id: `row-vat-${Date.now()}`,
+      invoiceNumber: template?.invoiceNumber || "",
       description: vatDeb > vatCre ? "5% Input VAT Claimable" : "5% Output VAT Payable",
       accountId: vatAcc ? vatAcc.id : "",
       accountName: vatAcc?.accountName,
@@ -256,9 +262,10 @@ export default function CreateJournalPage() {
       taxType: "OUT_OF_SCOPE",
       taxRate: 0,
       taxAmount: 0,
-      projectId: "",
-      branch: "",
-      corporateTaxTreatment: "TAXABLE_9",
+      projectId: template?.projectId || "",
+      projectName: template?.projectName || "",
+      branch: template?.branch || "",
+      corporateTaxTreatment: "OUT_OF_SCOPE",
     });
 
     setRows(updated);
@@ -284,14 +291,17 @@ export default function CreateJournalPage() {
 
     setSaving(true);
     try {
+      const primaryRef = activeLines.find((l) => l.invoiceNumber)?.invoiceNumber;
       const payload = {
         entryDate,
-        reference: reference.trim() || undefined,
-        description: notes.trim() || undefined,
+        reference: reference.trim() || primaryRef || undefined,
+        description: notes.trim() || (primaryRef ? `Invoice ${primaryRef}` : undefined),
         isPosted,
         lines: activeLines.map((r) => ({
           accountId: r.accountId,
-          description: r.description.trim() || undefined,
+          invoiceNumber: r.invoiceNumber?.trim() || undefined,
+          costCenter: r.invoiceNumber?.trim() || undefined,
+          description: r.description.trim() || (r.invoiceNumber ? `Invoice ${r.invoiceNumber.trim()}` : undefined),
           debit: Number(r.debit) || 0,
           credit: Number(r.credit) || 0,
           currency: r.currency || "AED",
@@ -303,7 +313,7 @@ export default function CreateJournalPage() {
           contactId: r.contactId || null,
           contactName: r.contactName || null,
           branch: r.branch || null,
-          })),
+        })),
       };
 
       const res = await fetch("/api/journal-entries", {
@@ -413,7 +423,7 @@ export default function CreateJournalPage() {
               <span>Transaction Parameters</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Date */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1">
@@ -426,20 +436,6 @@ export default function CreateJournalPage() {
                   onChange={(e) => setEntryDate(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:border-[#5046e5] focus:ring-1 focus:ring-[#5046e5] outline-none font-mono"
                   required
-                />
-              </div>
-
-              {/* Reference */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                  Reference
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. INV-0042 or REF-2026"
-                  value={reference}
-                  onChange={(e) => setReference(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-[#5046e5] focus:ring-1 focus:ring-[#5046e5] outline-none"
                 />
               </div>
 

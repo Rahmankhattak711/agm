@@ -7,7 +7,6 @@ import {
   Pencil,
   Trash2,
   Search,
-  Check,
   Tag,
   AlertCircle,
   RefreshCw,
@@ -168,43 +167,60 @@ export function AccountTypesManagerModal({
 
   if (!isOpen) return null;
 
-  const typeColor = (t: string) => {
+  const getTypeStyle = (t: string): React.CSSProperties => {
     switch (t) {
       case "ASSET":
-        return "bg-purple-50 text-purple-700 border-purple-200";
+        return { backgroundColor: "#eff6ff", color: "#1d4ed8", border: "1px solid #93c5fd" };
       case "LIABILITY":
-        return "bg-rose-50 text-rose-700 border-rose-200";
+        return { backgroundColor: "#fff1f2", color: "#be123c", border: "1px solid #fda4af" };
       case "EQUITY":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return { backgroundColor: "#fefce8", color: "#a16207", border: "1px solid #fde047" };
       case "REVENUE":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+        return { backgroundColor: "#f0fdf4", color: "#15803d", border: "1px solid #86efac" };
       case "EXPENSE":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return { backgroundColor: "#fff7ed", color: "#c2410c", border: "1px solid #fdba74" };
       default:
-        return "bg-slate-50 text-slate-700 border-slate-200";
+        return { backgroundColor: "#f8fafc", color: "#475569", border: "1px solid #cbd5e1" };
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
       <div
-        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+        className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+        style={{ border: "1px solid #cbd5e1" }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
+        {/* Modal Header (Soft Light-Blue matching Fixed Assets) */}
+        <div
+          className="px-5 py-3.5 flex items-center justify-between shrink-0"
+          style={{
+            backgroundColor: "#f4f7fb",
+            borderBottom: "1px solid #cbd5e1",
+          }}
+        >
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#5546FF]/10 text-[#5546FF] flex items-center justify-center font-bold">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              style={{
+                backgroundColor: "#dbeafe",
+                color: "#1d4ed8",
+                border: "1px solid #93c5fd",
+              }}
+            >
               <Tag className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
                 <span>Manage Account Types</span>
-                <span className="text-[11px] font-medium text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200">
+                <span
+                  style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                  className="text-[10.5px] font-normal text-slate-500 px-2 py-0.5 rounded-full"
+                >
                   {subtypes.length} total
                 </span>
               </h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">
+              <p className="text-[11px] font-normal text-slate-500 mt-0.5">
                 Create, customize, edit, and delete account classification types across all financial categories.
               </p>
             </div>
@@ -215,7 +231,8 @@ export function AccountTypesManagerModal({
               type="button"
               disabled={isRestoring}
               onClick={handleRestoreDefaults}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+              className="px-3 py-1.5 rounded-lg hover:bg-slate-50 text-slate-600 text-[11.5px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
               title="Restore standard default types across Asset, Liability, Equity, Revenue, Expense"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${isRestoring ? "animate-spin" : ""}`} />
@@ -224,15 +241,20 @@ export function AccountTypesManagerModal({
             <button
               type="button"
               onClick={handleOpenCreate}
-              className="px-3.5 py-1.5 rounded-lg bg-[#5546FF] hover:bg-[#4837F0] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              style={{
+                backgroundColor: "#1d4ed8",
+                color: "#ffffff",
+                border: "1px solid #1e40af",
+              }}
+              className="px-3.5 py-1.5 rounded-lg text-[11.5px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <Plus className="w-3.5 h-3.5" />
               <span>New Type</span>
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/50 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -240,23 +262,30 @@ export function AccountTypesManagerModal({
         </div>
 
         {/* Filter Toolbar & Tabs */}
-        <div className="px-6 py-2.5 border-b border-slate-100 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        <div
+          className="px-5 py-2.5 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0"
+          style={{ borderBottom: "1px solid #e2e8f0" }}
+        >
           {/* Category Tabs */}
           <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-            {["ALL", "ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"].map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
-                  activeTab === tab
-                    ? "bg-slate-900 text-white shadow-2xs"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`}
-              >
-                {tab === "ALL" ? "All Categories" : tab.charAt(0) + tab.slice(1).toLowerCase()}
-              </button>
-            ))}
+            {["ALL", "ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"].map((tab) => {
+              const isSelected = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  style={
+                    isSelected
+                      ? { backgroundColor: "#1d4ed8", color: "#ffffff" }
+                      : { backgroundColor: "transparent", color: "#475569" }
+                  }
+                  className="px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap hover:bg-slate-100"
+                >
+                  {tab === "ALL" ? "All Categories" : tab.charAt(0) + tab.slice(1).toLowerCase()}
+                </button>
+              );
+            })}
           </div>
 
           {/* Search Input */}
@@ -267,7 +296,8 @@ export function AccountTypesManagerModal({
               placeholder="Search types..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-7 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg outline-none focus:bg-white focus:border-[#5546FF] transition-all"
+              style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+              className="w-full pl-8 pr-7 py-1 text-xs font-normal text-slate-700 rounded-lg outline-none focus:border-blue-600 transition-all"
             />
             {search && (
               <button
@@ -284,10 +314,10 @@ export function AccountTypesManagerModal({
         {/* Subtypes Table Body */}
         <div className="flex-1 overflow-y-auto divide-y divide-slate-100 text-xs">
           {isLoading ? (
-            <div className="p-8 text-center text-slate-400">Loading account types...</div>
+            <div className="p-8 text-center text-slate-400 font-normal">Loading account types...</div>
           ) : filteredSubtypes.length === 0 ? (
             <div className="p-8 text-center space-y-3">
-              <p className="text-slate-500">
+              <p className="text-slate-500 font-normal">
                 No account types found in {activeTab === "ALL" ? "this filter" : activeTab}.
               </p>
               <div className="flex items-center justify-center gap-2">
@@ -295,7 +325,8 @@ export function AccountTypesManagerModal({
                   type="button"
                   disabled={isRestoring}
                   onClick={handleRestoreDefaults}
-                  className="px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                  className="px-3.5 py-1.5 rounded-lg hover:bg-slate-50 text-slate-600 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${isRestoring ? "animate-spin" : ""}`} />
                   <span>Load Standard Account Types</span>
@@ -303,7 +334,12 @@ export function AccountTypesManagerModal({
                 <button
                   type="button"
                   onClick={handleOpenCreate}
-                  className="px-3.5 py-1.5 rounded-lg bg-[#5546FF] hover:bg-[#4837F0] text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  style={{
+                    backgroundColor: "#1d4ed8",
+                    color: "#ffffff",
+                    border: "1px solid #1e40af",
+                  }}
+                  className="px-3.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Create Custom Type</span>
@@ -314,34 +350,47 @@ export function AccountTypesManagerModal({
             filteredSubtypes.map((item) => (
               <div
                 key={item.id}
-                className="px-6 py-3 flex items-center justify-between hover:bg-slate-50/80 transition-colors group"
+                className="px-5 py-2.5 flex items-center justify-between hover:bg-slate-50 transition-colors"
               >
                 <div className="flex items-start gap-3 min-w-0 pr-4">
                   <div className="pt-0.5">
                     <span
-                      className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${typeColor(
-                        item.type,
-                      )}`}
+                      style={getTypeStyle(item.type)}
+                      className="inline-block text-[9.5px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wider"
                     >
                       {item.type}
                     </span>
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 truncate">{item.name}</span>
+                      <span className="font-medium text-slate-800 truncate">{item.name}</span>
                       {item.cashFlowType && (
-                        <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
+                        <span
+                          style={{
+                            backgroundColor: "#f8fafc",
+                            color: "#475569",
+                            border: "1px solid #cbd5e1",
+                          }}
+                          className="text-[9.5px] font-normal px-2 py-0.5 rounded-full"
+                        >
                           {item.cashFlowType}
                         </span>
                       )}
                       {item.usageCount !== undefined && item.usageCount > 0 && (
-                        <span className="text-[10px] font-medium text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-100">
+                        <span
+                          style={{
+                            backgroundColor: "#eff6ff",
+                            color: "#1d4ed8",
+                            border: "1px solid #93c5fd",
+                          }}
+                          className="text-[9.5px] font-normal px-2 py-0.5 rounded-full"
+                        >
                           Used in {item.usageCount} {item.usageCount === 1 ? "account" : "accounts"}
                         </span>
                       )}
                     </div>
                     {item.description && (
-                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                      <p className="text-[11px] font-normal text-slate-500 truncate mt-0.5">
                         {item.description}
                       </p>
                     )}
@@ -353,7 +402,7 @@ export function AccountTypesManagerModal({
                   <button
                     type="button"
                     onClick={() => handleOpenEdit(item)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-[#5546FF] hover:bg-indigo-50 transition-colors cursor-pointer"
+                    className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                     title="Edit account type"
                   >
                     <Pencil className="w-3.5 h-3.5" />
@@ -361,7 +410,7 @@ export function AccountTypesManagerModal({
                   <button
                     type="button"
                     onClick={() => handleDelete(item)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                     title="Delete account type"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -373,14 +422,21 @@ export function AccountTypesManagerModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-xs text-slate-500 shrink-0">
+        <div
+          className="px-5 py-2.5 flex items-center justify-between text-xs text-slate-500 font-normal shrink-0"
+          style={{
+            backgroundColor: "#f8fafc",
+            borderTop: "1px solid #cbd5e1",
+          }}
+        >
           <span>
             Showing {filteredSubtypes.length} of {subtypes.length} account types
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 bg-white border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+            style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+            className="px-3.5 py-1.5 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
           >
             Close
           </button>
@@ -389,14 +445,21 @@ export function AccountTypesManagerModal({
 
       {/* Nested Form Modal: Create / Edit Account Type */}
       {isFormOpen && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-100">
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-100">
           <form
             onSubmit={handleSaveForm}
-            className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-100"
+            className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-100"
+            style={{ border: "1px solid #cbd5e1" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <h4 className="text-sm font-bold text-slate-900">
+            <div
+              className="px-5 py-3.5 flex items-center justify-between"
+              style={{
+                backgroundColor: "#f4f7fb",
+                borderBottom: "1px solid #cbd5e1",
+              }}
+            >
+              <h4 className="text-sm font-semibold text-slate-800">
                 {editingItem ? "Edit Account Type" : "Create New Account Type"}
               </h4>
               <button
@@ -417,7 +480,7 @@ export function AccountTypesManagerModal({
               )}
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">
+                <label className="block text-slate-600 font-medium mb-1">
                   Type Name <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -427,19 +490,21 @@ export function AccountTypesManagerModal({
                   placeholder="e.g. Rent Expense, Marketing, Software"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-900 outline-none focus:border-[#5546FF] focus:ring-1 focus:ring-[#5546FF]"
+                  style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                  className="w-full px-3 py-2 rounded-lg font-normal text-slate-800 outline-none focus:border-blue-600"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">
+                  <label className="block text-slate-600 font-medium mb-1">
                     Classification Category <span className="text-rose-500">*</span>
                   </label>
                   <select
                     value={formType}
                     onChange={(e) => setFormType(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800 outline-none focus:border-[#5546FF] cursor-pointer"
+                    style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                    className="w-full px-3 py-2 rounded-lg font-normal text-slate-800 outline-none focus:border-blue-600 cursor-pointer"
                   >
                     <option value="ASSET">Asset</option>
                     <option value="LIABILITY">Liability</option>
@@ -450,13 +515,14 @@ export function AccountTypesManagerModal({
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">
+                  <label className="block text-slate-600 font-medium mb-1">
                     Cash Flow Type
                   </label>
                   <select
                     value={formCashFlow}
                     onChange={(e) => setFormCashFlow(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800 outline-none focus:border-[#5546FF] cursor-pointer"
+                    style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                    className="w-full px-3 py-2 rounded-lg font-normal text-slate-800 outline-none focus:border-blue-600 cursor-pointer"
                   >
                     <option value="Operating">Operating</option>
                     <option value="Cash">Cash &amp; Cash Eq.</option>
@@ -468,7 +534,7 @@ export function AccountTypesManagerModal({
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">
+                <label className="block text-slate-600 font-medium mb-1">
                   Description (Optional)
                 </label>
                 <input
@@ -476,7 +542,8 @@ export function AccountTypesManagerModal({
                   placeholder="Short description of this account type..."
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-900 outline-none focus:border-[#5546FF]"
+                  style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                  className="w-full px-3 py-2 rounded-lg font-normal text-slate-800 outline-none focus:border-blue-600"
                 />
               </div>
 
@@ -486,9 +553,9 @@ export function AccountTypesManagerModal({
                     type="checkbox"
                     checked={formShowInClaims}
                     onChange={(e) => setFormShowInClaims(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded text-[#5546FF] focus:ring-[#5546FF] border-slate-300 cursor-pointer"
+                    className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-600 border-slate-300 cursor-pointer"
                   />
-                  <span className="text-slate-700 font-medium">
+                  <span className="text-slate-700 font-normal">
                     Show in expense claims
                   </span>
                 </label>
@@ -497,27 +564,39 @@ export function AccountTypesManagerModal({
                     type="checkbox"
                     checked={formEnablePayments}
                     onChange={(e) => setFormEnablePayments(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded text-[#5546FF] focus:ring-[#5546FF] border-slate-300 cursor-pointer"
+                    className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-600 border-slate-300 cursor-pointer"
                   />
-                  <span className="text-slate-700 font-medium">
+                  <span className="text-slate-700 font-normal">
                     Enable payments on this type
                   </span>
                 </label>
               </div>
             </div>
 
-            <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+            <div
+              className="px-5 py-3 flex items-center justify-end gap-2"
+              style={{
+                backgroundColor: "#f8fafc",
+                borderTop: "1px solid #cbd5e1",
+              }}
+            >
               <button
                 type="button"
                 onClick={() => setIsFormOpen(false)}
-                className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-800 rounded-lg cursor-pointer"
+                style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 rounded-lg cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={createMutation.isPending || updateMutation.isPending}
-                className="px-4 py-1.5 text-xs font-bold text-white bg-[#5546FF] hover:bg-[#4837F0] rounded-lg shadow-xs cursor-pointer disabled:opacity-50"
+                style={{
+                  backgroundColor: "#1d4ed8",
+                  color: "#ffffff",
+                  border: "1px solid #1e40af",
+                }}
+                className="px-4 py-1.5 text-xs font-medium rounded-lg cursor-pointer disabled:opacity-50"
               >
                 {createMutation.isPending || updateMutation.isPending
                   ? "Saving..."
