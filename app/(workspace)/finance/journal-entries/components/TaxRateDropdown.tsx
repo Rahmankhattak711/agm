@@ -89,27 +89,33 @@ export function TaxRateDropdown({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      {/* Trigger Box matching screenshot */}
+      {/* Trigger Box */}
       <div
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`w-full bg-white px-2.5 py-1.5 text-xs rounded-lg transition-all cursor-pointer select-none flex items-center justify-between ${
+        className={`w-full bg-white px-2.5 py-1.5 text-[11px] rounded-xl transition-all cursor-pointer select-none flex items-center justify-between ${
           isOpen
-            ? "border-2 border-[#5046e5] ring-1 ring-[#5046e5]/20 shadow-xs"
-            : "border border-slate-200 hover:border-slate-300 text-slate-800"
+            ? "ring-2 ring-blue-500/15"
+            : "hover:border-slate-400 text-slate-800"
         } ${disabled ? "opacity-50 cursor-not-allowed bg-slate-50" : ""}`}
+        style={{
+          border: isOpen ? "1px solid #1d4ed8" : "1px solid #cbd5e1",
+        }}
       >
-        <span className="truncate font-medium text-slate-800">
+        <span className="truncate font-normal text-slate-800">
           {selectedOption ? selectedOption.label : "Select"}
         </span>
       </div>
 
-      {/* Modern Custom Dropdown Popover matching Image 2 & 3 */}
+      {/* Custom Dropdown Popover */}
       {isOpen && (
-        <div className="absolute left-0 top-full mt-1 z-50 w-60 max-h-[310px] bg-white rounded-xl shadow-xl border border-slate-200/90 py-1.5 flex flex-col overflow-y-auto custom-scrollbar animate-in fade-in-50 zoom-in-95 duration-100">
+        <div
+          className="absolute left-0 top-full mt-1 z-50 w-60 max-h-[310px] bg-white rounded-xl shadow-lg py-1.5 flex flex-col overflow-y-auto custom-scrollbar animate-in fade-in-50 zoom-in-95 duration-100"
+          style={{ border: "1px solid #cbd5e1" }}
+        >
           {TAX_RATE_GROUPS.map((group, groupIdx) => (
             <div key={group.category} className="w-full">
               {/* Category Header */}
-              <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 select-none">
+              <div className="px-3 pt-2 pb-1 text-[9.5px] font-medium uppercase tracking-wider text-slate-400 select-none">
                 {group.category}
               </div>
 
@@ -121,18 +127,18 @@ export function TaxRateDropdown({
                     <div
                       key={opt.code}
                       onClick={() => handleSelect(opt.code)}
-                      className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
+                      className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] cursor-pointer transition-colors ${
                         isSelected
-                          ? "bg-slate-100/90 text-slate-900 font-semibold"
-                          : "text-slate-700 hover:bg-slate-100/80 hover:text-slate-900"
+                          ? "bg-blue-50/80 text-blue-700 font-medium"
+                          : "text-slate-700 font-normal hover:bg-slate-50 hover:text-slate-900"
                       }`}
                     >
                       <span>{opt.label}</span>
 
-                      {/* VAT Glyph matching screenshot (double-V / tax emblem) */}
+                      {/* VAT Glyph */}
                       <svg
                         className={`w-3.5 h-3 shrink-0 ${
-                          isSelected ? "text-slate-800" : "text-slate-600"
+                          isSelected ? "text-blue-700" : "text-slate-500"
                         }`}
                         viewBox="0 0 16 12"
                         fill="currentColor"

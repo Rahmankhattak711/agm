@@ -7,8 +7,8 @@ import {
   ChevronLeftIcon,
   PrintIcon,
   RefreshIcon,
-  TrendingUpIcon,
   ShieldCheckIcon,
+  CalendarIcon,
 } from "@/components/icons";
 import { useReactToPrint } from "react-to-print";
 
@@ -44,30 +44,38 @@ export default function CorporateTaxPage() {
   };
 
   return (
-    <div className="p-6 max-w-[1400px] mx-auto space-y-6">
-      {/* Top Breadcrumb & Title matching Wafeq Screenshot 5 */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-            <button
-              onClick={() => router.push("/finance/reports")}
-              className="hover:text-primary transition-colors flex items-center gap-1"
-            >
-              <ChevronLeftIcon className="w-3.5 h-3.5" />
-              Reports
-            </button>
-            <span>&gt;</span>
-            <span className="text-foreground font-medium">Corporate Tax</span>
+    <div className="w-full min-h-full bg-white text-slate-700 font-sans px-4 sm:px-5 py-3.5 space-y-3.5 select-none pb-16">
+      {/* Compact Header with Back Arrow Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => router.push("/finance/reports")}
+            className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors cursor-pointer shrink-0"
+            style={{ border: "1px solid #cbd5e1" }}
+            title="Back to Reports"
+          >
+            <ChevronLeftIcon className="w-4 h-4" />
+          </button>
+
+          <div
+            className="w-8 h-8 rounded-lg bg-[#eff6ff] border border-[#bfdbfe] flex items-center justify-center text-[#1d4ed8] shrink-0"
+            style={{ backgroundColor: "#eff6ff", borderColor: "#bfdbfe", color: "#1d4ed8" }}
+          >
+            <ShieldCheckIcon className="w-4 h-4" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            Corporate Tax – Taxable Income
-            <span className="text-xs font-normal px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-base sm:text-[17px] font-semibold text-slate-800 tracking-tight">
+              Corporate Tax – Taxable Income
+            </h1>
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-normal bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]"
+              style={{ backgroundColor: "#eff6ff", borderColor: "#bfdbfe", color: "#1d4ed8" }}
+            >
               UAE Federal Law No. 47 (9%)
             </span>
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Computation of statutory Taxable Income derived from Audited Accounting Net Profit, adjusted for exempt revenues and non-deductible expenses.
-          </p>
+          </div>
         </div>
 
         {/* Action Controls */}
@@ -76,14 +84,16 @@ export default function CorporateTaxPage() {
             onClick={() => refetch()}
             disabled={isFetching}
             title="Refresh Data"
-            className="p-2 border border-border rounded-lg bg-background hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            className="p-1.5 border border-[#cbd5e1] rounded-lg bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer flex items-center justify-center"
+            style={{ borderColor: "#cbd5e1" }}
           >
-            <RefreshIcon className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`} />
+            <RefreshIcon className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#1d4ed8]" : ""}`} />
           </button>
 
           <button
             onClick={() => handlePrint()}
-            className="px-3 py-1.5 text-xs font-medium border border-border rounded-lg bg-background hover:bg-muted/50 text-foreground flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            className="px-3.5 py-1.5 text-[11.5px] font-medium rounded-lg bg-[#1d4ed8] text-white hover:bg-[#1e40af] flex items-center gap-1.5 transition-colors cursor-pointer"
+            style={{ backgroundColor: "#1d4ed8", color: "#ffffff", border: "1px solid #1e40af" }}
           >
             <PrintIcon className="w-3.5 h-3.5" />
             Export / Print
@@ -91,164 +101,245 @@ export default function CorporateTaxPage() {
         </div>
       </div>
 
-      {/* Corporate Tax Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-card border border-border shadow-2xs space-y-1">
-          <div className="text-xs text-muted-foreground font-medium">Accounting Net Profit</div>
-          <div className="text-xl font-bold text-foreground font-mono">
+      {/* 4 Compact Pastel Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div
+          className="rounded-xl px-3.5 py-2.5"
+          style={{ backgroundColor: "#f1f5f9", border: "1px solid #cbd5e1" }}
+        >
+          <span className="text-[9.5px] text-slate-500 uppercase tracking-wider font-medium block">
+            ACCOUNTING NET PROFIT
+          </span>
+          <span className="text-sm sm:text-[15px] font-semibold text-slate-800 leading-snug block mt-0.5 font-mono tabular-nums whitespace-nowrap">
             AED {formatAlways(data?.totals.accountingNetProfit)}
-          </div>
-          <div className="text-[11px] text-muted-foreground">Audited financial result from P&amp;L</div>
+          </span>
+          <span className="text-[10.5px] text-slate-500 font-normal block">
+            Audited financial result from P&amp;L
+          </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-card border border-border shadow-2xs space-y-1">
-          <div className="text-xs text-muted-foreground font-medium">Adjusted Taxable Income</div>
-          <div className="text-xl font-bold text-indigo-600 font-mono">
+        <div
+          className="rounded-xl px-3.5 py-2.5"
+          style={{ backgroundColor: "#fefce8", border: "1px solid #fde047" }}
+        >
+          <span className="text-[9.5px] text-slate-500 uppercase tracking-wider font-medium block">
+            ADJUSTED TAXABLE INCOME
+          </span>
+          <span className="text-sm sm:text-[15px] font-semibold text-slate-800 leading-snug block mt-0.5 font-mono tabular-nums whitespace-nowrap">
             AED {formatAlways(data?.totals.taxableIncome)}
-          </div>
-          <div className="text-[11px] text-muted-foreground">Net of exempt &amp; non-deductibles</div>
+          </span>
+          <span className="text-[10.5px] text-slate-500 font-normal block">
+            Net of exempt &amp; non-deductibles
+          </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-card border border-border shadow-2xs space-y-1">
-          <div className="text-xs text-muted-foreground font-medium">Statutory Threshold</div>
-          <div className="text-xl font-bold text-foreground font-mono">
+        <div
+          className="rounded-xl px-3.5 py-2.5"
+          style={{ backgroundColor: "#f0fdf4", border: "1px solid #86efac" }}
+        >
+          <span className="text-[9.5px] text-slate-500 uppercase tracking-wider font-medium block">
+            STATUTORY THRESHOLD
+          </span>
+          <span className="text-sm sm:text-[15px] font-semibold text-emerald-700 leading-snug block mt-0.5 font-mono tabular-nums whitespace-nowrap">
             AED {formatAlways(data?.totals.taxThreshold)}
-          </div>
-          <div className="text-[11px] text-emerald-600 font-medium">0% Tax Rate on first 375k</div>
+          </span>
+          <span className="text-[10.5px] text-slate-500 font-normal block">
+            0% Tax Rate on first AED 375,000
+          </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-card border border-border shadow-2xs space-y-1">
-          <div className="text-xs text-muted-foreground font-medium">Corporate Tax Due (9%)</div>
-          <div className={`text-xl font-bold font-mono ${(data?.totals.corporateTaxDue || 0) > 0 ? "text-rose-600" : "text-emerald-600"}`}>
+        <div
+          className="rounded-xl px-3.5 py-2.5"
+          style={{ backgroundColor: "#fff1f2", border: "1px solid #fda4af" }}
+        >
+          <span className="text-[9.5px] text-slate-500 uppercase tracking-wider font-medium block">
+            CORPORATE TAX DUE (9%)
+          </span>
+          <span
+            className={`text-sm sm:text-[15px] font-semibold leading-snug block mt-0.5 font-mono tabular-nums whitespace-nowrap ${
+              (data?.totals.corporateTaxDue || 0) > 0 ? "text-rose-700" : "text-emerald-700"
+            }`}
+          >
             AED {formatAlways(data?.totals.corporateTaxDue)}
-          </div>
-          <div className="text-[11px] text-muted-foreground">
+          </span>
+          <span className="text-[10.5px] text-slate-500 font-normal block truncate">
             {(data?.totals.taxableIncomeAboveThreshold || 0) > 0
-              ? `Applied on excess: AED ${formatAlways(data?.totals.taxableIncomeAboveThreshold)}`
+              ? `Excess: AED ${formatAlways(data?.totals.taxableIncomeAboveThreshold)}`
               : "Below taxable threshold"}
-          </div>
+          </span>
         </div>
       </div>
 
       {/* Date Filter Bar */}
-      <div className="bg-card border border-border rounded-xl p-3.5 shadow-xs flex flex-wrap items-center justify-between gap-3">
+      <div
+        className="rounded-xl p-3.5 border border-[#cbd5e1] shadow-2xs flex flex-wrap items-center justify-between gap-3"
+        style={{ backgroundColor: "#f4f7fb", border: "1px solid #cbd5e1" }}
+      >
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground">📅 Tax Year:</span>
+          <CalendarIcon className="w-3.5 h-3.5 text-[#1d4ed8]" />
+          <span className="text-xs font-medium text-slate-700">Tax Year:</span>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
-            className="text-xs font-medium bg-background border border-border rounded-md px-2.5 py-1 text-foreground focus:ring-1 focus:ring-primary outline-none"
+            className="h-8 text-xs font-medium bg-white border border-[#cbd5e1] rounded-lg px-2.5 text-slate-800 focus:border-[#1d4ed8] outline-none cursor-pointer"
+            style={{ borderColor: "#cbd5e1" }}
           >
             {[currentYear - 2, currentYear - 1, currentYear, currentYear + 1].map((yr) => (
               <option key={yr} value={yr}>
-                Year {yr}
+                Fiscal Year {yr}
               </option>
             ))}
           </select>
         </div>
 
-        <div className="text-xs text-muted-foreground font-mono">
+        <div className="text-[11px] text-slate-500 font-mono">
           UAE Corporate Tax Statutory Period: 01 Jan {selectedYear} to 31 Dec {selectedYear}
         </div>
       </div>
 
-      {/* Monthly Comparative Grid matching Wafeq Screenshot 5 */}
+      {/* Monthly Comparative Grid */}
       <div
         ref={printRef}
-        className="bg-card border border-border rounded-xl shadow-xs overflow-hidden print:border-none print:shadow-none"
+        className="bg-white border border-[#cbd5e1] rounded-xl shadow-2xs overflow-hidden print:border-none print:shadow-none"
+        style={{ border: "1px solid #cbd5e1" }}
       >
+        <div
+          className="px-5 py-3 border-b border-[#cbd5e1] flex flex-wrap items-center justify-between gap-2"
+          style={{ backgroundColor: "#f4f7fb", borderBottom: "1px solid #cbd5e1" }}
+        >
+          <span className="text-xs font-semibold text-slate-800">
+            Monthly Taxable Income Schedule — FY {selectedYear}
+          </span>
+          <span className="text-[11px] font-mono text-slate-500">
+            All amounts in AED
+          </span>
+        </div>
+
         {isLoading ? (
-          <div className="py-24 text-center space-y-3">
-            <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto" />
-            <p className="text-xs text-muted-foreground">Generating statutory corporate tax grid...</p>
+          <div className="py-20 text-center space-y-3">
+            <div className="w-7 h-7 rounded-full border-2 border-[#1d4ed8] border-t-transparent animate-spin mx-auto" />
+            <p className="text-xs text-slate-500 font-normal">Generating statutory corporate tax grid...</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left border-collapse">
+            <table className="w-full text-xs text-left border-collapse min-w-[960px]">
               <thead>
-                <tr className="bg-muted/40 border-b border-border text-muted-foreground">
-                  <th className="py-3 px-4 font-semibold min-w-[260px] sticky left-0 bg-card shadow-xs">
+                <tr
+                  className="border-b border-[#cbd5e1] text-[11px] uppercase tracking-wider text-slate-600"
+                  style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #cbd5e1" }}
+                >
+                  <th
+                    className="py-2.5 px-4 font-semibold min-w-[240px] sticky left-0 z-10 border-r border-slate-200"
+                    style={{ backgroundColor: "#f8fafc" }}
+                  >
                     Statutory Line Items
                   </th>
                   {data?.months.map((m) => (
-                    <th key={m.monthKey} className="py-3 px-3 font-semibold text-right min-w-[100px] whitespace-nowrap">
+                    <th key={m.monthKey} className="py-2.5 px-3 font-semibold text-right min-w-[90px] whitespace-nowrap">
                       {m.monthLabel.split(" ")[0]}
                     </th>
                   ))}
-                  <th className="py-3 px-4 font-bold text-right min-w-[130px] bg-muted/60 text-foreground">
+                  <th
+                    className="py-2.5 px-4 font-semibold text-right min-w-[130px] text-[#1e3a8a] border-l border-slate-200"
+                    style={{ backgroundColor: "#eff6ff" }}
+                  >
                     Full Year Total
                   </th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-border/60">
+              <tbody className="divide-y divide-slate-200/70">
                 {/* ROW 1: Accounting Net Profit */}
-                <tr className="hover:bg-muted/15 transition-colors font-semibold">
-                  <td className="py-3 px-4 text-foreground sticky left-0 bg-card">
+                <tr className="hover:bg-[#f8fafc] transition-colors font-medium">
+                  <td className="py-3 px-4 text-slate-900 sticky left-0 bg-white border-r border-slate-200/80">
                     Accounting Net Profit
                   </td>
                   {data?.months.map((m) => (
-                    <td key={m.monthKey} className="py-3 px-3 text-right font-mono">
+                    <td key={m.monthKey} className="py-3 px-3 text-right font-mono font-normal text-slate-700 tabular-nums">
                       {formatAed(m.accountingNetProfit)}
                     </td>
                   ))}
-                  <td className="py-3 px-4 text-right font-mono font-bold bg-muted/20 text-foreground">
+                  <td
+                    className="py-3 px-4 text-right font-mono font-semibold text-slate-900 border-l border-slate-200/80 tabular-nums"
+                    style={{ backgroundColor: "#f8fafc" }}
+                  >
                     {formatAed(data?.totals.accountingNetProfit)}
                   </td>
                 </tr>
 
                 {/* ROW 2: Header Less exempt revenue */}
-                <tr className="bg-muted/10 text-muted-foreground">
-                  <td colSpan={(data?.months.length || 12) + 2} className="py-2 px-4 font-semibold text-[11px] uppercase tracking-wider">
-                    Less exempt revenue
+                <tr style={{ backgroundColor: "#f0fdf4" }}>
+                  <td
+                    colSpan={(data?.months.length || 12) + 2}
+                    className="py-2 px-4 font-semibold text-[11px] uppercase tracking-wider text-emerald-900"
+                  >
+                    Less Exempt Revenue
                   </td>
                 </tr>
-                <tr className="hover:bg-muted/15 transition-colors text-foreground/80 pl-4">
-                  <td className="py-2.5 px-4 pl-8 sticky left-0 bg-card text-muted-foreground">
+                <tr className="hover:bg-[#f8fafc] transition-colors">
+                  <td className="py-2.5 px-4 pl-7 sticky left-0 bg-white text-slate-600 font-normal border-r border-slate-200/80">
                     Total exempt revenue
                   </td>
                   {data?.months.map((m) => (
-                    <td key={m.monthKey} className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                    <td key={m.monthKey} className="py-2.5 px-3 text-right font-mono font-normal text-slate-500 tabular-nums">
                       {formatAed(m.exemptRevenue)}
                     </td>
                   ))}
-                  <td className="py-2.5 px-4 text-right font-mono bg-muted/20 text-muted-foreground">
+                  <td
+                    className="py-2.5 px-4 text-right font-mono font-normal text-slate-600 border-l border-slate-200/80 tabular-nums"
+                    style={{ backgroundColor: "#f8fafc" }}
+                  >
                     {formatAed(data?.totals.exemptRevenue)}
                   </td>
                 </tr>
 
                 {/* ROW 3: Header Add back non-deductible expenses */}
-                <tr className="bg-muted/10 text-muted-foreground">
-                  <td colSpan={(data?.months.length || 12) + 2} className="py-2 px-4 font-semibold text-[11px] uppercase tracking-wider">
-                    Add back non-deductible expenses
+                <tr style={{ backgroundColor: "#fffbeb" }}>
+                  <td
+                    colSpan={(data?.months.length || 12) + 2}
+                    className="py-2 px-4 font-semibold text-[11px] uppercase tracking-wider text-amber-900"
+                  >
+                    Add Back Non-Deductible Expenses
                   </td>
                 </tr>
-                <tr className="hover:bg-muted/15 transition-colors text-foreground/80">
-                  <td className="py-2.5 px-4 pl-8 sticky left-0 bg-card text-muted-foreground">
+                <tr className="hover:bg-[#f8fafc] transition-colors">
+                  <td className="py-2.5 px-4 pl-7 sticky left-0 bg-white text-slate-600 font-normal border-r border-slate-200/80">
                     Total non-deductible expenses
                   </td>
                   {data?.months.map((m) => (
-                    <td key={m.monthKey} className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                    <td key={m.monthKey} className="py-2.5 px-3 text-right font-mono font-normal text-slate-500 tabular-nums">
                       {formatAed(m.nonDeductibleExpenses)}
                     </td>
                   ))}
-                  <td className="py-2.5 px-4 text-right font-mono bg-muted/20 text-muted-foreground">
+                  <td
+                    className="py-2.5 px-4 text-right font-mono font-normal text-slate-600 border-l border-slate-200/80 tabular-nums"
+                    style={{ backgroundColor: "#f8fafc" }}
+                  >
                     {formatAed(data?.totals.nonDeductibleExpenses)}
                   </td>
                 </tr>
 
-                {/* ROW 4: Final Taxable Income (Matching Wafeq Screenshot 5) */}
-                <tr className="bg-indigo-50/50 font-bold border-t-2 border-indigo-200 text-indigo-950">
-                  <td className="py-3.5 px-4 text-indigo-900 sticky left-0 bg-indigo-50">
-                    Taxable Income
+                {/* ROW 4: Final Taxable Income */}
+                <tr
+                  className="font-semibold border-t-2 border-[#cbd5e1] text-slate-900"
+                  style={{ backgroundColor: "#eff6ff" }}
+                >
+                  <td
+                    className="py-3.5 px-4 text-[#1e3a8a] sticky left-0 border-r border-[#bfdbfe]"
+                    style={{ backgroundColor: "#eff6ff" }}
+                  >
+                    Adjusted Taxable Income
                   </td>
                   {data?.months.map((m) => (
-                    <td key={m.monthKey} className="py-3.5 px-3 text-right font-mono">
+                    <td key={m.monthKey} className="py-3.5 px-3 text-right font-mono font-medium text-[#1d4ed8] tabular-nums">
                       {formatAed(m.taxableIncome)}
                     </td>
                   ))}
-                  <td className="py-3.5 px-4 text-right font-mono font-bold text-sm text-indigo-700 bg-indigo-100/60">
-                    {formatAed(data?.totals.taxableIncome)}
+                  <td
+                    className="py-3.5 px-4 text-right font-mono font-semibold text-[13px] text-[#1d4ed8] border-l border-[#bfdbfe] tabular-nums"
+                    style={{ backgroundColor: "#dbeafe" }}
+                  >
+                    AED {formatAlways(data?.totals.taxableIncome)}
                   </td>
                 </tr>
               </tbody>

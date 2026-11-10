@@ -86,40 +86,65 @@ export function QuickCreateModal({ isOpen, onClose, type, onCreated }: QuickCrea
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={type === "project" ? "+ Create New Project / Site" : "+ Create New Contact"}
+      title={type === "project" ? "Create New Project / Site" : "Create New Contact"}
     >
-      <form onSubmit={handleSubmit} className="space-y-4 py-2">
+      <form onSubmit={handleSubmit} className="space-y-4 py-2 font-sans">
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-foreground">
+          <label className="text-[11px] font-medium text-slate-700 block">
             {type === "project" ? "Project / Site Name *" : "Contact / Company Name *"}
           </label>
-          <Input
+          <input
+            type="text"
             placeholder={type === "project" ? "e.g. Marina Tower Penthouse" : "e.g. AGM Tech Services"}
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoFocus
             required
+            className="w-full h-9 px-3 rounded-xl bg-white text-[12px] font-normal text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/10 transition-all"
+            style={{ border: "1px solid #cbd5e1" }}
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-foreground">
+          <label className="text-[11px] font-medium text-slate-700 block">
             {type === "project" ? "Project Code (Optional)" : "Email / Phone (Optional)"}
           </label>
-          <Input
+          <input
+            type="text"
             placeholder={type === "project" ? "e.g. PRJ-MARINA-01" : "e.g. info@agm.ae"}
             value={codeOrEmail}
             onChange={(e) => setCodeOrEmail(e.target.value)}
+            className="w-full h-9 px-3 rounded-xl bg-white text-[12px] font-normal text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/10 transition-all"
+            style={{ border: "1px solid #cbd5e1" }}
           />
         </div>
 
-        <div className="flex justify-end gap-2 pt-3">
-          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="h-8 px-3.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer disabled:opacity-50"
+            style={{
+              backgroundColor: "#ffffff",
+              color: "#475569",
+              border: "1px solid #cbd5e1",
+            }}
+          >
             Cancel
-          </Button>
-          <Button type="submit" disabled={loading} className="bg-primary text-primary-foreground">
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="h-8 px-4 rounded-lg text-[11px] font-medium transition-colors cursor-pointer disabled:opacity-50"
+            style={{
+              backgroundColor: "#1d4ed8",
+              color: "#ffffff",
+              border: "1px solid #1e40af",
+            }}
+          >
             {loading ? "Creating..." : "Save & Select"}
-          </Button>
+          </button>
         </div>
       </form>
     </Modal>

@@ -11,6 +11,7 @@ import { JournalDetailsModal } from "../../journal-entries/components/JournalDet
 import {
   Download,
   Calendar,
+  ChevronLeft,
   ChevronDown,
   ChevronRight,
   TrendingUp,
@@ -187,8 +188,14 @@ export default function ProfitAndLossReportPage() {
     placeholderData: (prev) => prev,
   });
 
-  const monthKeys: string[] = pnl?.monthKeys || ["2026-01", "2026-02", "2026-03"];
-  const monthLabels: string[] = pnl?.monthLabels || ["Jan 2026", "Feb 2026", "Mar 2026"];
+  const allMonthKeys: string[] = pnl?.monthKeys || ["2026-01", "2026-02", "2026-03"];
+  const allMonthLabels: string[] = pnl?.monthLabels || ["Jan 2026", "Feb 2026", "Mar 2026"];
+
+  // Only show month column(s) when a specific month (or quarter) filter is active, not in Full Year
+  const showMonthColumns =
+    filterMode === "preset" && (selectedMonth !== "ALL" || activePreset !== "FULL_YEAR");
+  const monthKeys: string[] = showMonthColumns ? allMonthKeys : [];
+  const monthLabels: string[] = showMonthColumns ? allMonthLabels : [];
 
   // Direct Drill Down to General Ledger
   const handleDrillDownToGL = (accountId: string, accountName: string) => {
@@ -319,86 +326,139 @@ export default function ProfitAndLossReportPage() {
     totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : "0.0";
 
   return (
-    <div className="w-full min-h-full bg-slate-50/40 flex flex-col font-sans pb-12">
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* 1. TWO-TIER EXECUTIVE HEADER */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <div className="bg-white border-b border-slate-200/90 px-6 py-4 space-y-4 shrink-0 shadow-2xs">
-        {/* Tier 1: Title, Breadcrumbs, Currency & Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span className="hover:text-slate-800 transition-colors">Finance & Accounts</span>
-              <span>/</span>
-              <span className="hover:text-slate-800 transition-colors">Reports</span>
-              <span>/</span>
-              <span className="font-semibold text-slate-800">Profit & Loss</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#5046e5]">
-                <FileSpreadsheet className="w-4 h-4" />
-              </div>
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-                Profit & Loss Statement
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                  AED Base
-                </span>
-              </h1>
-            </div>
+    <div className="w-full min-h-full bg-white text-slate-700 font-sans px-4 sm:px-5 py-3.5 space-y-3.5 select-none">
+      {/* =========================================================================
+          1. CLEAN COMPACT TOP HEADER (MATCHING FIXED ASSETS & COA)
+          ========================================================================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 print:hidden">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => router.push("/finance/reports")}
+            className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors cursor-pointer shrink-0"
+            style={{ border: "1px solid #cbd5e1" }}
+            title="Back to Reports"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#eff6ff",
+              color: "#1d4ed8",
+              border: "1px solid #bfdbfe",
+            }}
+          >
+            <TrendingUp className="w-4 h-4" />
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-2xs transition-colors cursor-pointer"
-              title="Refresh statement"
+          <h1 className="text-base sm:text-[17px] font-semibold tracking-tight text-slate-800 flex items-center gap-2">
+            <span>Profit &amp; Loss Statement</span>
+            <span
+              className="text-[10px] font-normal px-2 py-0.5 rounded-full font-mono"
+              style={{
+                backgroundColor: "#f8fafc",
+                color: "#475569",
+                border: "1px solid #cbd5e1",
+              }}
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#5046e5]" : ""}`} />
-            </button>
-            <button
-              type="button"
-              onClick={handleExportCsv}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Export CSV</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push(`/finance/general-ledger?from=${selectedRange[0]}&to=${selectedRange[1]}`)}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <span>General Ledger</span>
-              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
-            </button>
-          </div>
+              AED Base
+            </span>
+          </h1>
         </div>
 
-        {/* Tier 2: Enhanced Modern Filter Toolbar */}
-        <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-          {/* Left: Year & Presets or Custom Dates */}
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+            className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer disabled:opacity-50"
+            title="Refresh statement"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-blue-600" : ""}`} />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+            className="px-3 py-1.5 rounded-lg hover:bg-slate-50 text-slate-600 text-[11.5px] font-medium transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span>CSV Report</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              router.push(
+                `/finance/general-ledger?from=${selectedRange[0]}&to=${selectedRange[1]}`
+              )
+            }
+            style={{
+              backgroundColor: "#1d4ed8",
+              color: "#ffffff",
+              border: "1px solid #1e40af",
+            }}
+            className="px-3.5 py-1.5 rounded-lg text-[11.5px] font-medium transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>General Ledger</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          2. SOFT LIGHT-BLUE TINTED PERIOD & FILTER BAR
+          ========================================================================= */}
+      <div
+        className="rounded-xl p-3 space-y-2.5 print:hidden"
+        style={{
+          backgroundColor: "#f4f7fb",
+          border: "1px solid #cbd5e1",
+        }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs">
+          {/* Left: Year & Presets */}
           <div className="flex flex-wrap items-center gap-2">
             {/* Year Selector */}
-            <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50/70 p-0.5 shadow-2xs">
-              {YEARS.map((y) => (
-                <button
-                  key={y}
-                  type="button"
-                  onClick={() => handleYearChange(y)}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                    filterMode === "preset" && selectedYear === y
-                      ? "bg-[#5046e5] text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
-                  }`}
-                >
-                  {y}
-                </button>
-              ))}
+            <div
+              className="inline-flex rounded-lg p-0.5 gap-0.5"
+              style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #cbd5e1",
+              }}
+            >
+              {YEARS.map((y) => {
+                const isActive = filterMode === "preset" && selectedYear === y;
+                return (
+                  <button
+                    key={y}
+                    type="button"
+                    onClick={() => handleYearChange(y)}
+                    style={
+                      isActive
+                        ? { backgroundColor: "#1d4ed8", color: "#ffffff" }
+                        : { backgroundColor: "transparent", color: "#475569" }
+                    }
+                    className="px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer font-mono"
+                  >
+                    {y}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Quick Presets */}
-            <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 shadow-2xs">
+            <div
+              className="inline-flex flex-wrap rounded-lg p-0.5 gap-0.5"
+              style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #cbd5e1",
+              }}
+            >
               {[
                 { id: "FULL_YEAR", label: "Full Year" },
                 { id: "Q1", label: "Q1" },
@@ -406,63 +466,95 @@ export default function ProfitAndLossReportPage() {
                 { id: "Q3", label: "Q3" },
                 { id: "Q4", label: "Q4" },
                 { id: "THIS_MONTH", label: "This Month" },
-              ].map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => handlePresetClick(p.id)}
-                  className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                    filterMode === "preset" && activePreset === p.id && selectedMonth === "ALL"
-                      ? "bg-slate-900 text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
+              ].map((p) => {
+                const isActive =
+                  filterMode === "preset" &&
+                  activePreset === p.id &&
+                  selectedMonth === "ALL";
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => handlePresetClick(p.id)}
+                    style={
+                      isActive
+                        ? { backgroundColor: "#1d4ed8", color: "#ffffff" }
+                        : { backgroundColor: "transparent", color: "#475569" }
+                    }
+                    className="px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer"
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Month Dropdown */}
-            <div className="relative">
-              <select
-                value={selectedMonth}
-                onChange={(e) => handleMonthSelect(e.target.value)}
-                className="appearance-none pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs font-medium shadow-2xs hover:border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-[#5046e5]/20 cursor-pointer"
-              >
-                <option value="ALL">All Months</option>
-                {MONTH_NAMES.map((m) => (
-                  <option key={m.val} value={m.val}>
-                    {m.name} ({m.val})
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            <select
+              value={selectedMonth}
+              onChange={(e) => handleMonthSelect(e.target.value)}
+              style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #cbd5e1",
+              }}
+              className="px-2.5 py-1.5 rounded-lg text-slate-700 text-xs font-normal outline-none focus:border-blue-600 cursor-pointer"
+            >
+              <option value="ALL">All Months</option>
+              {MONTH_NAMES.map((m) => (
+                <option key={m.val} value={m.val}>
+                  {m.name} ({m.val})
+                </option>
+              ))}
+            </select>
 
             {/* Custom Days Range Toggle Button */}
             <button
               type="button"
-              onClick={() => setFilterMode(filterMode === "custom" ? "preset" : "custom")}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold shadow-2xs transition-colors cursor-pointer ${
+              onClick={() =>
+                setFilterMode(filterMode === "custom" ? "preset" : "custom")
+              }
+              style={
                 filterMode === "custom"
-                  ? "bg-indigo-50 border-indigo-300 text-[#5046e5]"
-                  : "bg-white border-slate-200 hover:bg-slate-50 text-slate-700"
-              }`}
+                  ? {
+                      backgroundColor: "#eff6ff",
+                      color: "#1d4ed8",
+                      border: "1px solid #93c5fd",
+                    }
+                  : {
+                      backgroundColor: "#ffffff",
+                      color: "#475569",
+                      border: "1px solid #cbd5e1",
+                    }
+              }
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-medium transition-colors cursor-pointer"
             >
-              <CalendarDays className="w-3.5 h-3.5 text-indigo-500" />
+              <CalendarDays className="w-3.5 h-3.5" />
               <span>Custom Days</span>
             </button>
           </div>
 
           {/* Right: Active Date Bounds indicator */}
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium shadow-2xs">
+            <div
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-slate-700 font-normal"
+              style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #cbd5e1",
+              }}
+            >
               <Calendar className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-slate-400">Interval:</span>
-              <span className="font-semibold text-slate-900 font-mono text-[11px]">
+              <span className="text-slate-400 text-[11px]">Interval:</span>
+              <span
+                className="font-medium font-mono text-[11px]"
+                style={{ color: "#1d4ed8" }}
+              >
                 {filterMode === "custom"
                   ? `${selectedRange[0]} → ${selectedRange[1]}`
-                  : `${monthLabels[0] || ""} → ${monthLabels[monthLabels.length - 1] || ""}`}
+                  : allMonthLabels.length === 1
+                  ? allMonthLabels[0]
+                  : `${allMonthLabels[0] || ""} → ${
+                      allMonthLabels[allMonthLabels.length - 1] || ""
+                    }`}
               </span>
             </div>
           </div>
@@ -470,34 +562,47 @@ export default function ProfitAndLossReportPage() {
 
         {/* Expandable Custom Days Bar */}
         {filterMode === "custom" && (
-          <div className="p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs animate-in fade-in duration-150">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-bold text-indigo-950 flex items-center gap-1.5">
-                <CalendarDays className="w-4 h-4 text-indigo-600" />
-                Custom Day Filter:
+          <div
+            className="p-2.5 rounded-lg flex flex-wrap items-center justify-between gap-3 text-xs"
+            style={{
+              backgroundColor: "#ffffff",
+              border: "1px solid #cbd5e1",
+            }}
+          >
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="font-medium text-slate-700 flex items-center gap-1.5">
+                <CalendarDays className="w-3.5 h-3.5 text-blue-600" />
+                Custom Date Filter:
               </span>
-              <div className="flex items-center gap-2">
-                <span className="text-slate-500 font-medium">From:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 font-normal">From:</span>
                 <input
                   type="date"
                   value={customFrom}
                   onChange={(e) => setCustomFrom(e.target.value)}
-                  className="px-2.5 py-1 rounded-md border border-slate-200 bg-white text-xs font-mono font-medium text-slate-800 shadow-2xs focus:ring-2 focus:ring-indigo-400 focus:outline-hidden"
+                  style={{ border: "1px solid #cbd5e1" }}
+                  className="px-2.5 py-1 rounded-lg bg-white text-xs font-mono font-normal text-slate-800 outline-none focus:border-blue-600"
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-slate-500 font-medium">To:</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 font-normal">To:</span>
                 <input
                   type="date"
                   value={customTo}
                   onChange={(e) => setCustomTo(e.target.value)}
-                  className="px-2.5 py-1 rounded-md border border-slate-200 bg-white text-xs font-mono font-medium text-slate-800 shadow-2xs focus:ring-2 focus:ring-indigo-400 focus:outline-hidden"
+                  style={{ border: "1px solid #cbd5e1" }}
+                  className="px-2.5 py-1 rounded-lg bg-white text-xs font-mono font-normal text-slate-800 outline-none focus:border-blue-600"
                 />
               </div>
               <button
                 type="button"
                 onClick={handleApplyCustomDays}
-                className="px-3 py-1 rounded-md bg-[#5046e5] hover:bg-[#4338ca] text-white font-semibold text-xs shadow-2xs flex items-center gap-1 cursor-pointer transition-colors"
+                style={{
+                  backgroundColor: "#1d4ed8",
+                  color: "#ffffff",
+                  border: "1px solid #1e40af",
+                }}
+                className="px-3 py-1 rounded-lg font-medium text-xs flex items-center gap-1 cursor-pointer transition-colors"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>Apply Days</span>
@@ -507,7 +612,7 @@ export default function ProfitAndLossReportPage() {
             <button
               type="button"
               onClick={handleResetToPresets}
-              className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer font-medium"
+              className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer font-normal"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Back to standard presets</span>
@@ -516,271 +621,261 @@ export default function ProfitAndLossReportPage() {
         )}
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* 2. FOUR HIGH-LEVEL EXECUTIVE METRIC KPI CARDS */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <div className="px-6 py-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Total Revenue */}
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-2xs flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                Total Revenue
-              </span>
-              <div className="text-xl font-extrabold text-slate-900 font-mono tracking-tight">
-                AED {formatAed(totalRevenue)}
-              </div>
-              <span className="text-[11px] font-medium text-slate-500">
-                {pnl?.income?.accounts?.length || 0} active revenue streams
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-              <TrendingUp className="w-5 h-5" />
-            </div>
+      {/* =========================================================================
+          3. FOUR COMPACT PASTEL KPI CARDS (LIGHT COLOR + CLEAR BORDERS)
+          ========================================================================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 print:hidden">
+        {/* Card 1: Total Revenue (Soft Slate-Blue) */}
+        <div
+          className="rounded-xl px-3.5 py-2.5 flex items-center gap-3"
+          style={{
+            backgroundColor: "#f1f5f9",
+            border: "1px solid #cbd5e1",
+          }}
+        >
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#ffffff",
+              color: "#1d4ed8",
+              border: "1px solid #cbd5e1",
+            }}
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
           </div>
-
-          {/* Card 2: Cost of Sales */}
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-2xs flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                Cost of Sales (COGS)
-              </span>
-              <div className="text-xl font-extrabold text-slate-900 font-mono tracking-tight">
-                AED {formatAed(totalCogs)}
-              </div>
-              <span className="text-[11px] font-medium text-amber-600">
-                {totalRevenue > 0 ? `${((totalCogs / totalRevenue) * 100).toFixed(1)}% of revenue` : "Direct cost"}
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
-              <Coins className="w-5 h-5" />
-            </div>
+          <div className="min-w-0">
+            <span className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block">
+              TOTAL REVENUE
+            </span>
+            <span className="text-sm sm:text-[15px] font-semibold text-slate-800 leading-snug block whitespace-nowrap">
+              {formatAed(totalRevenue)}
+            </span>
+            <span className="text-[10.5px] font-normal text-slate-500 block">
+              {pnl?.income?.accounts?.length || 0} active revenue streams
+            </span>
           </div>
+        </div>
 
-          {/* Card 3: Gross Profit */}
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-2xs flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                Gross Profit
-              </span>
-              <div className="text-xl font-extrabold text-emerald-600 font-mono tracking-tight">
-                AED {formatAed(grossProfit)}
-              </div>
-              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
-                {grossMarginPct}% gross margin
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-              <Scale className="w-5 h-5" />
-            </div>
+        {/* Card 2: Cost of Sales (Soft Warm Yellow/Amber) */}
+        <div
+          className="rounded-xl px-3.5 py-2.5 flex items-center gap-3"
+          style={{
+            backgroundColor: "#fefce8",
+            border: "1px solid #fde047",
+          }}
+        >
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#fef9c3",
+              color: "#a16207",
+              border: "1px solid #fde047",
+            }}
+          >
+            <Coins className="w-3.5 h-3.5" />
           </div>
+          <div className="min-w-0">
+            <span className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block">
+              COST OF SALES (COGS)
+            </span>
+            <span className="text-sm sm:text-[15px] font-semibold text-slate-800 leading-snug block whitespace-nowrap">
+              {formatAed(totalCogs)}
+            </span>
+            <span className="text-[10.5px] font-normal text-slate-500 block">
+              {totalRevenue > 0
+                ? `${((totalCogs / totalRevenue) * 100).toFixed(1)}% of revenue`
+                : "Direct cost"}
+            </span>
+          </div>
+        </div>
 
-          {/* Card 4: Net Profit */}
-          <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-2xs flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                Net Profit
-              </span>
-              <div
-                className={`text-xl font-extrabold font-mono tracking-tight ${
-                  netProfit >= 0 ? "text-emerald-600" : "text-rose-600"
-                }`}
-              >
-                AED {formatAed(netProfit)}
-              </div>
-              <span
-                className={`text-[11px] font-semibold px-1.5 py-0.5 rounded border ${
-                  netProfit >= 0
-                    ? "text-emerald-700 bg-emerald-50 border-emerald-100"
-                    : "text-rose-700 bg-rose-50 border-rose-100"
-                }`}
-              >
-                {netMarginPct}% net margin
-              </span>
-            </div>
-            <div
-              className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
-                netProfit >= 0
-                  ? "bg-emerald-50 border-emerald-100 text-emerald-600"
-                  : "bg-rose-50 border-rose-100 text-rose-600"
+        {/* Card 3: Gross Profit (Soft Mint/Green) */}
+        <div
+          className="rounded-xl px-3.5 py-2.5 flex items-center gap-3"
+          style={{
+            backgroundColor: "#f0fdf4",
+            border: "1px solid #86efac",
+          }}
+        >
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#dcfce7",
+              color: "#15803d",
+              border: "1px solid #86efac",
+            }}
+          >
+            <Scale className="w-3.5 h-3.5" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block">
+              GROSS PROFIT
+            </span>
+            <span className="text-sm sm:text-[15px] font-semibold text-slate-800 leading-snug block whitespace-nowrap">
+              {formatAed(grossProfit)}
+            </span>
+            <span className="text-[10.5px] font-normal text-emerald-700 block">
+              {grossMarginPct}% gross margin
+            </span>
+          </div>
+        </div>
+
+        {/* Card 4: Net Profit (Soft Rose/Pink) */}
+        <div
+          className="rounded-xl px-3.5 py-2.5 flex items-center gap-3"
+          style={{
+            backgroundColor: "#fff1f2",
+            border: "1px solid #fda4af",
+          }}
+        >
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#ffe4e6",
+              color: "#be123c",
+              border: "1px solid #fda4af",
+            }}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block">
+              NET PROFIT
+            </span>
+            <span
+              className={`text-sm sm:text-[15px] font-semibold leading-snug block whitespace-nowrap ${
+                netProfit >= 0 ? "text-slate-800" : "text-rose-700"
               }`}
             >
-              <Sparkles className="w-5 h-5" />
-            </div>
+              {formatAed(netProfit)}
+            </span>
+            <span className="text-[10.5px] font-normal text-slate-500 block">
+              {netMarginPct}% net margin
+            </span>
           </div>
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      {/* 3. MAIN FULL-WIDTH PROFIT & LOSS STATEMENT TABLE */}
-      {/* ═══════════════════════════════════════════════════════════════ */}
-      <div className="px-6 flex-1">
-        <div className="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden">
-          <div className="overflow-x-auto custom-scrollbar">
-            <table className="w-full text-left border-collapse min-w-[980px]">
-              <thead>
-                <tr className="bg-slate-50/90 border-b border-slate-200/90 text-slate-600 font-semibold text-[11px] uppercase tracking-wider select-none">
-                  <th className="py-3 px-6 min-w-[280px]">Account</th>
-                  <th className="py-3 px-3 w-20 text-center">Trend</th>
-                  <th className="py-3 px-4 text-right font-bold w-32 bg-slate-100/50">Totals</th>
-                  {monthLabels.map((lbl) => (
-                    <th key={lbl} className="py-3 px-4 text-right w-28 whitespace-nowrap">
-                      {lbl}
-                    </th>
-                  ))}
+      {/* =========================================================================
+          4. MAIN PROFIT & LOSS STATEMENT TABLE CARD
+          ========================================================================= */}
+      <div
+        className="bg-white rounded-xl overflow-hidden"
+        style={{ border: "1px solid #cbd5e1" }}
+      >
+        {/* Soft Light-Blue Top Bar */}
+        <div
+          className="px-4 py-2.5 flex flex-wrap items-center justify-between gap-2"
+          style={{
+            backgroundColor: "#f4f7fb",
+            borderBottom: "1px solid #cbd5e1",
+          }}
+        >
+          <h3 className="text-xs font-semibold text-slate-800">
+            Statement of Profit &amp; Loss
+          </h3>
+          <span className="text-[11px] font-normal text-slate-500">
+            Click any account or amount to inspect General Ledger entries
+          </span>
+        </div>
+
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className={`w-full text-left border-collapse ${showMonthColumns ? "min-w-[680px]" : ""}`}>
+            <thead>
+              <tr
+                className="bg-white text-[9.5px] font-medium uppercase tracking-wider text-slate-500 select-none"
+                style={{ borderBottom: "1px solid #e2e8f0" }}
+              >
+                <th className="py-2.5 px-5 min-w-[260px]">ACCOUNT</th>
+                <th className="py-2.5 px-3 w-24 text-center">TREND</th>
+                <th className="py-2.5 px-5 text-right font-medium w-40 bg-slate-50/70 text-slate-700">
+                  TOTALS (AED)
+                </th>
+                {monthLabels.map((lbl) => (
+                  <th key={lbl} className="py-2.5 px-4 text-right w-32 whitespace-nowrap">
+                    {lbl}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white text-xs">
+              {isLoading ? (
+                <tr>
+                  <td
+                    colSpan={3 + monthLabels.length}
+                    className="px-6 py-16 text-center text-slate-400 text-xs"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <RefreshCw className="w-4 h-4 animate-spin text-slate-400" />
+                      <span className="font-normal">
+                        Calculating Profit &amp; Loss statement...
+                      </span>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white text-xs">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={3 + monthLabels.length} className="px-6 py-24 text-center text-slate-400 text-xs">
-                      <div className="flex flex-col items-center gap-2">
-                        <RefreshCw className="w-6 h-6 animate-spin text-[#5046e5]" />
-                        <span>Calculating Profit & Loss statement...</span>
+              ) : (
+                <>
+                  {/* ══════════ 41 INCOME SECTION ══════════ */}
+                  <tr
+                    onClick={() => toggleSection("income")}
+                    style={{
+                      backgroundColor: "#f0fdf4",
+                      borderBottom: "1px solid #dcfce7",
+                    }}
+                    className="font-medium text-slate-800 cursor-pointer select-none transition-colors"
+                  >
+                    <td colSpan={3 + monthLabels.length} className="px-5 py-2">
+                      <div className="flex items-center gap-2">
+                        {collapsedSections["income"] ? (
+                          <ChevronRight className="w-3.5 h-3.5 text-emerald-700" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5 text-emerald-700" />
+                        )}
+                        <span className="font-semibold text-emerald-900 text-xs">
+                          41 Income / Revenue
+                        </span>
                       </div>
                     </td>
                   </tr>
-                ) : (
-                  <>
-                    {/* ══════════ 41 INCOME SECTION ══════════ */}
-                    <tr
-                      onClick={() => toggleSection("income")}
-                      className="bg-slate-50/70 border-b border-slate-200/70 font-bold text-slate-900 cursor-pointer select-none hover:bg-slate-100/70 transition-colors"
-                    >
-                      <td colSpan={3 + monthLabels.length} className="px-6 py-2.5">
-                        <div className="flex items-center gap-2">
-                          {collapsedSections["income"] ? (
-                            <ChevronRight className="w-4 h-4 text-slate-400" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-slate-400" />
-                          )}
-                          <span className="font-bold text-slate-900">41 Income</span>
-                        </div>
-                      </td>
-                    </tr>
 
-                    {!collapsedSections["income"] &&
-                      pnl?.income?.accounts?.map((acc: any) => {
-                        const sparkVals = monthKeys.map((k) => acc.monthly[k] || 0);
-                        return (
-                          <tr key={acc.id} className="hover:bg-slate-50/60 transition-colors group">
-                            <td className="px-6 py-2.5 pl-12 text-slate-800 font-medium">
-                              <button
-                                type="button"
-                                onClick={() => handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)}
-                                className="hover:text-[#5046e5] text-left transition-colors cursor-pointer"
-                                title="Click to view in General Ledger"
-                              >
-                                <span className="font-mono text-slate-500 mr-2">{acc.code}</span>
-                                <span>{acc.name}</span>
-                              </button>
-                            </td>
-
-                            {/* Trend Sparkline */}
-                            <td className="px-3 py-2.5 text-center">
-                              <PnlSparkline values={sparkVals} />
-                            </td>
-
-                            {/* Total Amount Cell with Hover Popover + Direct Click */}
-                            <td
-                              className="px-4 py-2.5 text-right font-mono font-bold text-slate-900 bg-slate-50/40 cursor-pointer hover:bg-indigo-50/60 hover:text-[#5046e5] transition-colors"
-                              onClick={() => handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)}
-                              onMouseEnter={(e) =>
-                                handleCellMouseEnter(
-                                  e,
-                                  acc.topEntriesTotal,
-                                  acc.name,
-                                  acc.code,
-                                  acc.total,
-                                  `${monthLabels[0]} → ${monthLabels[monthLabels.length - 1]}`
-                                )
-                              }
-                              onMouseLeave={handleCellMouseLeave}
-                            >
-                              {acc.total !== 0 ? acc.total.toFixed(2) : "0.00"}
-                            </td>
-
-                            {/* Monthly Amounts Cells */}
-                            {monthKeys.map((k, mIdx) => {
-                              const val = acc.monthly[k] || 0;
-                              const entriesForMonth = acc.topEntriesByMonth?.[k] || [];
-                              return (
-                                <td
-                                  key={k}
-                                  className="px-4 py-2.5 text-right font-mono text-slate-700 cursor-pointer hover:bg-indigo-50/60 hover:text-[#5046e5] transition-colors"
-                                  onClick={() => handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)}
-                                  onMouseEnter={(e) =>
-                                    handleCellMouseEnter(
-                                      e,
-                                      entriesForMonth,
-                                      acc.name,
-                                      acc.code,
-                                      val,
-                                      monthLabels[mIdx]
-                                    )
-                                  }
-                                  onMouseLeave={handleCellMouseLeave}
-                                >
-                                  {val !== 0 ? val.toFixed(2) : "0.00"}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        );
-                      })}
-
-                    {/* Total Income Row */}
-                    <tr className="border-t border-dashed border-slate-300 font-bold bg-slate-50/30">
-                      <td className="px-6 py-2.5 text-slate-900">Total Income</td>
-                      <td className="px-3 py-2.5 text-center">
-                        <PnlSparkline values={monthKeys.map((k) => pnl?.income?.totals?.monthly?.[k] || 0)} />
-                      </td>
-                      <td className="px-4 py-2.5 text-right font-mono bg-slate-50/60 text-slate-900">
-                        {(pnl?.income?.totals?.total || 0).toFixed(2)}
-                      </td>
-                      {monthKeys.map((k) => (
-                        <td key={k} className="px-4 py-2.5 text-right font-mono text-slate-900">
-                          {(pnl?.income?.totals?.monthly?.[k] || 0).toFixed(2)}
-                        </td>
-                      ))}
-                    </tr>
-
-                    {/* ══════════ 51 COST OF SALES SECTION ══════════ */}
-                    <tr
-                      onClick={() => toggleSection("cogs")}
-                      className="bg-slate-50/70 border-b border-slate-200/70 font-bold text-slate-900 cursor-pointer select-none hover:bg-slate-100/70 transition-colors"
-                    >
-                      <td colSpan={3 + monthLabels.length} className="px-6 py-2.5">
-                        <div className="flex items-center gap-2">
-                          {collapsedSections["cogs"] ? (
-                            <ChevronRight className="w-4 h-4 text-slate-400" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-slate-400" />
-                          )}
-                          <span className="font-bold text-slate-900">51 Cost of Sales</span>
-                        </div>
-                      </td>
-                    </tr>
-
-                    {!collapsedSections["cogs"] &&
-                      pnl?.costOfSales?.accounts?.map((acc: any) => (
-                        <tr key={acc.id} className="hover:bg-slate-50/60 transition-colors group">
-                          <td className="px-6 py-2.5 pl-12 text-slate-800 font-medium">
+                  {!collapsedSections["income"] &&
+                    pnl?.income?.accounts?.map((acc: any) => {
+                      const sparkVals = allMonthKeys.map((k) => acc.monthly[k] || 0);
+                      return (
+                        <tr
+                          key={acc.id}
+                          className="hover:bg-slate-50 transition-colors group"
+                        >
+                          <td className="px-5 py-2.5 pl-10 text-slate-700 font-normal">
                             <button
                               type="button"
-                              onClick={() => handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)}
-                              className="hover:text-[#5046e5] text-left transition-colors cursor-pointer"
+                              onClick={() =>
+                                handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)
+                              }
+                              className="hover:text-blue-700 text-left transition-colors cursor-pointer"
+                              title="Click to view in General Ledger"
                             >
-                              <span className="font-mono text-slate-500 mr-2">{acc.code}</span>
+                              <span
+                                className="font-mono font-medium mr-2"
+                                style={{ color: "#1d4ed8" }}
+                              >
+                                {acc.code}
+                              </span>
                               <span>{acc.name}</span>
                             </button>
                           </td>
+
+                          {/* Trend Sparkline */}
                           <td className="px-3 py-2.5 text-center">
-                            <PnlSparkline values={monthKeys.map((k) => acc.monthly[k] || 0)} color="#f59e0b" />
+                            <PnlSparkline values={sparkVals} />
                           </td>
+
+                          {/* Total Amount Cell */}
                           <td
-                            className="px-4 py-2.5 text-right font-mono font-bold text-slate-900 bg-slate-50/40 cursor-pointer hover:bg-indigo-50/60"
-                            onClick={() => handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)}
+                            className="px-4 py-2.5 text-right font-mono font-medium text-slate-800 bg-slate-50/40 cursor-pointer hover:bg-blue-50/60 hover:text-blue-700 transition-colors"
+                            onClick={() =>
+                              handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)
+                            }
                             onMouseEnter={(e) =>
                               handleCellMouseEnter(
                                 e,
@@ -788,24 +883,34 @@ export default function ProfitAndLossReportPage() {
                                 acc.name,
                                 acc.code,
                                 acc.total,
-                                `${monthLabels[0]} → ${monthLabels[monthLabels.length - 1]}`
+                                `${allMonthLabels[0]} → ${
+                                  allMonthLabels[allMonthLabels.length - 1]
+                                }`
                               )
                             }
                             onMouseLeave={handleCellMouseLeave}
                           >
                             {acc.total !== 0 ? acc.total.toFixed(2) : "0.00"}
                           </td>
+
+                          {/* Monthly Amounts Cells */}
                           {monthKeys.map((k, mIdx) => {
                             const val = acc.monthly[k] || 0;
+                            const entriesForMonth = acc.topEntriesByMonth?.[k] || [];
                             return (
                               <td
                                 key={k}
-                                className="px-4 py-2.5 text-right font-mono text-slate-700 cursor-pointer hover:bg-indigo-50/60"
-                                onClick={() => handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)}
+                                className="px-4 py-2.5 text-right font-mono font-normal text-slate-600 cursor-pointer hover:bg-blue-50/60 hover:text-blue-700 transition-colors"
+                                onClick={() =>
+                                  handleDrillDownToGL(
+                                    acc.id,
+                                    `${acc.code} ${acc.name}`
+                                  )
+                                }
                                 onMouseEnter={(e) =>
                                   handleCellMouseEnter(
                                     e,
-                                    acc.topEntriesByMonth?.[k] || [],
+                                    entriesForMonth,
                                     acc.name,
                                     acc.code,
                                     val,
@@ -819,157 +924,374 @@ export default function ProfitAndLossReportPage() {
                             );
                           })}
                         </tr>
-                      ))}
+                      );
+                    })}
 
-                    {/* Gross Profit Summary Row */}
-                    <tr className="bg-slate-100/70 font-bold border-y-2 border-slate-300">
-                      <td className="px-6 py-3 text-slate-900 font-bold">Gross Profit</td>
-                      <td className="px-3 py-3 text-center">
-                        <PnlSparkline values={monthKeys.map((k) => pnl?.grossProfit?.monthly?.[k] || 0)} color="#10b981" />
+                  {/* Total Income Row */}
+                  <tr className="border-t border-slate-200 font-semibold bg-slate-50/50">
+                    <td className="px-5 py-2.5 text-slate-800">Total Income</td>
+                    <td className="px-3 py-2.5 text-center">
+                      <PnlSparkline
+                        values={allMonthKeys.map(
+                          (k) => pnl?.income?.totals?.monthly?.[k] || 0
+                        )}
+                      />
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono bg-slate-100/60 text-slate-900">
+                      {(pnl?.income?.totals?.total || 0).toFixed(2)}
+                    </td>
+                    {monthKeys.map((k) => (
+                      <td
+                        key={k}
+                        className="px-4 py-2.5 text-right font-mono text-slate-800"
+                      >
+                        {(pnl?.income?.totals?.monthly?.[k] || 0).toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono font-bold bg-slate-200/50 text-slate-900">
-                        {(pnl?.grossProfit?.total || 0).toFixed(2)}
-                      </td>
-                      {monthKeys.map((k) => (
-                        <td key={k} className="px-4 py-3 text-right font-mono font-bold text-slate-900">
-                          {(pnl?.grossProfit?.monthly?.[k] || 0).toFixed(2)}
+                    ))}
+                  </tr>
+
+                  {/* ══════════ 51 COST OF SALES SECTION ══════════ */}
+                  <tr
+                    onClick={() => toggleSection("cogs")}
+                    style={{
+                      backgroundColor: "#fffbeb",
+                      borderBottom: "1px solid #fef3c7",
+                    }}
+                    className="font-medium text-slate-800 cursor-pointer select-none transition-colors"
+                  >
+                    <td colSpan={3 + monthLabels.length} className="px-5 py-2">
+                      <div className="flex items-center gap-2">
+                        {collapsedSections["cogs"] ? (
+                          <ChevronRight className="w-3.5 h-3.5 text-amber-700" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5 text-amber-700" />
+                        )}
+                        <span className="font-semibold text-amber-900 text-xs">
+                          51 Cost of Sales
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {!collapsedSections["cogs"] &&
+                    pnl?.costOfSales?.accounts?.map((acc: any) => (
+                      <tr
+                        key={acc.id}
+                        className="hover:bg-slate-50 transition-colors group"
+                      >
+                        <td className="px-5 py-2.5 pl-10 text-slate-700 font-normal">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)
+                            }
+                            className="hover:text-blue-700 text-left transition-colors cursor-pointer"
+                          >
+                            <span
+                              className="font-mono font-medium mr-2"
+                              style={{ color: "#1d4ed8" }}
+                            >
+                              {acc.code}
+                            </span>
+                            <span>{acc.name}</span>
+                          </button>
                         </td>
-                      ))}
-                    </tr>
-
-                    {/* ══════════ 52 OPERATING EXPENSES SECTION ══════════ */}
-                    <tr
-                      onClick={() => toggleSection("expenses")}
-                      className="bg-slate-50/70 border-b border-slate-200/70 font-bold text-slate-900 cursor-pointer select-none hover:bg-slate-100/70 transition-colors"
-                    >
-                      <td colSpan={3 + monthLabels.length} className="px-6 py-2.5">
-                        <div className="flex items-center gap-2">
-                          {collapsedSections["expenses"] ? (
-                            <ChevronRight className="w-4 h-4 text-slate-400" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-slate-400" />
-                          )}
-                          <span className="font-bold text-slate-900">52 Operating Expenses</span>
-                        </div>
-                      </td>
-                    </tr>
-
-                    {!collapsedSections["expenses"] &&
-                      pnl?.operatingExpenses?.accounts?.map((acc: any) => {
-                        const sparkVals = monthKeys.map((k) => acc.monthly[k] || 0);
-                        return (
-                          <tr key={acc.id} className="hover:bg-slate-50/60 transition-colors group">
-                            <td className="px-6 py-2.5 pl-12 text-slate-800 font-medium">
-                              <button
-                                type="button"
-                                onClick={() => handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)}
-                                className="hover:text-[#5046e5] text-left transition-colors cursor-pointer"
-                              >
-                                <span className="font-mono text-slate-500 mr-2">{acc.code}</span>
-                                <span>{acc.name}</span>
-                              </button>
-                            </td>
-                            <td className="px-3 py-2.5 text-center">
-                              <PnlSparkline values={sparkVals} color="#ef4444" />
-                            </td>
+                        <td className="px-3 py-2.5 text-center">
+                          <PnlSparkline
+                            values={allMonthKeys.map((k) => acc.monthly[k] || 0)}
+                            color="#f59e0b"
+                          />
+                        </td>
+                        <td
+                          className="px-4 py-2.5 text-right font-mono font-medium text-slate-800 bg-slate-50/40 cursor-pointer hover:bg-blue-50/60"
+                          onClick={() =>
+                            handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)
+                          }
+                          onMouseEnter={(e) =>
+                            handleCellMouseEnter(
+                              e,
+                              acc.topEntriesTotal,
+                              acc.name,
+                              acc.code,
+                              acc.total,
+                              `${allMonthLabels[0]} → ${
+                                allMonthLabels[allMonthLabels.length - 1]
+                              }`
+                            )
+                          }
+                          onMouseLeave={handleCellMouseLeave}
+                        >
+                          {acc.total !== 0 ? acc.total.toFixed(2) : "0.00"}
+                        </td>
+                        {monthKeys.map((k, mIdx) => {
+                          const val = acc.monthly[k] || 0;
+                          return (
                             <td
-                              className="px-4 py-2.5 text-right font-mono font-bold text-slate-900 bg-slate-50/40 cursor-pointer hover:bg-indigo-50/60 hover:text-[#5046e5]"
-                              onClick={() => handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)}
+                              key={k}
+                              className="px-4 py-2.5 text-right font-mono font-normal text-slate-600 cursor-pointer hover:bg-blue-50/60"
+                              onClick={() =>
+                                handleDrillDownToGL(
+                                  acc.id,
+                                  `${acc.code} ${acc.name}`
+                                )
+                              }
                               onMouseEnter={(e) =>
                                 handleCellMouseEnter(
                                   e,
-                                  acc.topEntriesTotal,
+                                  acc.topEntriesByMonth?.[k] || [],
                                   acc.name,
                                   acc.code,
-                                  acc.total,
-                                  `${monthLabels[0]} → ${monthLabels[monthLabels.length - 1]}`
+                                  val,
+                                  monthLabels[mIdx]
                                 )
                               }
                               onMouseLeave={handleCellMouseLeave}
                             >
-                              {acc.total !== 0 ? `-${Math.abs(acc.total).toFixed(2)}` : "0.00"}
+                              {val !== 0 ? val.toFixed(2) : "0.00"}
                             </td>
-                            {monthKeys.map((k, mIdx) => {
-                              const val = acc.monthly[k] || 0;
-                              return (
-                                <td
-                                  key={k}
-                                  className="px-4 py-2.5 text-right font-mono text-slate-700 cursor-pointer hover:bg-indigo-50/60 hover:text-[#5046e5]"
-                                  onClick={() => handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)}
-                                  onMouseEnter={(e) =>
-                                    handleCellMouseEnter(
-                                      e,
-                                      acc.topEntriesByMonth?.[k] || [],
-                                      acc.name,
-                                      acc.code,
-                                      val,
-                                      monthLabels[mIdx]
-                                    )
-                                  }
-                                  onMouseLeave={handleCellMouseLeave}
-                                >
-                                  {val !== 0 ? `-${Math.abs(val).toFixed(2)}` : "0.00"}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        );
-                      })}
+                          );
+                        })}
+                      </tr>
+                    ))}
 
-                    {/* Total Operating Expenses Row */}
-                    <tr className="border-t border-dashed border-slate-300 font-bold bg-slate-50/30">
-                      <td className="px-6 py-2.5 text-slate-900">Total Operating Expenses</td>
-                      <td className="px-3 py-2.5 text-center">
-                        <PnlSparkline values={monthKeys.map((k) => pnl?.operatingExpenses?.totals?.monthly?.[k] || 0)} color="#ef4444" />
+                  {/* Gross Profit Summary Row */}
+                  <tr
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      borderTop: "1px solid #cbd5e1",
+                      borderBottom: "1px solid #cbd5e1",
+                    }}
+                    className="font-semibold"
+                  >
+                    <td className="px-5 py-2.5 text-slate-800">Gross Profit</td>
+                    <td className="px-3 py-2.5 text-center">
+                      <PnlSparkline
+                        values={allMonthKeys.map(
+                          (k) => pnl?.grossProfit?.monthly?.[k] || 0
+                        )}
+                        color="#10b981"
+                      />
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono bg-slate-100/70 text-slate-900">
+                      {(pnl?.grossProfit?.total || 0).toFixed(2)}
+                    </td>
+                    {monthKeys.map((k) => (
+                      <td
+                        key={k}
+                        className="px-4 py-2.5 text-right font-mono text-slate-800"
+                      >
+                        {(pnl?.grossProfit?.monthly?.[k] || 0).toFixed(2)}
                       </td>
-                      <td className="px-4 py-2.5 text-right font-mono bg-slate-50/60 text-slate-900">
-                        -{Math.abs(pnl?.operatingExpenses?.totals?.total || 0).toFixed(2)}
-                      </td>
-                      {monthKeys.map((k) => (
-                        <td key={k} className="px-4 py-2.5 text-right font-mono text-slate-900">
-                          -{Math.abs(pnl?.operatingExpenses?.totals?.monthly?.[k] || 0).toFixed(2)}
-                        </td>
-                      ))}
-                    </tr>
+                    ))}
+                  </tr>
 
-                    {/* Operating Profit Row */}
-                    <tr className="bg-slate-100/70 font-bold border-y-2 border-slate-300">
-                      <td className="px-6 py-3 text-slate-900 font-bold">Operating Profit</td>
-                      <td className="px-3 py-3 text-center">
-                        <PnlSparkline values={monthKeys.map((k) => pnl?.operatingProfit?.monthly?.[k] || 0)} color="#6366f1" />
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono font-bold bg-slate-200/50 text-slate-900">
-                        {(pnl?.operatingProfit?.total || 0).toFixed(2)}
-                      </td>
-                      {monthKeys.map((k) => (
-                        <td key={k} className="px-4 py-3 text-right font-mono font-bold text-slate-900">
-                          {(pnl?.operatingProfit?.monthly?.[k] || 0).toFixed(2)}
-                        </td>
-                      ))}
-                    </tr>
+                  {/* ══════════ 52 OPERATING EXPENSES SECTION ══════════ */}
+                  <tr
+                    onClick={() => toggleSection("expenses")}
+                    style={{
+                      backgroundColor: "#fff1f2",
+                      borderBottom: "1px solid #ffe4e6",
+                    }}
+                    className="font-medium text-slate-800 cursor-pointer select-none transition-colors"
+                  >
+                    <td colSpan={3 + monthLabels.length} className="px-5 py-2">
+                      <div className="flex items-center gap-2">
+                        {collapsedSections["expenses"] ? (
+                          <ChevronRight className="w-3.5 h-3.5 text-rose-700" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5 text-rose-700" />
+                        )}
+                        <span className="font-semibold text-rose-900 text-xs">
+                          52 Operating Expenses
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
 
-                    {/* ══════════ NET PROFIT FINAL ROW ══════════ */}
-                    <tr className="bg-slate-900 text-white font-bold text-xs border-t-2 border-slate-900">
-                      <td className="px-6 py-4 text-white font-extrabold text-sm tracking-tight">
-                        Net Profit
+                  {!collapsedSections["expenses"] &&
+                    pnl?.operatingExpenses?.accounts?.map((acc: any) => {
+                      const sparkVals = allMonthKeys.map((k) => acc.monthly[k] || 0);
+                      return (
+                        <tr
+                          key={acc.id}
+                          className="hover:bg-slate-50 transition-colors group"
+                        >
+                          <td className="px-5 py-2.5 pl-10 text-slate-700 font-normal">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)
+                              }
+                              className="hover:text-blue-700 text-left transition-colors cursor-pointer"
+                            >
+                              <span
+                                className="font-mono font-medium mr-2"
+                                style={{ color: "#1d4ed8" }}
+                              >
+                                {acc.code}
+                              </span>
+                              <span>{acc.name}</span>
+                            </button>
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            <PnlSparkline values={sparkVals} color="#ef4444" />
+                          </td>
+                          <td
+                            className="px-4 py-2.5 text-right font-mono font-medium text-slate-800 bg-slate-50/40 cursor-pointer hover:bg-blue-50/60 hover:text-blue-700"
+                            onClick={() =>
+                              handleDrillDownToGL(acc.id, `${acc.code} ${acc.name}`)
+                            }
+                            onMouseEnter={(e) =>
+                              handleCellMouseEnter(
+                                e,
+                                acc.topEntriesTotal,
+                                acc.name,
+                                acc.code,
+                                acc.total,
+                                `${allMonthLabels[0]} → ${
+                                  allMonthLabels[allMonthLabels.length - 1]
+                                }`
+                              )
+                            }
+                            onMouseLeave={handleCellMouseLeave}
+                          >
+                            {acc.total !== 0
+                              ? `-${Math.abs(acc.total).toFixed(2)}`
+                              : "0.00"}
+                          </td>
+                          {monthKeys.map((k, mIdx) => {
+                            const val = acc.monthly[k] || 0;
+                            return (
+                              <td
+                                key={k}
+                                className="px-4 py-2.5 text-right font-mono font-normal text-slate-600 cursor-pointer hover:bg-blue-50/60 hover:text-blue-700"
+                                onClick={() =>
+                                  handleDrillDownToGL(
+                                    acc.id,
+                                    `${acc.code} ${acc.name}`
+                                  )
+                                }
+                                onMouseEnter={(e) =>
+                                  handleCellMouseEnter(
+                                    e,
+                                    acc.topEntriesByMonth?.[k] || [],
+                                    acc.name,
+                                    acc.code,
+                                    val,
+                                    monthLabels[mIdx]
+                                  )
+                                }
+                                onMouseLeave={handleCellMouseLeave}
+                              >
+                                {val !== 0 ? `-${Math.abs(val).toFixed(2)}` : "0.00"}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+
+                  {/* Total Operating Expenses Row */}
+                  <tr className="border-t border-slate-200 font-semibold bg-slate-50/50">
+                    <td className="px-5 py-2.5 text-slate-800">
+                      Total Operating Expenses
+                    </td>
+                    <td className="px-3 py-2.5 text-center">
+                      <PnlSparkline
+                        values={allMonthKeys.map(
+                          (k) => pnl?.operatingExpenses?.totals?.monthly?.[k] || 0
+                        )}
+                        color="#ef4444"
+                      />
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono bg-slate-100/60 text-slate-900">
+                      -{Math.abs(pnl?.operatingExpenses?.totals?.total || 0).toFixed(2)}
+                    </td>
+                    {monthKeys.map((k) => (
+                      <td
+                        key={k}
+                        className="px-4 py-2.5 text-right font-mono text-slate-800"
+                      >
+                        -
+                        {Math.abs(
+                          pnl?.operatingExpenses?.totals?.monthly?.[k] || 0
+                        ).toFixed(2)}
                       </td>
-                      <td className="px-3 py-4 text-center">
-                        <PnlSparkline values={monthKeys.map((k) => pnl?.netProfit?.monthly?.[k] || 0)} color="#38bdf8" />
+                    ))}
+                  </tr>
+
+                  {/* Operating Profit Row */}
+                  <tr
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      borderTop: "1px solid #cbd5e1",
+                      borderBottom: "1px solid #cbd5e1",
+                    }}
+                    className="font-semibold"
+                  >
+                    <td className="px-5 py-2.5 text-slate-800">Operating Profit</td>
+                    <td className="px-3 py-2.5 text-center">
+                      <PnlSparkline
+                        values={allMonthKeys.map(
+                          (k) => pnl?.operatingProfit?.monthly?.[k] || 0
+                        )}
+                        color="#1d4ed8"
+                      />
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono bg-slate-100/70 text-slate-900">
+                      {(pnl?.operatingProfit?.total || 0).toFixed(2)}
+                    </td>
+                    {monthKeys.map((k) => (
+                      <td
+                        key={k}
+                        className="px-4 py-2.5 text-right font-mono text-slate-800"
+                      >
+                        {(pnl?.operatingProfit?.monthly?.[k] || 0).toFixed(2)}
                       </td>
-                      <td className="px-4 py-4 text-right font-mono font-bold bg-slate-800 text-emerald-400 text-sm">
-                        {formatAed(pnl?.netProfit?.total || 0)}
+                    ))}
+                  </tr>
+
+                  {/* ══════════ NET PROFIT FINAL ROW ══════════ */}
+                  <tr
+                    style={{
+                      backgroundColor: "#eff6ff",
+                      borderTop: "1.5px solid #93c5fd",
+                    }}
+                    className="font-semibold text-xs"
+                  >
+                    <td
+                      className="px-5 py-3 font-semibold text-sm tracking-tight"
+                      style={{ color: "#1d4ed8" }}
+                    >
+                      Net Profit / (Loss)
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <PnlSparkline
+                        values={allMonthKeys.map(
+                          (k) => pnl?.netProfit?.monthly?.[k] || 0
+                        )}
+                        color="#1d4ed8"
+                      />
+                    </td>
+                    <td
+                      className="px-4 py-3 text-right font-mono font-semibold text-sm"
+                      style={{ backgroundColor: "#dbeafe", color: "#1d4ed8" }}
+                    >
+                      {formatAed(pnl?.netProfit?.total || 0)}
+                    </td>
+                    {monthKeys.map((k) => (
+                      <td
+                        key={k}
+                        className="px-4 py-3 text-right font-mono font-semibold text-slate-900"
+                      >
+                        {formatAed(pnl?.netProfit?.monthly?.[k] || 0)}
                       </td>
-                      {monthKeys.map((k) => (
-                        <td key={k} className="px-4 py-4 text-right font-mono font-bold text-emerald-400">
-                          {formatAed(pnl?.netProfit?.monthly?.[k] || 0)}
-                        </td>
-                      ))}
-                    </tr>
-                  </>
-                )}
-              </tbody>
-            </table>
-          </div>
+                    ))}
+                  </tr>
+                </>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 

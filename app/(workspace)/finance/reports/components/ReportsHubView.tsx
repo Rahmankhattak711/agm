@@ -18,7 +18,6 @@ import {
   UserIcon,
   WalletIcon,
 } from "@/components/icons";
-import { Input, PageHeader } from "@/components/ui";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import { ReportTab } from "./types";
@@ -36,6 +35,7 @@ export interface HubReportItem {
 export interface HubCategoryGroup {
   id: string;
   title: string;
+  headerBg: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   openHref?: string;
   openTab?: ReportTab;
@@ -55,57 +55,62 @@ export function ReportsHubView({ onSelectReport }: ReportsHubViewProps) {
       {
         id: "financial-statements",
         title: "Accounting & Financial Statements",
+        headerBg: "#f0f7ff",
         icon: FileTextIcon,
-        openHref: "/reports/finance",
+        openHref: "/finance/reports/profit-and-loss",
         openTab: "profit-loss",
         items: [
           {
             id: "profit-loss",
             name: "Profit & Loss Statement",
-            targetHref: "/reports/finance",
+            targetHref: "/finance/reports/profit-and-loss",
             targetTab: "profit-loss",
             icon: TrendingUpIcon,
-            iconColor: "#8b5cf6",
-            iconBg: "#f3e8ff",
+            iconColor: "#1d4ed8",
+            iconBg: "#eff6ff",
           },
           {
             id: "balance-sheet",
             name: "Balance Sheet",
+            targetHref: "/finance/reports/balance-sheet",
             targetTab: "balance-sheet",
             icon: FileSpreadsheetIcon,
-            iconColor: "#0ea5e9",
+            iconColor: "#0284c7",
             iconBg: "#e0f2fe",
           },
           {
             id: "trial-balance",
             name: "Trial Balance",
+            targetHref: "/finance/reports/trial-balance",
             targetTab: "trial-balance",
             icon: ScaleIcon,
-            iconColor: "#f43f5e",
-            iconBg: "#ffe4e6",
+            iconColor: "#b45309",
+            iconBg: "#fefce8",
           },
           {
             id: "general-ledger",
             name: "General Ledger",
+            targetHref: "/finance/general-ledger",
             targetTab: "ledger",
             icon: BookOpenIcon,
-            iconColor: "#10b981",
-            iconBg: "#d1fae5",
+            iconColor: "#059669",
+            iconBg: "#f0fdf4",
           },
           {
             id: "executive-summary",
-            name: "Executive Summary",
-            targetHref: "/reports/management",
+            name: "Cash Flow Statement",
+            targetHref: "/finance/reports/cash-flow",
             targetTab: "summary",
             icon: RotateCcwIcon,
-            iconColor: "#f97316",
-            iconBg: "#ffedd5",
+            iconColor: "#be123c",
+            iconBg: "#fff1f2",
           },
         ],
       },
       {
         id: "sales-receivables",
         title: "Sales & Receivables Reports",
+        headerBg: "#f0fdf4",
         icon: TrendingUpIcon,
         openHref: "/reports/sales",
         openTab: "tax-invoices",
@@ -116,8 +121,8 @@ export function ReportsHubView({ onSelectReport }: ReportsHubViewProps) {
             targetHref: "/reports/sales",
             targetTab: "tax-invoices",
             icon: FileCheck2Icon,
-            iconColor: "#16a34a",
-            iconBg: "#dcfce7",
+            iconColor: "#059669",
+            iconBg: "#f0fdf4",
           },
           {
             id: "customer-soa",
@@ -125,14 +130,15 @@ export function ReportsHubView({ onSelectReport }: ReportsHubViewProps) {
             targetHref: "/reports/customers",
             targetTab: "statement-of-account",
             icon: UserIcon,
-            iconColor: "#3b82f6",
-            iconBg: "#dbeafe",
+            iconColor: "#1d4ed8",
+            iconBg: "#eff6ff",
           },
         ],
       },
       {
         id: "purchases-payables",
         title: "Purchases & Payables Reports",
+        headerBg: "#fffbeb",
         icon: ShoppingCartIcon,
         openHref: "/reports/purchases",
         openTab: "payables",
@@ -143,48 +149,50 @@ export function ReportsHubView({ onSelectReport }: ReportsHubViewProps) {
             targetHref: "/reports/purchases",
             targetTab: "payables",
             icon: ClockIcon,
-            iconColor: "#ef4444",
-            iconBg: "#fee2e2",
+            iconColor: "#be123c",
+            iconBg: "#fff1f2",
           },
           {
             id: "supplier-soa",
             name: "Supplier Statement of Account",
             targetHref: "/reports/suppliers",
             icon: BuildingIcon,
-            iconColor: "#6366f1",
-            iconBg: "#e0e7ff",
+            iconColor: "#1d4ed8",
+            iconBg: "#eff6ff",
           },
           {
             id: "expense-reports",
             name: "Expense Reports & Breakdown",
             targetHref: "/reports/expenses",
             icon: WalletIcon,
-            iconColor: "#a855f7",
-            iconBg: "#f3e8ff",
+            iconColor: "#b45309",
+            iconBg: "#fefce8",
           },
         ],
       },
       {
         id: "vat-tax",
         title: "VAT & Tax Reports",
+        headerBg: "#fff1f2",
         icon: PercentIcon,
-        openHref: "/reports/vat",
+        openHref: "/finance/reports/vat",
         openTab: "vat-summary",
         items: [
           {
             id: "vat-return-201",
             name: "UAE VAT Return & Tax Summary (FTA 201)",
-            targetHref: "/reports/vat",
+            targetHref: "/finance/reports/vat",
             targetTab: "vat-summary",
             icon: PercentIcon,
-            iconColor: "#0284c7",
-            iconBg: "#e0f2fe",
+            iconColor: "#1d4ed8",
+            iconBg: "#eff6ff",
           },
         ],
       },
       {
         id: "management-performance",
         title: "Management & Performance",
+        headerBg: "#f4f7fb",
         icon: ActivityIcon,
         openHref: "/reports/management",
         openTab: "summary",
@@ -195,8 +203,8 @@ export function ReportsHubView({ onSelectReport }: ReportsHubViewProps) {
             targetHref: "/reports/management",
             targetTab: "summary",
             icon: ActivityIcon,
-            iconColor: "#10b981",
-            iconBg: "#d1fae5",
+            iconColor: "#059669",
+            iconBg: "#f0fdf4",
           },
         ],
       },
@@ -242,41 +250,56 @@ export function ReportsHubView({ onSelectReport }: ReportsHubViewProps) {
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      <PageHeader
-        title="Reports Hub"
-        description="Financial statements, commercial sales, payables, and VAT returns."
-        actions={
-          <div className="w-full sm:w-72">
-            <Input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search reports..."
-              leftIcon={<SearchIcon size={14} className="text-slate-400" />}
-              className="text-xs py-1.5 bg-white border-slate-200"
-            />
-          </div>
-        }
-      />
+    <div className="space-y-5 pb-12 text-slate-800">
+      <div
+        className="p-3.5 rounded-xl border border-[#cbd5e1] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+        style={{ backgroundColor: "#f4f7fb", border: "1px solid #cbd5e1" }}
+      >
+        <div>
+          <h2 className="text-sm font-semibold text-slate-900">Reports Directory</h2>
+          <p className="text-xs text-slate-500 font-normal">
+            Financial statements, commercial sales, payables, and VAT returns.
+          </p>
+        </div>
+        <div className="relative w-full sm:w-72">
+          <SearchIcon size={14} className="text-slate-400 absolute left-3 top-2.5" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search reports..."
+            className="w-full h-8 pl-8 pr-3 text-xs bg-white border border-[#cbd5e1] rounded-lg outline-none focus:border-[#1d4ed8]"
+          />
+        </div>
+      </div>
 
       {filteredGroups.length === 0 ? (
-        <div className="py-12 text-center text-xs text-slate-400 bg-white rounded-xl border border-slate-200">
+        <div
+          className="py-12 text-center text-xs text-slate-400 bg-white rounded-xl border border-[#cbd5e1]"
+          style={{ border: "1px solid #cbd5e1" }}
+        >
           No reports found matching &quot;{searchQuery}&quot;.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
           {filteredGroups.map((group) => {
             const GroupIcon = group.icon;
             return (
               <div
                 key={group.id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden"
+                className="bg-white rounded-xl border border-[#cbd5e1] shadow-2xs overflow-hidden"
+                style={{ border: "1px solid #cbd5e1" }}
               >
-                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-2">
+                <div
+                  className="px-4 py-3 border-b border-[#cbd5e1] flex items-center justify-between gap-2"
+                  style={{
+                    backgroundColor: group.headerBg,
+                    borderBottom: "1px solid #cbd5e1",
+                  }}
+                >
                   <div className="flex items-center gap-2 min-w-0">
-                    <GroupIcon size={15} className="text-slate-500 shrink-0" />
-                    <h2 className="text-[13px] font-bold text-slate-900 truncate">
+                    <GroupIcon size={15} className="text-[#1d4ed8] shrink-0" />
+                    <h2 className="text-xs font-semibold text-slate-900 truncate">
                       {group.title}
                     </h2>
                   </div>
@@ -284,33 +307,33 @@ export function ReportsHubView({ onSelectReport }: ReportsHubViewProps) {
                   <button
                     type="button"
                     onClick={() => handleGroupOpen(group)}
-                    className="shrink-0 text-xs font-semibold text-slate-600 hover:text-emerald-700 flex items-center gap-1 cursor-pointer transition-colors"
+                    className="shrink-0 text-[11px] font-medium text-[#1d4ed8] hover:underline flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     <span>Open</span>
                     <ArrowRightIcon size={12} />
                   </button>
                 </div>
 
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-slate-200/70">
                   {group.items.map((item) => {
                     const ItemIcon = item.icon;
                     return (
                       <div
                         key={item.id}
                         onClick={() => handleReportClick(item)}
-                        className="px-4 py-3 flex items-center gap-3.5 hover:bg-slate-50/90 transition-colors cursor-pointer group"
+                        className="px-4 py-2.5 flex items-center gap-3 hover:bg-[#f8fafc] transition-colors cursor-pointer group"
                       >
                         <div
-                          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
+                          className="w-7 h-7 rounded-lg border border-slate-200/80 flex items-center justify-center shrink-0"
                           style={{
                             backgroundColor: item.iconBg,
                             color: item.iconColor,
                           }}
                         >
-                          <ItemIcon size={16} />
+                          <ItemIcon size={14} />
                         </div>
 
-                        <span className="text-xs font-medium text-slate-800 group-hover:text-emerald-700 transition-colors">
+                        <span className="text-xs font-normal text-slate-700 group-hover:text-[#1d4ed8] transition-colors">
                           {item.name}
                         </span>
                       </div>

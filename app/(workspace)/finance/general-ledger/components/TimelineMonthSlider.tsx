@@ -41,16 +41,27 @@ export function TimelineMonthSlider({
   };
 
   return (
-    <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-3 shadow-2xs space-y-2 overflow-x-auto">
+    <div
+      className="rounded-xl p-3 space-y-2 overflow-x-auto font-sans"
+      style={{
+        backgroundColor: "#f4f7fb",
+        border: "1px solid #cbd5e1",
+      }}
+    >
       {/* Year Indicators */}
-      <div className="flex justify-between text-xs font-semibold text-slate-500 px-1">
+      <div className="flex justify-between text-[11px] font-normal text-slate-500 px-1">
         <span>2025</span>
-        <span className="text-[#5046e5] font-bold">2026</span>
+        <span className="font-medium" style={{ color: "#1d4ed8" }}>
+          2026
+        </span>
         <span>2027</span>
       </div>
 
       {/* Months Scrubber Bar */}
-      <div className="flex items-center min-w-[650px] gap-1 p-1 bg-white border border-slate-200 rounded-lg">
+      <div
+        className="flex items-center min-w-[650px] gap-1 p-1 bg-white rounded-lg"
+        style={{ border: "1px solid #cbd5e1" }}
+      >
         {months.map((m, idx) => {
           const isSelected = idx >= startIdx && idx <= endIdx;
           const isBoundary = idx === startIdx || idx === endIdx;
@@ -60,12 +71,26 @@ export function TimelineMonthSlider({
               key={m.key}
               type="button"
               onClick={() => handleMonthClick(m.key)}
-              className={`flex-1 py-1.5 text-xs rounded-md transition-all select-none cursor-pointer ${
+              style={
                 isBoundary
-                  ? "bg-[#5046e5] text-white font-bold shadow-2xs"
+                  ? {
+                      backgroundColor: "#1d4ed8",
+                      color: "#ffffff",
+                      border: "1px solid #1e40af",
+                    }
                   : isSelected
-                  ? "bg-indigo-50 text-[#5046e5] font-semibold"
-                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                  ? {
+                      backgroundColor: "#eff6ff",
+                      color: "#1d4ed8",
+                    }
+                  : undefined
+              }
+              className={`flex-1 py-1.5 text-[11px] rounded-md transition-all select-none cursor-pointer ${
+                isBoundary
+                  ? "font-medium"
+                  : isSelected
+                  ? "font-medium"
+                  : "text-slate-500 font-normal hover:text-slate-800 hover:bg-slate-50"
               }`}
             >
               {m.label}

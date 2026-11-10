@@ -19,6 +19,9 @@ import {
   Plus,
   Layers,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
 } from "lucide-react";
 import { JournalDetailsModal } from "../journal-entries/components/JournalDetailsModal";
 import { HierarchicalAccountSelect } from "../journal-entries/components/HierarchicalAccountSelect";
@@ -44,7 +47,6 @@ function GeneralLedgerContent() {
   const searchParams = useSearchParams();
 
   const urlAccountId = searchParams.get("accountId") || "";
-  const urlAccountName = searchParams.get("accountName") || "";
   const urlFrom = searchParams.get("from") || "";
   const urlTo = searchParams.get("to") || "";
   const urlJournalId =
@@ -71,6 +73,10 @@ function GeneralLedgerContent() {
     urlTo || "2026-12",
   ]);
   const [selectedModalEntry, setSelectedModalEntry] = useState<any | null>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(20);
 
   // Period applying helper
   const applyPeriod = (year: number, preset: string, month: string) => {
@@ -149,7 +155,7 @@ function GeneralLedgerContent() {
   }, [selectedAccountId, accounts]);
 
   // Fetch General Ledger records
-  const { data: records = [], isLoading, refetch } = useQuery({
+  const { data: records = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ["general-ledger", selectedRange, selectedAccountId, search, journalIdFilter],
     queryFn: async () => {
       const sanitizeDate = (val: string, isEnd: boolean): string => {
@@ -193,7 +199,8 @@ function GeneralLedgerContent() {
     let c = 0;
     let running = 0;
 
-    const isNormalDebit = activeAccount?.type === "ASSET" || activeAccount?.type === "EXPENSE";
+    const isNormalDebit =
+      activeAccount?.type === "ASSET" || activeAccount?.type === "EXPENSE";
 
     const computed = records.map((r: any) => {
       const dr = Number(r.debitAed) || 0;
@@ -223,6 +230,31 @@ function GeneralLedgerContent() {
     };
   }, [records, activeAccount]);
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedRange, selectedAccountId, search, journalIdFilter, pageSize]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(recordsWithRunningBalance.length / pageSize)
+  );
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+
+  const paginatedRecords = useMemo(() => {
+    const start = (safeCurrentPage - 1) * pageSize;
+    return recordsWithRunningBalance.slice(start, start + pageSize);
+  }, [recordsWithRunningBalance, safeCurrentPage, pageSize]);
+
+  const startIndex =
+    recordsWithRunningBalance.length === 0
+      ? 0
+      : (safeCurrentPage - 1) * pageSize + 1;
+  const endIndex = Math.min(
+    safeCurrentPage * pageSize,
+    recordsWithRunningBalance.length
+  );
+
   // Export to CSV
   const handleExportCsv = () => {
     if (!records.length) return;
@@ -251,7 +283,10 @@ function GeneralLedgerContent() {
       r.creditAed || 0,
     ]);
 
-    const csvContent = [headers.join(","), ...rows.map((r: any) => r.join(","))].join("\n");
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((r: any) => r.join(",")),
+    ].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -259,242 +294,200 @@ function GeneralLedgerContent() {
     link.click();
   };
 
-  const getSourceBadgeStyle = (source: string) => {
+  const getSourceBadgeInlineStyle = (source: string): React.CSSProperties => {
     switch (source) {
       case "Sales invoice":
-        return "bg-blue-50 text-blue-700 border-blue-200/90";
+        return {
+          backgroundColor: "#eff6ff",
+          color: "#1d4ed8",
+          border: "1px solid #93c5fd",
+        };
       case "Customer payment":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200/90";
+      case "Bill payment":
+        return {
+          backgroundColor: "#dcfce7",
+          color: "#15803d",
+          border: "1px solid #86efac",
+        };
       case "Bill":
       case "Supplier bill":
-        return "bg-amber-50 text-amber-700 border-amber-200/90";
-      case "Bill payment":
-        return "bg-teal-50 text-teal-700 border-teal-200/90";
+        return {
+          backgroundColor: "#fefce8",
+          color: "#a16207",
+          border: "1px solid #fde047",
+        };
       case "Credit note":
-        return "bg-rose-50 text-rose-700 border-rose-200/90";
+        return {
+          backgroundColor: "#fff1f2",
+          color: "#be123c",
+          border: "1px solid #fda4af",
+        };
       default:
-        return "bg-purple-50 text-[#5046e5] border-purple-200/90";
+        return {
+          backgroundColor: "#f1f5f9",
+          color: "#334155",
+          border: "1px solid #cbd5e1",
+        };
     }
   };
 
   return (
-    <div className="w-full min-h-full bg-slate-50/40 flex flex-col font-sans">
-      {/* 2-Tier Header matching Chart of Accounts & Journal Entries */}
-      <div className="w-full bg-white border-b border-slate-200/90 shrink-0 sticky top-0 z-20 shadow-2xs">
-        {/* Tier 1: Title, Counter & Action CTAs */}
-        <div className="px-6 py-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#5046e5]/10 text-[#5046e5] flex items-center justify-center font-bold shadow-2xs">
-              <BookOpenText className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                <span>Finance &amp; Accounts</span>
-                <span className="text-slate-300">/</span>
-                <span className="text-slate-900 font-bold">General Ledger</span>
-              </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <h1 className="text-lg font-bold text-slate-900 tracking-tight">
-                  General Ledger
-                </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-[#5046e5]/10 text-[#5046e5] border border-[#5046e5]/20 font-mono">
-                  {records.length} {records.length === 1 ? "line" : "lines"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleExportCsv}
-              disabled={!records.length}
-              className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40"
-              title="Export General Ledger to CSV"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Export CSV</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
-              title="Refresh ledger records"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-[#5046e5]" : ""}`} />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => router.push("/finance/journal-entries/new")}
-              className="px-3.5 py-1.5 rounded-lg bg-[#5046e5] hover:bg-[#4338ca] text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Journal</span>
-            </button>
-          </div>
+    <div className="w-full min-h-full bg-white text-slate-700 font-sans px-4 sm:px-5 py-3.5 space-y-3.5 select-none">
+      {/* =========================================================================
+          1. CLEAN COMPACT TOP HEADER (MATCHING FIXED ASSETS, COA & JOURNAL ENTRIES)
+          ========================================================================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 print:hidden">
+        <div>
+          <h1 className="text-base sm:text-[17px] font-semibold tracking-tight text-slate-800">
+            General Ledger
+          </h1>
+          <p className="text-[11.5px] font-normal text-slate-500 mt-0.5">
+            Consolidated double-entry ledger lines, account balances, and financial audit trail.
+          </p>
         </div>
 
-        {/* Tier 2: Search, Account Hierarchical Filter, & Top Year/Month Selector */}
-        <div className="px-6 py-2.5 border-t border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-slate-50/50">
-          <div className="flex flex-wrap items-center gap-2.5 flex-1">
-            {/* Search Input */}
-            <div className="relative w-full sm:w-60">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            disabled={!records.length}
+            style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+            className="px-3 py-1.5 rounded-lg hover:bg-slate-50 text-slate-600 text-[11.5px] font-medium transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            title="Download CSV Report"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span>CSV Report</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.push("/finance/journal-entries/new")}
+            style={{
+              backgroundColor: "#1d4ed8",
+              color: "#ffffff",
+              border: "1px solid #1e40af",
+            }}
+            className="px-3.5 py-1.5 rounded-lg text-[11.5px] font-medium transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Journal</span>
+          </button>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          2. SOFT LIGHT-BLUE TINTED SEARCH, ACCOUNT FILTER & PERIOD BOX
+          ========================================================================= */}
+      <div
+        className="rounded-xl p-3 space-y-2.5 print:hidden"
+        style={{
+          backgroundColor: "#f4f7fb",
+          border: "1px solid #cbd5e1",
+        }}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-end">
+          {/* Search Input */}
+          <div className="md:col-span-5 lg:col-span-4">
+            <label className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block mb-1">
+              SEARCH
+            </label>
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2" />
               <input
                 type="text"
-                placeholder="Search serial, reference..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-[#5046e5] focus:ring-1 focus:ring-[#5046e5] transition-all shadow-2xs"
+                placeholder="Search serial, reference, or narration..."
+                style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                className="w-full rounded-lg pl-8 pr-7 py-1.5 text-xs font-normal text-slate-700 placeholder-slate-400 outline-none focus:border-blue-600 transition-all"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600"
+                  className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  title="Clear search"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
+          </div>
 
-            {/* Hierarchical Account Filter Selector */}
-            {!journalIdFilter && (
-              <div className="w-full sm:w-64">
-                <HierarchicalAccountSelect
-                  value={selectedAccountId}
-                  onChange={(accId) => setSelectedAccountId(accId)}
-                  accounts={accounts}
-                  placeholder="All Accounts (Filter...)"
-                />
+          {/* Account Filter Selector */}
+          <div className="md:col-span-4 lg:col-span-4">
+            <label className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block mb-1">
+              ACCOUNT LEDGER
+            </label>
+            {!journalIdFilter ? (
+              <div className="flex items-center gap-1.5">
+                <div className="flex-1 min-w-0">
+                  <HierarchicalAccountSelect
+                    value={selectedAccountId}
+                    onChange={(accId) => setSelectedAccountId(accId)}
+                    accounts={accounts}
+                    placeholder="All Accounts (Consolidated)"
+                  />
+                </div>
+                {selectedAccountId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedAccountId("");
+                      router.replace("/finance/general-ledger");
+                    }}
+                    style={{
+                      backgroundColor: "#ffffff",
+                      color: "#475569",
+                      border: "1px solid #cbd5e1",
+                    }}
+                    className="h-8 px-2.5 rounded-lg text-[11px] font-normal hover:bg-slate-50 flex items-center gap-1 shrink-0 cursor-pointer"
+                    title="Clear account filter"
+                  >
+                    <span>Clear</span>
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
               </div>
-            )}
-
-            {/* Clear Account Filter Pill if selected */}
-            {selectedAccountId && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedAccountId("");
-                  router.replace("/finance/general-ledger");
+            ) : (
+              <div
+                className="h-8 px-3 rounded-lg flex items-center justify-between text-xs font-mono"
+                style={{
+                  backgroundColor: "#eff6ff",
+                  color: "#1d4ed8",
+                  border: "1px solid #93c5fd",
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-[#5046e5] text-xs font-semibold hover:bg-indigo-100 transition-colors cursor-pointer"
-                title="Clear account filter"
               >
-                <span>Clear Account</span>
-                <X className="w-3 h-3" />
-              </button>
-            )}
-
-            {/* Journal ID Filter Pill */}
-            {journalIdFilter && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#5046e5]/10 border border-[#5046e5]/20 text-[#5046e5] text-xs font-semibold shadow-2xs font-mono">
-                <span>
-                  Entry: <strong>{journalIdFilter}</strong>
-                </span>
+                <span className="truncate">Voucher: {journalIdFilter}</span>
                 <button
                   type="button"
                   onClick={() => {
                     setJournalIdFilter("");
                     router.replace("/finance/general-ledger");
                   }}
-                  className="hover:text-indigo-900 cursor-pointer p-0.5 rounded"
+                  className="hover:opacity-75 cursor-pointer ml-2"
                   title="Clear Journal ID filter"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
-              </span>
+              </div>
             )}
           </div>
 
-          {/* Top Year & Month Selector (Replacing the big slider completely) */}
-          <div className="flex flex-wrap items-center gap-2 select-none shrink-0 text-xs">
-            {/* Year Selector */}
-            <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
-              <Calendar className="w-3.5 h-3.5 text-slate-400 ml-2 mr-1" />
-              <select
-                value={selectedYear}
-                onChange={(e) => handleYearChange(parseInt(e.target.value, 10))}
-                className="bg-transparent text-xs font-bold text-slate-800 outline-none pr-2 py-1 cursor-pointer font-mono"
-              >
-                <option value={2024}>2024</option>
-                <option value={2025}>2025</option>
-                <option value={2026}>2026</option>
-                <option value={2027}>2027</option>
-              </select>
-            </div>
-
-            {/* Quick Presets: Full Year, Q1-Q4 */}
-            <div className="inline-flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
-              <button
-                type="button"
-                onClick={() => handlePresetClick("FULL_YEAR")}
-                className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                  activePreset === "FULL_YEAR" && selectedMonth === "ALL"
-                    ? "bg-[#5046e5] text-white shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
-              >
-                Full Year
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePresetClick("Q1")}
-                className={`px-2 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                  activePreset === "Q1"
-                    ? "bg-[#5046e5] text-white shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
-              >
-                Q1
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePresetClick("Q2")}
-                className={`px-2 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                  activePreset === "Q2"
-                    ? "bg-[#5046e5] text-white shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
-              >
-                Q2
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePresetClick("Q3")}
-                className={`px-2 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                  activePreset === "Q3"
-                    ? "bg-[#5046e5] text-white shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
-              >
-                Q3
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePresetClick("Q4")}
-                className={`px-2 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                  activePreset === "Q4"
-                    ? "bg-[#5046e5] text-white shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
-              >
-                Q4
-              </button>
-            </div>
-
-            {/* Specific Month Selector Dropdown */}
-            <div className="relative">
+          {/* Month Selector & Search/Refresh Buttons */}
+          <div className="md:col-span-3 lg:col-span-4 flex flex-wrap sm:flex-nowrap items-end gap-2">
+            <div className="flex-1 min-w-[140px]">
+              <label className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block mb-1">
+                MONTH
+              </label>
               <select
                 value={selectedMonth}
                 onChange={(e) => handleMonthSelect(e.target.value)}
-                className={`border rounded-lg px-2.5 py-1.5 text-xs font-bold outline-none cursor-pointer shadow-2xs transition-all ${
-                  selectedMonth !== "ALL"
-                    ? "bg-indigo-50 border-indigo-300 text-[#5046e5]"
-                    : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
-                }`}
+                style={{
+                  border: "1px solid #cbd5e1",
+                  backgroundColor: "#ffffff",
+                }}
+                className="w-full rounded-lg px-2.5 py-1.5 text-xs font-normal text-slate-700 outline-none focus:border-blue-600 cursor-pointer"
               >
                 {MONTH_NAMES.map((m) => (
                   <option key={m.value} value={m.value}>
@@ -503,166 +496,406 @@ function GeneralLedgerContent() {
                 ))}
               </select>
             </div>
+
+            <div className="flex items-center gap-1.5 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => refetch()}
+                style={{
+                  backgroundColor: "#1d4ed8",
+                  color: "#ffffff",
+                  border: "1px solid #1e40af",
+                }}
+                className="flex-1 sm:flex-initial justify-center px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Search</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setSelectedAccountId("");
+                  setJournalIdFilter("");
+                  setSelectedYear(2026);
+                  setSelectedMonth("ALL");
+                  setActivePreset("FULL_YEAR");
+                  setSelectedRange(["2026-01", "2026-12"]);
+                  router.replace("/finance/general-ledger");
+                  refetch();
+                }}
+                disabled={isFetching}
+                style={{ border: "1px solid #cbd5e1", backgroundColor: "#ffffff" }}
+                className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+                title="Reset & Refresh"
+              >
+                <RefreshCw
+                  className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-blue-600" : ""}`}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Filter Row: Year & Quick Quarter Presets */}
+        <div
+          className="pt-2 flex flex-wrap items-center justify-between gap-2 text-xs"
+          style={{ borderTop: "1px solid #e2e8f0" }}
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Year Selector */}
+            <div
+              className="inline-flex items-center rounded-lg px-2 py-1"
+              style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #cbd5e1",
+              }}
+            >
+              <Calendar className="w-3.5 h-3.5 text-slate-400 mr-1.5" />
+              <span className="text-[10.5px] text-slate-400 font-normal mr-1">
+                Year:
+              </span>
+              <select
+                value={selectedYear}
+                onChange={(e) => handleYearChange(parseInt(e.target.value, 10))}
+                className="bg-transparent text-[11.5px] font-medium text-slate-800 outline-none cursor-pointer font-mono"
+              >
+                <option value={2024}>2024</option>
+                <option value={2025}>2025</option>
+                <option value={2026}>2026</option>
+                <option value={2027}>2027</option>
+              </select>
+            </div>
+
+            {/* Quarter Presets */}
+            <div
+              className="inline-flex items-center rounded-lg p-0.5 gap-0.5"
+              style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #cbd5e1",
+              }}
+            >
+              {(["FULL_YEAR", "Q1", "Q2", "Q3", "Q4"] as const).map((preset) => {
+                const isActive =
+                  preset === "FULL_YEAR"
+                    ? activePreset === "FULL_YEAR" && selectedMonth === "ALL"
+                    : activePreset === preset;
+                return (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => handlePresetClick(preset)}
+                    style={
+                      isActive
+                        ? {
+                            backgroundColor: "#1d4ed8",
+                            color: "#ffffff",
+                          }
+                        : {
+                            backgroundColor: "transparent",
+                            color: "#475569",
+                          }
+                    }
+                    className="px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer"
+                  >
+                    {preset === "FULL_YEAR" ? "Full Year" : preset}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="text-[11px] font-normal text-slate-500 flex items-center gap-1.5">
+            <span>Active Period:</span>
+            <span
+              className="font-mono font-medium px-2 py-0.5 rounded-md text-[11px]"
+              style={{
+                backgroundColor: "#ffffff",
+                color: "#1d4ed8",
+                border: "1px solid #cbd5e1",
+              }}
+            >
+              {selectedRange[0]} &rarr; {selectedRange[1]}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Main Body */}
-      <div className="flex-1 p-6 space-y-5 max-w-[1700px] w-full mx-auto">
-        {/* Executive Metric Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Total Debits */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                Total Debit Movement
-              </span>
-              <div className="text-lg font-bold font-mono text-blue-700 mt-1">
-                {formatAed(totals.debit)}
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shadow-2xs">
-              <ArrowUpRight className="w-4 h-4" />
-            </div>
+      {/* =========================================================================
+          3. FOUR COMPACT PASTEL KPI CARDS (LIGHT COLOR + CLEAR BORDERS)
+          ========================================================================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 print:hidden">
+        {/* Card 1: Total Debit Movement (Soft Slate-Blue) */}
+        <div
+          className="rounded-xl px-3.5 py-2.5 flex items-center gap-3"
+          style={{
+            backgroundColor: "#f1f5f9",
+            border: "1px solid #cbd5e1",
+          }}
+        >
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#ffffff",
+              color: "#1d4ed8",
+              border: "1px solid #cbd5e1",
+            }}
+          >
+            <ArrowUpRight className="w-3.5 h-3.5" />
           </div>
-
-          {/* Card 2: Total Credits */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                Total Credit Movement
-              </span>
-              <div className="text-lg font-bold font-mono text-amber-700 mt-1">
-                {formatAed(totals.credit)}
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold shadow-2xs">
-              <ArrowDownRight className="w-4 h-4" />
-            </div>
-          </div>
-
-          {/* Card 3: Double-Entry Net Balance */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                Net Period Movement
-              </span>
-              <div className="text-lg font-bold font-mono text-slate-900 mt-1 flex items-center gap-2">
-                <span>{formatAed(totals.difference)}</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Balanced
-                </span>
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shadow-2xs">
-              <Scale className="w-4 h-4" />
-            </div>
-          </div>
-
-          {/* Card 4: Scope / Active Account */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex items-center justify-between">
-            <div className="min-w-0 pr-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                Scope / Period
-              </span>
-              <div className="text-xs font-bold text-slate-800 mt-1 truncate" title={activeAccount ? activeAccount.accountName : "Consolidated General Ledger"}>
-                {activeAccount ? `${activeAccount.accountCode} - ${activeAccount.accountName}` : "Consolidated (All Accounts)"}
-              </div>
-              <span className="text-[10px] text-[#5046e5] font-semibold block font-mono mt-0.5">
-                {selectedRange[0]} &rarr; {selectedRange[1]}
-              </span>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#5046e5] flex items-center justify-center font-bold shadow-2xs shrink-0">
-              <Layers className="w-4 h-4" />
-            </div>
+          <div className="min-w-0">
+            <span className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block">
+              TOTAL DEBIT MOVEMENT
+            </span>
+            <span className="text-sm sm:text-[15px] font-semibold text-slate-800 leading-snug block whitespace-nowrap">
+              {formatAed(totals.debit)}
+            </span>
+            <span className="text-[10.5px] font-normal text-slate-500 block">
+              {records.length} ledger lines
+            </span>
           </div>
         </div>
 
-        {/* Main General Ledger Table Card */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-2xs">
-          <div className="overflow-x-auto custom-scrollbar">
-            <table className="w-full text-left border-collapse table-fixed min-w-[1180px]">
-              <colgroup>
-                <col className="w-36" />
-                <col className="w-32" />
-                <col className="w-28" />
-                <col className="w-52" />
-                <col className="w-56" />
-                <col className="w-64" />
-                <col className="w-32" />
-                <col className="w-32" />
-                {selectedAccountId ? <col className="w-32" /> : null}
-              </colgroup>
-              <thead>
-                <tr className="bg-slate-50/90 border-b border-slate-200 text-slate-600 font-bold text-[11px] uppercase tracking-wider select-none">
-                  <th className="py-3 px-3.5 sticky left-0 bg-slate-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
-                    Serial #
+        {/* Card 2: Total Credit Movement (Soft Warm Yellow/Amber) */}
+        <div
+          className="rounded-xl px-3.5 py-2.5 flex items-center gap-3"
+          style={{
+            backgroundColor: "#fefce8",
+            border: "1px solid #fde047",
+          }}
+        >
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#fef9c3",
+              color: "#a16207",
+              border: "1px solid #fde047",
+            }}
+          >
+            <ArrowDownRight className="w-3.5 h-3.5" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block">
+              TOTAL CREDIT MOVEMENT
+            </span>
+            <span className="text-sm sm:text-[15px] font-semibold text-slate-800 leading-snug block whitespace-nowrap">
+              {formatAed(totals.credit)}
+            </span>
+            <span className="text-[10.5px] font-normal text-slate-500 block">
+              Posted credit volume
+            </span>
+          </div>
+        </div>
+
+        {/* Card 3: Net Period Balance (Soft Mint/Green) */}
+        <div
+          className="rounded-xl px-3.5 py-2.5 flex items-center gap-3"
+          style={{
+            backgroundColor: "#f0fdf4",
+            border: "1px solid #86efac",
+          }}
+        >
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#dcfce7",
+              color: "#15803d",
+              border: "1px solid #86efac",
+            }}
+          >
+            <Scale className="w-3.5 h-3.5" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block">
+              NET PERIOD MOVEMENT
+            </span>
+            <span className="text-sm sm:text-[15px] font-semibold text-slate-800 leading-snug block whitespace-nowrap">
+              {formatAed(totals.difference)}
+            </span>
+            <span className="text-[10.5px] font-normal text-emerald-700 block">
+              Double-entry balanced
+            </span>
+          </div>
+        </div>
+
+        {/* Card 4: Scope / Active Account (Soft Rose/Pink) */}
+        <div
+          className="rounded-xl px-3.5 py-2.5 flex items-center gap-3"
+          style={{
+            backgroundColor: "#fff1f2",
+            border: "1px solid #fda4af",
+          }}
+        >
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#ffe4e6",
+              color: "#be123c",
+              border: "1px solid #fda4af",
+            }}
+          >
+            <Layers className="w-3.5 h-3.5" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block">
+              LEDGER SCOPE
+            </span>
+            <span
+              className="text-xs sm:text-[13.5px] font-semibold text-slate-800 leading-snug block truncate"
+              title={
+                activeAccount
+                  ? `${activeAccount.accountCode} - ${activeAccount.accountName}`
+                  : "Consolidated (All Accounts)"
+              }
+            >
+              {activeAccount
+                ? `${activeAccount.accountCode} - ${activeAccount.accountName}`
+                : "Consolidated Ledger"}
+            </span>
+            <span className="text-[10.5px] font-normal text-slate-500 block font-mono">
+              {selectedRange[0]} &rarr; {selectedRange[1]}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          4. GENERAL LEDGER RECORDS TABLE WITH SOFT LIGHT-BLUE HEADER BAR
+          ========================================================================= */}
+      <div
+        className="bg-white rounded-xl overflow-hidden"
+        style={{ border: "1px solid #cbd5e1" }}
+      >
+        {/* Soft Light-Blue Top Bar */}
+        <div
+          className="px-4 py-2.5 flex flex-wrap items-center justify-between gap-2"
+          style={{
+            backgroundColor: "#f4f7fb",
+            borderBottom: "1px solid #cbd5e1",
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <h3 className="text-xs font-semibold text-slate-800">
+              Ledger records
+            </h3>
+            {activeAccount && (
+              <span
+                className="text-[10.5px] font-normal px-2 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: "#eff6ff",
+                  color: "#1d4ed8",
+                  border: "1px solid #93c5fd",
+                }}
+              >
+                {activeAccount.accountCode} · {activeAccount.accountName}
+              </span>
+            )}
+          </div>
+          <span className="text-[11px] text-slate-500 font-normal">
+            {recordsWithRunningBalance.length}{" "}
+            {recordsWithRunningBalance.length === 1 ? "record" : "records"}
+          </span>
+        </div>
+
+        <div className="w-full overflow-x-auto custom-scrollbar">
+          <table className="w-full min-w-[1040px] text-left text-xs border-collapse select-none">
+            <thead>
+              <tr
+                className="bg-white text-[9.5px] font-medium uppercase tracking-wider text-slate-500"
+                style={{ borderBottom: "1px solid #e2e8f0" }}
+              >
+                <th className="py-2.5 px-4 w-36 whitespace-nowrap">VOUCHER / DATE</th>
+                <th className="py-2.5 px-4 w-32 whitespace-nowrap">SOURCE</th>
+                <th className="py-2.5 px-4 w-52 whitespace-nowrap">ACCOUNT</th>
+                <th className="py-2.5 px-4 w-56 whitespace-nowrap">OFFSET ACCOUNTS</th>
+                <th className="py-2.5 px-4 whitespace-nowrap">DESCRIPTION / NARRATION</th>
+                <th className="py-2.5 px-4 text-right w-32 whitespace-nowrap">
+                  DEBIT (AED)
+                </th>
+                <th className="py-2.5 px-4 text-right w-32 whitespace-nowrap">
+                  CREDIT (AED)
+                </th>
+                {selectedAccountId && (
+                  <th className="py-2.5 px-4 text-right w-32 whitespace-nowrap bg-slate-50/70">
+                    BALANCE (AED)
                   </th>
-                  <th className="py-3 px-3">Source</th>
-                  <th className="py-3 px-2.5">Date</th>
-                  <th className="py-3 px-3">Account</th>
-                  <th className="py-3 px-3">Offset Accounts</th>
-                  <th className="py-3 px-3">Description / Narration</th>
-                  <th className="py-3 px-3 text-right">Debit (AED)</th>
-                  <th className="py-3 px-3 text-right">Credit (AED)</th>
-                  {selectedAccountId && (
-                    <th className="py-3 px-3 text-right bg-slate-100/60 text-slate-800">
-                      Balance (AED)
-                    </th>
-                  )}
+                )}
+                <th className="py-2.5 px-4 text-right w-16 whitespace-nowrap">
+                  VIEW
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white">
+              {isLoading ? (
+                <tr>
+                  <td
+                    colSpan={selectedAccountId ? 9 : 8}
+                    className="py-12 text-center text-slate-400"
+                  >
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <RefreshCw className="w-4 h-4 animate-spin text-slate-400" />
+                      <span className="text-xs font-normal">
+                        Loading general ledger records...
+                      </span>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white text-xs">
-                {isLoading ? (
-                  <tr>
-                    <td
-                      colSpan={selectedAccountId ? 9 : 8}
-                      className="px-4 py-20 text-center text-slate-400 text-xs"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <RefreshCw className="w-5 h-5 animate-spin text-[#5046e5]" />
-                        <span>Loading General Ledger records...</span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : recordsWithRunningBalance.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={selectedAccountId ? 9 : 8}
-                      className="px-4 py-20 text-center text-slate-400 text-xs"
-                    >
-                      <div className="max-w-md mx-auto space-y-1.5">
-                        <p className="font-semibold text-slate-700">No ledger entries found for {selectedRange[0]} &rarr; {selectedRange[1]}</p>
-                        <p className="text-slate-400 text-[11px]">
-                          Try selecting &ldquo;Full Year&rdquo; or another month from the top period bar.
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  recordsWithRunningBalance.map((r: any) => (
+              ) : paginatedRecords.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={selectedAccountId ? 9 : 8}
+                    className="py-12 text-center text-slate-400"
+                  >
+                    <div className="flex flex-col items-center justify-center gap-1 max-w-sm mx-auto">
+                      <BookOpenText className="w-7 h-7 text-slate-300 mb-1" />
+                      <h4 className="font-medium text-slate-700 text-xs">
+                        No ledger entries found for {selectedRange[0]} &rarr;{" "}
+                        {selectedRange[1]}
+                      </h4>
+                      <p className="text-[11px] font-normal text-slate-400">
+                        Try selecting &ldquo;Full Year&rdquo; or adjusting your search and account filters.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paginatedRecords.map((r: any) => {
+                  const formattedDate = new Date(r.date)
+                    .toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                    .replace(/ /g, "-");
+
+                  return (
                     <tr
                       key={r.id}
                       onClick={() => {
                         if (r.rawEntry) setSelectedModalEntry(r.rawEntry);
                       }}
-                      className="hover:bg-slate-50/70 transition-colors cursor-pointer group"
+                      className="hover:bg-slate-50 transition-colors cursor-pointer"
                     >
-                      {/* Serial Number with Lock icon (Sticky, whitespace-nowrap) */}
-                      <td className="px-3.5 py-2.5 font-mono font-bold text-slate-900 sticky left-0 bg-white group-hover:bg-slate-50/70 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] whitespace-nowrap">
-                        <div className="flex items-center gap-1.5 min-w-0">
+                      {/* 1. VOUCHER / DATE */}
+                      <td className="py-2.5 px-4 align-top whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
                           <Lock className="w-3 h-3 text-slate-400 shrink-0" />
                           <span
-                            className="hover:text-[#5046e5] transition-colors truncate"
+                            className="font-mono font-medium text-xs uppercase truncate"
+                            style={{ color: "#1d4ed8" }}
                             title={r.journalNumber || r.journalId}
                           >
                             {r.journalNumber || r.journalId}
                           </span>
                         </div>
+                        <div className="text-slate-400 text-[10.5px] font-normal mt-0.5 pl-4">
+                          {formattedDate}
+                        </div>
                       </td>
 
-                      {/* Source Badge with direct invoice navigation */}
-                      <td className="px-3 py-2.5 whitespace-nowrap">
+                      {/* 2. SOURCE */}
+                      <td className="py-2.5 px-4 align-top whitespace-nowrap">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -672,46 +905,66 @@ function GeneralLedgerContent() {
                             } else if (r.source === "Sales invoice") {
                               const invNum = r.reference?.startsWith("INV-")
                                 ? r.reference
-                                : (r.journalNumber?.replace("JE-INV-", "").split("-").slice(0, 3).join("-") || r.reference);
-                              router.push(`/commercial/sales-invoices?search=${encodeURIComponent(invNum || "")}`);
+                                : r.journalNumber
+                                    ?.replace("JE-INV-", "")
+                                    .split("-")
+                                    .slice(0, 3)
+                                    .join("-") || r.reference;
+                              router.push(
+                                `/commercial/sales-invoices?search=${encodeURIComponent(
+                                  invNum || ""
+                                )}`
+                              );
                             } else {
-                              router.push(`/finance/journal-entries?search=${encodeURIComponent(r.journalNumber || "")}`);
+                              router.push(
+                                `/finance/journal-entries?search=${encodeURIComponent(
+                                  r.journalNumber || ""
+                                )}`
+                              );
                             }
                           }}
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10.5px] font-semibold border transition-all hover:scale-105 cursor-pointer ${getSourceBadgeStyle(
-                            r.source
-                          )}`}
+                          style={getSourceBadgeInlineStyle(r.source)}
+                          className="inline-block px-2 py-0.5 rounded-full text-[9.5px] font-medium uppercase tracking-wide transition-opacity hover:opacity-80 cursor-pointer"
                           title={`Open ${r.source}: ${r.reference || r.journalNumber}`}
                         >
-                          <span>{r.source}</span>
+                          {r.source}
                         </button>
                       </td>
 
-                      {/* Date */}
-                      <td className="px-2.5 py-2.5 font-mono text-slate-600 whitespace-nowrap text-[11px]">
-                        {new Date(r.date).toISOString().split("T")[0]}
-                      </td>
-
-                      {/* Account Badge */}
-                      <td className="px-3 py-2.5">
+                      {/* 3. ACCOUNT */}
+                      <td className="py-2.5 px-4 align-top">
                         <span
-                          className="inline-block max-w-[190px] truncate px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-800 font-semibold text-[11px]"
+                          style={{
+                            backgroundColor: "#f8fafc",
+                            border: "1px solid #cbd5e1",
+                          }}
+                          className="inline-block max-w-[195px] truncate px-2 py-0.5 rounded text-slate-800 font-normal text-[11px]"
                           title={`${r.account.code} - ${r.account.name}`}
                         >
-                          {r.account.code} - {r.account.name}
+                          <span className="font-mono font-medium text-slate-700">
+                            {r.account.code}
+                          </span>{" "}
+                          - {r.account.name}
                         </span>
                       </td>
 
-                      {/* Offset Accounts */}
-                      <td className="px-3 py-2.5">
-                        <div className="flex flex-wrap gap-1 max-w-[210px]">
+                      {/* 4. OFFSET ACCOUNTS */}
+                      <td className="py-2.5 px-4 align-top">
+                        <div className="flex flex-wrap gap-1 max-w-[215px]">
                           {r.offsetAccounts.length === 0 ? (
-                            <span className="text-slate-400 text-xs">—</span>
+                            <span className="text-slate-400 text-xs font-normal">
+                              -
+                            </span>
                           ) : (
                             r.offsetAccounts.map((o: any) => (
                               <span
                                 key={o.id}
-                                className="px-1.5 py-0.5 rounded-md bg-indigo-50/70 border border-indigo-200/60 text-[#5046e5] font-medium text-[10.5px] max-w-[200px] truncate"
+                                style={{
+                                  backgroundColor: "#eff6ff",
+                                  color: "#1d4ed8",
+                                  border: "1px solid #bfdbfe",
+                                }}
+                                className="px-2 py-0.5 rounded text-[10.5px] font-normal max-w-[205px] truncate"
                                 title={`${o.code} - ${o.name}`}
                               >
                                 {o.code} - {o.name}
@@ -721,71 +974,236 @@ function GeneralLedgerContent() {
                         </div>
                       </td>
 
-                      {/* Description / Narration */}
-                      <td className="px-3 py-2.5 text-slate-600 truncate" title={r.description || r.journalNotes || ""}>
-                        <span>{r.description || r.journalNotes || "—"}</span>
+                      {/* 5. DESCRIPTION / NARRATION */}
+                      <td
+                        className="py-2.5 px-4 align-top text-slate-600 font-normal text-xs max-w-[260px] truncate"
+                        title={r.description || r.journalNotes || ""}
+                      >
+                        {r.description || r.journalNotes || "-"}
                       </td>
 
-                      {/* Debit AED */}
-                      <td className="px-3 py-2.5 text-right font-mono font-bold text-blue-700 whitespace-nowrap">
-                        {r.debitAed > 0 ? Number(r.debitAed).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"}
+                      {/* 6. DEBIT AED */}
+                      <td className="py-2.5 px-4 text-right align-top font-mono font-medium text-xs whitespace-nowrap text-slate-800">
+                        {r.debitAed > 0
+                          ? Number(r.debitAed).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
+                          : "-"}
                       </td>
 
-                      {/* Credit AED */}
-                      <td className="px-3 py-2.5 text-right font-mono font-bold text-amber-700 whitespace-nowrap">
-                        {r.creditAed > 0 ? Number(r.creditAed).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"}
+                      {/* 7. CREDIT AED */}
+                      <td className="py-2.5 px-4 text-right align-top font-mono font-medium text-xs whitespace-nowrap text-slate-800">
+                        {r.creditAed > 0
+                          ? Number(r.creditAed).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
+                          : "-"}
                       </td>
 
-                      {/* Running Balance */}
+                      {/* 8. RUNNING BALANCE */}
                       {selectedAccountId && (
-                        <td className="px-3 py-2.5 text-right font-mono font-bold text-slate-900 bg-slate-50/50 whitespace-nowrap">
-                          {Number(r.runningBalance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        <td className="py-2.5 px-4 text-right align-top font-mono font-semibold text-xs text-slate-900 bg-slate-50/50 whitespace-nowrap">
+                          {Number(r.runningBalance).toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </td>
                       )}
-                    </tr>
-                  ))
-                )}
-              </tbody>
 
-              {/* Total Footer Row */}
-              {records.length > 0 && (
-                <tfoot className="bg-slate-50/90 font-mono text-xs font-bold border-t-2 border-slate-200">
-                  <tr>
-                    <td colSpan={6} className="px-4 py-3 text-right uppercase tracking-wider font-sans text-slate-700">
-                      Total Ledger Movement:
-                    </td>
-                    <td className="px-3 py-3 text-right text-blue-700 font-mono whitespace-nowrap font-bold">
-                      {formatAed(totals.debit)}
-                    </td>
-                    <td className="px-3 py-3 text-right text-amber-700 font-mono whitespace-nowrap font-bold">
-                      {formatAed(totals.credit)}
-                    </td>
-                    {selectedAccountId && (
-                      <td className="px-3 py-3 text-right text-slate-900 bg-slate-100/60 font-mono whitespace-nowrap font-bold">
-                        {recordsWithRunningBalance.length > 0
-                          ? formatAed(
-                              recordsWithRunningBalance[recordsWithRunningBalance.length - 1].runningBalance
-                            )
-                          : "—"}
+                      {/* 9. VIEW ACTION */}
+                      <td className="py-2.5 px-4 text-right align-top whitespace-nowrap">
+                        <div
+                          className="inline-flex items-center justify-end"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (r.rawEntry) setSelectedModalEntry(r.rawEntry);
+                            }}
+                            className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                            title="View Journal Voucher"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
-                    )}
-                  </tr>
-                </tfoot>
+                    </tr>
+                  );
+                })
               )}
-            </table>
+            </tbody>
+
+            {/* Total Footer Row */}
+            {records.length > 0 && (
+              <tfoot
+                style={{
+                  backgroundColor: "#f8fafc",
+                  borderTop: "1px solid #cbd5e1",
+                }}
+                className="font-mono text-xs font-semibold"
+              >
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-2.5 text-right font-sans font-medium text-slate-600"
+                  >
+                    Total Period Movement:
+                  </td>
+                  <td
+                    className="px-4 py-2.5 text-right whitespace-nowrap"
+                    style={{ color: "#1d4ed8" }}
+                  >
+                    {formatAed(totals.debit)}
+                  </td>
+                  <td className="px-4 py-2.5 text-right text-amber-700 whitespace-nowrap">
+                    {formatAed(totals.credit)}
+                  </td>
+                  {selectedAccountId && (
+                    <td className="px-4 py-2.5 text-right text-slate-900 bg-slate-100/60 whitespace-nowrap">
+                      {recordsWithRunningBalance.length > 0
+                        ? formatAed(
+                            recordsWithRunningBalance[
+                              recordsWithRunningBalance.length - 1
+                            ].runningBalance
+                          )
+                        : "-"}
+                    </td>
+                  )}
+                  <td></td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+
+        {/* Responsive Pagination & Bottom Summary Bar */}
+        <div
+          className="px-4 py-2.5 text-[11px] text-slate-500 font-normal flex flex-col sm:flex-row items-center justify-between gap-3"
+          style={{
+            backgroundColor: "#f4f7fb",
+            borderTop: "1px solid #cbd5e1",
+          }}
+        >
+          {/* Left: Showing range & Rows per page */}
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 w-full sm:w-auto">
+            <span>
+              Showing{" "}
+              <span className="text-slate-800 font-medium">{startIndex}</span> to{" "}
+              <span className="text-slate-800 font-medium">{endIndex}</span> of{" "}
+              <span className="text-slate-800 font-medium">
+                {recordsWithRunningBalance.length}
+              </span>{" "}
+              lines
+            </span>
+
+            <span className="text-slate-300 hidden sm:inline">•</span>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-500 text-[10.5px]">Rows:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                style={{
+                  border: "1px solid #cbd5e1",
+                  backgroundColor: "#ffffff",
+                }}
+                className="rounded-lg px-2 py-1 text-[11px] font-normal text-slate-700 outline-none focus:border-blue-600 cursor-pointer"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+
+            <span className="text-slate-300 hidden md:inline">•</span>
+
+            <span className="hidden md:inline-flex items-center gap-1 text-emerald-700 font-medium">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Balanced (Diff: AED {totals.difference.toFixed(2)})</span>
+            </span>
           </div>
 
-          {/* Status Bar */}
-          <div className="px-6 py-3 bg-slate-50/70 border-t border-slate-200/90 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500">
-            <div className="flex items-center gap-3">
-              <span>Showing <strong>{records.length}</strong> transaction lines</span>
-              <span>•</span>
-              <span className="font-mono flex items-center gap-1.5 text-emerald-700 font-semibold">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                Double-Entry Balanced (Difference: AED {totals.difference.toFixed(2)})
-              </span>
+          {/* Right: Page Navigation Controls */}
+          <div className="flex items-center justify-center gap-1.5 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={safeCurrentPage <= 1}
+              style={{
+                border: "1px solid #cbd5e1",
+                backgroundColor: "#ffffff",
+              }}
+              className="h-7 px-2.5 rounded-lg text-[11px] font-normal text-slate-600 hover:bg-slate-50 flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span className="hidden xs:inline">Prev</span>
+            </button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((page) => {
+                  if (totalPages <= 5) return true;
+                  if (page === 1 || page === totalPages) return true;
+                  return Math.abs(page - safeCurrentPage) <= 1;
+                })
+                .reduce<Array<number | string>>((acc, page, idx, arr) => {
+                  if (idx > 0 && page - (arr[idx - 1] as number) > 1) {
+                    acc.push("...");
+                  }
+                  acc.push(page);
+                  return acc;
+                }, [])
+                .map((item, idx) =>
+                  item === "..." ? (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="px-1.5 text-[11px] text-slate-400 select-none"
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setCurrentPage(Number(item))}
+                      style={
+                        safeCurrentPage === item
+                          ? {
+                              backgroundColor: "#1d4ed8",
+                              color: "#ffffff",
+                              border: "1px solid #1e40af",
+                            }
+                          : {
+                              backgroundColor: "#ffffff",
+                              color: "#475569",
+                              border: "1px solid #cbd5e1",
+                            }
+                      }
+                      className="h-7 min-w-[28px] px-2 rounded-lg text-[11px] font-medium transition-colors cursor-pointer flex items-center justify-center"
+                    >
+                      {item}
+                    </button>
+                  )
+                )}
             </div>
-            <span className="font-mono text-slate-400 text-[11px]">UAE VAT &amp; FTA Audit Ready</span>
+
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={safeCurrentPage >= totalPages}
+              style={{
+                border: "1px solid #cbd5e1",
+                backgroundColor: "#ffffff",
+              }}
+              className="h-7 px-2.5 rounded-lg text-[11px] font-normal text-slate-600 hover:bg-slate-50 flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <span className="hidden xs:inline">Next</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
@@ -802,7 +1220,13 @@ function GeneralLedgerContent() {
 
 export default function GeneralLedgerPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading General Ledger...</div>}>
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-xs font-normal text-slate-400">
+          Loading general ledger...
+        </div>
+      }
+    >
       <GeneralLedgerContent />
     </Suspense>
   );
