@@ -113,13 +113,13 @@ export const ReceiveGoodsModal: React.FC<ReceiveGoodsModalProps> = ({
       >
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-slate-700">
+            <label className="text-xs font-medium text-slate-700">
               Destination Warehouse <span className="text-rose-500">*</span>
             </label>
             <button
               type="button"
               onClick={() => setShowAddWarehouse(!showAddWarehouse)}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer"
+              className="inline-flex items-center gap-1 text-[11px] font-medium text-[#1d4ed8] hover:underline cursor-pointer"
             >
               <PlusIcon size={12} />
               {showAddWarehouse ? "Close Form" : "New Warehouse"}
@@ -127,24 +127,32 @@ export const ReceiveGoodsModal: React.FC<ReceiveGoodsModalProps> = ({
           </div>
 
           {showAddWarehouse && (
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-              <span className="font-semibold text-slate-800 text-xs block">
+            <div
+              className="p-3 rounded-xl space-y-2"
+              style={{
+                backgroundColor: "#f4f7fb",
+                border: "1px solid #cbd5e1",
+              }}
+            >
+              <span className="font-medium text-slate-800 text-xs block">
                 Register New Warehouse / Site Store
               </span>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input
                   type="text"
                   placeholder="Facility Name (e.g. Al Quoz Main)"
                   value={newWhName}
                   onChange={(e) => setNewWhName(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="px-2.5 py-1.5 text-xs bg-white rounded-lg outline-none focus:ring-2 focus:ring-[#1d4ed8]/15"
+                  style={{ border: "1px solid #cbd5e1" }}
                 />
                 <input
                   type="text"
                   placeholder="Code (e.g. WH-DXB-02)"
                   value={newWhCode}
                   onChange={(e) => setNewWhCode(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-emerald-500 uppercase"
+                  className="px-2.5 py-1.5 text-xs bg-white rounded-lg outline-none focus:ring-2 focus:ring-[#1d4ed8]/15 uppercase"
+                  style={{ border: "1px solid #cbd5e1" }}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -153,13 +161,15 @@ export const ReceiveGoodsModal: React.FC<ReceiveGoodsModalProps> = ({
                   placeholder="Location / Address (Optional)"
                   value={newWhLocation}
                   onChange={(e) => setNewWhLocation(e.target.value)}
-                  className="flex-1 px-2.5 py-1.5 text-xs bg-white border border-slate-200 rounded-lg outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="flex-1 px-2.5 py-1.5 text-xs bg-white rounded-lg outline-none focus:ring-2 focus:ring-[#1d4ed8]/15"
+                  style={{ border: "1px solid #cbd5e1" }}
                 />
                 <button
                   type="button"
                   disabled={isCreatingWh || !newWhName.trim()}
                   onClick={handleCreateWarehouse}
-                  className="px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:opacity-50 cursor-pointer"
+                  className="px-3 py-1.5 text-xs font-medium text-white rounded-lg disabled:opacity-50 cursor-pointer"
+                  style={{ backgroundColor: "#1d4ed8" }}
                 >
                   {isCreatingWh ? "Saving..." : "Save Warehouse"}
                 </button>
@@ -168,15 +178,21 @@ export const ReceiveGoodsModal: React.FC<ReceiveGoodsModalProps> = ({
           )}
 
           {warehouses.length === 0 ? (
-            <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-200">
-              <span className="text-amber-800 text-xs font-medium">
+            <div
+              className="flex items-center justify-between p-3 rounded-xl"
+              style={{
+                backgroundColor: "#fefce8",
+                border: "1px solid #fde047",
+              }}
+            >
+              <span className="text-amber-800 text-xs font-normal">
                 No active warehouses found.
               </span>
               <button
                 type="button"
                 onClick={handleAutoProvisionDefault}
                 disabled={isCreatingWh}
-                className="text-xs font-semibold px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg cursor-pointer"
+                className="text-xs font-medium px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg cursor-pointer"
               >
                 {isCreatingWh ? "Creating..." : "+ Auto-Create Main Warehouse"}
               </button>
@@ -207,20 +223,26 @@ export const ReceiveGoodsModal: React.FC<ReceiveGoodsModalProps> = ({
         </div>
 
         {po && (
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
-            <span className="font-bold text-slate-700 block">
+          <div
+            className="p-3 rounded-xl text-xs space-y-1.5"
+            style={{
+              backgroundColor: "#f8fafc",
+              border: "1px solid #cbd5e1",
+            }}
+          >
+            <span className="font-medium text-slate-700 block">
               Items in this shipment:
             </span>
             {po.items.map((it) => (
               <div
                 key={it.id}
-                className="flex justify-between items-center text-slate-600 py-0.5 border-b border-slate-100 last:border-b-0"
+                className="flex justify-between items-center text-slate-600 py-0.5 border-b border-slate-200/70 last:border-b-0"
               >
                 <span>
                   {it.product?.name}{" "}
                   {it.product?.brand ? `[${it.product.brand}]` : ""}
                 </span>
-                <span className="font-mono font-semibold text-slate-800">
+                <span className="font-mono font-medium text-slate-800">
                   {it.quantityOrdered} {it.product?.unit || "units"}
                 </span>
               </div>
@@ -228,14 +250,14 @@ export const ReceiveGoodsModal: React.FC<ReceiveGoodsModalProps> = ({
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
           <FormSubmit
             form={receiveForm}
             loading={isUpdating}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
+            className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-medium cursor-pointer"
           >
             Confirm &amp; Update Stock
           </FormSubmit>

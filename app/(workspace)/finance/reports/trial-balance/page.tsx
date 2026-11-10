@@ -601,7 +601,7 @@ export default function TrialBalancePage() {
                     ACCOUNT TYPE
                   </th>
                   <th
-                    className="py-2.5 px-4 text-right w-40 text-slate-700"
+                    className="py-2.5 px-4 text-right w-40 text-slate-700 font-semibold"
                     style={{
                       backgroundColor: "#f1f5f9",
                       borderLeft: "1px solid #cbd5e1",
@@ -610,7 +610,7 @@ export default function TrialBalancePage() {
                     TOTAL DEBIT (AED)
                   </th>
                   <th
-                    className="py-2.5 px-4 text-right w-40 text-amber-900"
+                    className="py-2.5 px-4 text-right w-40 text-amber-900 font-semibold"
                     style={{
                       backgroundColor: "#fefce8",
                       borderLeft: "1px solid #cbd5e1",
@@ -619,16 +619,16 @@ export default function TrialBalancePage() {
                     TOTAL CREDIT (AED)
                   </th>
                   <th
-                    className="py-2.5 px-4 text-right w-40 text-emerald-900"
+                    className="py-2.5 px-4 text-right w-40 text-emerald-900 font-semibold"
                     style={{
                       backgroundColor: "#f0fdf4",
-                      borderLeft: "1.5px solid #94a3b8",
+                      borderLeft: "2px solid #94a3b8",
                     }}
                   >
                     TB DEBIT (AED)
                   </th>
                   <th
-                    className="py-2.5 px-4 text-right w-40 text-rose-900"
+                    className="py-2.5 px-4 text-right w-40 text-rose-900 font-semibold"
                     style={{
                       backgroundColor: "#fff1f2",
                       borderLeft: "1px solid #cbd5e1",
@@ -656,7 +656,7 @@ export default function TrialBalancePage() {
                     <tr
                       key={row.id}
                       onClick={() => handleDrillDown(row)}
-                      className="hover:brightness-97 transition-all cursor-pointer group"
+                      className="hover:brightness-95 transition-all cursor-pointer group"
                     >
                       {/* Account Name & Code */}
                       <td className="py-2.5 px-4 text-slate-800 bg-white">
@@ -680,7 +680,7 @@ export default function TrialBalancePage() {
                       {/* Account Type Badge */}
                       <td
                         className="py-2.5 px-3 bg-white"
-                        style={{ borderLeft: "1px solid #f1f5f9" }}
+                        style={{ borderLeft: "1px solid #e2e8f0" }}
                       >
                         <span
                           className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium border ${getTypeBadgeClass(
@@ -691,7 +691,7 @@ export default function TrialBalancePage() {
                         </span>
                       </td>
 
-                      {/* Total Debit (Movements) - Soft Slate Tint */}
+                      {/* Total Debit (Movements) - Visible Soft Slate Tint */}
                       <td
                         className="py-2.5 px-4 font-mono text-right tabular-nums text-slate-700"
                         style={{
@@ -704,15 +704,15 @@ export default function TrialBalancePage() {
                             {formatAed(row.movementDebit)}
                           </span>
                         ) : (
-                          <span className="text-slate-300">0.00</span>
+                          <span className="text-slate-400 font-normal">0.00</span>
                         )}
                       </td>
 
-                      {/* Total Credit (Movements) - Soft Warm Yellow Tint */}
+                      {/* Total Credit (Movements) - Visible Soft Warm Amber Tint */}
                       <td
                         className="py-2.5 px-4 font-mono text-right tabular-nums text-slate-700"
                         style={{
-                          backgroundColor: "#fffef7",
+                          backgroundColor: "#fffbeb",
                           borderLeft: "1px solid #cbd5e1",
                         }}
                       >
@@ -721,41 +721,41 @@ export default function TrialBalancePage() {
                             {formatAed(row.movementCredit)}
                           </span>
                         ) : (
-                          <span className="text-slate-300">0.00</span>
+                          <span className="text-slate-400 font-normal">0.00</span>
                         )}
                       </td>
 
-                      {/* TB Debit (Closing Debit) - Soft Mint Green Tint */}
+                      {/* TB Debit (Closing Debit) - Visible Soft Mint Green Tint */}
                       <td
                         className="py-2.5 px-4 font-mono text-right tabular-nums font-medium"
                         style={{
-                          backgroundColor: "#f6fef9",
-                          borderLeft: "1.5px solid #94a3b8",
+                          backgroundColor: "#f0fdf4",
+                          borderLeft: "2px solid #94a3b8",
                         }}
                       >
                         {row.closingDebit > 0 ? (
-                          <span className="text-emerald-800">
+                          <span className="text-emerald-800 font-medium">
                             {formatAed(row.closingDebit)}
                           </span>
                         ) : (
-                          <span className="text-slate-300 font-normal">0.00</span>
+                          <span className="text-slate-400 font-normal">0.00</span>
                         )}
                       </td>
 
-                      {/* TB Credit (Closing Credit) - Soft Rose Tint */}
+                      {/* TB Credit (Closing Credit) - Visible Soft Rose Tint */}
                       <td
                         className="py-2.5 px-4 font-mono text-right tabular-nums font-medium"
                         style={{
-                          backgroundColor: "#fffafa",
+                          backgroundColor: "#fff1f2",
                           borderLeft: "1px solid #cbd5e1",
                         }}
                       >
                         {row.closingCredit > 0 ? (
-                          <span className="text-rose-800">
+                          <span className="text-rose-800 font-medium">
                             {formatAed(row.closingCredit)}
                           </span>
                         ) : (
-                          <span className="text-slate-300 font-normal">0.00</span>
+                          <span className="text-slate-400 font-normal">0.00</span>
                         )}
                       </td>
                     </tr>
@@ -809,7 +809,7 @@ export default function TrialBalancePage() {
                     className="py-2.5 px-4 font-mono text-right text-xs font-semibold text-emerald-800"
                     style={{
                       backgroundColor: "#f0fdf4",
-                      borderLeft: "1.5px solid #94a3b8",
+                      borderLeft: "2px solid #94a3b8",
                     }}
                   >
                     {formatAed(data?.totals?.closingDebit || 0)}

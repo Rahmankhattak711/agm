@@ -107,13 +107,27 @@ export const QuickAddProductModal: React.FC<QuickAddProductModalProps> = ({
         className="space-y-3.5 text-xs"
       >
         {quickProductError && (
-          <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
+          <div
+            className="p-3 rounded-xl text-rose-800 text-xs font-medium"
+            style={{
+              backgroundColor: "#fff1f2",
+              border: "1px solid #fda4af",
+            }}
+          >
             {quickProductError}
           </div>
         )}
 
-        <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-900 text-xs">
-          <span className="font-bold block">💡 External Shop Product</span>
+        <div
+          className="p-2.5 rounded-xl text-slate-700 text-xs"
+          style={{
+            backgroundColor: "#f4f7fb",
+            border: "1px solid #cbd5e1",
+          }}
+        >
+          <span className="font-medium text-slate-800 block">
+            External Shop Product
+          </span>
           Register a material or item purchased from an external shop, vendor,
           or marketplace to inventory.
         </div>
@@ -223,14 +237,14 @@ export const QuickAddProductModal: React.FC<QuickAddProductModalProps> = ({
           )}
         </quickProductForm.Field>
 
-        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
           <FormSubmit
             form={quickProductForm}
             loading={createProduct.isPending}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
+            className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-medium cursor-pointer"
           >
             Create &amp; Add to PO
           </FormSubmit>

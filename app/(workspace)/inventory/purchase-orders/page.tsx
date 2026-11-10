@@ -18,20 +18,22 @@ import {
   PurchaseOrder,
   PurchaseOrderStatus,
 } from "@/lib/hooks/api-hooks";
-import { PlusIcon, ShoppingCartIcon, PrintIcon, EyeIcon, TrashIcon } from "@/components/icons";
-import { Plus, RefreshCw, PackageCheck, FileText } from "lucide-react";
+import { ShoppingCartIcon, PrintIcon, EyeIcon, TrashIcon } from "@/components/icons";
 import {
-  Button,
-  Select,
-  RegisterTable,
-  RegisterColumn,
+  Plus,
+  RefreshCw,
+  PackageCheck,
+  FileText,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import {
   TableBody,
   TableRow,
   TableCell,
   TableLoading,
   EmptyState,
-  PageHeader,
-  FilterBar,
 } from "@/components/ui";
 import { PurchaseOrderPrintModal } from "./PurchaseOrderPrintModal";
 import {
@@ -43,55 +45,23 @@ import {
   PurchaseOrderDetailModal,
   CreatePurchaseOrderData,
 } from "./components";
+import ProcurementQuickNav from "@/components/ProcurementQuickNav";
 
-const COLUMNS: RegisterColumn[] = [
-  { label: "PO Number & Ref", compact: true, className: "whitespace-nowrap" },
-  { label: "Vendor / Shop Name", compact: true },
-  {
-    label: "Order Date",
-    align: "center",
-    compact: true,
-    className: "whitespace-nowrap",
-  },
-  {
-    label: "Expected Date",
-    align: "center",
-    compact: true,
-    className: "whitespace-nowrap",
-  },
-  {
-    label: "Items Ordered",
-    align: "center",
-    compact: true,
-    className: "whitespace-nowrap",
-  },
-  {
-    label: "Total (AED)",
-    align: "right",
-    compact: true,
-    className: "whitespace-nowrap",
-  },
-  {
-    label: "Status",
-    align: "center",
-    compact: true,
-    className: "whitespace-nowrap",
-  },
-  {
-    label: "Actions",
-    align: "right",
-    compact: true,
-    hideOnPrint: true,
-    className: "whitespace-nowrap pr-3",
-  },
-];
+const PAGE_SIZE = 15;
 
 const getStatusBadge = (status: PurchaseOrderStatus, po?: any) => {
   const isBilled = po?.supplierBills && po.supplierBills.length > 0;
   if (isBilled) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-2xs">
-        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+      <span
+        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium"
+        style={{
+          backgroundColor: "#eff6ff",
+          color: "#1d4ed8",
+          border: "1px solid #bfdbfe",
+        }}
+      >
+        <span className="w-1.5 h-1.5 rounded-full bg-[#1d4ed8]" />
         <span>Billed</span>
       </span>
     );
@@ -99,25 +69,53 @@ const getStatusBadge = (status: PurchaseOrderStatus, po?: any) => {
   switch (status) {
     case "DRAFT":
       return (
-        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+        <span
+          className="px-2.5 py-0.5 rounded-full text-[10.5px] font-medium"
+          style={{
+            backgroundColor: "#fefce8",
+            color: "#92400e",
+            border: "1px solid #fde047",
+          }}
+        >
           Draft
         </span>
       );
     case "ORDERED":
       return (
-        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">
+        <span
+          className="px-2.5 py-0.5 rounded-full text-[10.5px] font-medium"
+          style={{
+            backgroundColor: "#f0f9ff",
+            color: "#0369a1",
+            border: "1px solid #bae6fd",
+          }}
+        >
           Ordered
         </span>
       );
     case "RECEIVED":
       return (
-        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+        <span
+          className="px-2.5 py-0.5 rounded-full text-[10.5px] font-medium"
+          style={{
+            backgroundColor: "#f0fdf4",
+            color: "#166534",
+            border: "1px solid #86efac",
+          }}
+        >
           Received
         </span>
       );
     case "CANCELLED":
       return (
-        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
+        <span
+          className="px-2.5 py-0.5 rounded-full text-[10.5px] font-medium"
+          style={{
+            backgroundColor: "#fff1f2",
+            color: "#9f1239",
+            border: "1px solid #fda4af",
+          }}
+        >
           Cancelled
         </span>
       );
@@ -133,6 +131,7 @@ export default function PurchaseOrdersPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [supplierFilter, setSupplierFilter] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [printModalPO, setPrintModalPO] = useState<PurchaseOrder | null>(null);
@@ -246,13 +245,21 @@ export default function PurchaseOrdersPage() {
     );
   }, [purchaseOrders, search]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, supplierFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredPOs.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedPOs = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filteredPOs.slice(start, start + PAGE_SIZE);
+  }, [filteredPOs, safePage]);
+
   const totalPOs = purchaseOrders.length;
   const draftCount = purchaseOrders.filter((p) => p.status === "DRAFT").length;
   const orderedCount = purchaseOrders.filter(
     (p) => p.status === "ORDERED",
-  ).length;
-  const receivedCount = purchaseOrders.filter(
-    (p) => p.status === "RECEIVED",
   ).length;
   const totalPurchasesValue = purchaseOrders
     .filter((p) => p.status !== "CANCELLED")
@@ -318,54 +325,79 @@ export default function PurchaseOrdersPage() {
     }
   };
 
-  return (
-    <div className="w-full min-h-full flex flex-col font-sans">
-      {/* Executive Header - Clean alignment, zero overlap */}
-      <div className="w-full bg-white border-b border-slate-200/90 px-6 py-4 shrink-0 shadow-2xs">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#5046e5] shadow-2xs">
-                <ShoppingCartIcon size={16} />
-              </div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                  Purchase Orders
-                </h1>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-mono">
-                  {purchaseOrders.length} Records
-                </span>
-              </div>
-            </div>
-            <p className="text-xs text-slate-500">
-              Create supplier purchase orders, track delivery milestones, and manage material procurement.
-            </p>
-          </div>
+  const statusTabs = [
+    { id: "ALL", label: "All POs" },
+    { id: "DRAFT", label: "Draft" },
+    { id: "ORDERED", label: "Ordered" },
+    { id: "RECEIVED", label: "Received" },
+    { id: "CANCELLED", label: "Cancelled" },
+  ];
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-2xs transition-colors cursor-pointer"
-              title="Refresh purchase orders"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#5046e5]" : ""}`} />
-            </button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => router.push("/inventory/purchase-orders/new")}
-              icon={<Plus size={14} strokeWidth={2.5} />}
-              className="bg-[#5046e5] hover:bg-[#4338ca] text-white font-bold text-xs shadow-xs cursor-pointer"
-            >
-              Create Purchase Order
-            </Button>
+  return (
+    <div className="w-full min-h-full p-3 sm:p-5 space-y-3.5 bg-[#f8fafc] font-sans text-slate-800">
+      {/* Compact Header Card */}
+      <div
+        className="bg-white rounded-xl p-3 sm:px-4 sm:py-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
+        style={{ border: "1px solid #cbd5e1" }}
+      >
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#eff6ff",
+              border: "1px solid #bfdbfe",
+              color: "#1d4ed8",
+            }}
+          >
+            <ShoppingCartIcon size={15} />
           </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-base sm:text-[17px] font-semibold text-slate-800 tracking-tight">
+              Purchase Orders
+            </h1>
+            <span
+              className="text-[10.5px] font-medium px-2 py-0.5 rounded-full font-mono"
+              style={{
+                backgroundColor: "#f1f5f9",
+                color: "#475569",
+                border: "1px solid #cbd5e1",
+              }}
+            >
+              {purchaseOrders.length} Records
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="p-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer"
+            style={{ border: "1px solid #cbd5e1" }}
+            title="Refresh purchase orders"
+          >
+            <RefreshCw
+              className={`w-3.5 h-3.5 ${
+                isFetching ? "animate-spin text-[#1d4ed8]" : ""
+              }`}
+            />
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push("/inventory/purchase-orders/new")}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white shadow-2xs transition-colors cursor-pointer"
+            style={{ backgroundColor: "#1d4ed8" }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Create Purchase Order</span>
+          </button>
         </div>
       </div>
 
-      <div className="p-6 space-y-6 flex-1 bg-slate-50/40">
+      {/* Procurement Lifecycle Quick Navigation */}
+      <ProcurementQuickNav />
 
+      {/* 4 Pastel KPI Cards */}
       <PurchaseOrdersKpis
         totalPOs={totalPOs}
         draftCount={draftCount}
@@ -373,109 +405,292 @@ export default function PurchaseOrdersPage() {
         totalPurchasesValue={totalPurchasesValue}
       />
 
-      <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <FilterBar
-          tabs={[
-            { id: "ALL", label: "All POs" },
-            { id: "DRAFT", label: "Draft" },
-            { id: "ORDERED", label: "Ordered" },
-            { id: "RECEIVED", label: "Received" },
-            { id: "CANCELLED", label: "Cancelled" },
-          ]}
-          activeTab={statusFilter}
-          onTabChange={(id) => setStatusFilter(id)}
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search PO #, supplier, shop, quote ref..."
-          totalCount={filteredPOs.length}
-          countLabel="Orders Listed"
-          rightAction={
-            <div className="w-full sm:w-56">
-              <Select
-                containerClassName="w-full"
-                className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 outline-none shadow-2xs cursor-pointer truncate"
-                value={supplierFilter}
-                onChange={(e) => setSupplierFilter(e.target.value)}
-              >
-                <option value="">All Suppliers</option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          }
-        />
-
-        {error ? (
-          <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
-            Error loading POs: {(error as any).message}
-          </div>
-        ) : (
-          <RegisterTable
-            title="Procurement & Purchase Orders Register"
-            countLabel={`${filteredPOs.length} Records`}
-            columns={COLUMNS}
+      {/* Unified Filter Bar */}
+      <div
+        className="rounded-xl p-2.5 sm:px-3.5 sm:py-2.5 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 shadow-2xs"
+        style={{
+          backgroundColor: "#f4f7fb",
+          border: "1px solid #cbd5e1",
+        }}
+      >
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <div
+            className="inline-flex items-center p-0.5 rounded-lg bg-white flex-wrap"
+            style={{ border: "1px solid #cbd5e1" }}
           >
-            <TableBody className="divide-y divide-slate-100 font-medium">
-              {isLoading ? (
-                <TableLoading colSpan={8} rows={5} />
-              ) : filteredPOs.length === 0 ? (
-                <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={8} className="p-0 border-0">
-                    <EmptyState
-                      icon={
-                        <ShoppingCartIcon
-                          size={20}
-                          className="text-slate-400"
-                        />
-                      }
-                      title="No purchase orders found"
-                      description={
-                        search.trim() !== "" ||
-                          statusFilter !== "ALL" ||
-                          supplierFilter !== ""
-                          ? "No purchase orders matched your search criteria."
-                          : "No purchase orders in database. Click 'Create Purchase Order' to create one."
-                      }
-                      actionLabel={
-                        search.trim() !== "" ||
-                          statusFilter !== "ALL" ||
-                          supplierFilter !== ""
-                          ? "Reset Filters"
-                          : "Create Purchase Order"
-                      }
-                      onAction={
-                        search.trim() !== "" ||
-                          statusFilter !== "ALL" ||
-                          supplierFilter !== ""
-                          ? () => {
-                            setSearch("");
-                            setStatusFilter("ALL");
-                            setSupplierFilter("");
-                          }
-                          : () => router.push("/inventory/purchase-orders/new")
-                      }
-                    />
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredPOs.map((po) => (
-                  <PurchaseOrderRow
-                    key={po.id}
-                    po={po}
-                    onView={(target) => setSelectedPO(target)}
-                    onOpenMenu={handleOpenMenu}
-                    isMenuOpen={activeMenu?.id === po.id}
-                    getStatusBadge={getStatusBadge}
-                  />
-                ))
-              )}
-            </TableBody>
-          </RegisterTable>
-        )}
+            {statusTabs.map((tab) => {
+              const active = statusFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setStatusFilter(tab.id)}
+                  className="px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer"
+                  style={
+                    active
+                      ? {
+                          backgroundColor: "#1d4ed8",
+                          color: "#ffffff",
+                        }
+                      : {
+                          color: "#475569",
+                        }
+                  }
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <select
+            value={supplierFilter}
+            onChange={(e) => setSupplierFilter(e.target.value)}
+            className="px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white rounded-lg outline-none cursor-pointer max-w-[200px] truncate"
+            style={{ border: "1px solid #cbd5e1" }}
+          >
+            <option value="">All Suppliers</option>
+            {suppliers.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="relative w-full lg:w-72">
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search PO #, supplier, shop, quote ref..."
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-white rounded-lg text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1d4ed8]/15"
+            style={{ border: "1px solid #cbd5e1" }}
+          />
+        </div>
       </div>
+
+      {/* Main Purchase Orders Table Card */}
+      {error ? (
+        <div
+          className="py-8 text-center text-xs text-rose-700 rounded-xl"
+          style={{
+            backgroundColor: "#fff1f2",
+            border: "1px solid #fda4af",
+          }}
+        >
+          Error loading POs: {(error as any).message}
+        </div>
+      ) : (
+        <div
+          className="bg-white rounded-xl shadow-2xs overflow-hidden"
+          style={{ border: "1px solid #cbd5e1" }}
+        >
+          {/* Table Card Header */}
+          <div
+            className="px-4 py-2.5 flex items-center justify-between gap-2"
+            style={{
+              backgroundColor: "#f4f7fb",
+              borderBottom: "1px solid #cbd5e1",
+            }}
+          >
+            <span className="text-xs font-semibold text-slate-700">
+              Procurement &amp; Purchase Orders Register
+            </span>
+            <span className="text-[11px] font-mono text-slate-500">
+              {filteredPOs.length} {filteredPOs.length === 1 ? "order" : "orders"}
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr
+                  className="text-[10.5px] font-medium uppercase tracking-wider text-slate-500"
+                  style={{
+                    backgroundColor: "#f8fafc",
+                    borderBottom: "1px solid #cbd5e1",
+                  }}
+                >
+                  <th className="py-2.5 px-3 whitespace-nowrap font-medium">
+                    PO Number &amp; Ref
+                  </th>
+                  <th className="py-2.5 px-3 font-medium">
+                    Vendor / Shop Name
+                  </th>
+                  <th className="py-2.5 px-2.5 text-center whitespace-nowrap font-medium">
+                    Order Date
+                  </th>
+                  <th className="py-2.5 px-2.5 text-center whitespace-nowrap font-medium">
+                    Expected Date
+                  </th>
+                  <th className="py-2.5 px-2.5 text-center whitespace-nowrap font-medium">
+                    Items Ordered
+                  </th>
+                  <th className="py-2.5 px-2.5 text-right whitespace-nowrap font-medium">
+                    Total (AED)
+                  </th>
+                  <th className="py-2.5 px-2.5 text-center whitespace-nowrap font-medium">
+                    Status
+                  </th>
+                  <th className="py-2.5 px-2 sm:pr-3 text-right whitespace-nowrap print:hidden font-medium">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <TableBody className="divide-y divide-slate-200/80 font-normal">
+                {isLoading ? (
+                  <TableLoading colSpan={8} rows={5} />
+                ) : paginatedPOs.length === 0 ? (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={8} className="p-0 border-0">
+                      <EmptyState
+                        icon={
+                          <ShoppingCartIcon
+                            size={20}
+                            className="text-slate-400"
+                          />
+                        }
+                        title="No purchase orders found"
+                        description={
+                          search.trim() !== "" ||
+                          statusFilter !== "ALL" ||
+                          supplierFilter !== ""
+                            ? "No purchase orders matched your search criteria."
+                            : "No purchase orders in database. Click 'Create Purchase Order' to create one."
+                        }
+                        actionLabel={
+                          search.trim() !== "" ||
+                          statusFilter !== "ALL" ||
+                          supplierFilter !== ""
+                            ? "Reset Filters"
+                            : "Create Purchase Order"
+                        }
+                        onAction={
+                          search.trim() !== "" ||
+                          statusFilter !== "ALL" ||
+                          supplierFilter !== ""
+                            ? () => {
+                                setSearch("");
+                                setStatusFilter("ALL");
+                                setSupplierFilter("");
+                              }
+                            : () => router.push("/inventory/purchase-orders/new")
+                        }
+                      />
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paginatedPOs.map((po) => (
+                    <PurchaseOrderRow
+                      key={po.id}
+                      po={po}
+                      onView={(target) => setSelectedPO(target)}
+                      onOpenMenu={handleOpenMenu}
+                      isMenuOpen={activeMenu?.id === po.id}
+                      getStatusBadge={getStatusBadge}
+                    />
+                  ))
+                )}
+              </TableBody>
+            </table>
+          </div>
+
+          {/* Responsive Pagination Footer */}
+          {filteredPOs.length > 0 && (
+            <div
+              className="px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-600 print:hidden"
+              style={{
+                backgroundColor: "#f8fafc",
+                borderTop: "1px solid #cbd5e1",
+              }}
+            >
+              <span>
+                Showing{" "}
+                <span className="font-mono font-medium text-slate-800">
+                  {(safePage - 1) * PAGE_SIZE + 1}
+                </span>
+                –
+                <span className="font-mono font-medium text-slate-800">
+                  {Math.min(safePage * PAGE_SIZE, filteredPOs.length)}
+                </span>{" "}
+                of{" "}
+                <span className="font-mono font-medium text-slate-800">
+                  {filteredPOs.length}
+                </span>{" "}
+                purchase orders
+              </span>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={safePage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed text-xs font-medium"
+                  style={{ border: "1px solid #cbd5e1" }}
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Prev</span>
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(
+                    (p) =>
+                      p === 1 ||
+                      p === totalPages ||
+                      Math.abs(p - safePage) <= 1,
+                  )
+                  .map((p, idx, arr) => {
+                    const prev = arr[idx - 1];
+                    const showEllipsis = prev !== undefined && p - prev > 1;
+                    const active = p === safePage;
+                    return (
+                      <React.Fragment key={p}>
+                        {showEllipsis && (
+                          <span className="px-1 text-slate-400">…</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage(p)}
+                          className="min-w-[28px] h-7 px-2 rounded-lg text-xs font-mono font-medium transition-colors cursor-pointer"
+                          style={
+                            active
+                              ? {
+                                  backgroundColor: "#1d4ed8",
+                                  color: "#ffffff",
+                                  border: "1px solid #1d4ed8",
+                                }
+                              : {
+                                  backgroundColor: "#ffffff",
+                                  color: "#334155",
+                                  border: "1px solid #cbd5e1",
+                                }
+                          }
+                        >
+                          {p}
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+
+                <button
+                  type="button"
+                  disabled={safePage >= totalPages}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed text-xs font-medium"
+                  style={{ border: "1px solid #cbd5e1" }}
+                >
+                  <span>Next</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <CreatePurchaseOrderModal
         isOpen={isCreateOpen}
@@ -501,8 +716,6 @@ export default function PurchaseOrdersPage() {
         getStatusBadge={getStatusBadge}
         onConvertToBill={handleConvertToBill}
       />
-
-      </div>
 
       <PurchaseOrderPrintModal
         isOpen={!!printModalPO}
@@ -534,9 +747,10 @@ export default function PurchaseOrdersPage() {
                 ? `${window.innerHeight - activeMenu.top}px`
                 : undefined,
               right: `${activeMenu.right}px`,
+              border: "1px solid #cbd5e1",
             }}
             onClick={(e) => e.stopPropagation()}
-            className="w-[185px] rounded-xl bg-white border border-slate-200/90 shadow-xl shadow-slate-900/10 p-1 z-[9999] animate-in fade-in zoom-in-95 duration-100 select-none"
+            className="w-[190px] rounded-xl bg-white shadow-xl shadow-slate-900/10 p-1 z-[9999] animate-in fade-in zoom-in-95 duration-100 select-none"
           >
             {/* Print PO */}
             <button
@@ -560,9 +774,9 @@ export default function PurchaseOrdersPage() {
                 setActiveMenu(null);
                 setSelectedPO(po);
               }}
-              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:bg-indigo-50 transition-colors cursor-pointer text-left group"
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#1d4ed8] hover:bg-[#eff6ff] transition-colors cursor-pointer text-left group"
             >
-              <EyeIcon size={14} className="text-indigo-600 shrink-0" />
+              <EyeIcon size={14} className="text-[#1d4ed8] shrink-0" />
               <span className="truncate">View PO Details</span>
             </button>
 
@@ -594,9 +808,9 @@ export default function PurchaseOrdersPage() {
                   setActiveMenu(null);
                   router.push(`/commercial/supplier-bills/${bill.id}`);
                 }}
-                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:bg-indigo-50 transition-colors cursor-pointer text-left group"
+                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#1d4ed8] hover:bg-[#eff6ff] transition-colors cursor-pointer text-left group"
               >
-                <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                <FileText className="w-3.5 h-3.5 text-[#1d4ed8] shrink-0" />
                 <span className="truncate">
                   View Bill ({activeMenu.po.supplierBills![0].billNumber})
                 </span>
@@ -616,10 +830,10 @@ export default function PurchaseOrdersPage() {
                     setActiveMenu(null);
                     handleConvertToBill(po);
                   }}
-                  className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 transition-colors cursor-pointer text-left group"
+                  className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 transition-colors cursor-pointer text-left group"
                 >
                   <PackageCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span className="truncate">Convert to Bill & Post</span>
+                  <span className="truncate">Convert to Bill &amp; Post</span>
                 </button>
               )}
 

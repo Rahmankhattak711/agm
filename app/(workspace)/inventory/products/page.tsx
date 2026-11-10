@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "@tanstack/react-form";
 import { useAuth } from "@/context/AuthContext";
+import ProcurementQuickNav from "@/components/ProcurementQuickNav";
 import {
   useProducts,
   useCreateProduct,
@@ -17,6 +19,7 @@ import {
   ProductType,
 } from "@/lib/hooks/api-hooks";
 import { PlusIcon, SearchIcon } from "@/components/icons";
+import { Search } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
 import {
@@ -38,9 +41,10 @@ import {
   DashboardCard,
   DashboardCardGrid,
 } from "@/components/ui";
-import { RefreshCw, Package, Plus } from "lucide-react";
+import { RefreshCw, Package, Plus, ChevronLeft } from "lucide-react";
 
 export default function ProductsPage() {
+  const router = useRouter();
   const { hasRole, isAdmin } = useAuth();
   const { confirm } = useConfirm();
   const canManageInventory = hasRole("INVENTORY_MANAGER") || isAdmin || hasRole("ACCOUNTANT");
@@ -281,12 +285,19 @@ export default function ProductsPage() {
         header: "SKU & Shop Ref",
         cell: ({ row }) => (
           <div>
-            <span className="font-mono font-bold text-slate-900 block">
+            <span
+              className="inline-flex items-center gap-1 font-mono text-[11px] font-medium px-2 py-0.5 rounded-md"
+              style={{
+                backgroundColor: "#eff6ff",
+                color: "#1d4ed8",
+                border: "1px solid #bfdbfe",
+              }}
+            >
               {row.original.sku}
             </span>
             {row.original.supplierSku && (
-              <span className="text-[10px] text-emerald-800 font-mono font-medium block">
-                Shop Ref: {row.original.supplierSku}
+              <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                Ref: {row.original.supplierSku}
               </span>
             )}
             {row.original.barcode && (
@@ -302,17 +313,17 @@ export default function ProductsPage() {
         header: "Product / Material Name",
         cell: ({ row }) => (
           <div>
-            <div className="font-semibold text-slate-900">
+            <div className="font-medium text-slate-800">
               {row.original.name}
             </div>
             <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
               {row.original.brand && (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
                   {row.original.brand}
                 </span>
               )}
               {row.original.originCompany && (
-                <span className="text-[10px] text-slate-500 font-medium">
+                <span className="text-[10px] text-slate-400 font-normal">
                   • {row.original.originCompany}
                 </span>
               )}
@@ -325,10 +336,10 @@ export default function ProductsPage() {
         header: "Type & Category",
         cell: ({ row }) => (
           <div>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700">
               {row.original.type.replace("_", " ")}
             </span>
-            <span className="block text-[10px] text-slate-400 mt-0.5">
+            <span className="block text-[10.5px] text-slate-400 mt-0.5">
               {row.original.category?.name || "General"}
             </span>
           </div>
@@ -338,7 +349,7 @@ export default function ProductsPage() {
         accessorKey: "costPrice",
         header: "Cost Price",
         cell: ({ row }) => (
-          <span className="font-mono font-bold text-slate-700 block text-right">
+          <span className="font-mono font-medium text-slate-700 block text-right">
             {formatCurrency(row.original.costPrice)}
           </span>
         ),
@@ -347,7 +358,7 @@ export default function ProductsPage() {
         accessorKey: "sellingPrice",
         header: "Selling Price",
         cell: ({ row }) => (
-          <span className="font-mono font-bold text-emerald-800 block text-right">
+          <span className="font-mono font-medium text-slate-800 block text-right">
             {formatCurrency(row.original.sellingPrice)}
           </span>
         ),
@@ -357,10 +368,10 @@ export default function ProductsPage() {
         header: "Stock on Hand",
         cell: ({ row }) => (
           <div className="text-center">
-            <span className="font-bold text-slate-900 font-mono text-sm">
+            <span className="font-medium text-slate-800 font-mono text-xs">
               {row.original.totalOnHand ?? 0}
             </span>{" "}
-            <span className="text-[10px] text-slate-400 font-medium">
+            <span className="text-[10px] text-slate-400 font-normal">
               {row.original.unit}
             </span>
           </div>
@@ -373,10 +384,10 @@ export default function ProductsPage() {
           const isLow = row.original.isLowStock;
           return (
             <span
-              className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+              className={`px-2 py-0.5 rounded-full text-[10px] font-medium tracking-tight ${
                 isLow
-                  ? "bg-amber-100 text-amber-800 border border-amber-200"
-                  : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                  ? "bg-[#fefce8] text-[#92400e] border border-[#fde047]"
+                  : "bg-[#f0fdf4] text-[#166534] border border-[#86efac]"
               }`}
             >
               {isLow ? "Low Stock" : "Optimal"}
@@ -391,7 +402,7 @@ export default function ProductsPage() {
           if (!canManageInventory) {
             return (
               <div className="flex items-center justify-end">
-                <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-medium text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">
                   View Only
                 </span>
               </div>
@@ -404,6 +415,7 @@ export default function ProductsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => handleOpenAdjust(row.original)}
+                className="h-7 text-xs font-medium cursor-pointer"
               >
                 Stock Move
               </Button>
@@ -411,6 +423,7 @@ export default function ProductsPage() {
                 variant="secondary"
                 size="sm"
                 onClick={() => handleOpenEdit(row.original)}
+                className="h-7 text-xs font-medium cursor-pointer"
               >
                 Edit
               </Button>
@@ -418,6 +431,7 @@ export default function ProductsPage() {
                 variant="danger"
                 size="sm"
                 loading={deleteProduct.isPending}
+                className="h-7 text-xs font-medium cursor-pointer"
                 onClick={async () => {
                   const isConfirmed = await confirm({
                     title: "Delete Product SKU",
@@ -456,169 +470,261 @@ export default function ProductsPage() {
   );
 
   return (
-    <div className="w-full min-h-full flex flex-col font-sans">
-      {/* Executive Header - Clean alignment, zero overlap */}
-      <div className="w-full bg-white border-b border-slate-200/90 px-6 py-4 shrink-0 shadow-2xs">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#5046e5] shadow-2xs">
-                <Package className="w-4 h-4" />
-              </div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                  Shop Products & Materials
-                </h1>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-mono">
-                  {totalProducts} Items
-                </span>
-              </div>
-            </div>
-            <p className="text-xs text-slate-500">
-              Manage procured materials, catalog specifications, shop items, unit costs, and inventory stock.
-            </p>
+    <div className="w-full min-h-full p-3 sm:p-5 space-y-3.5 bg-[#f8fafc] font-sans text-slate-800">
+      {/* Compact Header Card */}
+      <div
+        className="bg-white rounded-xl p-3 sm:px-4 sm:py-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
+        style={{ border: "1px solid #cbd5e1" }}
+      >
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => router.push("/inventory/purchase-orders")}
+            className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors cursor-pointer shrink-0"
+            style={{ border: "1px solid #cbd5e1" }}
+            title="Back to Purchase Orders"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#eff6ff",
+              border: "1px solid #bfdbfe",
+              color: "#1d4ed8",
+            }}
+          >
+            <Package className="w-4 h-4" />
           </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-base sm:text-[17px] font-semibold text-slate-800 tracking-tight">
+              Shop Products &amp; Materials
+            </h1>
+            <span
+              className="text-[10.5px] font-medium px-2 py-0.5 rounded-full font-mono"
+              style={{
+                backgroundColor: "#f1f5f9",
+                color: "#475569",
+                border: "1px solid #cbd5e1",
+              }}
+            >
+              {totalProducts} Items
+            </span>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="p-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer"
+            style={{ border: "1px solid #cbd5e1" }}
+            title="Refresh products list"
+          >
+            <RefreshCw
+              className={`w-3.5 h-3.5 ${
+                isFetching ? "animate-spin text-[#1d4ed8]" : ""
+              }`}
+            />
+          </button>
+          {canManageInventory && (
             <button
               type="button"
-              onClick={() => refetch()}
-              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-2xs transition-colors cursor-pointer"
-              title="Refresh products list"
+              onClick={handleOpenCreate}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white shadow-2xs transition-colors cursor-pointer"
+              style={{ backgroundColor: "#1d4ed8" }}
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#5046e5]" : ""}`} />
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Product / SKU</span>
             </button>
-            {canManageInventory && (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleOpenCreate}
-                icon={<Plus size={14} strokeWidth={2.5} />}
-                className="bg-[#5046e5] hover:bg-[#4338ca] text-white font-bold text-xs shadow-xs cursor-pointer"
-              >
-                + Add Product / SKU
-              </Button>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
-      <div className="p-6 space-y-6 flex-1 bg-slate-50/40">
+      {/* Procurement Cycle Horizontal Quick Navigation */}
+      <ProcurementQuickNav />
 
-      <DashboardCardGrid cols={4}>
-        <DashboardCard
-          title="Total Catalog SKUs"
-          value={totalProducts.toString()}
-          subtitle="Active stock keeping units"
-          variant="default"
-        />
-        <DashboardCard
-          title="Total Units on Hand"
-          value={totalStockItems.toString()}
-          subtitle="Across all warehouse facilities"
-          variant="default"
-        />
-        <DashboardCard
-          title="Low Stock Alerts"
-          value={lowStockCount.toString()}
-          subtitle="Items below reorder trigger"
-          variant={lowStockCount > 0 ? "danger" : "default"}
-        />
-        <DashboardCard
-          title="Total Valuation"
-          value={formatCurrency(totalInventoryValue)}
-          subtitle="Based on material unit cost"
-          variant="default"
-        />
-      </DashboardCardGrid>
-
-      <div className="hidden print:grid print:grid-cols-4 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-xs">
-        <div>
-          <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">
-            Total SKUs
+      {/* 4 Compact Pastel KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 print:hidden">
+        <div
+          className="px-3.5 py-2.5 rounded-xl shadow-2xs"
+          style={{
+            backgroundColor: "#f1f5f9",
+            border: "1px solid #cbd5e1",
+          }}
+        >
+          <span className="text-[9.5px] font-medium uppercase tracking-wider text-slate-500 block">
+            Total Catalog SKUs
           </span>
-          <span className="font-mono font-bold text-slate-900">
+          <span className="text-sm sm:text-[15px] font-semibold font-mono text-slate-800 mt-0.5 block">
             {totalProducts}
           </span>
+          <span className="text-[10.5px] text-slate-500 block mt-0.5">
+            Active stock keeping units
+          </span>
         </div>
-        <div>
-          <span className="text-[9px] uppercase tracking-wider text-blue-600 font-bold block">
+
+        <div
+          className="px-3.5 py-2.5 rounded-xl shadow-2xs"
+          style={{
+            backgroundColor: "#f0fdf4",
+            border: "1px solid #86efac",
+          }}
+        >
+          <span className="text-[9.5px] font-medium uppercase tracking-wider text-emerald-800/80 block">
             Units on Hand
           </span>
-          <span className="font-mono font-bold text-blue-800">
+          <span className="text-sm sm:text-[15px] font-semibold font-mono text-emerald-900 mt-0.5 block">
             {totalStockItems}
           </span>
-        </div>
-        <div>
-          <span className="text-[9px] uppercase tracking-wider text-amber-600 font-bold block">
-            Low Stock Alerts
+          <span className="text-[10.5px] text-emerald-700/80 block mt-0.5">
+            Across warehouse facilities
           </span>
-          <span className="font-mono font-bold text-amber-600">
+        </div>
+
+        <div
+          className="px-3.5 py-2.5 rounded-xl shadow-2xs"
+          style={{
+            backgroundColor: "#fff1f2",
+            border: "1px solid #fda4af",
+          }}
+        >
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-[9.5px] font-medium uppercase tracking-wider text-rose-800/80 block">
+              Low Stock Alerts
+            </span>
+            {lowStockCount > 0 && (
+              <span
+                className="text-[9.5px] font-medium px-1.5 py-0.5 rounded"
+                style={{
+                  backgroundColor: "#ffe4e6",
+                  color: "#9f1239",
+                  border: "1px solid #fda4af",
+                }}
+              >
+                Alert
+              </span>
+            )}
+          </div>
+          <span className="text-sm sm:text-[15px] font-semibold font-mono text-rose-900 mt-0.5 block">
             {lowStockCount}
           </span>
+          <span className="text-[10.5px] text-rose-700/80 block mt-0.5">
+            Items below reorder trigger
+          </span>
         </div>
-        <div>
-          <span className="text-[9px] uppercase tracking-wider text-emerald-600 font-bold block">
+
+        <div
+          className="px-3.5 py-2.5 rounded-xl shadow-2xs"
+          style={{
+            backgroundColor: "#fefce8",
+            border: "1px solid #fde047",
+          }}
+        >
+          <span className="text-[9.5px] font-medium uppercase tracking-wider text-amber-800/80 block">
             Total Valuation
           </span>
-          <span className="font-mono font-bold text-emerald-800">
+          <span className="text-sm sm:text-[15px] font-semibold font-mono text-amber-900 mt-0.5 block">
             {formatCurrency(totalInventoryValue)}
+          </span>
+          <span className="text-[10.5px] text-amber-700/80 block mt-0.5">
+            Based on material unit cost
           </span>
         </div>
       </div>
 
-      <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <FilterBar
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search product, brand, shop code, SKU..."
-          totalCount={filteredProducts.length}
-          countLabel="Products Listed"
-          rightAction={
-            <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-              <Select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                containerClassName="w-full sm:w-44"
-              >
-                <option value="ALL">All Categories</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
+      {/* Unified Filter Bar */}
+      <div
+        className="rounded-xl p-2.5 sm:px-3.5 sm:py-2.5 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 shadow-2xs"
+        style={{
+          backgroundColor: "#f4f7fb",
+          border: "1px solid #cbd5e1",
+        }}
+      >
+        <div className="relative w-full lg:w-72">
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search product, brand, shop code, SKU..."
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-white rounded-lg text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#1d4ed8]/15"
+            style={{ border: "1px solid #cbd5e1" }}
+          />
+        </div>
 
-              <Select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                containerClassName="w-full sm:w-40"
-              >
-                <option value="ALL">All Types</option>
-                <option value="RAW_MATERIAL">Raw Material</option>
-                <option value="FINISHED_GOOD">Finished Good</option>
-                <option value="CONSUMABLE">Consumable</option>
-                <option value="TOOL_EQUIPMENT">Tool & Equipment</option>
-              </Select>
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white rounded-lg outline-none cursor-pointer max-w-[160px] truncate"
+            style={{ border: "1px solid #cbd5e1" }}
+          >
+            <option value="ALL">All Categories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
 
-              <Select
-                value={selectedOrigin}
-                onChange={(e) => setSelectedOrigin(e.target.value)}
-                containerClassName="w-full sm:w-44"
-              >
-                <option value="ALL">All Origins</option>
-                <option value="PURCHASED_EXTERNAL">Purchased External</option>
-                <option value="INTERNAL">Internal Product</option>
-              </Select>
-            </div>
-          }
-        />
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white rounded-lg outline-none cursor-pointer max-w-[150px] truncate"
+            style={{ border: "1px solid #cbd5e1" }}
+          >
+            <option value="ALL">All Types</option>
+            <option value="RAW_MATERIAL">Raw Material</option>
+            <option value="FINISHED_GOOD">Finished Good</option>
+            <option value="CONSUMABLE">Consumable</option>
+            <option value="TOOL_EQUIPMENT">Tool &amp; Equipment</option>
+          </select>
 
-        {error ? (
-          <div className="py-8 text-center text-xs text-red-500">
-            Error loading catalog: {(error as any).message}
+          <select
+            value={selectedOrigin}
+            onChange={(e) => setSelectedOrigin(e.target.value)}
+            className="px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white rounded-lg outline-none cursor-pointer max-w-[160px] truncate"
+            style={{ border: "1px solid #cbd5e1" }}
+          >
+            <option value="ALL">All Origins</option>
+            <option value="PURCHASED_EXTERNAL">Purchased External</option>
+            <option value="INTERNAL">Internal Product</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Main Table Card */}
+      {error ? (
+        <div
+          className="py-8 text-center text-xs text-rose-700 rounded-xl"
+          style={{
+            backgroundColor: "#fff1f2",
+            border: "1px solid #fda4af",
+          }}
+        >
+          Error loading catalog: {(error as any).message}
+        </div>
+      ) : (
+        <div
+          className="bg-white rounded-xl shadow-2xs overflow-hidden"
+          style={{ border: "1px solid #cbd5e1" }}
+        >
+          <div
+            className="px-4 py-2.5 flex items-center justify-between gap-2"
+            style={{
+              backgroundColor: "#f4f7fb",
+              borderBottom: "1px solid #cbd5e1",
+            }}
+          >
+            <span className="text-xs font-semibold text-slate-700">
+              Procured Materials &amp; Products Catalog
+            </span>
+            <span className="text-[11px] font-mono text-slate-500">
+              {filteredProducts.length} {filteredProducts.length === 1 ? "item" : "items"}
+            </span>
           </div>
-        ) : (
+
           <DataTable
             columns={columns}
             data={filteredProducts}
@@ -626,10 +732,8 @@ export default function ProductsPage() {
             emptyTitle="No products found"
             emptyMessage='Click "Add Product / SKU" to create your first stock item.'
           />
-        )}
-      </div>
-
-      </div>
+        </div>
+      )}
 
       <Modal
         isOpen={isCreateOpen}

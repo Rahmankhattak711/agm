@@ -162,16 +162,13 @@ export function SearchableProductSelect({
         <button
           type="button"
           onClick={handleTriggerClick}
-          className={`w-full py-2 px-3 rounded-xl border text-left flex items-center justify-between gap-2 shadow-2xs transition-all cursor-pointer bg-white ${
-            selectedProduct
-              ? "border-slate-300 hover:border-slate-400"
-              : "border-slate-200 hover:border-indigo-300 text-slate-400"
-          } focus:outline-hidden focus:ring-2 focus:ring-[#5046e5]/20`}
+          className="w-full py-1.5 px-3 rounded-lg text-left flex items-center justify-between gap-2 transition-all cursor-pointer bg-white focus:outline-hidden focus:ring-2 focus:ring-[#1d4ed8]/15"
+          style={{ border: "1px solid #cbd5e1" }}
         >
           {selectedProduct ? (
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <Package className="w-3.5 h-3.5 text-[#5046e5] shrink-0" />
-              <div className="truncate font-medium text-slate-900">
+              <Package className="w-3.5 h-3.5 text-[#1d4ed8] shrink-0" />
+              <div className="truncate font-medium text-slate-800">
                 <span>{selectedProduct.name}</span>
                 {selectedProduct.brand && (
                   <span className="text-slate-500 text-[11px] ml-1">
@@ -179,17 +176,31 @@ export function SearchableProductSelect({
                   </span>
                 )}
               </div>
-              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+              <span
+                className="font-mono text-[10px] px-1.5 py-0.5 rounded shrink-0"
+                style={{
+                  backgroundColor: "#f8fafc",
+                  color: "#475569",
+                  border: "1px solid #cbd5e1",
+                }}
+              >
                 {selectedProduct.sku}
               </span>
               {selectedProduct.costPrice && Number(selectedProduct.costPrice) > 0 && (
-                <span className="text-[10px] font-mono font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 shrink-0">
+                <span
+                  className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded shrink-0"
+                  style={{
+                    backgroundColor: "#f0fdf4",
+                    color: "#166534",
+                    border: "1px solid #86efac",
+                  }}
+                >
                   AED {formatAed(selectedProduct.costPrice)}
                 </span>
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-slate-400 font-medium truncate">
+            <div className="flex items-center gap-2 text-slate-400 font-normal truncate">
               <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <span>{placeholder}</span>
             </div>
@@ -211,14 +222,15 @@ export function SearchableProductSelect({
       ) : (
         /* Active Search Input */
         <div className="relative flex items-center">
-          <Search className="w-3.5 h-3.5 text-[#5046e5] absolute left-3 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-[#1d4ed8] absolute left-3 pointer-events-none" />
           <input
             ref={inputRef}
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Type product name, brand, SKU or ref..."
-            className="w-full py-2 pl-8.5 pr-8 rounded-xl border border-[#5046e5] bg-white text-xs font-medium text-slate-900 shadow-sm focus:outline-hidden focus:ring-2 focus:ring-[#5046e5]/25"
+            className="w-full py-1.5 pl-8.5 pr-8 rounded-lg bg-white text-xs font-normal text-slate-800 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-[#1d4ed8]/20"
+            style={{ border: "1px solid #1d4ed8" }}
           />
           <button
             type="button"
@@ -236,15 +248,21 @@ export function SearchableProductSelect({
       {/* Dropdown Popover */}
       {isOpen && (
         <div
-          className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden flex flex-col max-h-72 animate-in fade-in zoom-in-95 duration-100"
-          style={{ minWidth: "320px" }}
+          className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white rounded-xl shadow-xl overflow-hidden flex flex-col max-h-72 animate-in fade-in zoom-in-95 duration-100"
+          style={{ minWidth: "300px", border: "1px solid #cbd5e1" }}
         >
           {/* Header count info */}
-          <div className="px-3 py-1.5 bg-slate-50/80 border-b border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
+          <div
+            className="px-3 py-1.5 text-[11px] text-slate-500 flex items-center justify-between"
+            style={{
+              backgroundColor: "#f4f7fb",
+              borderBottom: "1px solid #cbd5e1",
+            }}
+          >
             <span>
               {search.trim() ? (
                 <>
-                  Found <strong className="text-slate-800">{filteredProducts.length}</strong> matching item(s)
+                  Found <span className="font-medium text-slate-800">{filteredProducts.length}</span> matching item(s)
                 </>
               ) : (
                 <>
@@ -252,7 +270,7 @@ export function SearchableProductSelect({
                 </>
               )}
             </span>
-            <span className="text-[10px] text-slate-400">↑↓ to navigate · Enter to select</span>
+            <span className="text-[10px] text-slate-400 hidden sm:inline">↑↓ to navigate · Enter to select</span>
           </div>
 
           {/* Product Items List */}
@@ -277,9 +295,9 @@ export function SearchableProductSelect({
                     key={p.id}
                     onClick={() => handleSelectProduct(p)}
                     onMouseEnter={() => setHighlightedIndex(idx)}
-                    className={`p-2.5 rounded-lg flex items-center justify-between gap-2.5 cursor-pointer transition-colors ${
+                    className={`p-2 rounded-lg flex items-center justify-between gap-2.5 cursor-pointer transition-colors ${
                       isHighlighted
-                        ? "bg-indigo-50/80 text-indigo-950"
+                        ? "bg-[#eff6ff] text-slate-900"
                         : isSelected
                         ? "bg-slate-50 text-slate-900"
                         : "hover:bg-slate-50/80 text-slate-800"
@@ -287,11 +305,11 @@ export function SearchableProductSelect({
                   >
                     <div className="space-y-0.5 min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-xs truncate">
+                        <span className="font-medium text-xs truncate">
                           {p.name}
                         </span>
                         {p.brand && (
-                          <span className="text-[10.5px] text-slate-500 font-medium">
+                          <span className="text-[10.5px] text-slate-500 font-normal">
                             [{p.brand}]
                           </span>
                         )}
@@ -313,13 +331,13 @@ export function SearchableProductSelect({
                       {p.costPrice !== undefined && Number(p.costPrice) > 0 && (
                         <div className="text-right font-mono">
                           <span className="text-[10px] text-slate-400 block">Cost</span>
-                          <span className="font-bold text-slate-900 text-xs">
+                          <span className="font-semibold text-slate-800 text-xs">
                             AED {formatAed(p.costPrice)}
                           </span>
                         </div>
                       )}
                       {isSelected && (
-                        <Check className="w-4 h-4 text-[#5046e5]" />
+                        <Check className="w-4 h-4 text-[#1d4ed8]" />
                       )}
                     </div>
                   </div>
@@ -330,7 +348,13 @@ export function SearchableProductSelect({
 
           {/* Quick Create New Product Button */}
           {onAddNewProduct && (
-            <div className="p-2 border-t border-slate-100 bg-slate-50/90 shrink-0">
+            <div
+              className="p-2 shrink-0"
+              style={{
+                backgroundColor: "#f8fafc",
+                borderTop: "1px solid #cbd5e1",
+              }}
+            >
               <button
                 type="button"
                 onClick={() => {
@@ -338,7 +362,8 @@ export function SearchableProductSelect({
                   setIsOpen(false);
                   setSearch("");
                 }}
-                className="w-full py-1.5 px-3 rounded-lg border border-dashed border-indigo-300 bg-white hover:bg-indigo-50/80 text-[#5046e5] font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                className="w-full py-1.5 px-3 rounded-lg border border-dashed bg-white hover:bg-[#eff6ff] text-[#1d4ed8] font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                style={{ borderColor: "#93c5fd" }}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>

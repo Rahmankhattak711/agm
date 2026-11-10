@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useCallback, useMemo, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useReactToPrint } from "react-to-print";
 import { PlusIcon } from "@/components/icons";
-import { RotateCcw, RefreshCw, Plus } from "lucide-react";
+import { RotateCcw, RefreshCw, Plus, ChevronLeft } from "lucide-react";
 import { Button, PageHeader } from "@/components/ui";
+import ProcurementQuickNav from "@/components/ProcurementQuickNav";
 import { useSuppliers } from "@/lib/hooks/api-hooks";
 import { useProjects } from "@/lib/hooks/projects-hooks";
 import {
@@ -27,6 +29,7 @@ import LogReturnModal from "./components/LogReturnModal";
 import PurchaseReturnDetailModal from "./components/PurchaseReturnDetailModal";
 
 export default function PurchaseReturnsPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -248,52 +251,75 @@ export default function PurchaseReturnsPage() {
   );
 
   return (
-    <div className="w-full min-h-full flex flex-col font-sans">
-      {/* Executive Header - Clean alignment, zero overlap */}
-      <div className="w-full bg-white border-b border-slate-200/90 px-6 py-4 shrink-0 shadow-2xs">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#5046e5] shadow-2xs">
-                <RotateCcw className="w-4 h-4" />
-              </div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                  Purchase Returns (Debit Notes)
-                </h1>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-mono">
-                  {returnsList.length} Records
-                </span>
-              </div>
-            </div>
-            <p className="text-xs text-slate-500">
-              Log rejected vendor supplies, link active projects, process Accounts Payable debit notes, and deduct supplier balances.
-            </p>
+    <div className="w-full min-h-full bg-white text-slate-700 font-sans px-4 sm:px-5 py-3.5 space-y-3.5 select-none pb-16">
+      {/* Executive Compact Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => router.push("/inventory/purchase-orders")}
+            className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors cursor-pointer shrink-0"
+            style={{ border: "1px solid #cbd5e1" }}
+            title="Back to Purchase Orders"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#eff6ff",
+              borderColor: "#bfdbfe",
+              color: "#1d4ed8",
+              border: "1px solid #bfdbfe",
+            }}
+          >
+            <RotateCcw className="w-4 h-4" />
           </div>
-
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-2xs transition-colors cursor-pointer"
-              title="Refresh returns list"
+            <h1 className="text-base sm:text-[17px] font-semibold text-slate-800 tracking-tight">
+              Purchase Returns (Debit Notes)
+            </h1>
+            <span
+              className="px-2 py-0.5 rounded-full text-[10.5px] font-normal"
+              style={{
+                backgroundColor: "#f1f5f9",
+                color: "#475569",
+                border: "1px solid #cbd5e1",
+              }}
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#5046e5]" : ""}`} />
-            </button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleOpenCreate}
-              icon={<Plus size={14} strokeWidth={2.5} />}
-              className="bg-[#5046e5] hover:bg-[#4338ca] text-white font-bold text-xs shadow-xs cursor-pointer"
-            >
-              Log Purchase Return
-            </Button>
+              {returnsList.length} records
+            </span>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="p-1.5 rounded-lg border border-[#cbd5e1] bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer flex items-center justify-center"
+            style={{ borderColor: "#cbd5e1" }}
+            title="Refresh returns list"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#1d4ed8]" : ""}`} />
+          </button>
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="px-3.5 py-1.5 text-[11.5px] font-medium rounded-lg text-white hover:opacity-95 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+            style={{
+              backgroundColor: "#1d4ed8",
+              color: "#ffffff",
+              border: "1px solid #1e40af",
+            }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Log Purchase Return</span>
+          </button>
         </div>
       </div>
 
-      <div className="p-6 space-y-6 flex-1 bg-slate-50/40">
+      {/* Procurement Cycle Horizontal Quick Navigation */}
+      <ProcurementQuickNav />
 
       <PurchaseReturnsKpis
         totalReturnVal={totalReturnVal}
@@ -302,15 +328,20 @@ export default function PurchaseReturnsPage() {
         activeReviewCount={activeReviewCount}
       />
 
-      <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-        <PurchaseReturnsFilters
-          statusFilter={statusFilter}
-          onStatusFilter={setStatusFilter}
-          search={search}
-          onSearch={setSearch}
-          count={filteredReturns.length}
-        />
+      {/* 3. Soft Filter Bar with Status Tabs */}
+      <PurchaseReturnsFilters
+        statusFilter={statusFilter}
+        onStatusFilter={setStatusFilter}
+        search={search}
+        onSearch={setSearch}
+        count={filteredReturns.length}
+      />
 
+      {/* 4. Table Card with Responsive Pagination */}
+      <div
+        className="rounded-xl overflow-hidden bg-white"
+        style={{ border: "1px solid #cbd5e1" }}
+      >
         <PurchaseReturnsTable
           filteredReturns={filteredReturns}
           expandedReturnId={expandedReturnId}
@@ -325,8 +356,6 @@ export default function PurchaseReturnsPage() {
             setStatusFilter("ALL");
           }}
         />
-      </div>
-
       </div>
 
       <PurchaseReturnDetailModal

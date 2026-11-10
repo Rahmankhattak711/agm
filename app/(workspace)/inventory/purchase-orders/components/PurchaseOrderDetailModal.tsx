@@ -40,12 +40,18 @@ export const PurchaseOrderDetailModal: React.FC<
     >
       {po && (
         <div className="space-y-4 text-xs">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div
+            className="flex items-center justify-between p-3 rounded-xl"
+            style={{
+              backgroundColor: "#f4f7fb",
+              border: "1px solid #cbd5e1",
+            }}
+          >
             <div>
-              <h3 className="font-bold text-base text-slate-900">
+              <h3 className="font-semibold text-sm text-slate-800 font-mono">
                 {po.poNumber}
               </h3>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500 mt-0.5">
                 Order Date: {new Date(po.orderDate).toLocaleDateString("en-GB")}
               </p>
             </div>
@@ -58,7 +64,7 @@ export const PurchaseOrderDetailModal: React.FC<
                     onClose();
                     router.push(`/commercial/supplier-bills/${linkedBill.id}`);
                   }}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 hover:underline cursor-pointer"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-[#1d4ed8] hover:underline cursor-pointer"
                   title="View Linked Supplier Bill"
                 >
                   <span>Bill: {linkedBill.billNumber}</span>
@@ -68,12 +74,18 @@ export const PurchaseOrderDetailModal: React.FC<
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-xs">
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl text-xs"
+            style={{
+              backgroundColor: "#f8fafc",
+              border: "1px solid #cbd5e1",
+            }}
+          >
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">
+              <span className="text-[10px] font-medium text-slate-500 uppercase block">
                 Vendor / Shop
               </span>
-              <span className="font-bold text-slate-800 block">
+              <span className="font-medium text-slate-800 block mt-0.5">
                 {po.supplier?.name || po.shopName || "External Vendor"}
               </span>
               {po.shopName && (
@@ -81,20 +93,20 @@ export const PurchaseOrderDetailModal: React.FC<
                   Store: {po.shopName}
                 </span>
               )}
-              <span className="text-slate-400 block">
+              <span className="text-slate-500 font-mono text-[11px] block">
                 TRN: {po.supplier?.trn || "N/A"}
               </span>
             </div>
-            <div className="text-right">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">
+            <div className="sm:text-right">
+              <span className="text-[10px] font-medium text-slate-500 uppercase block">
                 Vendor Reference &amp; Delivery
               </span>
               {po.vendorReference && (
-                <span className="font-mono font-bold text-emerald-800 block">
+                <span className="font-mono font-medium text-[#1d4ed8] block mt-0.5">
                   Ref: {po.vendorReference}
                 </span>
               )}
-              <span className="font-medium text-slate-700 block">
+              <span className="font-normal text-slate-700 block mt-0.5">
                 Due:{" "}
                 {po.expectedDate
                   ? new Date(po.expectedDate).toLocaleDateString("en-GB")
@@ -103,73 +115,92 @@ export const PurchaseOrderDetailModal: React.FC<
             </div>
           </div>
 
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableHeaderCell>Product / Item</TableHeaderCell>
-                <TableHeaderCell>Shop Reference</TableHeaderCell>
-                <TableHeaderCell align="center">Ordered</TableHeaderCell>
-                <TableHeaderCell align="center">Received</TableHeaderCell>
-                <TableHeaderCell align="right">Unit Cost</TableHeaderCell>
-                <TableHeaderCell align="right">Total</TableHeaderCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {po.items.map((it) => (
-                <TableRow key={it.id}>
-                  <TableCell>
-                    <div className="font-semibold text-slate-900">
-                      {it.product?.name}
-                    </div>
-                    {it.product?.brand && (
-                      <div className="text-[10px] text-slate-500">
-                        Brand:{" "}
-                        <span className="font-medium text-slate-700">
-                          {it.product.brand}
-                        </span>
-                      </div>
-                    )}
-                    {it.itemNotes && (
-                      <div className="text-[10px] text-slate-400 italic">
-                        {it.itemNotes}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-mono text-xs text-slate-600">
-                      {it.supplierSku || it.product?.supplierSku || "-"}
-                    </span>
-                  </TableCell>
-                  <TableCell align="center">
-                    <span className="font-mono font-bold">
-                      {it.quantityOrdered}
-                    </span>{" "}
-                    <span className="text-[10px] text-slate-400">
-                      {it.product?.unit}
-                    </span>
-                  </TableCell>
-                  <TableCell align="center">
-                    <span className="font-mono">{it.quantityReceived}</span>
-                  </TableCell>
-                  <TableCell align="right" className="font-mono">
-                    {Number(it.unitCost).toFixed(2)}
-                  </TableCell>
-                  <TableCell align="right" className="font-mono font-bold">
-                    {Number(it.totalCost).toFixed(2)}
-                  </TableCell>
+          <div
+            className="rounded-xl overflow-hidden"
+            style={{ border: "1px solid #cbd5e1" }}
+          >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeaderCell>Product / Item</TableHeaderCell>
+                  <TableHeaderCell>Shop Reference</TableHeaderCell>
+                  <TableHeaderCell align="center">Ordered</TableHeaderCell>
+                  <TableHeaderCell align="center">Received</TableHeaderCell>
+                  <TableHeaderCell align="right">Unit Cost</TableHeaderCell>
+                  <TableHeaderCell align="right">Total</TableHeaderCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {po.items.map((it) => (
+                  <TableRow key={it.id}>
+                    <TableCell>
+                      <div className="font-medium text-slate-800">
+                        {it.product?.name}
+                      </div>
+                      {it.product?.brand && (
+                        <div className="text-[10px] text-slate-500">
+                          Brand:{" "}
+                          <span className="font-medium text-slate-700">
+                            {it.product.brand}
+                          </span>
+                        </div>
+                      )}
+                      {it.itemNotes && (
+                        <div className="text-[10px] text-slate-400 italic">
+                          {it.itemNotes}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-mono text-xs text-slate-600">
+                        {it.supplierSku || it.product?.supplierSku || "-"}
+                      </span>
+                    </TableCell>
+                    <TableCell align="center">
+                      <span className="font-mono font-medium text-slate-800">
+                        {it.quantityOrdered}
+                      </span>{" "}
+                      <span className="text-[10px] text-slate-400">
+                        {it.product?.unit}
+                      </span>
+                    </TableCell>
+                    <TableCell align="center">
+                      <span className="font-mono text-slate-700">
+                        {it.quantityReceived}
+                      </span>
+                    </TableCell>
+                    <TableCell align="right" className="font-mono text-slate-700">
+                      {Number(it.unitCost).toFixed(2)}
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      className="font-mono font-semibold text-slate-800"
+                    >
+                      {Number(it.totalCost).toFixed(2)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-          <div className="flex justify-between items-center pt-3 border-t border-slate-100">
-            <span className="text-xs text-slate-400">{po.notes || ""}</span>
-            <span className="text-sm font-black text-slate-900 font-mono">
+          <div
+            className="flex justify-between items-center p-3 rounded-xl"
+            style={{
+              backgroundColor: "#eff6ff",
+              border: "1px solid #bfdbfe",
+            }}
+          >
+            <span className="text-xs text-slate-600">{po.notes || "Total Order Value"}</span>
+            <span className="text-sm font-semibold text-[#1d4ed8] font-mono">
               Total: AED {Number(po.totalAmount).toFixed(2)}
             </span>
           </div>
 
-          <div className="flex justify-end items-center gap-2 pt-3 border-t border-slate-100">
+          <div
+            className="flex flex-wrap justify-end items-center gap-2 pt-3"
+            style={{ borderTop: "1px solid #e2e8f0" }}
+          >
             <Button variant="outline" size="md" onClick={onClose}>
               Close
             </Button>
@@ -180,7 +211,8 @@ export const PurchaseOrderDetailModal: React.FC<
                   onClose();
                   router.push(`/commercial/supplier-bills/${linkedBill.id}`);
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white shadow-2xs transition-colors cursor-pointer"
+                style={{ backgroundColor: "#1d4ed8" }}
               >
                 <FileText className="w-4 h-4" />
                 View Bill ({linkedBill.billNumber})
@@ -190,20 +222,20 @@ export const PurchaseOrderDetailModal: React.FC<
                 variant="primary"
                 size="md"
                 onClick={() => onConvertToBill(po)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
               >
-                ⚡ Convert to Bill & Post
+                Convert to Bill &amp; Post
               </Button>
             ) : null}
-            <Button
-              variant="primary"
-              size="md"
-              icon={<PrintIcon className="w-4 h-4" strokeWidth={2} />}
+            <button
+              type="button"
               onClick={() => onPrint(po)}
-              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium text-white shadow-2xs transition-colors cursor-pointer"
+              style={{ backgroundColor: "#1d4ed8" }}
             >
-              Print / Save PDF
-            </Button>
+              <PrintIcon className="w-4 h-4" strokeWidth={2} />
+              <span>Print / Save PDF</span>
+            </button>
           </div>
         </div>
       )}

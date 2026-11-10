@@ -224,15 +224,19 @@ export const PurchaseReturnDetailModal: React.FC<
             </Button>
           )}
 
-          <Button
-            variant="primary"
-            size="md"
-            icon={<PrintIcon className="w-4 h-4" strokeWidth={2} />}
+          <button
+            type="button"
             onClick={() => onPrint(item)}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
+            className="px-4 py-2 text-xs font-medium rounded-lg text-white hover:opacity-95 transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+            style={{
+              backgroundColor: "#1d4ed8",
+              color: "#ffffff",
+              border: "1px solid #1e40af",
+            }}
           >
-            Print Debit Note (PDF)
-          </Button>
+            <PrintIcon className="w-4 h-4" strokeWidth={2} />
+            <span>Print Debit Note (PDF)</span>
+          </button>
         </div>
       </div>
     </Modal>

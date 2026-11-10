@@ -26,15 +26,29 @@ export const PurchaseOrderRow: React.FC<PurchaseOrderRowProps> = ({
       onClick={() => onView(po)}
       className="hover:bg-slate-50/80 transition-colors cursor-pointer"
     >
-      <TableCell className="py-2.5 px-3 font-mono font-bold text-teal-800 whitespace-nowrap text-xs">
+      <TableCell className="py-2.5 px-3 font-mono whitespace-nowrap text-xs">
         <div className="flex items-center gap-2">
-          <ShoppingCartIcon size={14} className="text-teal-700 shrink-0" />
           <div className="flex flex-col">
-            <span className="font-bold text-slate-900 hover:text-indigo-600 transition-colors">
-              {po.poNumber}
+            <span
+              className="inline-flex items-center gap-1.5 font-mono text-[11px] font-medium px-2 py-0.5 rounded-md max-w-fit transition-colors"
+              style={{
+                backgroundColor: "#eff6ff",
+                color: "#1d4ed8",
+                border: "1px solid #bfdbfe",
+              }}
+            >
+              <ShoppingCartIcon size={12} className="shrink-0" />
+              <span>{po.poNumber}</span>
             </span>
             {po.vendorReference && (
-              <span className="text-[10px] text-teal-800 font-mono font-semibold bg-teal-50 px-1 rounded border border-teal-200 inline-block mt-0.5 max-w-fit">
+              <span
+                className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded inline-block mt-1 max-w-fit"
+                style={{
+                  backgroundColor: "#f8fafc",
+                  color: "#475569",
+                  border: "1px solid #cbd5e1",
+                }}
+              >
                 Ref: {po.vendorReference}
               </span>
             )}
@@ -42,17 +56,17 @@ export const PurchaseOrderRow: React.FC<PurchaseOrderRowProps> = ({
         </div>
       </TableCell>
 
-      <TableCell className="py-2.5 px-3 text-slate-900 text-xs">
+      <TableCell className="py-2.5 px-3 text-slate-800 text-xs">
         <div
-          className="font-bold text-slate-900 truncate max-w-[200px]"
+          className="font-medium text-slate-800 truncate max-w-[220px]"
           title={po.supplier?.name || po.shopName || "External Supplier"}
         >
           {po.supplier?.name || po.shopName || "External Supplier"}
         </div>
         {po.supplier?.trn ? (
-          <div className="text-[10px] text-slate-400 font-mono">TRN: {po.supplier.trn}</div>
+          <div className="text-[10.5px] text-slate-400 font-mono">TRN: {po.supplier.trn}</div>
         ) : po.shopName && po.supplier?.name ? (
-          <div className="text-[10px] text-slate-400 truncate max-w-[200px]">{po.shopName}</div>
+          <div className="text-[10.5px] text-slate-400 truncate max-w-[200px]">{po.shopName}</div>
         ) : null}
       </TableCell>
 
@@ -64,15 +78,24 @@ export const PurchaseOrderRow: React.FC<PurchaseOrderRowProps> = ({
         {po.expectedDate ? new Date(po.expectedDate).toLocaleDateString("en-GB") : "-"}
       </TableCell>
 
-      <TableCell className="py-2.5 px-2.5 text-center text-xs whitespace-nowrap font-semibold text-slate-700">
-        {po.items?.length || 0} Items
+      <TableCell className="py-2.5 px-2.5 text-center text-xs whitespace-nowrap font-normal text-slate-600">
+        <span
+          className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-mono font-medium"
+          style={{
+            backgroundColor: "#f8fafc",
+            color: "#334155",
+            border: "1px solid #e2e8f0",
+          }}
+        >
+          {po.items?.length || 0} {po.items?.length === 1 ? "Item" : "Items"}
+        </span>
       </TableCell>
 
       <TableCell
         align="right"
-        className="py-2.5 px-2.5 text-right font-mono font-bold text-slate-900 text-xs whitespace-nowrap"
+        className="py-2.5 px-2.5 text-right font-mono font-semibold text-slate-800 text-xs whitespace-nowrap"
       >
-        {formatNumber(po.totalAmount)}
+        AED {formatNumber(po.totalAmount)}
       </TableCell>
 
       <TableCell className="py-2.5 px-2.5 text-center whitespace-nowrap">
@@ -84,22 +107,22 @@ export const PurchaseOrderRow: React.FC<PurchaseOrderRowProps> = ({
           <button
             type="button"
             onClick={() => onView(po)}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100 transition-all cursor-pointer"
+            className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-[#1d4ed8] hover:bg-[#eff6ff] border border-transparent hover:border-[#bfdbfe] transition-all cursor-pointer"
             title="View Details"
           >
-            <EyeIcon size={15} />
+            <EyeIcon size={14} />
           </button>
           <button
             type="button"
             onClick={(e) => onOpenMenu(e, po)}
-            className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+            className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
               isMenuOpen
-                ? "bg-slate-900 text-white shadow-xs"
-                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent hover:border-slate-200"
+                ? "bg-[#1d4ed8] text-white shadow-2xs"
+                : "text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-transparent hover:border-slate-200"
             }`}
             title="More actions"
           >
-            <MoreVerticalIcon size={16} />
+            <MoreVerticalIcon size={15} />
           </button>
         </div>
       </TableCell>
