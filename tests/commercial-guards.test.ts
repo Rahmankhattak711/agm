@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   canDeleteCommercialDocument,
   canUpdateCommercialDocument,
+  isCommercialDocType,
+  SUPPORTED_COMMERCIAL_DOC_TYPES,
   AuthUser,
 } from "@/lib/auth-server";
 
@@ -45,6 +47,22 @@ describe("Commercial Document Guards: canDeleteCommercialDocument & canUpdateCom
     role: "USER",
     isActive: true,
   };
+
+  describe("Type guard: isCommercialDocType", () => {
+    it.each(SUPPORTED_COMMERCIAL_DOC_TYPES)(
+      "returns true for valid document type: %s",
+      (validType) => {
+        expect(isCommercialDocType(validType)).toBe(true);
+      }
+    );
+
+    it.each([null, undefined, "", "   ", "INVALID_TYPE", "agreement", 123, {}, []])(
+      "returns false for invalid or unnormalized document type: %s",
+      (invalidType) => {
+        expect(isCommercialDocType(invalidType)).toBe(false);
+      }
+    );
+  });
 
   describe("Fail-closed status check", () => {
     it.each([null, undefined, "", "   ", "\t\n"])(
@@ -136,26 +154,32 @@ describe("Commercial Document Guards: canDeleteCommercialDocument & canUpdateCom
   });
 
   describe("Ownership rules for other document types", () => {
-    it("permits creator and admins to delete and edit drafts for AGREEMENT", () => {
-      const doc = { status: "DRAFT", createdById: creatorUser.id };
+    it.each(["AGREEMENT", "CUSTOM_LETTER", "METHOD_STATEMENT", "RISK_ASSESSMENT"] as const)(
+      "permits creator and admins to delete and edit drafts for %s",
+      (docType) => {
+        const doc = { status: "DRAFT", createdById: creatorUser.id };
 
-      expect(canDeleteCommercialDocument(creatorUser, doc, "AGREEMENT").allowed).toBe(true);
-      expect(canUpdateCommercialDocument(creatorUser, doc, "AGREEMENT").allowed).toBe(true);
+        expect(canDeleteCommercialDocument(creatorUser, doc, docType).allowed).toBe(true);
+        expect(canUpdateCommercialDocument(creatorUser, doc, docType).allowed).toBe(true);
 
-      expect(canDeleteCommercialDocument(admin, doc, "AGREEMENT").allowed).toBe(true);
-      expect(canUpdateCommercialDocument(admin, doc, "AGREEMENT").allowed).toBe(true);
-    });
+        expect(canDeleteCommercialDocument(admin, doc, docType).allowed).toBe(true);
+        expect(canUpdateCommercialDocument(admin, doc, docType).allowed).toBe(true);
+      }
+    );
 
-    it("denies non-creator ordinary user from deleting or editing draft", () => {
-      const doc = { status: "DRAFT", createdById: creatorUser.id };
+    it.each(["AGREEMENT", "CUSTOM_LETTER", "METHOD_STATEMENT", "RISK_ASSESSMENT"] as const)(
+      "denies non-creator ordinary user from deleting or editing draft for %s",
+      (docType) => {
+        const doc = { status: "DRAFT", createdById: creatorUser.id };
 
-      const delResult = canDeleteCommercialDocument(otherUser, doc, "AGREEMENT");
-      expect(delResult.allowed).toBe(false);
-      expect(delResult.status).toBe(403);
+        const delResult = canDeleteCommercialDocument(otherUser, doc, docType);
+        expect(delResult.allowed).toBe(false);
+        expect(delResult.status).toBe(403);
 
-      const updResult = canUpdateCommercialDocument(otherUser, doc, "AGREEMENT");
-      expect(updResult.allowed).toBe(false);
-      expect(updResult.status).toBe(403);
-    });
+        const updResult = canUpdateCommercialDocument(otherUser, doc, docType);
+        expect(updResult.allowed).toBe(false);
+        expect(updResult.status).toBe(403);
+      }
+    );
   });
 });

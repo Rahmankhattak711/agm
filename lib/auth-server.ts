@@ -251,13 +251,22 @@ export const SUPPORTED_COMMERCIAL_DOC_TYPES = [
 export type CommercialDocType =
   (typeof SUPPORTED_COMMERCIAL_DOC_TYPES)[number];
 
+export function isCommercialDocType(
+  value: unknown,
+): value is CommercialDocType {
+  return (
+    typeof value === "string" &&
+    (SUPPORTED_COMMERCIAL_DOC_TYPES as readonly string[]).includes(value)
+  );
+}
+
 export function canDeleteCommercialDocument(
   actor: AuthUser,
   doc: { status?: string | null; createdById?: string | null },
   docType: CommercialDocType,
 ): { allowed: boolean; reason?: string; status: number } {
   // Validate required docType
-  if (!docType || !SUPPORTED_COMMERCIAL_DOC_TYPES.includes(docType as any)) {
+  if (!isCommercialDocType(docType)) {
     return {
       allowed: false,
       status: 400,
@@ -312,7 +321,7 @@ export function canUpdateCommercialDocument(
   docType: CommercialDocType,
 ): { allowed: boolean; reason?: string; status: number } {
   // Validate required docType
-  if (!docType || !SUPPORTED_COMMERCIAL_DOC_TYPES.includes(docType as any)) {
+  if (!isCommercialDocType(docType)) {
     return {
       allowed: false,
       status: 400,
