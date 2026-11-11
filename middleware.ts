@@ -10,6 +10,7 @@ const PUBLIC_EXACT_PATHS = new Set([
   "/api/auth/logout",
   "/api/auth/signin",
   "/api/auth/signout",
+  "/api/cron/cleanup-tokens",
 ]);
 
 const SECRET_KEY = new TextEncoder().encode(

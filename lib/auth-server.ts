@@ -1,6 +1,7 @@
 import type { UserRole } from "@/app/generated/prisma";
 import { verifyAccessToken } from "@/lib/auth/tokens";
 import prisma from "@/lib/prisma";
+import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 
 export interface AuthUser {
@@ -136,3 +137,220 @@ export const userSelect = {
   lastLoginAt: true,
   tokenVersion: true,
 } as const;
+
+export function isHRorAdmin(actor: AuthUser): boolean {
+  return (
+    actor.role === "SUPER_ADMIN" ||
+    actor.role === "ADMIN" ||
+    actor.role === "HR"
+  );
+}
+
+export const publicEmployeeSelect = {
+  id: true,
+  employeeCode: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  department: true,
+  designation: true,
+  employmentStatus: true,
+  joiningDate: true,
+  profilePhotoUrl: true,
+  reportsTo: {
+    select: {
+      id: true,
+      employeeCode: true,
+      firstName: true,
+      lastName: true,
+      designation: true,
+    },
+  },
+} as const;
+
+export const selfEmployeeSelect = {
+  ...publicEmployeeSelect,
+  phone: true,
+  dateOfBirth: true,
+  gender: true,
+  maritalStatus: true,
+  nationality: true,
+  contractType: true,
+  passportExpiry: true,
+  visaExpiry: true,
+  emiratesIdExpiry: true,
+  emergencyContact: true,
+  annualLeaveBalance: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+export type LinkageResult =
+  | { status: "MATCH"; employeeId: string; employeeCode: string; email: string | null }
+  | { status: "NONE"; reason: string }
+  | { status: "AMBIGUOUS"; reason: string };
+
+export async function resolveLinkedEmployee(
+  actor: AuthUser,
+): Promise<LinkageResult> {
+  if (!actor.email) {
+    return {
+      status: "NONE",
+      reason: "Authenticated user has no email address",
+    };
+  }
+
+  const normalizedEmail = actor.email.trim();
+
+  const matches = await prisma.employee.findMany({
+    where: {
+      email: {
+        equals: normalizedEmail,
+        mode: "insensitive",
+      },
+    },
+    select: {
+      id: true,
+      employeeCode: true,
+      email: true,
+    },
+    take: 2,
+  });
+
+  if (matches.length === 1) {
+    return {
+      status: "MATCH",
+      employeeId: matches[0].id,
+      employeeCode: matches[0].employeeCode,
+      email: matches[0].email,
+    };
+  }
+
+  if (matches.length > 1) {
+    return {
+      status: "AMBIGUOUS",
+      reason:
+        "Multiple employee records found matching email. Manual HR linkage required.",
+    };
+  }
+
+  return {
+    status: "NONE",
+    reason: "No employee profile found with this email",
+  };
+}
+
+export type CommercialDocType =
+  | "AGREEMENT"
+  | "SALARY_CERTIFICATE"
+  | "CUSTOM_LETTER"
+  | "METHOD_STATEMENT"
+  | "RISK_ASSESSMENT";
+
+export function canDeleteCommercialDocument(
+  actor: AuthUser,
+  doc: { status?: string | null; createdById?: string | null },
+  docType?: CommercialDocType,
+): { allowed: boolean; reason?: string; status: number } {
+  const status = (doc.status || "DRAFT").toUpperCase().trim();
+
+  // Finalized documents must NEVER be permanently deleted by ANY role (including SUPER_ADMIN)
+  if (status !== "DRAFT") {
+    return {
+      allowed: false,
+      status: 400,
+      reason: `Cannot delete finalized document in '${status}' status. Finalized records must be archived or revoked.`,
+    };
+  }
+
+  // Salary certificates: Ordinary employee creator cannot delete; only HR or Admins
+  if (docType === "SALARY_CERTIFICATE") {
+    if (isAdminRole(actor.role) || actor.role === "HR") {
+      return { allowed: true, status: 200 };
+    }
+    return {
+      allowed: false,
+      status: 403,
+      reason: "Forbidden: Only HR or Admins can delete salary certificate drafts.",
+    };
+  }
+
+  // Other documents: Admin or Document Creator
+  if (
+    isAdminRole(actor.role) ||
+    (doc.createdById && actor.id === doc.createdById)
+  ) {
+    return { allowed: true, status: 200 };
+  }
+
+  return {
+    allowed: false,
+    status: 403,
+    reason: "Forbidden: You are not authorized to delete this draft document.",
+  };
+}
+
+export function canUpdateCommercialDocument(
+  actor: AuthUser,
+  doc: { status?: string | null; createdById?: string | null },
+  docType?: CommercialDocType,
+): { allowed: boolean; reason?: string; status: number } {
+  const status = (doc.status || "DRAFT").toUpperCase().trim();
+
+  // Finalized documents must NEVER be editable by ANY role (including SUPER_ADMIN)
+  if (status !== "DRAFT") {
+    return {
+      allowed: false,
+      status: 400,
+      reason: `Cannot edit finalized document in '${status}' status. Only DRAFT documents may be edited.`,
+    };
+  }
+
+  // Salary certificates: Ordinary employee creator cannot edit; only HR or Admins
+  if (docType === "SALARY_CERTIFICATE") {
+    if (isAdminRole(actor.role) || actor.role === "HR") {
+      return { allowed: true, status: 200 };
+    }
+    return {
+      allowed: false,
+      status: 403,
+      reason: "Forbidden: Only HR or Admins can edit salary certificate drafts.",
+    };
+  }
+
+  // Other documents: Admin or Document Creator
+  if (
+    isAdminRole(actor.role) ||
+    (doc.createdById && actor.id === doc.createdById)
+  ) {
+    return { allowed: true, status: 200 };
+  }
+
+  return {
+    allowed: false,
+    status: 403,
+    reason: "Forbidden: You are not authorized to edit this draft document.",
+  };
+}
+
+export function validateCronSecret(request: Request): boolean {
+  const configuredSecret = process.env.CRON_SECRET;
+  if (!configuredSecret || configuredSecret.length < 16) {
+    return false;
+  }
+
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return false;
+  }
+
+  const providedToken = authHeader.slice(7).trim();
+  const configuredBuffer = Buffer.from(configuredSecret, "utf-8");
+  const providedBuffer = Buffer.from(providedToken, "utf-8");
+
+  if (configuredBuffer.length !== providedBuffer.length) {
+    return false;
+  }
+
+  return timingSafeEqual(configuredBuffer, providedBuffer);
+}
