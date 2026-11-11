@@ -240,26 +240,42 @@ export async function resolveLinkedEmployee(
   };
 }
 
+export const SUPPORTED_COMMERCIAL_DOC_TYPES = [
+  "AGREEMENT",
+  "SALARY_CERTIFICATE",
+  "CUSTOM_LETTER",
+  "METHOD_STATEMENT",
+  "RISK_ASSESSMENT",
+] as const;
+
 export type CommercialDocType =
-  | "AGREEMENT"
-  | "SALARY_CERTIFICATE"
-  | "CUSTOM_LETTER"
-  | "METHOD_STATEMENT"
-  | "RISK_ASSESSMENT";
+  (typeof SUPPORTED_COMMERCIAL_DOC_TYPES)[number];
 
 export function canDeleteCommercialDocument(
   actor: AuthUser,
   doc: { status?: string | null; createdById?: string | null },
-  docType?: CommercialDocType,
+  docType: CommercialDocType,
 ): { allowed: boolean; reason?: string; status: number } {
-  const status = (doc.status || "DRAFT").toUpperCase().trim();
-
-  // Finalized documents must NEVER be permanently deleted by ANY role (including SUPER_ADMIN)
-  if (status !== "DRAFT") {
+  // Validate required docType
+  if (!docType || !SUPPORTED_COMMERCIAL_DOC_TYPES.includes(docType as any)) {
     return {
       allowed: false,
       status: 400,
-      reason: `Cannot delete finalized document in '${status}' status. Finalized records must be archived or revoked.`,
+      reason: "Invalid or unsupported commercial document type.",
+    };
+  }
+
+  const rawStatus = typeof doc.status === "string" ? doc.status.trim() : "";
+  const normalizedStatus = rawStatus.toUpperCase();
+
+  // Fail closed: only an exact normalized 'DRAFT' status passes the lifecycle check
+  if (normalizedStatus !== "DRAFT") {
+    return {
+      allowed: false,
+      status: 400,
+      reason: rawStatus
+        ? `Cannot delete finalized document in '${rawStatus}' status. Finalized records must be archived or revoked.`
+        : "Cannot delete document: status is missing, invalid or empty.",
     };
   }
 
@@ -293,16 +309,28 @@ export function canDeleteCommercialDocument(
 export function canUpdateCommercialDocument(
   actor: AuthUser,
   doc: { status?: string | null; createdById?: string | null },
-  docType?: CommercialDocType,
+  docType: CommercialDocType,
 ): { allowed: boolean; reason?: string; status: number } {
-  const status = (doc.status || "DRAFT").toUpperCase().trim();
-
-  // Finalized documents must NEVER be editable by ANY role (including SUPER_ADMIN)
-  if (status !== "DRAFT") {
+  // Validate required docType
+  if (!docType || !SUPPORTED_COMMERCIAL_DOC_TYPES.includes(docType as any)) {
     return {
       allowed: false,
       status: 400,
-      reason: `Cannot edit finalized document in '${status}' status. Only DRAFT documents may be edited.`,
+      reason: "Invalid or unsupported commercial document type.",
+    };
+  }
+
+  const rawStatus = typeof doc.status === "string" ? doc.status.trim() : "";
+  const normalizedStatus = rawStatus.toUpperCase();
+
+  // Fail closed: only an exact normalized 'DRAFT' status passes the lifecycle check
+  if (normalizedStatus !== "DRAFT") {
+    return {
+      allowed: false,
+      status: 400,
+      reason: rawStatus
+        ? `Cannot edit finalized document in '${rawStatus}' status. Only DRAFT documents may be edited.`
+        : "Cannot edit document: status is missing, invalid or empty.",
     };
   }
 
