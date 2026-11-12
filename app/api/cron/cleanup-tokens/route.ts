@@ -2,41 +2,38 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { createAuditLog } from "@/lib/auth/audit";
+import { validateCronSecret } from "@/lib/auth-server";
 
 export async function POST(request: Request) {
   try {
-    const cronSecret = process.env.CRON_SECRET;
-    const authHeader = request.headers.get("Authorization");
-    const { searchParams } = new URL(request.url);
-    const querySecret = searchParams.get("secret");
-
-    const providedSecret = authHeader?.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : querySecret;
-
-    if (!cronSecret || providedSecret !== cronSecret) {
+    if (!validateCronSecret(request)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    const result = await prisma.refreshToken.deleteMany({
-      where: {
-        expiresAt: {
-          lt: thirtyDaysAgo,
+    const result = await prisma.$transaction(async (tx) => {
+      const deleteResult = await tx.refreshToken.deleteMany({
+        where: {
+          expiresAt: {
+            lt: thirtyDaysAgo,
+          },
         },
-      },
-    });
+      });
 
-    await createAuditLog({
-      actorId: null,
-      action: "CLEANUP_EXPIRED_TOKENS",
-      entity: "RefreshToken",
-      metadata: {
-        deletedCount: result.count,
-        cutoffDate: thirtyDaysAgo.toISOString(),
-      },
+      await tx.auditLog.create({
+        data: {
+          actorId: null,
+          action: "CLEANUP_EXPIRED_TOKENS",
+          entity: "RefreshToken",
+          metadata: {
+            deletedCount: deleteResult.count,
+            cutoffDate: thirtyDaysAgo.toISOString(),
+          },
+        },
+      });
+
+      return deleteResult;
     });
 
     return NextResponse.json({
