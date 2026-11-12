@@ -21,6 +21,7 @@ export interface CreateUserModalProps {
     role: string;
   }) => Promise<void>;
   isPending: boolean;
+  isCurrentUserSuperAdmin?: boolean;
 }
 
 export function CreateUserModal({
@@ -28,8 +29,16 @@ export function CreateUserModal({
   onClose,
   onSubmit,
   isPending,
+  isCurrentUserSuperAdmin = false,
 }: CreateUserModalProps) {
   const [formError, setFormError] = useState("");
+
+  const roleOptions = ASSIGNABLE_ROLES.filter(
+    (r) => isCurrentUserSuperAdmin || r.value !== "SUPER_ADMIN"
+  ).map((r) => ({
+    value: r.value,
+    label: r.label,
+  }));
 
   const form = useForm({
     defaultValues: {
@@ -124,10 +133,7 @@ export function CreateUserModal({
                 field={field}
                 label="Role *"
                 required
-                options={ASSIGNABLE_ROLES.map((r) => ({
-                  value: r.value,
-                  label: r.label,
-                }))}
+                options={roleOptions}
               />
             )}
           </form.Field>
@@ -137,7 +143,7 @@ export function CreateUserModal({
             validators={{
               onChange: ({ value }) => {
                 if (!value) return "Password is required";
-                if (value.length < 12) return "Must be at least 12 characters";
+                if (value.length < 8) return "Must be at least 8 characters";
                 if (!/[A-Z]/.test(value))
                   return "Must include uppercase letter";
                 if (!/[a-z]/.test(value))
@@ -152,7 +158,7 @@ export function CreateUserModal({
                 field={field}
                 type="password"
                 label="Temporary Password *"
-                placeholder="Min 12 characters"
+                placeholder="Min 8 characters"
                 required
               />
             )}

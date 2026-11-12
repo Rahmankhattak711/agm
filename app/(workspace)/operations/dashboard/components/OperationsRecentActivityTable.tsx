@@ -111,7 +111,7 @@ export default function OperationsRecentActivityTable({
           Recent operational activity
         </h3>
         <Link
-          href="/operations/attendance"
+          href="/hr/workforce?tab=attendance"
           className="text-xs font-bold text-agm-green hover:text-agm-green-dark transition-colors"
         >
           View all →

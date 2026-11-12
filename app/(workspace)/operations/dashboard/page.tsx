@@ -211,7 +211,7 @@ export default function OperationsDashboardPage() {
         description: `${pendingLeaves.length} leave ${pendingLeaves.length === 1 ? "request" : "requests"} awaiting manager approval`,
         status: `${pendingLeaves.length} pending`,
         statusType: "warning",
-        href: "/operations/leaves",
+        href: "/hr/workforce?tab=leaves",
       });
     }
 
@@ -221,7 +221,7 @@ export default function OperationsDashboardPage() {
         description: `${expiringDocs.length} employee ${expiringDocs.length === 1 ? "document expires" : "documents expire"} within 30 days`,
         status: `${expiringDocs.length} expiring`,
         statusType: "danger",
-        href: "/operations/employees",
+        href: "/hr/employees",
       });
     }
 
@@ -231,7 +231,7 @@ export default function OperationsDashboardPage() {
         description: `${absentCount} staff ${absentCount === 1 ? "is" : "are"} marked absent without approved leave today`,
         status: `${absentCount} absent`,
         statusType: "danger",
-        href: "/operations/attendance",
+        href: "/hr/workforce?tab=attendance",
       });
     }
 

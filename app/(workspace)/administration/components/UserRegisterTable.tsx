@@ -13,26 +13,31 @@ import {
   EmptyState,
 } from "@/components/ui";
 import { EditIcon, ProtectedIcon, TrashIcon } from "@/components/icons";
+import { Eye, ArrowUpRight } from "lucide-react";
 import { ALL_ROLES } from "../types";
 
 export interface UserRegisterTableProps {
   users: UserItem[];
   isLoading: boolean;
   currentUserId?: string;
+  isSuperAdmin?: boolean;
   search: string;
   onEdit: (user: UserItem) => void;
   onDelete: (user: UserItem) => void;
   onAddUser: () => void;
+  onView?: (user: UserItem) => void;
 }
 
 export function UserRegisterTable({
   users,
   isLoading,
   currentUserId,
+  isSuperAdmin = false,
   search,
   onEdit,
   onDelete,
   onAddUser,
+  onView,
 }: UserRegisterTableProps) {
   return (
     <div className="bg-agm-card rounded-2xl border border-agm-box-border shadow-xs overflow-hidden">
@@ -84,12 +89,13 @@ export function UserRegisterTable({
               const roleObj = ALL_ROLES.find((r) => r.value === user.role);
               const isSelf = user.id === currentUserId;
               const isTargetSuperAdmin = user.role === "SUPER_ADMIN";
+              const canDelete = !isSelf && (isSuperAdmin || !isTargetSuperAdmin);
               const mustChangePwd = (user as any).mustChangePassword;
 
               return (
                 <TableRow
                   key={user.id}
-                  onClick={() => onEdit(user)}
+                  onClick={() => (onView ? onView(user) : onEdit(user))}
                   className="hover:bg-agm-box-bg/70 transition-colors cursor-pointer group"
                 >
                   <TableCell className="py-3 px-4 text-xs">
@@ -108,16 +114,24 @@ export function UserRegisterTable({
                   </TableCell>
 
                   <TableCell className="py-3 px-4 text-xs text-agm-text">
-                    {roleObj?.label || user.role}
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-semibold border ${
+                        roleObj?.color || "bg-slate-100 text-slate-700 border-slate-200"
+                      }`}
+                    >
+                      {roleObj?.label || user.role}
+                    </span>
                   </TableCell>
 
                   <TableCell className="py-3 px-4 text-xs">
                     {user.isActive ? (
-                      <span className="text-agm-green font-semibold">
+                      <span className="inline-flex items-center gap-1.5 text-agm-green font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         Active
                       </span>
                     ) : (
-                      <span className="text-agm-muted font-normal">
+                      <span className="inline-flex items-center gap-1.5 text-agm-muted font-normal">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                         Disabled
                       </span>
                     )}
@@ -125,11 +139,11 @@ export function UserRegisterTable({
 
                   <TableCell className="py-3 px-4 text-xs">
                     {mustChangePwd ? (
-                      <span className="text-agm-navy font-semibold">
+                      <span className="text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-[10px] font-semibold">
                         Pending Reset
                       </span>
                     ) : (
-                      <span className="text-agm-subtle font-normal">
+                      <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-medium">
                         Secured
                       </span>
                     )}
@@ -140,27 +154,33 @@ export function UserRegisterTable({
                       className="flex items-center justify-end gap-1"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Button
+                      {onView && (
+                        <button
+                          type="button"
+                          onClick={() => onView(user)}
+                          className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-slate-900 rounded-lg hover:bg-slate-100 cursor-pointer transition border border-transparent hover:border-slate-200"
+                          title="View Profile"
+                        >
+                          <ArrowUpRight size={16} />
+                        </button>
+                      )}
+                      <button
                         type="button"
-                        variant="ghost"
-                        size="sm"
                         onClick={() => onEdit(user)}
-                        className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-agm-text rounded-lg hover:bg-agm-box-bg cursor-pointer transition"
+                        className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-agm-text rounded-lg hover:bg-slate-100 cursor-pointer transition border border-transparent hover:border-slate-200"
                         title="Edit Account"
                       >
-                        <EditIcon size={18} className="w-[18px] h-[18px]" />
-                      </Button>
-                      {!isSelf && !isTargetSuperAdmin && (
-                        <Button
+                        <EditIcon size={16} className="w-4 h-4" />
+                      </button>
+                      {canDelete && (
+                        <button
                           type="button"
-                          variant="ghost"
-                          size="sm"
                           onClick={() => onDelete(user)}
-                          className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-agm-navy rounded-lg hover:bg-agm-box-bg cursor-pointer transition"
+                          className="h-8 w-8 p-0 flex items-center justify-center text-agm-muted hover:text-rose-600 rounded-lg hover:bg-rose-50 cursor-pointer transition border border-transparent hover:border-rose-200"
                           title="Deactivate Account"
                         >
-                          <TrashIcon size={18} className="w-[18px] h-[18px]" />
-                        </Button>
+                          <TrashIcon size={16} className="w-4 h-4" />
+                        </button>
                       )}
                     </div>
                   </TableCell>

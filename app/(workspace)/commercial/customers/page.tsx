@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useReactToPrint } from "react-to-print";
-import { PlusIcon } from "@/components/icons";
-import { Button, PageHeader } from "@/components/ui";
+import { ArrowLeft, Users, Plus } from "lucide-react";
 import { useConfirm } from "@/context/ConfirmContext";
 import { toast } from "@/lib/toast";
 import {
@@ -22,6 +22,7 @@ import {
 import { formatPdfDocumentTitle } from "@/lib/utils/format";
 
 export default function CustomersPage() {
+  const router = useRouter();
   const { confirm } = useConfirm();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<CustomerFilterTab>("ALL");
@@ -157,22 +158,70 @@ export default function CustomersPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Customers"
-        description="Manage client profiles, credit limits, contact information, and real-time statements of account."
-        actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setIsCreateOpen(true)}
-            icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs cursor-pointer flex-1 sm:flex-initial"
+    <div className="space-y-4">
+      {/* ══════════ 1. EXECUTIVE COMPACT HEADER ══════════ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.history.length > 1) {
+                router.back();
+              } else {
+                router.push("/commercial");
+              }
+            }}
+            className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-[#f8fafc] transition-colors shadow-2xs cursor-pointer flex items-center justify-center shrink-0"
+            style={{ border: "1px solid #cbd5e1" }}
+            title="Go back"
           >
-            Add New Customer
-          </Button>
-        }
-      />
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#eff6ff",
+              border: "1px solid #bfdbfe",
+            }}
+          >
+            <Users className="w-4 h-4" style={{ color: "#1d4ed8" }} />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold text-slate-900 tracking-tight">
+              Customers
+            </h1>
+            <span
+              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{
+                backgroundColor: "#f1f5f9",
+                color: "#475569",
+              }}
+            >
+              {customers.length} records
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsCreateOpen(true)}
+            className="text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+            style={{ backgroundColor: "#1d4ed8" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#1e40af")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "#1d4ed8")
+            }
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add New Customer</span>
+          </button>
+        </div>
+      </div>
 
       <CustomerKpis
         totalClients={customers.length}

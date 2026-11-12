@@ -150,9 +150,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (role === "SUPER_ADMIN") {
+    if (role === "SUPER_ADMIN" && actor.role !== "SUPER_ADMIN") {
       return NextResponse.json(
-        { error: "Forbidden: Cannot create an additional SUPER_ADMIN" },
+        { error: "Forbidden: Only an existing Super Admin can create another Super Admin" },
         { status: 403 },
       );
     }

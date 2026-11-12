@@ -107,33 +107,39 @@ export const TaxInvoicesReport: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2.5 bg-agm-card rounded-2xl border border-agm-box-border shadow-2xs print:hidden">
+    <div className="space-y-4">
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 rounded-xl print:hidden"
+        style={{
+          backgroundColor: "#f4f7fb",
+          border: "1px solid #cbd5e1",
+        }}
+      >
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <SearchIcon
               size={13}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-agm-muted"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
             <input
               type="text"
               placeholder="Search invoice #, customer, TRN..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 pr-3 py-1.5 text-xs font-semibold rounded-xl border border-agm-box-border bg-agm-box-bg text-agm-text outline-none focus:border-agm-green w-52 sm:w-60"
+              className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-[#cbd5e1] bg-white text-slate-800 placeholder:text-slate-400 outline-none focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8] w-52 sm:w-60"
             />
           </div>
 
-          <div className="inline-flex items-center p-1 bg-agm-box-bg rounded-xl border border-agm-box-border overflow-x-auto">
+          <div className="inline-flex items-center gap-1 overflow-x-auto">
             {statusPills.map((p) => (
               <button
                 key={p.key}
                 type="button"
                 onClick={() => setStatusFilter(p.key)}
-                className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all whitespace-nowrap cursor-pointer ${
                   statusFilter === p.key
-                    ? "bg-agm-card text-agm-navy shadow-xs border border-agm-box-border"
-                    : "text-agm-muted hover:text-agm-text"
+                    ? "bg-[#1d4ed8] text-white shadow-2xs"
+                    : "bg-white text-slate-600 hover:text-slate-900 border border-[#cbd5e1] hover:bg-slate-50"
                 }`}
               >
                 {p.label}
@@ -144,7 +150,7 @@ export const TaxInvoicesReport: React.FC = () => {
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="px-2.5 py-1.5 text-xs font-bold rounded-xl border border-agm-box-border bg-agm-card text-agm-text outline-none focus:border-agm-green cursor-pointer shadow-2xs"
+            className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-[#cbd5e1] bg-white text-slate-800 outline-none focus:border-[#1d4ed8] cursor-pointer shadow-2xs"
           >
             <option value="ALL">All Periods</option>
             <option value="THIS_MONTH">This Month</option>
@@ -156,15 +162,14 @@ export const TaxInvoicesReport: React.FC = () => {
           </select>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
+        <button
+          type="button"
           onClick={() => handlePrint()}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-agm-text border-agm-box-border bg-agm-card hover:bg-agm-box-bg cursor-pointer shadow-2xs rounded-xl h-auto shrink-0"
-          icon={<PrintIcon size={14} />}
+          className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold text-slate-700 border border-[#cbd5e1] bg-white hover:bg-slate-50 cursor-pointer shadow-2xs rounded-lg shrink-0 transition-colors"
         >
-          Print Invoices Register
-        </Button>
+          <PrintIcon size={14} className="text-slate-500" />
+          <span>Print Invoices Register</span>
+        </button>
       </div>
 
       {isLoading ? (

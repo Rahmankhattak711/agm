@@ -16,6 +16,7 @@ export interface EditUserModalProps {
   isOpen: boolean;
   user: UserItem | null;
   currentUserId?: string;
+  isCurrentUserSuperAdmin?: boolean;
   onClose: () => void;
   onSubmit: (values: {
     id: string;
@@ -32,6 +33,7 @@ export function EditUserModal({
   isOpen,
   user,
   currentUserId,
+  isCurrentUserSuperAdmin = false,
   onClose,
   onSubmit,
   isPending,
@@ -87,6 +89,15 @@ export function EditUserModal({
 
   const isTargetSuperAdmin = user?.role === "SUPER_ADMIN";
   const isSelf = user?.id === currentUserId;
+  const canEditRole = !isSelf && (isCurrentUserSuperAdmin || !isTargetSuperAdmin);
+  const canEditStatus = !isSelf && !isTargetSuperAdmin;
+
+  const roleOptions = ASSIGNABLE_ROLES.filter(
+    (r) => isCurrentUserSuperAdmin || r.value !== "SUPER_ADMIN"
+  ).map((r) => ({
+    value: r.value,
+    label: r.label,
+  }));
 
   return (
     <Modal
@@ -151,17 +162,14 @@ export function EditUserModal({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {!isTargetSuperAdmin && !isSelf ? (
+          {canEditRole ? (
             <form.Field name="role">
               {(field) => (
                 <FormSelect
                   field={field}
                   label="Role *"
                   required
-                  options={ASSIGNABLE_ROLES.map((r) => ({
-                    value: r.value,
-                    label: r.label,
-                  }))}
+                  options={roleOptions}
                 />
               )}
             </form.Field>
@@ -176,7 +184,7 @@ export function EditUserModal({
             </div>
           )}
 
-          {!isTargetSuperAdmin && !isSelf ? (
+          {canEditStatus ? (
             <form.Field name="isActive">
               {(field) => (
                 <FormSelect
@@ -195,7 +203,7 @@ export function EditUserModal({
                 Status
               </label>
               <div className="px-3 py-2 rounded-xl bg-agm-green-soft border border-agm-box-border text-xs font-bold text-agm-green">
-                Active
+                Active (Protected)
               </div>
             </div>
           )}
@@ -206,7 +214,7 @@ export function EditUserModal({
           validators={{
             onChange: ({ value }) => {
               if (!value) return undefined;
-              if (value.length < 12) return "Must be at least 12 characters";
+              if (value.length < 8) return "Must be at least 8 characters";
               if (!/[A-Z]/.test(value)) return "Must include uppercase letter";
               if (!/[a-z]/.test(value)) return "Must include lowercase letter";
               if (!/[0-9]/.test(value)) return "Must include number";

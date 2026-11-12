@@ -179,7 +179,8 @@ export function CustomerCreateModal({
           </Button>
           <FormSubmit
             form={form}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
+            className="text-white font-semibold text-xs cursor-pointer shadow-2xs"
+            style={{ backgroundColor: "#1d4ed8" }}
           >
             Save Customer Record
           </FormSubmit>

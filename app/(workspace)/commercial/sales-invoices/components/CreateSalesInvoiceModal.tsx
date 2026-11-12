@@ -397,7 +397,8 @@ export const CreateSalesInvoiceModal: React.FC<
           </Button>
           <FormSubmit
             form={createInvoiceForm}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
+            className="text-white font-semibold cursor-pointer shadow-2xs"
+            style={{ backgroundColor: "#1d4ed8" }}
           >
             Save &amp; Issue Sales Invoice
           </FormSubmit>

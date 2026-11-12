@@ -2,8 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon, ChevronLeftIcon } from "@/components/icons";
-import { Button, PageHeader } from "@/components/ui";
+import { ArrowLeft, Plus, RotateCw, FileSpreadsheet } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useConfirm } from "@/context/ConfirmContext";
 import QuotationTemplate, {
@@ -24,9 +23,13 @@ import { formatNumber } from "@/lib/utils/format";
 export default function CommercialQuotationsPage() {
   const router = useRouter();
   const { data: products = [] } = useProducts();
-  const { data: quotationsList = [], isLoading, error } = useQuotations();
+  const {
+    data: quotationsList = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuotations();
   const { data: salesInvoices = [] } = useSalesInvoices();
-  const convertToOrderMutation = useConvertQuotationToSalesOrder();
   const convertToInvoiceMutation = useConvertQuotationToSalesInvoice();
   const deleteQuotationMutation = useDeleteQuotation();
   const { confirm } = useConfirm();
@@ -208,48 +211,124 @@ export default function CommercialQuotationsPage() {
   const isFiltered = search.trim().length > 0 || statusFilter !== "ALL";
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={
-          activeView === "EDITOR" ? "Quotation Editor" : "Commercial Quotations"
-        }
-        description={
-          activeView === "EDITOR"
-            ? "Draft, edit, and print official commercial proposals with custom payment milestones."
-            : "Create commercial proposals, generate itemized BOQs, and convert accepted quotes into sales invoices."
-        }
-        actions={
-          activeView === "EDITOR" ? (
+    <div className="w-full min-h-full bg-white text-slate-700 font-sans px-4 sm:px-5 py-3.5 space-y-3.5 select-none pb-16">
+      {/* 1. Top Executive Compact Header Card */}
+      <div
+        className="bg-white rounded-xl p-3 sm:px-4 sm:py-3 shadow-2xs flex flex-wrap items-center justify-between gap-3"
+        style={{ border: "1px solid #cbd5e1" }}
+      >
+        <div className="flex items-center gap-3">
+          {activeView === "EDITOR" ? (
             <button
               type="button"
               onClick={() => {
                 setSelectedQuotation(null);
                 setActiveView("LIST");
               }}
-              className="group relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-800 bg-white hover:bg-slate-50 active:scale-[0.98] border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer select-none"
+              className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-[#f8fafc] transition-colors shadow-2xs cursor-pointer flex items-center justify-center shrink-0"
+              style={{ border: "1px solid #cbd5e1" }}
+              title="Back to Quotations List"
             >
-              <span className="flex items-center justify-center w-5 h-5 rounded-lg bg-slate-100 text-slate-700 group-hover:bg-slate-200 group-hover:-translate-x-0.5 transition-all duration-200 shadow-2xs">
-                <ChevronLeftIcon size={13} strokeWidth={2.6} />
-              </span>
-              <span className="tracking-wide">Back to Proposals</span>
+              <ArrowLeft className="w-4 h-4" />
             </button>
           ) : (
             <button
               type="button"
+              onClick={() => router.push("/commercial/sales-invoices")}
+              className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-[#f8fafc] transition-colors shadow-2xs cursor-pointer flex items-center justify-center shrink-0"
+              style={{ border: "1px solid #cbd5e1" }}
+              title="Back to Sales Invoices"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          )}
+
+          <div
+            className="p-2.5 rounded-xl shadow-2xs shrink-0"
+            style={{
+              backgroundColor: "#eff6ff",
+              border: "1px solid #bfdbfe",
+              color: "#1d4ed8",
+            }}
+          >
+            <FileSpreadsheet className="w-5 h-5" />
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-800">
+                {activeView === "EDITOR"
+                  ? selectedQuotation
+                    ? `Edit Quotation ${selectedQuotation.quotationNo}`
+                    : "New Quotation Proposal"
+                  : "Commercial Quotations"}
+              </h1>
+              <span
+                className="px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                style={{
+                  backgroundColor: "#f1f5f9",
+                  border: "1px solid #cbd5e1",
+                  color: "#475569",
+                }}
+              >
+                {quotationsList.length} records
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 font-normal">
+              {activeView === "EDITOR"
+                ? "Draft, itemize bill of quantities, apply payment terms, and generate official proposal."
+                : "Official commercial proposals, itemized BOQs, and one-click conversion to Tax Invoices."}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {activeView === "EDITOR" ? (
+            <button
+              type="button"
               onClick={() => {
                 setSelectedQuotation(null);
-                setActiveView("EDITOR");
+                setActiveView("LIST");
               }}
-              className="group relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 hover:from-emerald-500 hover:via-emerald-600 hover:to-teal-700 active:scale-[0.98] shadow-sm hover:shadow-md hover:shadow-emerald-900/25 border border-emerald-400/25 transition-all duration-200 cursor-pointer select-none"
+              className="px-3.5 py-1.5 rounded-lg border border-[#cbd5e1] text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
             >
-              <span className="flex items-center justify-center w-5 h-5 rounded-lg bg-white/20 text-white group-hover:bg-white/30 group-hover:rotate-90 transition-all duration-300 shadow-2xs">
-                <PlusIcon size={12} strokeWidth={2.6} />
-              </span>
-              <span className="tracking-wide">New Quotation</span>
+              <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
+              <span>Back to Proposals</span>
             </button>
-          )
-        }
-      />
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-[#f8fafc] transition-colors shadow-2xs cursor-pointer"
+                style={{ border: "1px solid #cbd5e1" }}
+                title="Refresh Quotations"
+              >
+                <RotateCw className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedQuotation(null);
+                  setActiveView("EDITOR");
+                }}
+                className="text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                style={{ backgroundColor: "#1d4ed8" }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#1e40af")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#1d4ed8")
+                }
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>New Quotation</span>
+              </button>
+            </>
+          )}
+        </div>
+      </div>
 
       {activeView === "EDITOR" ? (
         <div className="overflow-visible">
@@ -272,7 +351,8 @@ export default function CommercialQuotationsPage() {
           />
         </div>
       ) : (
-        <div className="space-y-6 print:hidden">
+        <div className="space-y-3.5 print:hidden">
+          {/* 2. Compact Pastel KPIs */}
           <QuotationKPIs
             totalQuotedVolume={totalQuotedVolume}
             totalCount={quotationsList.length}
@@ -281,15 +361,20 @@ export default function CommercialQuotationsPage() {
             formatNumber={formatNumber}
           />
 
-          <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
-            <QuotationFilters
-              statusFilter={statusFilter}
-              onStatusFilterChange={setStatusFilter}
-              search={search}
-              onSearchChange={setSearch}
-              totalCount={filteredQuotations.length}
-            />
+          {/* 3. Sleek Unified Filter Bar */}
+          <QuotationFilters
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            search={search}
+            onSearchChange={setSearch}
+            totalCount={filteredQuotations.length}
+          />
 
+          {/* 4. Clean Table Card */}
+          <div
+            className="rounded-xl overflow-hidden bg-white"
+            style={{ border: "1px solid #cbd5e1" }}
+          >
             <QuotationTable
               quotations={filteredQuotations}
               isLoading={isLoading}

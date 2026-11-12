@@ -28,9 +28,9 @@ export async function GET(request: Request) {
       );
     }
 
-    const startOfMonth = new Date(year, month - 1, 1);
-    const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
-    const totalDaysInMonth = new Date(year, month, 0).getDate();
+    const startOfMonth = new Date(Date.UTC(year, month - 1, 1));
+    const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+    const totalDaysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
 
     const monthNames = [
       "January",
@@ -130,9 +130,9 @@ export async function GET(request: Request) {
       let totalOvertimeHours = 0;
 
       for (let day = 1; day <= totalDaysInMonth; day++) {
-        const currentDate = new Date(year, month - 1, day);
+        const currentDate = new Date(Date.UTC(year, month - 1, day));
         const dateStr = currentDate.toISOString().split("T")[0];
-        const dayOfWeek = currentDate.getDay();
+        const dayOfWeek = currentDate.getUTCDay();
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
         const dayName = currentDate.toLocaleDateString("en-US", {
@@ -150,7 +150,7 @@ export async function GET(request: Request) {
         let status: string;
         let checkInTime: string | null = null;
         let checkOutTime: string | null = null;
-        let workingHours = 0;
+        let workingHours: number | null = null;
         let overtimeHours = 0;
         let lateMinutes = 0;
         let location = "";
@@ -164,16 +164,21 @@ export async function GET(request: Request) {
           checkOutTime = att.checkOutTime
             ? new Date(att.checkOutTime).toISOString()
             : null;
-          workingHours = Number(att.workingHours || 0);
+          workingHours =
+            att.workingHours !== null && att.workingHours !== undefined
+              ? Number(att.workingHours)
+              : null;
           overtimeHours = Number(att.overtimeHours || 0);
           lateMinutes = att.lateMinutes || 0;
           location = att.location || "";
           notes = att.notes || "";
         } else if (overlappingLeave) {
           status = "ON_LEAVE";
+          workingHours = 0;
           notes = `Approved ${overlappingLeave.leaveType} Leave`;
         } else if (isWeekend) {
           status = "WEEKEND";
+          workingHours = 0;
         } else {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
@@ -182,19 +187,50 @@ export async function GET(request: Request) {
           } else {
             status = "SCHEDULED";
           }
+          workingHours = 0;
         }
 
-        if (status === "PRESENT") {
+        const hasClockTimes = Boolean(checkInTime && checkOutTime);
+        const elapsedHours =
+          checkInTime && checkOutTime
+            ? (new Date(checkOutTime).getTime() - new Date(checkInTime).getTime()) / 3600000
+            : 0;
+
+        // Pending HR reconciliation condition:
+        // Shift with elapsed > 8.0h (or marked with pending note) and workingHours not yet confirmed by HR
+        const isPendingReconciliation =
+          Boolean(att) &&
+          workingHours === null &&
+          hasClockTimes &&
+          (elapsedHours > 8.0 || (notes && notes.includes("Pending HR reconciliation")));
+
+        if (status === "PRESENT" || status === "LATE") {
           daysPresent += 1;
-          totalWorkingHours += workingHours || 8;
-        } else if (status === "LATE") {
-          daysPresent += 1;
-          daysLate += 1;
-          totalLateMinutes += lateMinutes;
-          totalWorkingHours += workingHours || 8;
+          if (status === "LATE") {
+            daysLate += 1;
+            totalLateMinutes += lateMinutes;
+          }
+
+          if (workingHours !== null) {
+            totalWorkingHours += workingHours;
+          } else if (isPendingReconciliation) {
+            // Pending HR reconciliation contributes 0 confirmed hours until HR reviews
+            totalWorkingHours += 0;
+          } else {
+            // Backward-compatible fallback for legacy roll-call records without timestamps
+            totalWorkingHours += 8;
+            workingHours = 8;
+          }
         } else if (status === "HALF_DAY") {
           daysPresent += 0.5;
-          totalWorkingHours += workingHours || 4;
+          if (workingHours !== null) {
+            totalWorkingHours += workingHours;
+          } else if (isPendingReconciliation) {
+            totalWorkingHours += 0;
+          } else {
+            totalWorkingHours += 4;
+            workingHours = 4;
+          }
         } else if (status === "ABSENT") {
           daysAbsent += 1;
         } else if (status === "ON_LEAVE") {

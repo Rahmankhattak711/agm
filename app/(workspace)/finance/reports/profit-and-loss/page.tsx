@@ -1156,7 +1156,7 @@ export default function ProfitAndLossReportPage() {
                             onMouseLeave={handleCellMouseLeave}
                           >
                             {acc.total !== 0
-                              ? `-${Math.abs(acc.total).toFixed(2)}`
+                              ? Math.abs(acc.total).toFixed(2)
                               : "0.00"}
                           </td>
                           {monthKeys.map((k, mIdx) => {
@@ -1183,7 +1183,7 @@ export default function ProfitAndLossReportPage() {
                                 }
                                 onMouseLeave={handleCellMouseLeave}
                               >
-                                {val !== 0 ? `-${Math.abs(val).toFixed(2)}` : "0.00"}
+                                {val !== 0 ? Math.abs(val).toFixed(2) : "0.00"}
                               </td>
                             );
                           })}
@@ -1205,14 +1205,13 @@ export default function ProfitAndLossReportPage() {
                       />
                     </td>
                     <td className="px-4 py-2.5 text-right font-mono bg-slate-100/60 text-slate-900">
-                      -{Math.abs(pnl?.operatingExpenses?.totals?.total || 0).toFixed(2)}
+                      {Math.abs(pnl?.operatingExpenses?.totals?.total || 0).toFixed(2)}
                     </td>
                     {monthKeys.map((k) => (
                       <td
                         key={k}
                         className="px-4 py-2.5 text-right font-mono text-slate-800"
                       >
-                        -
                         {Math.abs(
                           pnl?.operatingExpenses?.totals?.monthly?.[k] || 0
                         ).toFixed(2)}

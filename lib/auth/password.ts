@@ -2,7 +2,7 @@ import "server-only";
 import bcrypt from "bcryptjs";
 
 export const PASSWORD_POLICY = {
-  minLength: 12,
+  minLength: 8,
   hasUpper: /[A-Z]/,
   hasLower: /[a-z]/,
   hasDigit: /[0-9]/,

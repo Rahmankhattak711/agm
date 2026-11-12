@@ -68,10 +68,16 @@ export const SECTION_PATHS: Record<string, string> = {
   "operations-dashboard": "/operations/dashboard",
   projects: "/operations/projects",
   "operations-projects": "/operations/projects",
-  employees: "/operations/employees",
-  attendance: "/operations/attendance",
-  leaves: "/operations/leaves",
-  bonuses: "/operations/bonuses",
+  employees: "/hr/employees",
+  attendance: "/hr/attendance",
+  leaves: "/hr/leaves",
+  bonuses: "/hr/bonuses",
+  "hr-payroll": "/hr/payroll",
+  "hr-salary-slips": "/hr/salary-slips",
+  "hr-salary-structures": "/hr/salary-structures",
+  "hr-documents": "/hr/documents",
+  "hr-workers": "/hr/workers",
+  "hr-departments": "/hr/departments",
   assets: "/operations/fixed-assets",
 
   admin: "/administration",
@@ -240,21 +246,53 @@ export const PAGE_META: Record<string, PageMeta> = {
     eyebrow: "Projects",
     title: "Projects & Cost Tracking",
   },
-  "/operations/employees": {
-    eyebrow: "HR & Operations",
-    title: "Employees",
+  "/hr": {
+    eyebrow: "Human Resources",
+    title: "HR & Payroll Control Center",
   },
-  "/operations/attendance": {
-    eyebrow: "HR & Operations",
-    title: "Attendance",
+  "/hr/employees": {
+    eyebrow: "Human Resources",
+    title: "Employees Directory",
   },
-  "/operations/leaves": {
-    eyebrow: "HR & Operations",
+  "/hr/attendance": {
+    eyebrow: "Human Resources",
+    title: "Timesheet & Attendance",
+  },
+  "/hr/leaves": {
+    eyebrow: "Human Resources",
     title: "Leave Management",
   },
-  "/operations/bonuses": {
-    eyebrow: "HR & Operations",
-    title: "Bonuses",
+  "/hr/bonuses": {
+    eyebrow: "Human Resources",
+    title: "Bonuses & Incentives",
+  },
+  "/hr/payroll": {
+    eyebrow: "Human Resources",
+    title: "Monthly Payroll Processing",
+  },
+  "/hr/salary-slips": {
+    eyebrow: "Human Resources",
+    title: "Official Salary Slips",
+  },
+  "/hr/salary-structures": {
+    eyebrow: "Human Resources",
+    title: "Salary Structures & Allowances",
+  },
+  "/hr/documents": {
+    eyebrow: "Human Resources",
+    title: "Document Vault & Expiry Alerts",
+  },
+  "/hr/workers": {
+    eyebrow: "Human Resources",
+    title: "Operational Crew",
+  },
+  "/hr/departments": {
+    eyebrow: "Human Resources",
+    title: "Departments & Organization",
+  },
+  "/hr/workforce": {
+    eyebrow: "Human Resources",
+    title: "Attendance, Leaves & Bonuses",
   },
   "/operations/fixed-assets": {
     eyebrow: "Operations",

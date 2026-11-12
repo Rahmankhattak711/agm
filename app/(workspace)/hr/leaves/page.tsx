@@ -161,6 +161,11 @@ export default function LeavesPage() {
             </span>
             <span className="text-[11px] font-bold text-agm-green font-mono">
               {row.original.totalDays} Days
+              {row.original.leaveType === "UNPAID" && (
+                <span className="ml-1.5 text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
+                  Unpaid Deduction
+                </span>
+              )}
             </span>
           </div>
         ),

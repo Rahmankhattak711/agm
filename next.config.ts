@@ -50,11 +50,14 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      {
-        source: "/administration/users",
-        destination: "/administration",
-        permanent: true,
-      },
+      // Legacy HR routes → unified /hr module
+      { source: "/operations/employees", destination: "/hr/employees", permanent: true },
+      { source: "/operations/employees/:path*", destination: "/hr/employees/:path*", permanent: true },
+      { source: "/operations/attendance", destination: "/hr/workforce?tab=attendance", permanent: true },
+      { source: "/operations/leaves", destination: "/hr/workforce?tab=leaves", permanent: true },
+      { source: "/operations/bonuses", destination: "/hr/workforce?tab=bonuses", permanent: true },
+      { source: "/finance/hr", destination: "/hr", permanent: true },
+      { source: "/finance/hr/:path*", destination: "/hr/:path*", permanent: true },
     ];
   },
   async rewrites() {

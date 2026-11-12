@@ -17,68 +17,6 @@ export async function GET(request: Request) {
     const status = searchParams.get("status");
     const search = searchParams.get("search");
 
-    const users = await prisma.user.findMany({
-      where: { isActive: true },
-    });
-
-    for (const u of users) {
-      if (u.email) {
-        const existing = await prisma.employee.findUnique({
-          where: { email: u.email },
-        });
-
-        if (!existing) {
-          const names = (u.fullName || "User").trim().split(" ");
-          const firstName = names[0] || "User";
-          const lastName = names.slice(1).join(" ") || "Staff";
-          const codeSuffix = u.id.replace(/-/g, "").slice(-4).toUpperCase();
-          const employeeCode = `EMP-${codeSuffix}`;
-
-          let dept = "Operations";
-          let desig = "Staff";
-          if (u.role === "SUPER_ADMIN" || u.role === "ADMIN") {
-            dept = "Administration";
-            desig = "Administrator";
-          } else if (u.role === "ACCOUNTANT") {
-            dept = "Finance";
-            desig = "Senior Accountant";
-          } else if (u.role === "HR") {
-            dept = "Human Resources";
-            desig = "HR Specialist";
-          } else if (u.role === "INVENTORY_MANAGER") {
-            dept = "Inventory";
-            desig = "Inventory Manager";
-          }
-
-          try {
-            await prisma.employee.create({
-              data: {
-                employeeCode,
-                firstName,
-                lastName,
-                email: u.email,
-                department: dept,
-                designation: desig,
-                joiningDate: u.createdAt || new Date(),
-                employmentStatus: "ACTIVE",
-                basicSalary: 6000,
-                housingAllowance: 0,
-                transportAllowance: 0,
-                otherAllowances: 0,
-                monthlySalary: 6000,
-                annualLeaveBalance: 30,
-              },
-            });
-          } catch (e) {
-            return NextResponse.json(
-              { error: "Internal Server Error" },
-              { status: 500 },
-            );
-          }
-        }
-      }
-    }
-
     const where: any = {};
     if (department) where.department = department;
     if (status) where.employmentStatus = status;

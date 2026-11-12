@@ -1,7 +1,9 @@
 "use client";
 
 import React, { Fragment, useCallback, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useReactToPrint } from "react-to-print";
+import { ArrowLeft, RotateCcw, Plus, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import {
   ChevronDownIcon,
   PlusIcon,
@@ -423,19 +425,22 @@ const SalesReturnDocument: React.FC<SalesReturnDocumentProps> = ({ item }) => {
         <QuotationFooter />
       </div>
 
-      <div className="px-10 pb-6 print:hidden">
-        <QuotationFooter className="mt-6" />
+      {/* On-screen footer - full width flush with document bottom */}
+      <div className="w-full mt-8 print:hidden overflow-hidden rounded-b-xl border-t border-slate-100">
+        <QuotationFooter />
       </div>
     </div>
   );
 };
 
 export default function SalesReturnsPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [itemToPrint, setItemToPrint] = useState<CreditNote | null>(null);
   const [expandedReturnId, setExpandedReturnId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [form, setForm] = useState<ReturnFormState>(EMPTY_FORM);
 
   const { data: creditNotes = [], isLoading } = useCreditNotes(search);
@@ -498,6 +503,17 @@ export default function SalesReturnsPage() {
     () => creditNotes.filter((r) => r.status === "DRAFT").length,
     [creditNotes],
   );
+
+  // Pagination logic
+  const ITEMS_PER_PAGE = 10;
+  const totalPages = Math.ceil(filteredReturns.length / ITEMS_PER_PAGE) || 1;
+  const paginatedReturns = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredReturns.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredReturns, currentPage]);
+
+  const startIndex = filteredReturns.length === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1;
+  const endIndex = Math.min(currentPage * ITEMS_PER_PAGE, filteredReturns.length);
 
   const setField = useCallback(
     <K extends keyof ReturnFormState>(key: K, value: ReturnFormState[K]) =>
@@ -588,159 +604,258 @@ export default function SalesReturnsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Sales Returns"
-        description="Process customer returned goods, issue credit notes, and manage inventory restocks."
-        actions={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setIsCreateOpen(true)}
-            icon={<PlusIcon size={14} strokeWidth={2.5} />}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs rounded-lg px-3.5 py-1.5 cursor-pointer transition-colors"
+    <div className="space-y-4">
+      {/* ══════════ 1. EXECUTIVE COMPACT HEADER ══════════ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden">
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.history.length > 1) {
+                router.back();
+              } else {
+                router.push("/commercial/sales-invoices");
+              }
+            }}
+            className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-[#f8fafc] transition-colors shadow-2xs cursor-pointer flex items-center justify-center shrink-0"
+            style={{ border: "1px solid #cbd5e1" }}
+            title="Go back"
           >
-            New Sales Return
-          </Button>
-        }
-      />
+            <ArrowLeft className="w-4 h-4" />
+          </button>
 
-      <div className="print:hidden">
-        <ReportKpiGrid cols={4}>
-          <ReportKpiCard
-            title="1. Total Sales Credit Notes"
-            subtitle="Cumulative client credits"
-            value={formatNumber(totalReturnAmount)}
-            currency="AED"
-            accentColor="rose"
-            valueColor="text-rose-700"
-          />
-          <ReportKpiCard
-            title="2. Total Credit Vouchers"
-            subtitle="Registered credit memos"
-            value={creditNotes.length}
-            currency={false}
-            accentColor="sky"
-            footerText="Vouchers"
-          />
-          <ReportKpiCard
-            title="3. Posted / Active Reversals"
-            subtitle="Settled customer credits"
-            value={approvedCount}
-            currency={false}
-            accentColor="emerald"
-            valueColor="text-emerald-800"
-            footerText="Posted"
-          />
-          <ReportKpiCard
-            title="4. Draft Requests"
-            subtitle="Unposted credit vouchers"
-            value={pendingCount}
-            currency={false}
-            accentColor="amber"
-            valueColor="text-amber-700"
-            footerText="Drafts"
-          />
-        </ReportKpiGrid>
-      </div>
-
-      <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 print:hidden">
-        <FilterBar
-          tabs={STATUS_FILTERS as any}
-          activeTab={statusFilter}
-          onTabChange={(id) => setStatusFilter(id as any)}
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search return number, invoice ref, client..."
-          totalCount={filteredReturns.length}
-          countLabel="Vouchers Listed"
-        />
-
-        <div className="rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
-          <div className="bg-[radial-gradient(circle_at_top,_#3f5d72,_#233c4d_42%,_#1d2f3f_100%)] text-white py-2.5 px-4 sm:px-5 flex items-center justify-between">
-            <h4 className="font-bold text-xs uppercase tracking-wider text-white">
-              Sales Returns Register
-            </h4>
-            <span className="text-[11px] font-mono text-emerald-300 font-bold">
-              {filteredReturns.length} Returns Listed
-            </span>
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: "#eff6ff",
+              border: "1px solid #bfdbfe",
+            }}
+          >
+            <RotateCcw className="w-4 h-4" style={{ color: "#1d4ed8" }} />
           </div>
 
-          <Table className="w-full text-xs text-left">
-            <TableHead className="bg-slate-50 border-b border-slate-200">
-              <TableHeaderCell className="py-2 px-2.5 sm:px-3 font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
-                Credit Note Voucher
-              </TableHeaderCell>
-              <TableHeaderCell className="py-2 px-2.5 sm:px-3 font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
-                Invoice Ref
-              </TableHeaderCell>
-              <TableHeaderCell className="py-2 px-2.5 sm:px-3 font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
-                Customer / Entity
-              </TableHeaderCell>
-              <TableHeaderCell className="py-2 px-2 text-center font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
-                Date
-              </TableHeaderCell>
-              <TableHeaderCell className="py-2 px-2.5 sm:px-3 font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
-                Return Reason
-              </TableHeaderCell>
-              <TableHeaderCell className="py-2 px-2 text-center font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
-                Status
-              </TableHeaderCell>
-              <TableHeaderCell
-                align="right"
-                className="py-2 px-2.5 text-right font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap"
-              >
-                Amount (AED)
-              </TableHeaderCell>
-              <TableHeaderCell className="py-2 px-2 sm:pr-3 text-right font-bold text-slate-600 uppercase text-[10px] tracking-wider whitespace-nowrap">
-                Actions
-              </TableHeaderCell>
-            </TableHead>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold text-slate-900 tracking-tight">
+              Sales Returns (Credit Notes)
+            </h1>
+            <span
+              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{
+                backgroundColor: "#f1f5f9",
+                color: "#475569",
+              }}
+            >
+              {creditNotes.length} records
+            </span>
+          </div>
+        </div>
 
-            <TableBody className="divide-y divide-slate-100 font-medium">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsCreateOpen(true)}
+            className="text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+            style={{ backgroundColor: "#1d4ed8" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#1e40af")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "#1d4ed8")
+            }
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Sales Return</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ══════════ 2. COMPACT PASTEL KPIS ══════════ */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 print:hidden">
+        {/* Card 1: Total Return Amount - Pastel Rose */}
+        <div
+          className="p-3 sm:p-3.5 rounded-xl transition-all"
+          style={{
+            backgroundColor: "#fff1f2",
+            border: "1px solid #fecdd3",
+          }}
+        >
+          <p className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+            TOTAL CREDIT VALUE
+          </p>
+          <p className="text-lg sm:text-xl font-black text-rose-600">
+            AED {formatNumber(totalReturnAmount)}
+          </p>
+          <p className="text-[10px] text-slate-500 font-medium mt-0.5 truncate">
+            Cumulative client credits
+          </p>
+        </div>
+
+        {/* Card 2: Total Return Vouchers - Pastel Blue */}
+        <div
+          className="p-3 sm:p-3.5 rounded-xl transition-all"
+          style={{
+            backgroundColor: "#eff6ff",
+            border: "1px solid #bfdbfe",
+          }}
+        >
+          <p className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+            CREDIT VOUCHERS
+          </p>
+          <p className="text-lg sm:text-xl font-black" style={{ color: "#1d4ed8" }}>
+            {creditNotes.length} Vouchers
+          </p>
+          <p className="text-[10px] text-slate-500 font-medium mt-0.5 truncate">
+            Logged credit memos
+          </p>
+        </div>
+
+        {/* Card 3: Posted / Active Reversals - Pastel Green */}
+        <div
+          className="p-3 sm:p-3.5 rounded-xl transition-all"
+          style={{
+            backgroundColor: "#f0fdf4",
+            border: "1px solid #bbf7d0",
+          }}
+        >
+          <p className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+            POSTED REVERSALS
+          </p>
+          <p className="text-lg sm:text-xl font-black" style={{ color: "#15803d" }}>
+            {approvedCount} Settled
+          </p>
+          <p className="text-[10px] text-slate-500 font-medium mt-0.5 truncate">
+            Credited & restocked
+          </p>
+        </div>
+
+        {/* Card 4: Draft Requests - Pastel Amber */}
+        <div
+          className="p-3 sm:p-3.5 rounded-xl transition-all"
+          style={{
+            backgroundColor: "#fefce8",
+            border: "1px solid #fef08a",
+          }}
+        >
+          <p className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+            DRAFT REQUESTS
+          </p>
+          <p className="text-lg sm:text-xl font-black" style={{ color: "#a16207" }}>
+            {pendingCount} Pending
+          </p>
+          <p className="text-[10px] text-slate-500 font-medium mt-0.5 truncate">
+            Awaiting manager posting
+          </p>
+        </div>
+      </div>
+
+      {/* ══════════ 3. SLEEK UNIFIED FILTER BAR ══════════ */}
+      <div
+        className="p-2 sm:p-2.5 rounded-xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-2xs print:hidden"
+        style={{
+          backgroundColor: "#f4f7fb",
+          border: "1px solid #cbd5e1",
+        }}
+      >
+        {/* Status Filters */}
+        <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto">
+          {STATUS_FILTERS.map((tab) => {
+            const isActive = statusFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  setStatusFilter(tab.id);
+                  setCurrentPage(1);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs ${isActive
+                    ? "text-white"
+                    : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-[#cbd5e1]"
+                  }`}
+                style={
+                  isActive
+                    ? {
+                      backgroundColor: "#1d4ed8",
+                    }
+                    : undefined
+                }
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Search Input + Count */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="relative flex-1 md:w-72">
+            <SearchIcon
+              size={15}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              type="text"
+              placeholder="Search return #, invoice ref, client..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-9 pr-3 py-1.5 rounded-lg border bg-white text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:ring-1 focus:ring-[#1d4ed8]"
+              style={{ borderColor: "#cbd5e1" }}
+            />
+          </div>
+
+          <span
+            className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 bg-white border shrink-0 shadow-2xs"
+            style={{ borderColor: "#cbd5e1" }}
+          >
+            Total: {filteredReturns.length}
+          </span>
+        </div>
+      </div>
+
+      {/* ══════════ 4. CLEAN TABLE (NO DARK BANNER) ══════════ */}
+      <div
+        className="bg-white rounded-xl overflow-hidden shadow-2xs print:hidden"
+        style={{ border: "1px solid #cbd5e1" }}
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr
+                className="border-b text-[10.5px] font-bold text-slate-600 uppercase tracking-wider"
+                style={{
+                  backgroundColor: "#f4f7fb",
+                  borderColor: "#cbd5e1",
+                }}
+              >
+                <th className="py-3 px-3.5 whitespace-nowrap">CREDIT NOTE VOUCHER</th>
+                <th className="py-3 px-3.5 whitespace-nowrap">INVOICE REF</th>
+                <th className="py-3 px-3.5">CUSTOMER / ENTITY</th>
+                <th className="py-3 px-3.5 text-center whitespace-nowrap">DATE</th>
+                <th className="py-3 px-3.5">RETURN REASON</th>
+                <th className="py-3 px-3.5 text-center whitespace-nowrap">STATUS</th>
+                <th className="py-3 px-3.5 text-right whitespace-nowrap">AMOUNT (AED)</th>
+                <th className="py-3 px-3.5 text-right whitespace-nowrap pr-4">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
               {isLoading ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={8}
-                    className="py-12 text-center text-slate-400 italic"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin" />
-                      <span>Loading sales returns from database...</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : filteredReturns.length === 0 ? (
-                <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={8} className="p-0 border-0">
-                    <EmptyState
-                      icon={
-                        <RotateCcwIcon size={20} className="text-slate-400" />
-                      }
-                      title="No sales returns found"
-                      description={
-                        search.trim() !== "" || statusFilter !== "ALL"
-                          ? "No sales returns matched your search criteria."
-                          : "No sales returns recorded yet. Click 'New Sales Return' to create one."
-                      }
-                      actionLabel={
-                        search.trim() !== "" || statusFilter !== "ALL"
-                          ? "Reset Filters"
-                          : "New Sales Return"
-                      }
-                      onAction={
-                        search.trim() !== "" || statusFilter !== "ALL"
-                          ? () => {
-                              setSearch("");
-                              setStatusFilter("ALL");
-                            }
-                          : () => setIsCreateOpen(true)
-                      }
-                    />
-                  </TableCell>
-                </TableRow>
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-500">
+                    <div className="w-6 h-6 border-2 border-[#1d4ed8] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    Loading sales returns...
+                  </td>
+                </tr>
+              ) : paginatedReturns.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-400 italic">
+                    No sales returns found matching your search.
+                  </td>
+                </tr>
               ) : (
-                filteredReturns.map((item) => {
+                paginatedReturns.map((item) => {
                   const isExpanded = expandedReturnId === item.id;
                   const customerDisplay =
                     item.customerRel?.companyName ||
@@ -763,100 +878,122 @@ export default function SalesReturnsPage() {
 
                   return (
                     <Fragment key={item.id}>
-                      <TableRow
+                      <tr
                         onClick={() =>
                           setExpandedReturnId(isExpanded ? null : item.id)
                         }
-                        className={`hover:bg-slate-50/80 cursor-pointer transition-colors ${
-                          isExpanded
-                            ? "bg-slate-50/90 font-medium"
-                            : "text-slate-700"
-                        }`}
+                        className={`hover:bg-[#f8fafc] cursor-pointer transition-colors ${isExpanded ? "bg-[#f8fafc]" : ""
+                          }`}
                       >
-                        <TableCell className="py-2 px-2.5 sm:px-3 font-mono font-bold text-teal-800 whitespace-nowrap text-xs">
-                          <div className="flex items-center gap-1.5 whitespace-nowrap">
-                            <RotateCcwIcon
-                              size={14}
-                              className="text-teal-700 shrink-0"
-                            />
-                            <span className="hover:text-emerald-800 transition-colors">
-                              {item.creditNoteNumber}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-2 px-2.5 sm:px-3 font-mono font-semibold text-slate-800 whitespace-nowrap text-xs">
+                        {/* Credit Note Voucher Badge */}
+                        <td className="py-3 px-3.5 font-mono whitespace-nowrap">
+                          <span
+                            className="px-2 py-0.5 rounded text-[11px] font-bold"
+                            style={{
+                              backgroundColor: "#eff6ff",
+                              color: "#1d4ed8",
+                              border: "1px solid #bfdbfe",
+                            }}
+                          >
+                            {item.creditNoteNumber}
+                          </span>
+                        </td>
+
+                        {/* Invoice Ref */}
+                        <td className="py-3 px-3.5 font-mono text-slate-800 whitespace-nowrap font-medium">
                           {invoiceRefDisplay}
-                        </TableCell>
-                        <TableCell className="py-2 px-2.5 sm:px-3 text-slate-900 text-xs">
+                        </td>
+
+                        {/* Customer / Entity */}
+                        <td className="py-3 px-3.5">
                           <div
-                            className="font-bold text-slate-900 truncate max-w-[140px] sm:max-w-[180px]"
+                            className="font-bold text-slate-900 truncate max-w-[200px]"
                             title={customerDisplay}
                           >
                             {customerDisplay}
                           </div>
                           {scopeDisplay && (
-                            <div className="text-[10px] text-slate-400 font-normal truncate max-w-[140px]">
+                            <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
                               {scopeDisplay}
                             </div>
                           )}
-                        </TableCell>
-                        <TableCell className="py-2 px-2 text-center text-slate-600 font-mono text-[11px] whitespace-nowrap">
+                        </td>
+
+                        {/* Date */}
+                        <td className="py-3 px-3.5 text-center text-slate-600 font-mono text-[11px] whitespace-nowrap">
                           {dateDisplay}
-                        </TableCell>
-                        <TableCell className="py-2 px-2.5 sm:px-3 text-slate-600 text-xs">
+                        </td>
+
+                        {/* Return Reason */}
+                        <td className="py-3 px-3.5 text-slate-600">
                           <div
-                            className="truncate max-w-[120px] sm:max-w-[160px]"
+                            className="truncate max-w-[160px] text-slate-700"
                             title={item.reason || ""}
                           >
                             {item.reason || "Credit adjustment"}
                           </div>
-                        </TableCell>
-                        <TableCell className="py-2 px-2 text-center whitespace-nowrap">
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-3 px-3.5 text-center whitespace-nowrap">
                           <span
-                            className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_BADGE_CLASSES[item.status] || STATUS_BADGE_CLASSES.DRAFT}`}
+                            className="px-2 py-0.5 rounded text-[10.5px] font-medium tracking-wide uppercase"
+                            style={{
+                              backgroundColor:
+                                (item.status as string) === "POSTED"
+                                  ? "#f0fdf4"
+                                  : (item.status as string) === "DRAFT"
+                                    ? "#fefce8"
+                                    : "#fff1f2",
+                              color:
+                                (item.status as string) === "POSTED"
+                                  ? "#15803d"
+                                  : (item.status as string) === "DRAFT"
+                                    ? "#a16207"
+                                    : "#e11d48",
+                              border:
+                                (item.status as string) === "POSTED"
+                                  ? "1px solid #bbf7d0"
+                                  : (item.status as string) === "DRAFT"
+                                    ? "1px solid #fef08a"
+                                    : "1px solid #fecdd3",
+                            }}
                           >
                             {item.status}
                           </span>
-                        </TableCell>
-                        <TableCell
-                          align="right"
-                          className="py-2 px-2.5 text-right font-mono font-bold text-rose-700 text-xs whitespace-nowrap"
-                        >
-                          {formatNumber(totalAmt)}
-                        </TableCell>
-                        <TableCell className="py-2 px-2 sm:pr-3 text-right print:hidden whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
+                        </td>
+
+                        {/* Amount */}
+                        <td className="py-3 px-3.5 text-right font-mono font-bold text-rose-600 whitespace-nowrap">
+                          AED {formatNumber(totalAmt)}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3 px-3.5 text-right pr-4 whitespace-nowrap">
+                          <div
+                            className="flex items-center justify-end gap-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button
                               type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handlePrintRow(item);
-                              }}
-                              className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
-                              title="Print Credit Note Voucher"
+                              onClick={() => handlePrintRow(item)}
+                              className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+                              title="Print Credit Note Voucher (PDF)"
                             >
-                              <PrintIcon
-                                size={18}
-                                className="w-[18px] h-[18px]"
-                              />
-                            </Button>
-                            <Button
+                              <PrintIcon size={16} />
+                            </button>
+
+                            <button
                               type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
+                              onClick={() =>
                                 setExpandedReturnId(
                                   isExpanded ? null : item.id,
-                                );
-                              }}
-                              className={`h-8 w-8 p-0 flex items-center justify-center rounded-lg transition cursor-pointer ${
-                                isExpanded
-                                  ? "text-emerald-800 bg-emerald-100"
-                                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
-                              }`}
+                                )
+                              }
+                              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isExpanded
+                                  ? "text-[#1d4ed8] bg-blue-50"
+                                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                }`}
                               title={
                                 isExpanded
                                   ? "Collapse details"
@@ -864,17 +1001,14 @@ export default function SalesReturnsPage() {
                               }
                             >
                               <ChevronDownIcon
-                                size={18}
-                                className={`w-[18px] h-[18px] transition-transform duration-200 ${
-                                  isExpanded
-                                    ? "rotate-180 text-emerald-800"
-                                    : ""
-                                }`}
+                                size={16}
+                                className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""
+                                  }`}
                               />
-                            </Button>
+                            </button>
                           </div>
-                        </TableCell>
-                      </TableRow>
+                        </td>
+                      </tr>
 
                       {isExpanded && (
                         <SalesReturnExpandedRow
@@ -894,8 +1028,72 @@ export default function SalesReturnsPage() {
                   );
                 })
               )}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
+        </div>
+
+        {/* ══════════ RESPONSIVE PAGINATION FOOTER ══════════ */}
+        <div
+          className="px-4 py-3 border-t flex flex-col sm:flex-row items-center justify-between gap-3 bg-white"
+          style={{ borderColor: "#cbd5e1" }}
+        >
+          <p className="text-xs text-slate-500 font-medium">
+            Showing <span className="font-semibold text-slate-800">{startIndex}</span> to{" "}
+            <span className="font-semibold text-slate-800">{endIndex}</span> of{" "}
+            <span className="font-semibold text-slate-800">{filteredReturns.length}</span> returns
+          </p>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage <= 1}
+              className="p-1.5 rounded-lg border text-slate-500 hover:bg-[#f8fafc] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              style={{ borderColor: "#cbd5e1" }}
+              title="Previous page"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+              .map((page, idx, arr) => {
+                const prev = arr[idx - 1];
+                const showEllipsis = prev && page - prev > 1;
+                const isActive = currentPage === page;
+
+                return (
+                  <React.Fragment key={page}>
+                    {showEllipsis && <span className="px-1 text-slate-400 text-xs">...</span>}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-7 h-7 rounded-lg text-xs font-semibold transition-all cursor-pointer ${isActive
+                          ? "text-white shadow-2xs"
+                          : "bg-white text-slate-600 hover:bg-[#f8fafc] border"
+                        }`}
+                      style={{
+                        backgroundColor: isActive ? "#1d4ed8" : undefined,
+                        borderColor: isActive ? "#1d4ed8" : "#cbd5e1",
+                      }}
+                    >
+                      {page}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
+              className="p-1.5 rounded-lg border text-slate-500 hover:bg-[#f8fafc] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              style={{ borderColor: "#cbd5e1" }}
+              title="Next page"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -931,7 +1129,8 @@ export default function SalesReturnsPage() {
             <select
               value={form.salesInvoiceId}
               onChange={(e) => handleInvoiceSelect(e.target.value)}
-              className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
+              className="w-full px-3 py-2 text-xs font-semibold rounded-lg border bg-white text-slate-700 outline-none focus:ring-1 focus:ring-[#1d4ed8] shadow-2xs cursor-pointer"
+              style={{ borderColor: "#cbd5e1" }}
             >
               <option value="">— Select an Invoice or enter manually —</option>
               {salesInvoices.map((inv) => (
@@ -954,7 +1153,8 @@ export default function SalesReturnsPage() {
               <select
                 value={form.customerId}
                 onChange={(e) => handleCustomerSelect(e.target.value)}
-                className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white text-slate-700 outline-none focus:border-emerald-500 shadow-2xs cursor-pointer"
+                className="w-full px-3 py-2 text-xs font-semibold rounded-lg border bg-white text-slate-700 outline-none focus:ring-1 focus:ring-[#1d4ed8] shadow-2xs cursor-pointer"
+                style={{ borderColor: "#cbd5e1" }}
               >
                 <option value="">— Select a Customer —</option>
                 {customers.map((c) => (
@@ -1003,23 +1203,29 @@ export default function SalesReturnsPage() {
           />
 
           <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
-            <Button
-              variant="outline"
+            <button
               type="button"
               onClick={handleCloseCreate}
-              className="cursor-pointer"
+              className="px-3.5 py-1.5 rounded-lg border text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer"
+              style={{ borderColor: "#cbd5e1" }}
               disabled={createMutation.isPending}
             >
               Cancel
-            </Button>
-            <Button
-              variant="primary"
+            </button>
+            <button
               type="submit"
               disabled={createMutation.isPending}
-              className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
+              className="px-4 py-1.5 rounded-lg text-white font-semibold text-xs transition-all shadow-2xs cursor-pointer disabled:opacity-50"
+              style={{ backgroundColor: "#1d4ed8" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#1e40af")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "#1d4ed8")
+              }
             >
               {createMutation.isPending ? "Saving..." : "Save Sales Return"}
-            </Button>
+            </button>
           </div>
         </form>
       </Modal>

@@ -458,20 +458,20 @@ export default function QuotationTemplate({
           : "min-h-screen print:bg-white print:py-0 print:px-0"
       }
     >
-      <div className="max-w-full mx-auto mb-4 bg-white/95 backdrop-blur-sm p-2 sm:p-2.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center gap-2 print:hidden">
+      <div className="max-w-full mx-auto mb-4 bg-white p-2 sm:p-2.5 rounded-xl border border-[#cbd5e1] shadow-2xs flex flex-wrap items-center gap-2 print:hidden">
         <button
           type="button"
           onClick={handleNewQuotation}
-          className="bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200 rounded-xl px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs active:scale-[0.98] cursor-pointer"
+          className="bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-[#cbd5e1] rounded-lg px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
         >
-          <Plus className="w-3.5 h-3.5 text-slate-600" />
+          <Plus className="w-3.5 h-3.5 text-slate-500" />
           <span>New Blank</span>
         </button>
 
         <button
           type="button"
           onClick={() => setIsSavedDrawerOpen(true)}
-          className="bg-slate-800 hover:bg-slate-900 text-white rounded-xl px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs active:scale-[0.98] cursor-pointer"
+          className="bg-slate-800 hover:bg-slate-900 text-white rounded-lg px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
         >
           <FolderOpen className="w-3.5 h-3.5" />
           <span>Saved DB ({savedQuotations.length})</span>
@@ -482,21 +482,21 @@ export default function QuotationTemplate({
           <button
             type="button"
             onClick={() => setIsStatusOpen((v) => !v)}
-            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] ${
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer shadow-2xs ${
               status === "ACCEPTED"
-                ? "bg-emerald-50 hover:bg-emerald-100/90 text-emerald-800 border-emerald-200/90"
+                ? "bg-[#f0fdf4] hover:bg-emerald-100 text-[#15803d] border-[#bbf7d0]"
                 : status === "REJECTED"
-                  ? "bg-rose-50 hover:bg-rose-100/90 text-rose-800 border-rose-200/90"
-                  : "bg-amber-50 hover:bg-amber-100/90 text-amber-800 border-amber-200/90"
+                  ? "bg-[#fff1f2] hover:bg-rose-100 text-[#be123c] border-[#fecdd3]"
+                  : "bg-[#fefce8] hover:bg-amber-100 text-[#a16207] border-[#fef08a]"
             }`}
           >
             <span
               className={`w-2 h-2 rounded-full shrink-0 ${
                 status === "ACCEPTED"
-                  ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                  ? "bg-emerald-500"
                   : status === "REJECTED"
-                    ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
-                    : "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+                    ? "bg-rose-500"
+                    : "bg-amber-500"
               }`}
             />
             <span className="font-semibold">
@@ -510,25 +510,25 @@ export default function QuotationTemplate({
           </button>
 
           {isStatusOpen && (
-            <div className="absolute top-full left-0 mt-1.5 w-44 rounded-xl bg-white border border-slate-200 shadow-xl shadow-slate-900/10 p-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute top-full left-0 mt-1.5 w-44 rounded-xl bg-white border border-[#cbd5e1] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-150">
               {[
                 {
                   val: "ACCEPTED",
                   label: "Accepted",
                   dot: "bg-emerald-500",
-                  badge: "bg-emerald-50 text-emerald-700",
+                  badge: "bg-[#f0fdf4] text-[#15803d]",
                 },
                 {
                   val: "DRAFT",
                   label: "Draft",
                   dot: "bg-amber-500",
-                  badge: "bg-amber-50 text-amber-700",
+                  badge: "bg-[#fefce8] text-[#a16207]",
                 },
                 {
                   val: "REJECTED",
                   label: "Rejected",
                   dot: "bg-rose-500",
-                  badge: "bg-rose-50 text-rose-700",
+                  badge: "bg-[#fff1f2] text-[#be123c]",
                 },
               ].map((opt) => (
                 <button
@@ -561,10 +561,10 @@ export default function QuotationTemplate({
           type="button"
           onClick={handleSaveToDb}
           disabled={saveQuotationMutation.isPending}
-          className={`rounded-xl px-4 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs hover:shadow-sm active:scale-[0.98] cursor-pointer ${
+          className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer ${
             !meta.customerId && !meta.customer.trim()
-              ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-              : "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white border border-emerald-400/25"
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+              : "bg-[#1d4ed8] hover:bg-[#1e40af] text-white"
           }`}
           title={
             !meta.customerId && !meta.customer.trim()
@@ -598,22 +598,22 @@ export default function QuotationTemplate({
             ]);
             printWithDocumentTitle(printTitle);
           }}
-          className="bg-[#1e293b] hover:bg-[#0f172a] text-white rounded-xl px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs hover:shadow-xs active:scale-[0.98] cursor-pointer"
+          className="border border-[#cbd5e1] bg-white hover:bg-slate-50 text-slate-700 rounded-lg px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
         >
-          <Printer className="w-3.5 h-3.5" />
+          <Printer className="w-3.5 h-3.5 text-slate-500" />
           <span>Print / PDF</span>
         </button>
 
         {!meta.customerId && !meta.customer.trim() && (
-          <span className="px-3 py-1 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs">
+          <span className="px-2.5 py-1 bg-[#fefce8] border border-[#fef08a] text-[#a16207] rounded-lg text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
             <span>Customer Profile Required</span>
           </span>
         )}
 
         {selectedQuotationId && (
-          <span className="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="px-2.5 py-1 rounded-lg bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe] text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#1d4ed8]" />
             <span>Loaded: {meta.quotationNo}</span>
           </span>
         )}

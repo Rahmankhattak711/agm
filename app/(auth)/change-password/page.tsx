@@ -136,8 +136,8 @@ function ChangePasswordForm() {
               validators={{
                 onChange: ({ value }) => {
                   if (!value) return "New password is required";
-                  if (value.length < 12)
-                    return "Must be at least 12 characters";
+                  if (value.length < 8)
+                    return "Must be at least 8 characters";
                   if (!/[A-Z]/.test(value))
                     return "Must include uppercase letter";
                   if (!/[a-z]/.test(value))
@@ -186,11 +186,11 @@ function ChangePasswordForm() {
                     <div className="space-y-1 text-[11px] text-slate-500 pt-0.5">
                       <div className="flex items-center gap-1.5">
                         <span
-                          className={`w-3.5 h-3.5 flex items-center justify-center rounded-full ${val.length >= 12 ? "text-emerald-700 font-bold" : "text-slate-400"}`}
+                          className={`w-3.5 h-3.5 flex items-center justify-center rounded-full ${val.length >= 8 ? "text-emerald-700 font-bold" : "text-slate-400"}`}
                         >
                           <CheckIcon size={12} />
                         </span>
-                        <span>At least 12 characters</span>
+                        <span>At least 8 characters</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span

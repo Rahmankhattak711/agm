@@ -179,11 +179,103 @@ export const selfEmployeeSelect = {
   passportExpiry: true,
   visaExpiry: true,
   emiratesIdExpiry: true,
-  emergencyContact: true,
+  emergencyContactName: true,
+  emergencyContactPhone: true,
   annualLeaveBalance: true,
   createdAt: true,
   updatedAt: true,
 } as const;
+
+export const accountantEmployeeSelect = {
+  ...publicEmployeeSelect,
+  contractType: true,
+  basicSalary: true,
+  housingAllowance: true,
+  transportAllowance: true,
+  otherAllowances: true,
+  monthlySalary: true,
+  paymentMethod: true,
+  bankName: true,
+  iban: true,
+} as const;
+
+export const accountantAttendanceSelect = {
+  id: true,
+  employeeId: true,
+  attendanceDate: true,
+  checkInTime: true,
+  checkOutTime: true,
+  status: true,
+  workingHours: true,
+  overtimeHours: true,
+  lateMinutes: true,
+  employee: {
+    select: {
+      id: true,
+      employeeCode: true,
+      firstName: true,
+      lastName: true,
+      department: true,
+      designation: true,
+    },
+  },
+} as const;
+
+export const accountantLeaveSelect = {
+  id: true,
+  employeeId: true,
+  leaveType: true,
+  startDate: true,
+  endDate: true,
+  totalDays: true,
+  status: true,
+  approvedAt: true,
+  employee: {
+    select: {
+      id: true,
+      employeeCode: true,
+      firstName: true,
+      lastName: true,
+      department: true,
+      annualLeaveBalance: true,
+    },
+  },
+} as const;
+
+export const accountantBonusSelect = {
+  id: true,
+  employeeId: true,
+  type: true,
+  amount: true,
+  month: true,
+  year: true,
+  isApproved: true,
+  isPaid: true,
+  paidDate: true,
+  createdAt: true,
+  employee: {
+    select: {
+      id: true,
+      employeeCode: true,
+      firstName: true,
+      lastName: true,
+      department: true,
+    },
+  },
+} as const;
+
+export function getDubaiBusinessDate(date: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Dubai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+export function normalizeEmiratesId(raw: string | null | undefined): string {
+  return (raw || "").replace(/\D/g, "");
+}
 
 export type LinkageResult =
   | { status: "MATCH"; employeeId: string; employeeCode: string; email: string | null }

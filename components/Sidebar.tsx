@@ -45,6 +45,7 @@ export interface SubNavItem {
   id: string;
   label: string;
   href: string;
+  aliases?: string[];
 }
 
 export interface NavItem {
@@ -52,6 +53,7 @@ export interface NavItem {
   label: string;
   icon: React.ReactNode;
   href?: string;
+  groupAliases?: string[];
   children?: SubNavItem[];
 }
 
@@ -102,32 +104,34 @@ const navGroups: NavGroup[] = [
         id: "purchases-group",
         label: "Purchases",
         icon: <PurchaseOrdersIcon />,
-        href: "/commercial/supplier-bills",
+        href: "/inventory/purchase-orders",
+        groupAliases: [
+          "/commercial/purchase-requests",
+          "/commercial/goods-received",
+          "/commercial/supplier-payments",
+          "/inventory/products",
+          "/commercial/products",
+          "/inventory/purchase-returns",
+          "/commercial/purchase-returns",
+        ],
         children: [
           {
             id: "purchase-orders",
             label: "Purchase Orders",
             href: "/inventory/purchase-orders",
+            aliases: ["/commercial/purchase-orders"],
           },
           {
             id: "supplier-bills",
             label: "Purchase Bills",
             href: "/commercial/supplier-bills",
+            aliases: ["/inventory/supplier-bills"],
           },
           {
             id: "suppliers",
             label: "Vendors",
             href: "/inventory/suppliers",
-          },
-          {
-            id: "products",
-            label: "Shop Products & Materials",
-            href: "/inventory/products",
-          },
-          {
-            id: "purchase-returns",
-            label: "Purchase Returns",
-            href: "/inventory/purchase-returns",
+            aliases: ["/commercial/suppliers"],
           },
         ],
       },
@@ -186,6 +190,42 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    label: "Human Resources",
+    items: [
+      {
+        id: "hr-group",
+        label: "HR & Payroll",
+        icon: <EmployeesIcon />,
+        href: "/hr",
+        children: [
+          {
+            id: "hr-overview",
+            label: "HR Overview",
+            href: "/hr",
+          },
+          {
+            id: "employees",
+            label: "Employees Directory",
+            href: "/hr/employees",
+            aliases: ["/hr/departments", "/hr/workers", "/hr/documents"],
+          },
+          {
+            id: "workforce-ops",
+            label: "Attendance & Leaves",
+            href: "/hr/workforce",
+            aliases: ["/hr/attendance", "/hr/leaves", "/hr/bonuses"],
+          },
+          {
+            id: "payroll-engine",
+            label: "Monthly Payroll & GL",
+            href: "/hr/payroll",
+            aliases: ["/hr/salary-slips", "/hr/salary-structures"],
+          },
+        ],
+      },
+    ],
+  },
+  {
     label: "Operations",
     items: [
       {
@@ -193,34 +233,6 @@ const navGroups: NavGroup[] = [
         label: "Operations Overview",
         icon: <DashboardIcon />,
         href: "/operations/dashboard",
-      },
-      {
-        id: "hr-group",
-        label: "Human Resources",
-        icon: <EmployeesIcon />,
-        href: "/operations/employees",
-        children: [
-          {
-            id: "employees",
-            label: "Employees Directory",
-            href: "/operations/employees",
-          },
-          {
-            id: "attendance",
-            label: "Daily Attendance",
-            href: "/operations/attendance",
-          },
-          {
-            id: "leaves",
-            label: "Leave Management",
-            href: "/operations/leaves",
-          },
-          {
-            id: "bonuses",
-            label: "Bonuses & Payroll",
-            href: "/operations/bonuses",
-          },
-        ],
       },
       {
         id: "assets-group",
@@ -313,16 +325,37 @@ export default function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
 
+  // Helper to test if a path matches a sub-item (by href or aliases)
+  const isSubItemActive = (item: SubNavItem, currentPath: string): boolean => {
+    if (currentPath === item.href || currentPath.startsWith(`${item.href}/`)) {
+      return true;
+    }
+    if (item.aliases) {
+      return item.aliases.some(
+        (a) => currentPath === a || currentPath.startsWith(`${a}/`),
+      );
+    }
+    return false;
+  };
+
   // Helper to find which parent group contains the current active pathname
   const getActiveGroupId = (currentPath: string): string | null => {
     for (const g of navGroups) {
       for (const item of g.items) {
         if (item.children) {
-          const hasMatchingChild = item.children.some(
-            (c) => currentPath === c.href || currentPath.startsWith(`${c.href}/`),
+          const hasMatchingChild = item.children.some((c) =>
+            isSubItemActive(c, currentPath),
           );
           if (hasMatchingChild) {
             return item.id;
+          }
+          if (item.groupAliases) {
+            const matchesGroupAlias = item.groupAliases.some(
+              (a) => currentPath === a || currentPath.startsWith(`${a}/`),
+            );
+            if (matchesGroupAlias) {
+              return item.id;
+            }
           }
         }
       }
@@ -454,10 +487,13 @@ export default function Sidebar({
                   ? pathname === item.href
                   : false;
                 const isChildActive = hasChildren
-                  ? item.children!.some(
-                      (c) =>
-                        pathname === c.href ||
-                        pathname.startsWith(`${c.href}/`),
+                  ? item.children!.some((c) => isSubItemActive(c, pathname)) ||
+                    Boolean(
+                      item.groupAliases &&
+                        item.groupAliases.some(
+                          (a) =>
+                            pathname === a || pathname.startsWith(`${a}/`),
+                        ),
                     )
                   : false;
 
@@ -553,9 +589,7 @@ export default function Sidebar({
                         <div className="overflow-hidden">
                           <div className="ml-4 pl-3 py-1 space-y-0.5 border-l border-white/[0.12]">
                             {item.children!.map((child) => {
-                              const childActive =
-                                pathname === child.href ||
-                                pathname.startsWith(`${child.href}/`);
+                              const childActive = isSubItemActive(child, pathname);
                               return (
                                 <Link
                                   key={child.id}

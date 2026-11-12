@@ -513,7 +513,8 @@ export const EditSalesInvoiceModal: React.FC<EditSalesInvoiceModalProps> = ({
             size="sm"
             disabled={isSubmitting}
             icon={<SaveIcon size={14} />}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold text-xs shadow-xs"
+            className="text-white font-semibold text-xs shadow-2xs"
+            style={{ backgroundColor: "#1d4ed8" }}
           >
             {isSubmitting ? "Saving..." : "Save Invoice Changes"}
           </Button>

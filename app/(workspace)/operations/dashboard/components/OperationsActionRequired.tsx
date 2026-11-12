@@ -23,7 +23,7 @@ export default function OperationsActionRequired({
       <div className="flex items-center justify-between pb-2 border-b border-agm-box-border">
         <h3 className="text-sm font-medium text-agm-text">Action required</h3>
         <Link
-          href="/operations/leaves"
+          href="/hr/workforce?tab=leaves"
           className="text-xs font-normal text-agm-muted hover:text-agm-text transition-colors"
         >
           View all

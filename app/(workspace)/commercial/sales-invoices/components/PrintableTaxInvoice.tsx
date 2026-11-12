@@ -5,16 +5,21 @@ import { SalesInvoice } from "@/lib/hooks/api-hooks";
 import {
   QuotationHeader,
   QuotationFooter,
+  QuotationSignatures,
   SalesInvoiceTerms,
 } from "@/components/quotation";
 import { formatNumber, parseDescriptionPoints } from "./types";
 
 export interface PrintableTaxInvoiceProps {
   invoice: SalesInvoice | null;
+  className?: string;
+  isPrintOnly?: boolean;
 }
 
 export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
   invoice,
+  className = "",
+  isPrintOnly = false,
 }) => {
   if (!invoice) return null;
 
@@ -95,7 +100,9 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
   return (
     <div
       id="printable-voucher"
-      className="hidden print:block mx-auto bg-white max-w-4xl overflow-visible"
+      className={`${
+        isPrintOnly ? "hidden print:block" : "block"
+      } mx-auto bg-white shadow-md print:shadow-none max-w-4xl w-full rounded-xl print:rounded-none overflow-hidden print:overflow-visible text-slate-800 border border-slate-200/80 print:border-none ${className}`}
     >
       <table className="print-page-table w-full border-collapse">
         <thead className="print-page-header-group">
@@ -124,13 +131,13 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
         <tbody className="print-page-body-group">
           <tr>
             <td className="p-0 border-none align-top">
-              <div className="px-10 py-3.5 print:px-8 print:py-1 w-full border-b border-slate-100 bg-slate-50/50">
+              <div className="px-10 py-3.5 print:px-0 print:py-2 w-full border-b border-slate-100 bg-slate-50/50">
                 <div className="flex items-center justify-between gap-8">
                   <div>
-                    <h1 className="text-2xl print:text-lg font-black text-slate-900 tracking-tight">
+                    <h1 className="text-2xl print:text-xl font-black text-slate-900 tracking-tight">
                       TAX INVOICE
                     </h1>
-                    <p className="text-[11px] print:text-[9.5px] font-semibold text-emerald-700 mt-0.5 print:mt-0">
+                    <p className="text-[11px] print:text-[10px] font-semibold text-emerald-700 mt-0.5 print:mt-0">
                       Official UAE FTA Tax Invoice (Standard Rated 5% VAT)
                     </p>
                     {(invoice.projectScope || invoice.customerName) && (
@@ -152,7 +159,7 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                     )}
                   </div>
 
-                  <div className="w-[340px] space-y-1 text-[12px] print:text-[10px]">
+                  <div className="w-[340px] space-y-1 text-[12px] print:text-[11px]">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500 font-semibold whitespace-nowrap">
                         Invoice No:
@@ -195,15 +202,15 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
 
           <tr>
             <td className="p-0 border-none align-top">
-              <div className="grid grid-cols-2 gap-4 print:gap-2 px-10 py-3.5 print:px-8 print:py-1 text-[12px] print:text-[9.5px] print-avoid-break">
-                <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl shadow-2xs">
-                  <div className="font-bold mb-2 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-0.5">
+              <div className="grid grid-cols-2 gap-4 print:gap-2 px-10 py-3.5 print:px-0 print:py-2 text-[12px] print:text-[10px] print-avoid-break">
+                <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2 rounded-xl shadow-2xs">
+                  <div className="font-bold mb-2 print:mb-1 text-slate-900 uppercase text-[11px] print:text-[9.5px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
                     CLIENT / BILL TO
                   </div>
                   <div className="space-y-1 print:space-y-0.5">
                     <div className="flex items-center gap-1">
-                      <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                      <span className="w-24 print:w-20 text-[11px] print:text-[9.5px] font-semibold text-slate-500 shrink-0">
                         Client Name:
                       </span>
                       <span className="font-bold text-slate-900">
@@ -212,7 +219,7 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                      <span className="w-24 print:w-20 text-[11px] print:text-[9.5px] font-semibold text-slate-500 shrink-0">
                         Customer TRN:
                       </span>
                       <span className="font-mono font-bold text-slate-800">
@@ -221,7 +228,7 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                      <span className="w-24 print:w-20 text-[11px] print:text-[9.5px] font-semibold text-slate-500 shrink-0">
                         Address:
                       </span>
                       <span className="text-slate-700">
@@ -231,14 +238,14 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                   </div>
                 </div>
 
-                <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl shadow-2xs">
-                  <div className="font-bold mb-2 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-0.5">
+                <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2 rounded-xl shadow-2xs">
+                  <div className="font-bold mb-2 print:mb-1 text-slate-900 uppercase text-[11px] print:text-[9.5px] tracking-wider text-agm-green flex items-center gap-1.5 border-b border-slate-200/60 pb-1 print:pb-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
                     PROJECT / SITE DETAILS
                   </div>
                   <div className="space-y-1 print:space-y-0.5">
                     <div className="flex items-center gap-1">
-                      <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                      <span className="w-24 print:w-20 text-[11px] print:text-[9.5px] font-semibold text-slate-500 shrink-0">
                         Project:
                       </span>
                       <span className="font-bold text-slate-900">
@@ -247,7 +254,7 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                      <span className="w-24 print:w-20 text-[11px] print:text-[9.5px] font-semibold text-slate-500 shrink-0">
                         Location:
                       </span>
                       <span className="text-slate-700">
@@ -256,7 +263,7 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <span className="w-24 print:w-20 text-[11px] print:text-[9px] font-semibold text-slate-500 shrink-0">
+                      <span className="w-24 print:w-20 text-[11px] print:text-[9.5px] font-semibold text-slate-500 shrink-0">
                         Reference:
                       </span>
                       <span className="font-mono text-slate-800">
@@ -271,7 +278,7 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
 
           <tr>
             <td className="p-0 border-none align-top">
-              <div className="px-10 mt-2 print:px-8 print:mt-1">
+              <div className="px-10 mt-2 print:px-0 print:mt-1">
                 <table className="w-full text-[12px] print:text-[11px] border-collapse border border-agm-box-border bg-white rounded-lg overflow-hidden shadow-xs">
                   <thead>
                     <tr className="text-center text-white bg-agm-green print-avoid-break">
@@ -361,12 +368,21 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                         </tr>
                       ))
                     ) : (
-                      <tr className="bg-white">
-                        <td
-                          colSpan={5}
-                          className="py-6 text-center text-slate-400 italic border border-agm-box-border"
-                        >
-                          No item details found.
+                      <tr className="hover:bg-slate-50/50 bg-white print-avoid-break">
+                        <td className="py-2.5 px-2 print:py-1 print:px-1 align-middle text-center font-bold text-slate-700 border border-agm-box-border">
+                          1
+                        </td>
+                        <td className="py-2.5 px-3 print:py-1.5 print:px-2 align-middle text-left font-medium text-slate-800 border border-agm-box-border">
+                          {invoice.projectScope || "Commercial Fitout & Contracting Services"}
+                        </td>
+                        <td className="py-2.5 px-2 print:py-1 print:px-1 align-middle text-center font-mono font-bold text-slate-800 border border-agm-box-border">
+                          1.00 SQM
+                        </td>
+                        <td className="py-2.5 px-3 print:py-1 print:px-2 align-middle text-right font-mono font-semibold text-slate-800 border border-agm-box-border">
+                          {formatNumber(displaySubtotal)}
+                        </td>
+                        <td className="py-2.5 px-3 print:py-1 print:px-2 align-middle text-right font-mono font-bold text-slate-900 border border-agm-box-border">
+                          {formatNumber(displaySubtotal)}
                         </td>
                       </tr>
                     )}
@@ -378,10 +394,10 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
 
           <tr>
             <td className="p-0 border-none align-top">
-              <div className="px-10 print:px-8">
+              <div className="px-10 print:px-0">
                 <div className="flex items-stretch justify-between gap-4 mt-3.5 print:mt-1.5 print-avoid-break">
-                  <div className="flex-1 border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl text-[11.5px] print:text-[9.5px] flex flex-col justify-center shadow-2xs">
-                    <div className="font-bold mb-1.5 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5">
+                  <div className="flex-1 border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2 rounded-xl text-[11.5px] print:text-[10px] flex flex-col justify-center shadow-2xs">
+                    <div className="font-bold mb-1.5 print:mb-0.5 text-slate-900 uppercase text-[11px] print:text-[9.5px] tracking-wider text-agm-green flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
                       BANKING INFORMATION
                     </div>
@@ -419,13 +435,13 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                     </div>
                   </div>
 
-                  <div className="w-80 border border-slate-200 print:border-slate-300 bg-white rounded-xl overflow-hidden shadow-2xs text-[12px] print:text-[10px]">
+                  <div className="w-80 border border-slate-200 print:border-slate-300 bg-white rounded-xl overflow-hidden shadow-2xs text-[12px] print:text-[10.5px]">
                     <div className="divide-y divide-slate-100 print:divide-slate-200">
                       <div className="flex items-center justify-between px-4 py-2.5 print:py-1 bg-slate-50/40">
                         <span className="font-semibold text-slate-600">
                           Subtotal (Excl. VAT)
                         </span>
-                        <span className="font-mono font-bold text-slate-900 text-[12.5px] print:text-[10.5px]">
+                        <span className="font-mono font-bold text-slate-900 text-[12.5px] print:text-[11px]">
                           AED {formatNumber(displaySubtotal)}
                         </span>
                       </div>
@@ -442,10 +458,10 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
                       )}
 
                       <div className="flex items-center justify-between px-4 py-2.5 print:py-1.5 bg-agm-green text-white">
-                        <span className="font-black tracking-wide text-white text-[12px] print:text-[10.5px] uppercase">
+                        <span className="font-black tracking-wide text-white text-[12px] print:text-[11px] uppercase">
                           TOTAL AMOUNT
                         </span>
-                        <span className="font-mono font-black text-white text-[14px] print:text-[11.5px]">
+                        <span className="font-mono font-black text-white text-[14px] print:text-[12px]">
                           AED {formatNumber(displayTotalAmount)}
                         </span>
                       </div>
@@ -481,9 +497,9 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
           {invoice.notes && (
             <tr>
               <td className="p-0 border-none align-top">
-                <div className="px-10 mt-3.5 print:px-8 print:mt-1.5 print-avoid-break">
-                  <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-1.5 rounded-xl text-[11.5px] print:text-[9.5px]">
-                    <div className="font-bold mb-1 text-slate-900 uppercase text-[11px] print:text-[9px] tracking-wider text-agm-green flex items-center gap-1.5">
+                <div className="px-10 mt-3.5 print:px-0 print:mt-1.5 print-avoid-break">
+                  <div className="border border-slate-200 print:border-slate-300 bg-slate-50/60 print:bg-transparent p-3.5 print:p-2 rounded-xl text-[11.5px] print:text-[10px]">
+                    <div className="font-bold mb-1 text-slate-900 uppercase text-[11px] print:text-[9.5px] tracking-wider text-agm-green flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-agm-green"></span>
                       NOTES &amp; SPECIAL REMARKS
                     </div>
@@ -499,15 +515,27 @@ export const PrintableTaxInvoice: React.FC<PrintableTaxInvoiceProps> = ({
           <tr>
             <td className="p-0 border-none align-top">
               <SalesInvoiceTerms
-                className="px-10 mt-3.5 print:px-8 print:mt-1.5"
+                className="px-10 mt-3.5 print:px-0 print:mt-1.5"
                 customTerms={invoice.terms}
               />
+            </td>
+          </tr>
+
+          <tr>
+            <td className="p-0 border-none align-top">
+              <QuotationSignatures />
             </td>
           </tr>
         </tbody>
       </table>
 
+      {/* Fixed bottom footer for print */}
       <div className="print-footer-bottom fixed-print-footer hidden print:block">
+        <QuotationFooter />
+      </div>
+
+      {/* On-screen footer - full width flush with document bottom */}
+      <div className="w-full mt-8 print:hidden overflow-hidden rounded-b-xl border-t border-slate-100">
         <QuotationFooter />
       </div>
     </div>

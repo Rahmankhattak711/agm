@@ -3,8 +3,6 @@
 import { useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-  useCreateUser,
-  useUpdateUser,
   useDeleteUser,
   useUsers,
 } from "@/lib/hooks/admin-hooks";
@@ -32,8 +30,6 @@ import {
 } from "lucide-react";
 import { ALL_ROLES } from "../types";
 import { UserRegisterTable } from "../components/UserRegisterTable";
-import { CreateUserModal } from "../components/CreateUserModal";
-import { EditUserModal } from "../components/EditUserModal";
 
 export default function UserDirectoryPage() {
   const router = useRouter();
@@ -41,18 +37,12 @@ export default function UserDirectoryPage() {
   const { user: currentUser, isSuperAdmin } = useAuth();
   const { confirm } = useConfirm();
 
-  const createUserMutation = useCreateUser();
-  const updateUserMutation = useUpdateUser();
   const deleteUserMutation = useDeleteUser();
 
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
-
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserItem | null>(null);
 
   const users = useMemo(() => usersData?.users || [], [usersData?.users]);
 
@@ -74,49 +64,6 @@ export default function UserDirectoryPage() {
       return matchesSearch && matchesRole && matchesStatus;
     });
   }, [users, search, roleFilter, statusFilter]);
-
-  const handleCreateUser = useCallback(
-    async (values: {
-      fullName: string;
-      email: string;
-      temporaryPassword: string;
-      role: string;
-    }) => {
-      await createUserMutation.mutateAsync({
-        fullName: values.fullName,
-        email: values.email,
-        password: values.temporaryPassword,
-        role: values.role,
-      });
-      setIsCreateOpen(false);
-      toast.success(`User ${values.fullName} created successfully.`);
-    },
-    [createUserMutation],
-  );
-
-  const handleEditUser = useCallback(
-    async (values: {
-      id: string;
-      fullName: string;
-      email: string;
-      role?: string;
-      isActive?: boolean;
-      password?: string;
-    }) => {
-      await updateUserMutation.mutateAsync({
-        id: values.id,
-        fullName: values.fullName,
-        email: values.email,
-        role: values.role,
-        isActive: values.isActive,
-        password: values.password || undefined,
-      });
-      setIsEditOpen(false);
-      setEditingUser(null);
-      toast.success("User updated successfully.");
-    },
-    [updateUserMutation],
-  );
 
   const handleDeleteUser = useCallback(
     async (targetUser: UserItem) => {
@@ -155,43 +102,43 @@ export default function UserDirectoryPage() {
         return {
           title: "Super Administrator / Owner",
           department: "Executive Management",
-          badgeClass: "bg-slate-900 text-white border-slate-900",
+          badgeClass: "bg-purple-100 text-purple-900 border-purple-200",
           permissionsSummary: "Full Root System Access",
         };
       case "ADMIN":
         return {
           title: "System Administrator",
           department: "IT & Operations",
-          badgeClass: "bg-emerald-50 text-emerald-800 border-emerald-200",
+          badgeClass: "bg-emerald-100 text-emerald-900 border-emerald-200",
           permissionsSummary: "User Mgmt & Approvals",
         };
       case "ACCOUNTANT":
         return {
-          title: "Senior Accountant",
+          title: "Finance (Senior Accountant)",
           department: "Finance & Accounts",
-          badgeClass: "bg-blue-50 text-blue-800 border-blue-200",
+          badgeClass: "bg-blue-100 text-blue-900 border-blue-200",
           permissionsSummary: "GL, Invoices & Banking",
         };
       case "HR":
         return {
           title: "HR Specialist",
           department: "Human Resources",
-          badgeClass: "bg-purple-50 text-purple-800 border-purple-200",
+          badgeClass: "bg-rose-100 text-rose-900 border-rose-200",
           permissionsSummary: "Payroll, Leaves & Staff",
         };
       case "INVENTORY_MANAGER":
         return {
           title: "Inventory Lead",
           department: "Warehouse & Supply",
-          badgeClass: "bg-amber-50 text-amber-800 border-amber-200",
+          badgeClass: "bg-indigo-100 text-indigo-900 border-indigo-200",
           permissionsSummary: "Stock & Purchase Orders",
         };
       default:
         return {
-          title: "Standard Operational User",
+          title: "Operations (Site Execution)",
           department: "Site Operations",
-          badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
-          permissionsSummary: "Operational View Access",
+          badgeClass: "bg-amber-100 text-amber-900 border-amber-200",
+          permissionsSummary: "Operational Access",
         };
     }
   };
@@ -248,11 +195,11 @@ export default function UserDirectoryPage() {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => setIsCreateOpen(true)}
+            onClick={() => router.push("/administration/users/new")}
             icon={<Plus size={14} />}
             className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs cursor-pointer"
           >
-            Invite User
+            Create User
           </Button>
         </div>
       </div>
@@ -420,10 +367,7 @@ export default function UserDirectoryPage() {
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      setEditingUser(u);
-                      setIsEditOpen(true);
-                    }}
+                    onClick={() => router.push(`/administration/users/${u.id}/edit`)}
                     className="flex-1 py-1.5 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Edit2 className="w-3.5 h-3.5 text-slate-500" />
@@ -439,7 +383,7 @@ export default function UserDirectoryPage() {
                     <ArrowUpRight className="w-4 h-4" />
                   </button>
 
-                  {u.id !== currentUser?.id && (
+                  {u.id !== currentUser?.id && (isSuperAdmin || u.role !== "SUPER_ADMIN") && (
                     <button
                       type="button"
                       onClick={() => handleDeleteUser(u)}
@@ -462,35 +406,13 @@ export default function UserDirectoryPage() {
             isLoading={isLoading}
             search={search}
             currentUserId={currentUser?.id}
-            onAddUser={() => setIsCreateOpen(true)}
-            onEdit={(user) => {
-              setEditingUser(user);
-              setIsEditOpen(true);
-            }}
+            isSuperAdmin={isSuperAdmin}
+            onView={(u) => router.push(`/administration/users/${u.id}`)}
+            onAddUser={() => router.push("/administration/users/new")}
+            onEdit={(user) => router.push(`/administration/users/${user.id}/edit`)}
             onDelete={handleDeleteUser}
           />
         </div>
-      )}
-
-      {/* Modals */}
-      <CreateUserModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        onSubmit={handleCreateUser}
-        isPending={createUserMutation.isPending}
-      />
-
-      {editingUser && (
-        <EditUserModal
-          isOpen={isEditOpen}
-          user={editingUser}
-          onClose={() => {
-            setIsEditOpen(false);
-            setEditingUser(null);
-          }}
-          onSubmit={handleEditUser}
-          isPending={updateUserMutation.isPending}
-        />
       )}
     </div>
   );

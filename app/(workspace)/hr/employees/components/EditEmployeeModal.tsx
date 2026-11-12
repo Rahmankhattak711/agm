@@ -11,6 +11,7 @@ import {
   PaymentMethod,
   useUpdateEmployee,
 } from "@/lib/hooks/api-hooks";
+import { useDepartments, useDesignations } from "@/lib/hooks/hr-hooks";
 import { Modal, Button } from "@/components/ui";
 import { FormInput, FormSubmit, FormUaePhoneInput } from "@/components/ui/form";
 import { toast } from "@/lib/toast";
@@ -28,6 +29,8 @@ export function EditEmployeeModal({
 }: EditEmployeeModalProps) {
   const [formError, setFormError] = useState("");
   const updateEmployeeMutation = useUpdateEmployee();
+  const { data: departments = [] } = useDepartments();
+  const { data: designations = [] } = useDesignations();
 
   const form = useForm({
     defaultValues: {
@@ -208,20 +211,40 @@ export function EditEmployeeModal({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <form.Field name="department">
             {(field) => (
-              <FormInput
-                field={field}
-                label="Department"
-                placeholder="e.g. Operations"
-              />
+              <div>
+                <label className="block text-slate-700 font-medium mb-1 text-xs">Department</label>
+                <select
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:bg-white focus:border-slate-400 transition-colors cursor-pointer"
+                >
+                  <option value="">Select Department...</option>
+                  {departments.map((d: any) => (
+                    <option key={d.id || d.name} value={d.name}>
+                      {d.name} ({d.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
           </form.Field>
           <form.Field name="designation">
             {(field) => (
-              <FormInput
-                field={field}
-                label="Designation"
-                placeholder="e.g. Site Supervisor"
-              />
+              <div>
+                <label className="block text-slate-700 font-medium mb-1 text-xs">Designation</label>
+                <select
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:bg-white focus:border-slate-400 transition-colors cursor-pointer"
+                >
+                  <option value="">Select Designation...</option>
+                  {designations.map((d: any) => (
+                    <option key={d.id || d.name} value={d.name}>
+                      {d.name} ({d.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
           </form.Field>
           <form.Field name="joiningDate">

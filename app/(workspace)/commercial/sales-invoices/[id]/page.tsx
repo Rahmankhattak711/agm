@@ -116,7 +116,7 @@ export default function SalesInvoiceDetailPage() {
     return (
       <div className="flex h-full w-full items-center justify-center p-12 bg-white">
         <div className="text-center space-y-3">
-          <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="w-8 h-8 border-3 border-[#1d4ed8] border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-xs text-slate-500 font-medium">Loading sales invoice...</p>
         </div>
       </div>
@@ -130,7 +130,7 @@ export default function SalesInvoiceDetailPage() {
         <button
           type="button"
           onClick={() => router.push("/commercial/sales-invoices")}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold shadow-xs hover:bg-indigo-700 cursor-pointer"
+          className="px-4 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer"
         >
           &larr; Back to Invoices
         </button>
@@ -142,25 +142,25 @@ export default function SalesInvoiceDetailPage() {
   const balanceDue = Number(invoice.remainingBalance !== undefined ? invoice.remainingBalance : invoice.totalAmount || 0);
 
   return (
-    <div className="w-full h-full min-h-screen bg-slate-100 flex overflow-hidden">
-      {/* ══════════ LEFT PANE: INVOICES MASTER LIST matching Image 2 ══════════ */}
+    <div className="w-full h-full min-h-screen bg-[#f8fafc] flex overflow-hidden print:block print:bg-white print:overflow-visible print:min-h-0 print:h-auto print:p-0 print:m-0">
+      {/* ══════════ LEFT PANE: INVOICES MASTER LIST ══════════ */}
       <div
         className={`${
           isSidebarOpen ? "w-80 md:w-88" : "w-0 hidden md:block md:w-0"
-        } shrink-0 bg-white border-r border-slate-200/90 flex flex-col transition-all duration-200 z-10 overflow-hidden`}
+        } shrink-0 bg-white border-r border-slate-200/90 flex flex-col transition-all duration-200 z-10 overflow-hidden print:hidden`}
       >
         {/* Sidebar Header */}
         <div className="p-3.5 border-b border-slate-100 space-y-2.5 bg-slate-50/60">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="text-slate-400 font-medium">Sales</span>
+              <span className="text-slate-400 font-medium">Commercial</span>
               <span className="text-slate-300">&gt;</span>
               <span className="text-slate-900 font-bold">Invoices</span>
             </div>
             <button
               type="button"
               onClick={() => router.push("/commercial/sales-invoices")}
-              className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+              className="text-[11px] font-semibold text-[#1d4ed8] hover:text-[#1e40af] cursor-pointer"
             >
               All Invoices
             </button>
@@ -174,7 +174,7 @@ export default function SalesInvoiceDetailPage() {
               placeholder="Search invoices..."
               value={searchSidebar}
               onChange={(e) => setSearchSidebar(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8]"
             />
           </div>
         </div>
@@ -190,15 +190,15 @@ export default function SalesInvoiceDetailPage() {
                 onClick={() => router.push(`/commercial/sales-invoices/${inv.id}`)}
                 className={`p-3 cursor-pointer transition-colors ${
                   isActive
-                    ? "bg-indigo-50/70 border-l-4 border-indigo-600 pl-2"
+                    ? "bg-[#eff6ff] border-l-4 border-[#1d4ed8] pl-2"
                     : "hover:bg-slate-50"
                 }`}
               >
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-bold text-slate-900 truncate max-w-[140px]">
+                  <span className="font-semibold text-slate-800 truncate max-w-[140px]">
                     {inv.customerName || "Customer"}
                   </span>
-                  <span className="font-mono font-bold text-slate-900">
+                  <span className="font-mono font-medium text-slate-800">
                     AED {Number(inv.totalAmount || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -212,11 +212,27 @@ export default function SalesInvoiceDetailPage() {
                     | {inv.invoiceNumber}
                   </span>
                   <span
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-sans font-semibold uppercase ${
-                      isInvFinalized
-                        ? "bg-blue-50 text-blue-700 border border-blue-200"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
+                    className="px-1.5 py-0.5 rounded text-[10px] font-sans font-medium uppercase"
+                    style={{
+                      backgroundColor:
+                        inv.status === "PAID"
+                          ? "#f0fdf4"
+                          : isInvFinalized
+                            ? "#eff6ff"
+                            : "#fefce8",
+                      color:
+                        inv.status === "PAID"
+                          ? "#15803d"
+                          : isInvFinalized
+                            ? "#1d4ed8"
+                            : "#a16207",
+                      border:
+                        inv.status === "PAID"
+                          ? "1px solid #bbf7d0"
+                          : isInvFinalized
+                            ? "1px solid #bfdbfe"
+                            : "1px solid #fef08a",
+                    }}
                   >
                     {inv.status}
                   </span>
@@ -227,11 +243,14 @@ export default function SalesInvoiceDetailPage() {
         </div>
       </div>
 
-      {/* ══════════ RIGHT PANE: DEDICATED INVOICE DETAIL VIEW matching Image 2 ══════════ */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50/50">
-        {/* Top Control Bar matching Image 2 */}
-        <div className="bg-white px-6 py-3.5 border-b border-slate-200/90 flex flex-wrap items-center justify-between gap-4 shrink-0 shadow-2xs">
-          {/* Left: Back Button + Sidebar Toggle + Invoice Title + Status + Accounting Journal Badge (🟩🟩) */}
+      {/* ══════════ RIGHT PANE: DEDICATED INVOICE DETAIL VIEW ══════════ */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50/50 print:block print:overflow-visible print:h-auto print:bg-white print:p-0 print:m-0">
+        {/* Top Control Bar */}
+        <div
+          className="bg-white px-5 sm:px-6 py-3 border-b flex flex-wrap items-center justify-between gap-4 shrink-0 shadow-2xs print:hidden"
+          style={{ borderColor: "#cbd5e1" }}
+        >
+          {/* Left: Back Button + Sidebar Toggle + Invoice Title + Status + Accounting Journal Badge */}
           <div className="flex items-center gap-2.5">
             <button
               type="button"
@@ -242,17 +261,18 @@ export default function SalesInvoiceDetailPage() {
                   router.push("/commercial/sales-invoices");
                 }
               }}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
+              className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-[#f8fafc] transition-colors shadow-2xs cursor-pointer flex items-center justify-center shrink-0"
+              style={{ border: "1px solid #cbd5e1" }}
               title="Go back to previous page"
             >
-              <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
-              <span>Back</span>
+              <ArrowLeft className="w-4 h-4" />
             </button>
 
             <button
               type="button"
               onClick={() => setIsSidebarOpen((v) => !v)}
-              className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 cursor-pointer hidden md:flex"
+              className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-[#f8fafc] cursor-pointer hidden md:flex transition-colors shadow-2xs"
+              style={{ border: "1px solid #cbd5e1" }}
               title={isSidebarOpen ? "Collapse Invoices List" : "Show Invoices List"}
             >
               <Layers className="w-4 h-4" />
@@ -260,17 +280,33 @@ export default function SalesInvoiceDetailPage() {
 
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold text-slate-900 tracking-tight">
+                <h1 className="text-base font-bold text-slate-800 tracking-tight">
                   Invoice {invoice.invoiceNumber}
                 </h1>
 
                 {/* Status Pill */}
                 <span
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold tracking-wide uppercase ${
-                    isFinalized
-                      ? "bg-blue-50 text-blue-700 border border-blue-200"
-                      : "bg-amber-50 text-amber-700 border border-amber-200"
-                  }`}
+                  className="px-2 py-0.5 rounded text-[10.5px] font-medium tracking-wide uppercase"
+                  style={{
+                    backgroundColor:
+                      invoice.status === "PAID"
+                        ? "#f0fdf4"
+                        : isFinalized
+                          ? "#eff6ff"
+                          : "#fefce8",
+                    color:
+                      invoice.status === "PAID"
+                        ? "#15803d"
+                        : isFinalized
+                          ? "#1d4ed8"
+                          : "#a16207",
+                    border:
+                      invoice.status === "PAID"
+                        ? "1px solid #bbf7d0"
+                        : isFinalized
+                          ? "1px solid #bfdbfe"
+                          : "1px solid #fef08a",
+                  }}
                 >
                   {invoice.status === "POSTED" ? "FINALIZED" : invoice.status}
                 </span>
@@ -370,7 +406,7 @@ export default function SalesInvoiceDetailPage() {
                                 )}`
                               )
                             }
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:underline cursor-pointer"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1d4ed8] hover:text-[#1e40af] hover:underline cursor-pointer"
                           >
                             <span>Open in General Ledger</span>
                             <ExternalLink className="w-3 h-3" />
@@ -395,7 +431,7 @@ export default function SalesInvoiceDetailPage() {
                 type="button"
                 onClick={handlePostInvoice}
                 disabled={postMutation.isPending}
-                className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Post to GL</span>
@@ -406,7 +442,14 @@ export default function SalesInvoiceDetailPage() {
               <button
                 type="button"
                 onClick={() => setIsPaymentModalOpen(true)}
-                className="px-4 py-1.5 rounded-lg bg-[#5046e5] hover:bg-[#4338ca] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-lg text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
+                style={{ backgroundColor: "#1d4ed8" }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#1e40af")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#1d4ed8")
+                }
               >
                 <CreditCard className="w-3.5 h-3.5" />
                 <span>Record payment</span>
@@ -416,7 +459,7 @@ export default function SalesInvoiceDetailPage() {
             <button
               type="button"
               onClick={handlePrint}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 rounded-lg border border-[#cbd5e1] bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5 text-slate-500" />
               <span>Print / PDF</span>
@@ -424,12 +467,12 @@ export default function SalesInvoiceDetailPage() {
           </div>
         </div>
 
-        {/* ══════════ MAIN SCROLLABLE CANVAS: VISUAL INVOICE PREVIEW matching Image 2 ══════════ */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
-          <div className="max-w-4xl mx-auto space-y-6">
+        {/* ══════════ MAIN SCROLLABLE CANVAS: VISUAL INVOICE PREVIEW ══════════ */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar print:p-0 print:m-0 print:overflow-visible print:block print:w-full bg-[#f8fafc] print:bg-white">
+          <div className="max-w-4xl mx-auto space-y-6 print:space-y-0 print:max-w-none print:w-full print:m-0 print:p-0">
             {/* Payments Summary Bar if payments exist */}
             {invoice.payments && invoice.payments.length > 0 && (
-              <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
+              <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs print:hidden">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -477,178 +520,9 @@ export default function SalesInvoiceDetailPage() {
               </div>
             )}
 
-            {/* Visual Tax Invoice Document Preview Canvas matching Image 2 */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-md p-8 sm:p-12 relative overflow-hidden">
-              {/* Document Header */}
-              <div className="flex justify-between items-start pb-8 border-b border-slate-100">
-                <div>
-                  <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Invoice</h2>
-                  <p className="text-xs text-slate-500 font-medium mt-1 font-mono">
-                    Tax Invoice / فاتورة ضريبية
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-slate-900 text-base">AGM Contracting & Fitout LLC</div>
-                  <div className="text-xs text-slate-500">Business Bay, Dubai, United Arab Emirates</div>
-                  <div className="text-xs text-slate-500 font-mono mt-0.5">TRN: 100492819000003</div>
-                </div>
-              </div>
-
-              {/* Client & Metadata Two-Column Grid */}
-              <div className="grid grid-cols-2 gap-8 py-8 border-b border-slate-100 text-xs">
-                <div>
-                  <span className="text-slate-400 font-medium uppercase text-[10px] tracking-wider block mb-1">
-                    Customer / Client
-                  </span>
-                  <div className="font-bold text-slate-900 text-sm">{invoice.customerName}</div>
-                  {invoice.customerTrn && (
-                    <div className="text-slate-600 font-mono mt-0.5">TRN: {invoice.customerTrn}</div>
-                  )}
-                  {invoice.projectScope && (
-                    <div className="text-slate-500 mt-1 italic">Scope: {invoice.projectScope}</div>
-                  )}
-                </div>
-
-                <div className="text-right space-y-1">
-                  <div>
-                    <span className="text-slate-400 text-[10px] uppercase font-medium">Invoice Number: </span>
-                    <span className="font-mono font-bold text-slate-900">{invoice.invoiceNumber}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 text-[10px] uppercase font-medium">Date: </span>
-                    <span className="font-mono text-slate-700">
-                      {new Date(invoice.invoiceDate).toLocaleDateString("en-GB")}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 text-[10px] uppercase font-medium">Due Date: </span>
-                    <span className="font-mono text-slate-700">
-                      {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString("en-GB") : "Upon Receipt"}
-                    </span>
-                  </div>
-                  <div className="pt-2">
-                    <span className="text-slate-400 text-[10px] uppercase font-medium">Balance Due: </span>
-                    <span className="font-mono text-base font-bold text-slate-900">
-                      AED {balanceDue.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Line Items Table */}
-              <div className="py-6">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                      <th className="py-2.5 px-2">#</th>
-                      <th className="py-2.5 px-3">Description</th>
-                      <th className="py-2.5 px-3 text-right">Qty</th>
-                      <th className="py-2.5 px-3 text-right">Unit Price</th>
-                      <th className="py-2.5 px-3 text-right">VAT Rate</th>
-                      <th className="py-2.5 px-3 text-right">Total (AED)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-mono">
-                    {invoice.items && invoice.items.length > 0 ? (
-                      invoice.items.map((it: any, idx: number) => (
-                        <tr key={it.id || idx}>
-                          <td className="py-3 px-2 text-slate-400">{idx + 1}</td>
-                          <td className="py-3 px-3 font-sans font-medium text-slate-800">
-                            {it.description}
-                          </td>
-                          <td className="py-3 px-3 text-right text-slate-600">
-                            {Number(it.quantity || 1).toFixed(2)} {it.unit || "SQM"}
-                          </td>
-                          <td className="py-3 px-3 text-right text-slate-600">
-                            {Number(it.unitPrice || 0).toFixed(2)}
-                          </td>
-                          <td className="py-3 px-3 text-right text-slate-500 font-sans text-[11px]">
-                            5% Standard
-                          </td>
-                          <td className="py-3 px-3 text-right font-bold text-slate-900">
-                            {Number(it.totalAmount || 0).toFixed(2)}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td className="py-3 px-2 text-slate-400">1</td>
-                        <td className="py-3 px-3 font-sans font-medium text-slate-800">
-                          {invoice.projectScope || "Commercial Fitout & Contracting Services"}
-                        </td>
-                        <td className="py-3 px-3 text-right text-slate-600">1.00 SQM</td>
-                        <td className="py-3 px-3 text-right text-slate-600">
-                          {Number(invoice.subtotal || 0).toFixed(2)}
-                        </td>
-                        <td className="py-3 px-3 text-right text-slate-500 font-sans text-[11px]">
-                          5% Standard
-                        </td>
-                        <td className="py-3 px-3 text-right font-bold text-slate-900">
-                          {Number(invoice.subtotal || 0).toFixed(2)}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Financial Totals Breakdown */}
-              <div className="pt-6 border-t border-slate-100 flex justify-end">
-                <div className="w-72 space-y-2 text-xs font-mono">
-                  <div className="flex justify-between text-slate-600">
-                    <span className="font-sans">Subtotal (Excl. VAT):</span>
-                    <span>AED {Number(invoice.subtotal || 0).toFixed(2)}</span>
-                  </div>
-
-                  {Number(invoice.discount || 0) > 0 && (
-                    <div className="flex justify-between text-rose-600">
-                      <span className="font-sans">Discount:</span>
-                      <span>- AED {Number(invoice.discount).toFixed(2)}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between text-slate-600">
-                    <span className="font-sans">5% UAE Output VAT:</span>
-                    <span>AED {Number(invoice.vatAmount || 0).toFixed(2)}</span>
-                  </div>
-
-                  <div className="pt-2 border-t-2 border-slate-900 flex justify-between font-bold text-sm text-slate-900">
-                    <span className="font-sans">Total (AED):</span>
-                    <span>AED {Number(invoice.totalAmount || 0).toFixed(2)}</span>
-                  </div>
-
-                  {Number(invoice.paidAmount || 0) > 0 && (
-                    <div className="flex justify-between text-emerald-700 font-bold">
-                      <span className="font-sans">Amount Paid:</span>
-                      <span>AED {Number(invoice.paidAmount).toFixed(2)}</span>
-                    </div>
-                  )}
-
-                  <div className="pt-1 border-t border-slate-200 flex justify-between font-bold text-sm text-slate-900">
-                    <span className="font-sans">Balance Due:</span>
-                    <span>AED {balanceDue.toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Terms and Bank Transfer Details */}
-              <div className="mt-12 pt-6 border-t border-slate-100 grid grid-cols-2 gap-6 text-[11px] text-slate-500">
-                <div>
-                  <h4 className="font-bold text-slate-800 uppercase text-[10px] tracking-wider mb-1">
-                    Bank Account Details
-                  </h4>
-                  <p>Bank: RAK Bank PJSC</p>
-                  <p className="font-mono">IBAN: AE920330000000123456789</p>
-                  <p className="font-mono">Account: 0012345678901</p>
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-800 uppercase text-[10px] tracking-wider mb-1">
-                    Terms & Conditions
-                  </h4>
-                  <p>Payment is due according to agreed milestones.</p>
-                  <p>All values in United Arab Emirates Dirham (AED).</p>
-                </div>
-              </div>
+            {/* Visual Official Tax Invoice Document (Identical to Quotation PDF / Template standard) */}
+            <div className="overflow-x-auto min-w-0 max-w-full custom-scrollbar print:overflow-visible">
+              <PrintableTaxInvoice invoice={invoice} />
             </div>
           </div>
         </div>
@@ -669,11 +543,6 @@ export default function SalesInvoiceDetailPage() {
           }}
         />
       )}
-
-      {/* Hidden printable tax invoice component for browser print */}
-      <div className="hidden print:block">
-        <PrintableTaxInvoice invoice={invoice} />
-      </div>
     </div>
   );
 }

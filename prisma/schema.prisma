@@ -497,7 +497,10 @@ model Employee {
   payrolls    PayrollRecord[]
   attendances DailyAttendance[]
   leaves      LeaveRequest[]
-  bonuses     Bonus[]
+  bonuses          Bonus[]
+  salaryStructures SalaryStructure[]
+  salarySlips      SalarySlip[]
+  documents        EmployeeDocument[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -639,6 +642,121 @@ model PayrollRecord {
 
   @@unique([employeeId, month, year])
   @@map("payroll_records")
+}
+
+model Department {
+  id           String        @id @default(uuid()) @db.Uuid
+  code         String        @unique
+  name         String
+  description  String?
+  isActive     Boolean       @default(true) @map("is_active")
+  designations Designation[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@map("departments")
+}
+
+model Designation {
+  id            String      @id @default(uuid()) @db.Uuid
+  code          String      @unique
+  name          String
+  description   String?
+  departmentId  String?     @map("department_id") @db.Uuid
+  department    Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  isFieldWorker Boolean     @default(false) @map("is_field_worker")
+  isActive      Boolean     @default(true) @map("is_active")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@map("designations")
+}
+
+model SalaryStructure {
+  id                 String   @id @default(uuid()) @db.Uuid
+  employeeId         String   @map("employee_id") @db.Uuid
+  employee           Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  effectiveDate      DateTime @map("effective_date") @db.Date
+  basicSalary        Decimal  @map("basic_salary") @db.Decimal(12, 2)
+  housingAllowance   Decimal  @default(0.00) @map("housing_allowance") @db.Decimal(12, 2)
+  transportAllowance Decimal  @default(0.00) @map("transport_allowance") @db.Decimal(12, 2)
+  otherAllowances    Decimal  @default(0.00) @map("other_allowances") @db.Decimal(12, 2)
+  grossSalary        Decimal  @map("gross_salary") @db.Decimal(12, 2)
+  notes              String?
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@map("salary_structures")
+}
+
+model PayrollBatch {
+  id              String       @id @default(uuid()) @db.Uuid
+  batchNumber     String       @unique @map("batch_number")
+  month           Int
+  year            Int
+  totalGross      Decimal      @default(0.00) @map("total_gross") @db.Decimal(15, 2)
+  totalOvertime   Decimal      @default(0.00) @map("total_overtime") @db.Decimal(15, 2)
+  totalDeductions Decimal      @default(0.00) @map("total_deductions") @db.Decimal(15, 2)
+  totalNet        Decimal      @default(0.00) @map("total_net") @db.Decimal(15, 2)
+  status          String       @default("DRAFT")
+  approvedById    String?      @map("approved_by_id") @db.Uuid
+  approvedAt      DateTime?    @map("approved_at")
+  paymentDate     DateTime?    @map("payment_date") @db.Date
+  journalEntryId  String?      @map("journal_entry_id") @db.Uuid
+  notes           String?
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  salarySlips     SalarySlip[]
+
+  @@map("payroll_batches")
+}
+
+model SalarySlip {
+  id                 String       @id @default(uuid()) @db.Uuid
+  slipNumber         String       @unique @map("slip_number")
+  batchId            String       @map("batch_id") @db.Uuid
+  batch              PayrollBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  employeeId         String       @map("employee_id") @db.Uuid
+  employee           Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  month              Int
+  year               Int
+  basicSalary        Decimal      @map("basic_salary") @db.Decimal(12, 2)
+  housingAllowance   Decimal      @default(0.00) @map("housing_allowance") @db.Decimal(12, 2)
+  transportAllowance Decimal      @default(0.00) @map("transport_allowance") @db.Decimal(12, 2)
+  otherAllowances    Decimal      @default(0.00) @map("other_allowances") @db.Decimal(12, 2)
+  overtimeAmount     Decimal      @default(0.00) @map("overtime_amount") @db.Decimal(12, 2)
+  grossSalary        Decimal      @map("gross_salary") @db.Decimal(12, 2)
+  absenceDeductions  Decimal      @default(0.00) @map("absence_deductions") @db.Decimal(12, 2)
+  otherDeductions    Decimal      @default(0.00) @map("other_deductions") @db.Decimal(12, 2)
+  totalDeductions    Decimal      @default(0.00) @map("total_deductions") @db.Decimal(12, 2)
+  netSalary          Decimal      @map("net_salary") @db.Decimal(12, 2)
+  paymentStatus      String       @default("PENDING") @map("payment_status")
+  paymentMethod      String       @default("WPS_BANK_TRANSFER") @map("payment_method")
+  bankName           String?      @map("bank_name")
+  iban               String?      @map("iban")
+  pdfGeneratedAt     DateTime?    @map("pdf_generated_at")
+  createdAt          DateTime     @default(now()) @map("created_at")
+
+  @@unique([employeeId, month, year])
+  @@map("salary_slips")
+}
+
+model EmployeeDocument {
+  id             String    @id @default(uuid()) @db.Uuid
+  employeeId     String    @map("employee_id") @db.Uuid
+  employee       Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  documentType   String    @map("document_type")
+  documentNumber String?   @map("document_number")
+  issueDate      DateTime? @map("issue_date") @db.Date
+  expiryDate     DateTime? @map("expiry_date") @db.Date
+  fileName       String?   @map("file_name")
+  fileUrl        String?   @map("file_url")
+  status         String    @default("ACTIVE")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("employee_documents")
 }
 
 model Supplier {

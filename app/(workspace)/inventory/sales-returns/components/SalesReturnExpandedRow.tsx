@@ -58,7 +58,14 @@ export function SalesReturnExpandedRow({
       onClose={onClose}
       headerLeft={
         <>
-          <span className="px-2.5 py-1 rounded-lg bg-teal-900 text-teal-200 font-mono font-bold text-xs shadow-2xs">
+          <span
+            className="px-2.5 py-1 rounded-lg font-mono font-bold text-xs shadow-2xs"
+            style={{
+              backgroundColor: "#eff6ff",
+              color: "#1d4ed8",
+              border: "1px solid #bfdbfe",
+            }}
+          >
             {item.creditNoteNumber}
           </span>
           <span className="text-xs font-bold text-slate-900">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment } from "react";
+import React, { Fragment, useState, useMemo } from "react";
 import {
   BuildingIcon,
   ChevronDownIcon,
@@ -9,46 +9,11 @@ import {
   SearchIcon,
   TrashIcon,
 } from "@/components/icons";
-import {
-  Button,
-  Input,
-  RegisterTable,
-  RegisterColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableLoading,
-  FilterBar,
-} from "@/components/ui";
 import { Customer } from "@/lib/hooks/api-hooks";
 import { CustomerExpandedRow } from "./CustomerExpandedRow";
 import { formatNumber } from "@/lib/utils/format";
-
-const COLUMNS: RegisterColumn[] = [
-  { label: "Customer Code", compact: true, className: "whitespace-nowrap" },
-  { label: "Customer / Company", compact: true },
-  { label: "Phone / Mobile", compact: true, className: "whitespace-nowrap" },
-  { label: "Email / Address", compact: true },
-  {
-    label: "Credit Limit (AED)",
-    align: "right",
-    compact: true,
-    className: "whitespace-nowrap",
-  },
-  {
-    label: "Outstanding (AED)",
-    align: "right",
-    compact: true,
-    className: "whitespace-nowrap",
-  },
-  {
-    label: "Actions",
-    align: "right",
-    compact: true,
-    hideOnPrint: true,
-    className: "whitespace-nowrap pr-3",
-  },
-];
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
 
 export type CustomerFilterTab = "ALL" | "OUTSTANDING" | "SETTLED" | "TRN";
 
@@ -67,6 +32,8 @@ export interface CustomerTableProps {
   onDeleteCustomer?: (customer: Customer) => void;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export function CustomerTable({
   customers,
   isLoading,
@@ -81,6 +48,8 @@ export function CustomerTable({
   onEditCustomer,
   onDeleteCustomer,
 }: CustomerTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+
   const filterTabs: { id: CustomerFilterTab; label: string }[] = [
     { id: "ALL", label: "All Clients" },
     { id: "OUTSTANDING", label: "Outstanding Due" },
@@ -88,222 +57,356 @@ export function CustomerTable({
     { id: "TRN", label: "Tax Registered (TRN)" },
   ];
 
-  return (
-    <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 min-w-0 max-w-full">
-      <FilterBar
-        tabs={filterTabs}
-        activeTab={statusFilter}
-        onTabChange={(tabId) =>
-          onStatusFilterChange(tabId as CustomerFilterTab)
-        }
-        search={search}
-        onSearchChange={onSearchChange}
-        searchPlaceholder="Search customer name, company, code, TRN, phone..."
-        totalCount={customers.length}
-        countLabel="Clients Displayed"
-      />
+  // Pagination logic
+  const totalPages = Math.ceil(customers.length / ITEMS_PER_PAGE) || 1;
+  const paginatedCustomers = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return customers.slice(start, start + ITEMS_PER_PAGE);
+  }, [customers, currentPage]);
 
+  const startIndex = customers.length === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1;
+  const endIndex = Math.min(currentPage * ITEMS_PER_PAGE, customers.length);
+
+  return (
+    <div className="space-y-4">
+      {/* ══════════ SLEEK UNIFIED FILTER BAR ══════════ */}
+      <div
+        className="p-2 sm:p-2.5 rounded-xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-2xs"
+        style={{
+          backgroundColor: "#f4f7fb",
+          border: "1px solid #cbd5e1",
+        }}
+      >
+        {/* Status Filter Buttons */}
+        <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto">
+          {filterTabs.map((tab) => {
+            const isActive = statusFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  onStatusFilterChange(tab.id);
+                  setCurrentPage(1);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
+                  isActive
+                    ? "text-white"
+                    : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-[#cbd5e1]"
+                }`}
+                style={
+                  isActive
+                    ? {
+                        backgroundColor: "#1d4ed8",
+                      }
+                    : undefined
+                }
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right side: Search Input + Total Count Pill */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="relative flex-1 md:w-72">
+            <SearchIcon
+              size={15}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              type="text"
+              placeholder="Search customer name, company, code..."
+              value={search}
+              onChange={(e) => {
+                onSearchChange(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-9 pr-3 py-1.5 rounded-lg border bg-white text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:ring-1 focus:ring-[#1d4ed8]"
+              style={{ borderColor: "#cbd5e1" }}
+            />
+          </div>
+
+          <span
+            className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 bg-white border shrink-0 shadow-2xs"
+            style={{ borderColor: "#cbd5e1" }}
+          >
+            Total: {customers.length}
+          </span>
+        </div>
+      </div>
+
+      {/* ══════════ CLEAN TABLE CONTAINER (NO DARK BANNER) ══════════ */}
       {error ? (
         <div className="py-8 text-center text-xs text-rose-600 bg-rose-50 rounded-xl border border-rose-200">
           Error loading customer directory: {(error as any).message}
         </div>
       ) : (
-        <RegisterTable
-          title="Master Customer Directory & Ledger"
-          countLabel={`${customers.length} Clients`}
-          columns={COLUMNS}
+        <div
+          className="bg-white rounded-xl overflow-hidden shadow-2xs"
+          style={{ border: "1px solid #cbd5e1" }}
         >
-          <TableBody className="divide-y divide-slate-100 font-medium">
-            {isLoading ? (
-              <TableLoading
-                colSpan={7}
-                message="Loading customer directory..."
-              />
-            ) : customers.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="py-12 text-center text-slate-400 italic"
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr
+                  className="border-b text-[10.5px] font-bold text-slate-600 uppercase tracking-wider"
+                  style={{
+                    backgroundColor: "#f4f7fb",
+                    borderColor: "#cbd5e1",
+                  }}
                 >
-                  No customers match your search criteria. Click &quot;Add New
-                  Customer&quot; to create a new profile.
-                </TableCell>
-              </TableRow>
-            ) : (
-              customers.map((c) => {
-                const isExpanded = expandedCustomerId === c.id;
-                return (
-                  <Fragment key={c.id}>
-                    <TableRow
-                      key={c.id}
-                      onClick={() => onToggleExpand(c.id)}
-                      className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${
-                        isExpanded ? "bg-slate-50/90 font-medium" : ""
-                      }`}
-                    >
-                      <TableCell className="py-2 px-2.5 sm:px-3 font-mono font-bold text-teal-800 whitespace-nowrap text-xs">
-                        <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          <BuildingIcon
-                            size={14}
-                            className="text-teal-700 shrink-0"
-                          />
-                          <span className="hover:text-emerald-800 transition-colors">
-                            {c.customerCode}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-2 px-2.5 sm:px-3 text-slate-900 text-xs">
-                        <div
-                          className="font-bold text-slate-900 truncate max-w-[140px] sm:max-w-[180px]"
-                          title={c.name}
+                  <th className="py-3 px-3.5 whitespace-nowrap">CUSTOMER CODE</th>
+                  <th className="py-3 px-3.5">CUSTOMER / COMPANY</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap">PHONE / MOBILE</th>
+                  <th className="py-3 px-3.5">EMAIL / LOCATION</th>
+                  <th className="py-3 px-3.5 text-right whitespace-nowrap">CREDIT LIMIT (AED)</th>
+                  <th className="py-3 px-3.5 text-right whitespace-nowrap">OUTSTANDING (AED)</th>
+                  <th className="py-3 px-3.5 text-right whitespace-nowrap pr-4">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-slate-500">
+                      <div className="w-6 h-6 border-2 border-[#1d4ed8] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                      Loading customer directory...
+                    </td>
+                  </tr>
+                ) : paginatedCustomers.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-slate-400 italic">
+                      No customers match your search criteria.
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedCustomers.map((c) => {
+                    const isExpanded = expandedCustomerId === c.id;
+                    const bal = Number(c.currentBalance || 0);
+                    return (
+                      <Fragment key={c.id}>
+                        <tr
+                          onClick={() => onToggleExpand(c.id)}
+                          className={`hover:bg-[#f8fafc] transition-colors cursor-pointer ${
+                            isExpanded ? "bg-[#f8fafc]" : ""
+                          }`}
                         >
-                          {c.name}
-                        </div>
-                        {c.companyName && (
-                          <div className="text-[10px] text-slate-400 font-normal truncate max-w-[140px]">
-                            {c.companyName}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-2 px-2.5 sm:px-3 font-mono text-slate-700 text-xs whitespace-nowrap">
-                        {c.phone ? (
-                          <span className="font-semibold text-slate-800 text-[11px]">
-                            {c.phone}
-                          </span>
-                        ) : (
-                          <span className="text-slate-300">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-2 px-2.5 sm:px-3 text-slate-600 text-xs">
-                        <div
-                          className="font-semibold text-slate-800 truncate max-w-[150px] sm:max-w-[190px]"
-                          title={c.email || ""}
-                        >
-                          {c.email || "—"}
-                        </div>
-                        {c.address && (
-                          <div
-                            className="text-[10px] text-slate-400 truncate max-w-[150px] sm:max-w-[190px]"
-                            title={c.address}
-                          >
-                            {c.address}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className="py-2 px-2.5 text-right font-mono font-bold text-slate-700 text-xs whitespace-nowrap"
-                      >
-                        {formatNumber(c.creditLimit)}
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        className={`py-2 px-2.5 text-right font-mono font-bold text-xs whitespace-nowrap ${
-                          Number(c.currentBalance) > 0
-                            ? "text-rose-700"
-                            : "text-emerald-700"
-                        }`}
-                      >
-                        {formatNumber(c.currentBalance)}
-                      </TableCell>
-                      <TableCell className="py-2 px-2 sm:pr-3 text-right print:hidden whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1">
-                          {onEditCustomer && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onEditCustomer(c);
+                          {/* Customer Code Badge */}
+                          <td className="py-3 px-3.5 font-mono whitespace-nowrap">
+                            <span
+                              className="px-2 py-0.5 rounded text-[11px] font-bold"
+                              style={{
+                                backgroundColor: "#eff6ff",
+                                color: "#1d4ed8",
+                                border: "1px solid #bfdbfe",
                               }}
-                              className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-blue-700 rounded-lg hover:bg-blue-50 transition cursor-pointer"
-                              title="Edit Customer"
                             >
-                              <EditIcon
-                                size={18}
-                                className="w-[18px] h-[18px]"
-                              />
-                            </Button>
-                          )}
-                          {onDeleteCustomer && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onDeleteCustomer(c);
-                              }}
-                              className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition cursor-pointer"
-                              title="Delete Customer"
-                            >
-                              <TrashIcon
-                                size={18}
-                                className="w-[18px] h-[18px]"
-                              />
-                            </Button>
-                          )}
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onPrintCustomer(c);
-                            }}
-                            className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-emerald-800 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
-                            title="Print Statement (PDF)"
-                          >
-                            <PrintIcon
-                              size={18}
-                              className="w-[18px] h-[18px]"
-                            />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onToggleExpand(c.id);
-                            }}
-                            className={`h-8 w-8 p-0 flex items-center justify-center rounded-lg transition cursor-pointer ${
-                              isExpanded
-                                ? "text-emerald-800 bg-emerald-100"
-                                : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
-                            }`}
-                            title={
-                              isExpanded ? "Collapse preview" : "Expand preview"
-                            }
-                          >
-                            <ChevronDownIcon
-                              size={18}
-                              className={`w-[18px] h-[18px] transition-transform duration-200 ${
-                                isExpanded ? "rotate-180 text-emerald-800" : ""
-                              }`}
-                            />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                              {c.customerCode || "CUST"}
+                            </span>
+                          </td>
 
-                    {isExpanded && (
-                      <CustomerExpandedRow
-                        customer={c}
-                        onPrint={() => onPrintCustomer(c)}
-                        onEdit={
-                          onEditCustomer ? () => onEditCustomer(c) : undefined
-                        }
-                        onClose={() => onToggleExpand(c.id)}
-                      />
-                    )}
-                  </Fragment>
-                );
-              })
-            )}
-          </TableBody>
-        </RegisterTable>
+                          {/* Customer Name & Company */}
+                          <td className="py-3 px-3.5">
+                            <div className="font-bold text-slate-900 truncate max-w-[200px]" title={c.name}>
+                              {c.name}
+                            </div>
+                            {c.companyName && (
+                              <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                                {c.companyName}
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Phone / Mobile */}
+                          <td className="py-3 px-3.5 font-mono text-slate-700 whitespace-nowrap">
+                            {c.phone ? (
+                              <span className="font-semibold text-slate-800 text-[11px]">
+                                {c.phone}
+                              </span>
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </td>
+
+                          {/* Email / Address */}
+                          <td className="py-3 px-3.5 text-slate-600">
+                            <div className="font-medium text-slate-800 truncate max-w-[180px]">
+                              {c.email || "—"}
+                            </div>
+                            {c.address && (
+                              <div className="text-[10px] text-slate-400 truncate max-w-[180px]">
+                                {c.address}
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Credit Limit */}
+                          <td className="py-3 px-3.5 text-right font-mono font-bold text-slate-700 whitespace-nowrap">
+                            {formatNumber(c.creditLimit)}
+                          </td>
+
+                          {/* Outstanding */}
+                          <td
+                            className={`py-3 px-3.5 text-right font-mono font-bold whitespace-nowrap ${
+                              bal > 0 ? "text-rose-600" : "text-emerald-700"
+                            }`}
+                          >
+                            AED {formatNumber(bal)}
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3 px-3.5 text-right pr-4 whitespace-nowrap">
+                            <div
+                              className="flex items-center justify-end gap-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {/* View SOA Profile */}
+                              <Link
+                                href={`/commercial/customers/${c.id}`}
+                                className="p-1.5 text-slate-400 hover:text-[#1d4ed8] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                                title="View Customer Profile & Statement"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Link>
+
+                              {/* Print SOA PDF */}
+                              <button
+                                type="button"
+                                onClick={() => onPrintCustomer(c)}
+                                className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+                                title="Print Statement of Account (PDF)"
+                              >
+                                <PrintIcon size={16} />
+                              </button>
+
+                              {/* Edit Customer */}
+                              {onEditCustomer && (
+                                <button
+                                  type="button"
+                                  onClick={() => onEditCustomer(c)}
+                                  className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                                  title="Edit Customer"
+                                >
+                                  <EditIcon size={16} />
+                                </button>
+                              )}
+
+                              {/* Delete Customer */}
+                              {onDeleteCustomer && (
+                                <button
+                                  type="button"
+                                  onClick={() => onDeleteCustomer(c)}
+                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                  title="Delete Customer"
+                                >
+                                  <TrashIcon size={16} />
+                                </button>
+                              )}
+
+                              {/* Toggle Expand */}
+                              <button
+                                type="button"
+                                onClick={() => onToggleExpand(c.id)}
+                                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                                  isExpanded
+                                    ? "text-[#1d4ed8] bg-blue-50"
+                                    : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                }`}
+                                title={isExpanded ? "Collapse preview" : "Expand preview"}
+                              >
+                                <ChevronDownIcon
+                                  size={16}
+                                  className={`transition-transform duration-200 ${
+                                    isExpanded ? "rotate-180" : ""
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {isExpanded && (
+                          <CustomerExpandedRow
+                            customer={c}
+                            onPrint={() => onPrintCustomer(c)}
+                            onEdit={onEditCustomer ? () => onEditCustomer(c) : undefined}
+                            onClose={() => onToggleExpand(c.id)}
+                          />
+                        )}
+                      </Fragment>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ══════════ RESPONSIVE PAGINATION FOOTER ══════════ */}
+          <div
+            className="px-4 py-3 border-t flex flex-col sm:flex-row items-center justify-between gap-3 bg-white"
+            style={{ borderColor: "#cbd5e1" }}
+          >
+            <p className="text-xs text-slate-500 font-medium">
+              Showing <span className="font-semibold text-slate-800">{startIndex}</span> to{" "}
+              <span className="font-semibold text-slate-800">{endIndex}</span> of{" "}
+              <span className="font-semibold text-slate-800">{customers.length}</span> clients
+            </p>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage <= 1}
+                className="p-1.5 rounded-lg border text-slate-500 hover:bg-[#f8fafc] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                style={{ borderColor: "#cbd5e1" }}
+                title="Previous page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .map((page, idx, arr) => {
+                  const prev = arr[idx - 1];
+                  const showEllipsis = prev && page - prev > 1;
+                  const isActive = currentPage === page;
+
+                  return (
+                    <React.Fragment key={page}>
+                      {showEllipsis && <span className="px-1 text-slate-400 text-xs">...</span>}
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-7 h-7 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                          isActive
+                            ? "text-white shadow-2xs"
+                            : "bg-white text-slate-600 hover:bg-[#f8fafc] border"
+                        }`}
+                        style={{
+                          backgroundColor: isActive ? "#1d4ed8" : undefined,
+                          borderColor: isActive ? "#1d4ed8" : "#cbd5e1",
+                        }}
+                      >
+                        {page}
+                      </button>
+                    </React.Fragment>
+                  );
+                })}
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+                className="p-1.5 rounded-lg border text-slate-500 hover:bg-[#f8fafc] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                style={{ borderColor: "#cbd5e1" }}
+                title="Next page"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

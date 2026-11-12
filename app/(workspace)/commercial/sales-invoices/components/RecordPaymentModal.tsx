@@ -86,14 +86,20 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
           </div>
         )}
 
-        <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 space-y-1">
-          <p className="font-bold text-emerald-950">
+        <div
+          className="p-3.5 rounded-xl space-y-1 shadow-2xs"
+          style={{
+            backgroundColor: "#eff6ff",
+            border: "1px solid #bfdbfe",
+          }}
+        >
+          <p className="font-bold text-slate-800">
             Customer: {invoice.customerName}
           </p>
           <p className="text-slate-600">
             Total Invoice: AED {Number(invoice.totalAmount).toFixed(2)} |
             Outstanding:{" "}
-            <strong className="text-rose-700">
+            <strong className="text-[#be123c]">
               AED {Number(invoice.remainingBalance).toFixed(2)}
             </strong>
           </p>
@@ -148,7 +154,8 @@ export const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({
           </Button>
           <FormSubmit
             form={paymentForm}
-            className="bg-agm-green hover:bg-agm-green-2 text-white font-bold cursor-pointer"
+            className="text-white font-semibold cursor-pointer shadow-2xs"
+            style={{ backgroundColor: "#1d4ed8" }}
           >
             Post Payment to Ledger
           </FormSubmit>

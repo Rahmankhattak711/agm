@@ -96,15 +96,15 @@ export async function PATCH(request: Request, context: RouteContext) {
           { status: 403 },
         );
       }
-      if (isTargetSuperAdmin) {
+      if (isTargetSuperAdmin && actor.role !== "SUPER_ADMIN") {
         return NextResponse.json(
-          { error: "Cannot change the role of a SUPER_ADMIN" },
+          { error: "Forbidden: Only a Super Admin can modify another Super Admin account" },
           { status: 403 },
         );
       }
-      if (role === "SUPER_ADMIN") {
+      if (role === "SUPER_ADMIN" && actor.role !== "SUPER_ADMIN") {
         return NextResponse.json(
-          { error: "Cannot assign SUPER_ADMIN role" },
+          { error: "Forbidden: Only a Super Admin can promote a user to Super Admin" },
           { status: 403 },
         );
       }
@@ -255,9 +255,9 @@ export async function DELETE(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (target.role === "SUPER_ADMIN") {
+    if (target.role === "SUPER_ADMIN" && actor.role !== "SUPER_ADMIN") {
       return NextResponse.json(
-        { error: "Cannot delete a SUPER_ADMIN account" },
+        { error: "Forbidden: Only a Super Admin can delete another Super Admin account" },
         { status: 403 },
       );
     }
