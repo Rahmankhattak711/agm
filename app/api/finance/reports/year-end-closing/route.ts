@@ -1,4 +1,10 @@
-import { getAuthUser, hasRole, unauthorized, forbidden } from "@/lib/auth-server";
+import {
+  getAuthUser,
+  hasRole,
+  isFinancialUser,
+  unauthorized,
+  forbidden,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { YearEndClosingService } from "@/lib/services/accounting/year-end-closing.service";
@@ -7,6 +13,7 @@ export async function GET(request: Request) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
+    if (!isFinancialUser(authUser)) return forbidden();
 
     const { searchParams } = new URL(request.url);
     const year = parseInt(searchParams.get("year") || "2026", 10);

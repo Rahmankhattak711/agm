@@ -1,4 +1,9 @@
-import { getAuthUser, unauthorized } from "@/lib/auth-server";
+import {
+  getAuthUser,
+  isFinancialUser,
+  unauthorized,
+  forbidden,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -6,6 +11,7 @@ export async function GET(request: Request) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
+    if (!isFinancialUser(authUser)) return forbidden();
 
     const { searchParams } = new URL(request.url);
     const customerId = searchParams.get("customerId");
