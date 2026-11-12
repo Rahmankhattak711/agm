@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getAuthUser, unauthorized, forbidden, hasRole } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 
 export async function GET(
@@ -6,6 +7,21 @@ export async function GET(
   props: { params: Promise<{ id: string }> },
 ) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "COMMERCIAL_MANAGER",
+        "PROJECT_MANAGER",
+        "ESTIMATOR",
+        "ACCOUNTANT",
+      ])
+    ) {
+      return forbidden();
+    }
+
     const { id } = await props.params;
     const record = await (prisma as any).customLetter.findUnique({
       where: { id },
@@ -35,7 +51,7 @@ export async function GET(
   } catch (error: any) {
     console.error("GET /api/commercial/custom-letters/[id] error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch custom letter", details: error.message },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
@@ -46,6 +62,18 @@ export async function DELETE(
   props: { params: Promise<{ id: string }> },
 ) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "COMMERCIAL_MANAGER",
+      ])
+    ) {
+      return forbidden();
+    }
+
     const { id } = await props.params;
     await (prisma as any).customLetter.delete({
       where: { id },
@@ -54,7 +82,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error("DELETE /api/commercial/custom-letters/[id] error:", error);
     return NextResponse.json(
-      { error: "Failed to delete custom letter", details: error.message },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

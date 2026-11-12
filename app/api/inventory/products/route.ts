@@ -203,19 +203,51 @@ export async function PATCH(request: Request) {
       );
     }
 
-    if (data.sku) data.sku = data.sku.trim().toUpperCase();
-    if (data.name) data.name = data.name.trim();
-    if (data.costPrice !== undefined) data.costPrice = Number(data.costPrice);
-    if (data.sellingPrice !== undefined)
-      data.sellingPrice = Number(data.sellingPrice);
-    if (data.reorderLevel !== undefined)
-      data.reorderLevel = Number(data.reorderLevel);
-    if (data.reorderQty !== undefined)
-      data.reorderQty = Number(data.reorderQty);
+    const allowedFields = new Set([
+      "sku",
+      "name",
+      "description",
+      "type",
+      "unit",
+      "barcode",
+      "imageUrl",
+      "brand",
+      "supplierSku",
+      "originCompany",
+      "shopLocation",
+      "productOrigin",
+      "categoryId",
+      "supplierId",
+      "costPrice",
+      "sellingPrice",
+      "reorderLevel",
+      "reorderQty",
+      "isActive",
+    ]);
+
+    const sanitizedData: any = {};
+    for (const key of Object.keys(data)) {
+      if (allowedFields.has(key)) {
+        sanitizedData[key] = data[key];
+      }
+    }
+
+    if (sanitizedData.sku)
+      sanitizedData.sku = sanitizedData.sku.trim().toUpperCase();
+    if (sanitizedData.name)
+      sanitizedData.name = sanitizedData.name.trim();
+    if (sanitizedData.costPrice !== undefined)
+      sanitizedData.costPrice = Number(sanitizedData.costPrice);
+    if (sanitizedData.sellingPrice !== undefined)
+      sanitizedData.sellingPrice = Number(sanitizedData.sellingPrice);
+    if (sanitizedData.reorderLevel !== undefined)
+      sanitizedData.reorderLevel = Number(sanitizedData.reorderLevel);
+    if (sanitizedData.reorderQty !== undefined)
+      sanitizedData.reorderQty = Number(sanitizedData.reorderQty);
 
     const updated = await prisma.product.update({
       where: { id },
-      data,
+      data: sanitizedData,
       include: {
         category: true,
         supplier: true,

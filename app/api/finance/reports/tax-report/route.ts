@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/finance/reports/tax-report error:", error);
     return NextResponse.json(
-      { error: "Failed to generate Tax report", details: error.message },
+      { error: "Failed to generate Tax report" },
       { status: 500 },
     );
   }

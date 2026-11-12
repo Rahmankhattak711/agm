@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DEV_FALLBACK_JWT_SECRET, getJwtAccessSecret } from "@/lib/auth/jwt-secret";
 
 const envSchema = z.object({
   DATABASE_URL: z
@@ -8,7 +9,7 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET: z
     .string()
     .min(32)
-    .default("default-build-fallback-jwt-secret-min-32-chars-long"),
+    .default(DEV_FALLBACK_JWT_SECRET),
   ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(480),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
   MAX_FAILED_LOGINS: z.coerce.number().int().positive().default(5),
@@ -20,11 +21,7 @@ const rawEnv = {
   DATABASE_URL:
     process.env.DATABASE_URL ||
     "postgresql://postgres:postgres@localhost:5432/agm",
-  JWT_ACCESS_SECRET:
-    process.env.JWT_ACCESS_SECRET ||
-    process.env.ACCESS_TOKEN_SECRET ||
-    process.env.JWT_SECRET ||
-    "default-build-fallback-jwt-secret-min-32-chars-long",
+  JWT_ACCESS_SECRET: getJwtAccessSecret(),
   ACCESS_TOKEN_TTL_MINUTES: process.env.ACCESS_TOKEN_TTL_MINUTES || 480,
   REFRESH_TOKEN_TTL_DAYS: process.env.REFRESH_TOKEN_TTL_DAYS || 7,
   MAX_FAILED_LOGINS: process.env.MAX_FAILED_LOGINS || 5,

@@ -116,7 +116,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/journal-entries error:", error);
     return NextResponse.json(
-      { error: "Failed to create journal entry", details: error.message },
+      { error: "Failed to create journal entry" },
       { status: 500 }
     );
   }
@@ -171,7 +171,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/journal-entries error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch journal entries", details: error.message },
+      { error: "Failed to fetch journal entries" },
       { status: 500 }
     );
   }
@@ -311,7 +311,7 @@ async function handleUpdate(request: Request) {
   } catch (error: any) {
     console.error("PATCH /api/journal-entries error:", error);
     return NextResponse.json(
-      { error: "Failed to update journal entry", details: error.message },
+      { error: "Failed to update journal entry" },
       { status: 500 }
     );
   }
@@ -359,7 +359,7 @@ export async function DELETE(request: Request) {
   } catch (error: any) {
     console.error("DELETE /api/journal-entries error:", error);
     return NextResponse.json(
-      { error: "Failed to delete journal entry", details: error.message },
+      { error: "Failed to delete journal entry" },
       { status: 500 }
     );
   }

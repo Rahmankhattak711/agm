@@ -41,6 +41,13 @@ export async function POST(
       );
     }
 
+    if (pr.status !== "APPROVED") {
+      return NextResponse.json(
+        { error: "Purchase Request must be APPROVED before converting to Purchase Order" },
+        { status: 400 },
+      );
+    }
+
     let supId = supplierId;
     if (!supId) {
       const firstSupplier = await prisma.supplier.findFirst({
@@ -116,7 +123,7 @@ export async function POST(
   } catch (error: any) {
     console.error("POST convert purchase request to PO error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to convert purchase request to PO" },
+      { error: "Failed to convert purchase request to PO" },
       { status: 500 },
     );
   }

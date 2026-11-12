@@ -42,7 +42,7 @@ export async function GET(
   } catch (error: any) {
     console.error("GET /api/commercial/customers/[id] error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch customer" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
@@ -135,7 +135,7 @@ export async function PATCH(
   } catch (error: any) {
     console.error("PATCH /api/commercial/customers/[id] error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update customer" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
@@ -203,7 +203,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error("DELETE /api/commercial/customers/[id] error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete customer" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

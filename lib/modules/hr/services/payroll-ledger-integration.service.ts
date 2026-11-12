@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import type { Prisma } from "@/app/generated/prisma";
 import { findOrCreateAccount } from "@/lib/commercial-accounting";
 
 export interface PostPayrollParams {
@@ -24,13 +25,14 @@ export class PayrollLedgerIntegrationService {
    *
    * Verifies double entry: Debits === Credits
    */
-  public static async postPayrollApprovalEntry(params: PostPayrollParams) {
+  public static async postPayrollApprovalEntry(params: PostPayrollParams, tx?: Prisma.TransactionClient) {
+    const db = tx || prisma;
     const entryDate = new Date(params.year, params.month, 0); // Last day of payroll month
     const reference = params.batchNumber;
     const entryNumber = `JE-${params.batchNumber}`;
 
     // Check if entry already exists
-    const existing = await prisma.journalEntry.findUnique({
+    const existing = await db.journalEntry.findUnique({
       where: { entryNumber },
     });
     if (existing) {
@@ -39,9 +41,9 @@ export class PayrollLedgerIntegrationService {
 
     // Resolve or find Chart of Accounts
     const [salariesExpenseAcc, salariesPayableAcc, advancesAcc] = await Promise.all([
-      findOrCreateAccount("5221", "Salaries and wages", "EXPENSE"),
-      findOrCreateAccount("2132", "Salaries payable", "LIABILITY"),
-      findOrCreateAccount("1210", "Staff Salary Advances", "ASSET"),
+      findOrCreateAccount("5221", "Salaries and wages", "EXPENSE", tx),
+      findOrCreateAccount("2132", "Salaries payable", "LIABILITY", tx),
+      findOrCreateAccount("1210", "Staff Salary Advances", "ASSET", tx),
     ]);
 
     const lines: Array<{
@@ -74,7 +76,7 @@ export class PayrollLedgerIntegrationService {
       credit: params.totalNetPayroll,
     });
 
-    const journalEntry = await prisma.journalEntry.create({
+    const journalEntry = await db.journalEntry.create({
       data: {
         entryNumber,
         entryDate,
@@ -102,12 +104,13 @@ export class PayrollLedgerIntegrationService {
     batchNumber: string;
     totalNetPayroll: number;
     userId: string;
-  }) {
+  }, tx?: Prisma.TransactionClient) {
+    const db = tx || prisma;
     const entryDate = new Date();
     const reference = `${params.batchNumber}-DISB`;
     const entryNumber = `JE-${reference}`;
 
-    const existing = await prisma.journalEntry.findUnique({
+    const existing = await db.journalEntry.findUnique({
       where: { entryNumber },
     });
     if (existing) {
@@ -115,11 +118,11 @@ export class PayrollLedgerIntegrationService {
     }
 
     const [salariesPayableAcc, bankAcc] = await Promise.all([
-      findOrCreateAccount("2132", "Salaries payable", "LIABILITY"),
-      findOrCreateAccount("1020", "RAK Bank Current A/C", "ASSET"),
+      findOrCreateAccount("2132", "Salaries payable", "LIABILITY", tx),
+      findOrCreateAccount("1020", "RAK Bank Current A/C", "ASSET", tx),
     ]);
 
-    const journalEntry = await prisma.journalEntry.create({
+    const journalEntry = await db.journalEntry.create({
       data: {
         entryNumber,
         entryDate,

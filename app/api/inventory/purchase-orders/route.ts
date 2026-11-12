@@ -4,6 +4,7 @@ import {
   canModifyResource,
   forbidden,
   getAuthUser,
+  hasRole,
   unauthorized,
 } from "@/lib/auth-server";
 import { convertPurchaseOrderToBill } from "@/lib/commercial-accounting";
@@ -58,6 +59,11 @@ export async function POST(request: Request) {
   try {
     const user = await getAuthUser(request);
     if (!user) return unauthorized();
+    if (!hasRole(user, "INVENTORY_MANAGER", "ACCOUNTANT")) {
+      return forbidden(
+        "Forbidden: Only Inventory Managers, Accountants and Admins can create purchase orders",
+      );
+    }
 
     const body = await request.json();
     const {

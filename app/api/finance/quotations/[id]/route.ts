@@ -57,7 +57,7 @@ export async function GET(
     return NextResponse.json(quotation);
   } catch (error: any) {
     return NextResponse.json(
-      { error: "Failed to fetch quotation", details: error.message },
+      { error: "Failed to fetch quotation" },
       { status: 500 },
     );
   }
@@ -221,7 +221,7 @@ export async function PUT(
     return NextResponse.json(updated);
   } catch (error: any) {
     return NextResponse.json(
-      { error: "Failed to update quotation", details: error.message },
+      { error: "Failed to update quotation" },
       { status: 500 },
     );
   }
@@ -259,7 +259,7 @@ export async function DELETE(
     return NextResponse.json({ ok: true });
   } catch (error: any) {
     return NextResponse.json(
-      { error: "Failed to delete quotation", details: error.message },
+      { error: "Failed to delete quotation" },
       { status: 500 },
     );
   }

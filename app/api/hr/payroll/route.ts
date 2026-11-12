@@ -7,6 +7,9 @@ export async function GET(request: Request) {
   try {
     const user = await getAuthUser(request);
     if (!user) return unauthorized();
+    if (!hasRole(user, "HR", "ADMIN", "SUPER_ADMIN", "ACCOUNTANT")) {
+      return forbidden("Forbidden: Only HR or Finance can view payroll batches");
+    }
 
     const { searchParams } = new URL(request.url);
     const now = new Date();
@@ -76,9 +79,12 @@ export async function POST(request: Request) {
           userId: user.id,
         });
       }
-    } catch (glError) {
+    } catch (glError: any) {
       console.error("[Payroll GL Posting Error]:", glError);
-      // Log error but don't crash status transition
+      return NextResponse.json(
+        { error: `Payroll GL posting failed: ${glError.message || "Unknown error"}` },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true, batch: updated });

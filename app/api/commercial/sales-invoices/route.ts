@@ -123,7 +123,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/commercial/sales-invoices error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch sales invoices" },
+      { error: "Failed to fetch sales invoices" },
       { status: 500 },
     );
   }
@@ -223,73 +223,92 @@ export async function POST(request: Request) {
 
     const invDate = invoiceDate ? new Date(invoiceDate) : new Date();
 
-    const invoice = await prisma.salesInvoice.create({
-      data: {
-        invoiceNumber: invNo,
-        customerId: customerId || null,
-        customerName: custName || "Valued Customer",
-        customerTrn: custTrn || null,
-        quotationRef,
-        salesOrderId: salesOrderId || null,
-        invoiceDate: invDate,
-        dueDate: dueDate
-          ? new Date(dueDate)
-          : new Date(invDate.getTime() + 15 * 24 * 60 * 60 * 1000),
-        projectScope: projectScope || "Commercial Fitout Project",
-        status: autoPost ? "POSTED" : "DRAFT",
-        subtotal: netSubtotal,
-        discount: discTotal,
-        discountAccountId: discountAccountId || null,
-        vatRate,
-        vatAmount,
-        totalAmount,
-        paidAmount: 0,
-        remainingBalance: totalAmount,
-        notes,
-        terms,
-        createdById: authUser.id,
-        items: {
-          create: formattedItems,
-        },
-      },
-      include: {
-        items: true,
-        customerRel: true,
-        discountAccount: true,
-      },
-    });
+    const invoice = await prisma.$transaction(async (tx) => {
+      let finalInvNo = invNo;
+      if (!finalInvNo) {
+        finalInvNo = await getNextInvoiceNumber(tx);
+      }
 
-    if (autoPost) {
-      const je = await postSalesInvoiceJournalEntry({
-        invoiceId: invoice.id,
-        invoiceNumber: invoice.invoiceNumber,
-        invoiceDate: invDate,
-        customerName: invoice.customerName,
-        subtotal: subtotal,
-        discount: discTotal,
-        discountAccountId: discountAccountId || null,
-        vatAmount,
-        totalAmount,
-        userId: authUser.id,
-      });
-
-      await prisma.salesInvoice.update({
-        where: { id: invoice.id },
+      const inv = await tx.salesInvoice.create({
         data: {
-          journalEntryId: je.id,
-          postedAt: new Date(),
+          invoiceNumber: finalInvNo,
+          customerId: customerId || null,
+          customerName: custName || "Valued Customer",
+          customerTrn: custTrn || null,
+          quotationRef,
+          salesOrderId: salesOrderId || null,
+          invoiceDate: invDate,
+          dueDate: dueDate
+            ? new Date(dueDate)
+            : new Date(invDate.getTime() + 15 * 24 * 60 * 60 * 1000),
+          projectScope: projectScope || "Commercial Fitout Project",
+          status: autoPost ? "POSTED" : "DRAFT",
+          subtotal: netSubtotal,
+          discount: discTotal,
+          discountAccountId: discountAccountId || null,
+          vatRate,
+          vatAmount,
+          totalAmount,
+          paidAmount: 0,
+          remainingBalance: totalAmount,
+          notes,
+          terms,
+          createdById: authUser.id,
+          items: {
+            create: formattedItems,
+          },
+        },
+        include: {
+          items: true,
+          customerRel: true,
+          discountAccount: true,
         },
       });
 
-      if (customerId) {
-        await prisma.customer.update({
-          where: { id: customerId },
+      if (autoPost) {
+        const je = await postSalesInvoiceJournalEntry(
+          {
+            invoiceId: inv.id,
+            invoiceNumber: inv.invoiceNumber,
+            invoiceDate: invDate,
+            customerName: inv.customerName,
+            subtotal: subtotal,
+            discount: discTotal,
+            discountAccountId: discountAccountId || null,
+            vatAmount,
+            totalAmount,
+            userId: authUser.id,
+          },
+          tx
+        );
+
+        const updated = await tx.salesInvoice.update({
+          where: { id: inv.id },
           data: {
-            currentBalance: { increment: totalAmount },
+            journalEntryId: je.id,
+            postedAt: new Date(),
+          },
+          include: {
+            items: true,
+            customerRel: true,
+            discountAccount: true,
           },
         });
+
+        if (customerId) {
+          await tx.customer.update({
+            where: { id: customerId },
+            data: {
+              currentBalance: { increment: totalAmount },
+            },
+          });
+        }
+
+        return updated;
       }
-    }
+
+      return inv;
+    });
 
     if (quotationRef || projectScope) {
       const matchedProject = await prisma.project.findFirst({
@@ -339,7 +358,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/commercial/sales-invoices error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create sales invoice" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

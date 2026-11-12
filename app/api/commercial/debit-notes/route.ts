@@ -65,7 +65,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/commercial/debit-notes error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch debit notes" },
+      { error: "Failed to fetch debit notes" },
       { status: 500 },
     );
   }
@@ -183,7 +183,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/commercial/debit-notes error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create debit note" },
+      { error: "Failed to create debit note" },
       { status: 500 },
     );
   }

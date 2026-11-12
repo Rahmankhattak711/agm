@@ -114,7 +114,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/finance/reports/cash-flow error:", error);
     return NextResponse.json(
-      { error: "Failed to generate cash flow statement", details: error.message },
+      { error: "Failed to generate cash flow statement" },
       { status: 500 }
     );
   }

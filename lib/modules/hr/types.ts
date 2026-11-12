@@ -100,3 +100,12 @@ export interface AttendanceRegisterSummary {
   totalOvertimeHours: number;
   estimatedTotalOvertimeCost: number;
 }
+
+export {
+  publicEmployeeSelect,
+  accountantEmployeeSelect,
+  selfEmployeeSelect,
+  accountantAttendanceSelect,
+  accountantLeaveSelect,
+  accountantBonusSelect,
+} from "@/lib/auth-server";

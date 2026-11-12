@@ -6,6 +6,9 @@ export async function GET(request: Request) {
   try {
     const user = await getAuthUser(request);
     if (!user) return unauthorized();
+    if (!hasRole(user, "HR", "ADMIN", "SUPER_ADMIN", "ACCOUNTANT")) {
+      return forbidden("Forbidden: Only HR or Finance can view salary structures");
+    }
 
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get("employeeId") || undefined;

@@ -26,7 +26,7 @@ export async function POST(
   } catch (error: any) {
     console.error("POST convert PO to bill error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to convert purchase order to bill" },
+      { error: "Failed to convert purchase order to bill" },
       { status: 500 },
     );
   }

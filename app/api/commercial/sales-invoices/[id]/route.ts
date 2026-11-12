@@ -140,7 +140,7 @@ export async function GET(
   } catch (error: any) {
     console.error("GET /api/commercial/sales-invoices/[id] error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch sales invoice" },
+      { error: "Failed to fetch sales invoice" },
       { status: 500 },
     );
   }
@@ -317,7 +317,7 @@ export async function PATCH(
   } catch (error: any) {
     console.error("PATCH /api/commercial/sales-invoices/[id] error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update sales invoice" },
+      { error: "Failed to update sales invoice" },
       { status: 500 },
     );
   }
@@ -402,7 +402,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error("DELETE /api/commercial/sales-invoices/[id] error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete sales invoice" },
+      { error: "Failed to delete sales invoice" },
       { status: 500 },
     );
   }

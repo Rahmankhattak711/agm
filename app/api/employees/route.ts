@@ -3,6 +3,8 @@ import {
   getAuthUser,
   hasRole,
   unauthorized,
+  publicEmployeeSelect,
+  accountantEmployeeSelect,
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -30,25 +32,46 @@ export async function GET(request: Request) {
       ];
     }
 
+    const isHrOrAdmin = hasRole(authUser, "SUPER_ADMIN", "ADMIN", "HR_MANAGER", "HR");
+    const isAccountant = hasRole(authUser, "ACCOUNTANT");
+
+    if (isHrOrAdmin) {
+      const employees = await prisma.employee.findMany({
+        where,
+        include: {
+          reportsTo: {
+            select: {
+              id: true,
+              employeeCode: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          _count: {
+            select: {
+              directReports: true,
+              attendances: true,
+              leaves: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      return NextResponse.json(employees);
+    }
+
+    if (isAccountant) {
+      const employees = await prisma.employee.findMany({
+        where,
+        select: accountantEmployeeSelect,
+        orderBy: { createdAt: "desc" },
+      });
+      return NextResponse.json(employees);
+    }
+
     const employees = await prisma.employee.findMany({
       where,
-      include: {
-        reportsTo: {
-          select: {
-            id: true,
-            employeeCode: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-        _count: {
-          select: {
-            directReports: true,
-            attendances: true,
-            leaves: true,
-          },
-        },
-      },
+      select: publicEmployeeSelect,
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(employees);
@@ -214,66 +237,118 @@ export async function PATCH(request: Request) {
         { status: 400 },
       );
 
-    if (data.employeeCode)
-      data.employeeCode = data.employeeCode.trim().toUpperCase();
-    if (data.joiningDate) data.joiningDate = new Date(data.joiningDate);
-    if (data.dateOfBirth) data.dateOfBirth = new Date(data.dateOfBirth);
-    if (data.emiratesIdExpiry)
-      data.emiratesIdExpiry = new Date(data.emiratesIdExpiry);
-    if (data.passportExpiry)
-      data.passportExpiry = new Date(data.passportExpiry);
-    if (data.laborCardExpiry)
-      data.laborCardExpiry = new Date(data.laborCardExpiry);
-    if (data.visaExpiry) data.visaExpiry = new Date(data.visaExpiry);
-    if (data.probationEndDate)
-      data.probationEndDate = new Date(data.probationEndDate);
-    if (data.contractEndDate)
-      data.contractEndDate = new Date(data.contractEndDate);
-    if (data.terminationDate)
-      data.terminationDate = new Date(data.terminationDate);
+    const allowedFields = new Set([
+      "employeeCode",
+      "firstName",
+      "lastName",
+      "email",
+      "phone",
+      "department",
+      "designation",
+      "joiningDate",
+      "gender",
+      "dateOfBirth",
+      "nationality",
+      "maritalStatus",
+      "address",
+      "profilePhotoUrl",
+      "emergencyContactName",
+      "emergencyContactPhone",
+      "emiratesId",
+      "emiratesIdExpiry",
+      "passportNo",
+      "passportExpiry",
+      "laborCardNo",
+      "laborCardExpiry",
+      "visaNumber",
+      "visaExpiry",
+      "contractType",
+      "employmentStatus",
+      "probationEndDate",
+      "contractEndDate",
+      "terminationDate",
+      "reportsToId",
+      "basicSalary",
+      "housingAllowance",
+      "transportAllowance",
+      "otherAllowances",
+      "annualLeaveBalance",
+      "paymentMethod",
+      "bankName",
+      "iban",
+      "isActive",
+    ]);
 
-    if (data.basicSalary !== undefined)
-      data.basicSalary = Number(data.basicSalary);
-    if (data.housingAllowance !== undefined)
-      data.housingAllowance = Number(data.housingAllowance);
-    if (data.transportAllowance !== undefined)
-      data.transportAllowance = Number(data.transportAllowance);
-    if (data.otherAllowances !== undefined)
-      data.otherAllowances = Number(data.otherAllowances);
-    if (data.annualLeaveBalance !== undefined)
-      data.annualLeaveBalance = Number(data.annualLeaveBalance);
+    const sanitizedData: any = {};
+    for (const key of Object.keys(data)) {
+      if (allowedFields.has(key)) {
+        sanitizedData[key] = data[key];
+      }
+    }
+
+    if (sanitizedData.employeeCode)
+      sanitizedData.employeeCode = sanitizedData.employeeCode.trim().toUpperCase();
+    if (sanitizedData.joiningDate)
+      sanitizedData.joiningDate = new Date(sanitizedData.joiningDate);
+    if (sanitizedData.dateOfBirth)
+      sanitizedData.dateOfBirth = new Date(sanitizedData.dateOfBirth);
+    if (sanitizedData.emiratesIdExpiry)
+      sanitizedData.emiratesIdExpiry = new Date(sanitizedData.emiratesIdExpiry);
+    if (sanitizedData.passportExpiry)
+      sanitizedData.passportExpiry = new Date(sanitizedData.passportExpiry);
+    if (sanitizedData.laborCardExpiry)
+      sanitizedData.laborCardExpiry = new Date(sanitizedData.laborCardExpiry);
+    if (sanitizedData.visaExpiry)
+      sanitizedData.visaExpiry = new Date(sanitizedData.visaExpiry);
+    if (sanitizedData.probationEndDate)
+      sanitizedData.probationEndDate = new Date(sanitizedData.probationEndDate);
+    if (sanitizedData.contractEndDate)
+      sanitizedData.contractEndDate = new Date(sanitizedData.contractEndDate);
+    if (sanitizedData.terminationDate)
+      sanitizedData.terminationDate = new Date(sanitizedData.terminationDate);
+
+    if (sanitizedData.basicSalary !== undefined)
+      sanitizedData.basicSalary = Number(sanitizedData.basicSalary);
+    if (sanitizedData.housingAllowance !== undefined)
+      sanitizedData.housingAllowance = Number(sanitizedData.housingAllowance);
+    if (sanitizedData.transportAllowance !== undefined)
+      sanitizedData.transportAllowance = Number(sanitizedData.transportAllowance);
+    if (sanitizedData.otherAllowances !== undefined)
+      sanitizedData.otherAllowances = Number(sanitizedData.otherAllowances);
+    if (sanitizedData.annualLeaveBalance !== undefined)
+      sanitizedData.annualLeaveBalance = Number(sanitizedData.annualLeaveBalance);
 
     if (
-      data.basicSalary !== undefined ||
-      data.housingAllowance !== undefined ||
-      data.transportAllowance !== undefined ||
-      data.otherAllowances !== undefined
+      sanitizedData.basicSalary !== undefined ||
+      sanitizedData.housingAllowance !== undefined ||
+      sanitizedData.transportAllowance !== undefined ||
+      sanitizedData.otherAllowances !== undefined
     ) {
       const current = await prisma.employee.findUnique({ where: { id } });
       if (current) {
         const basic =
-          data.basicSalary !== undefined
-            ? data.basicSalary
+          sanitizedData.basicSalary !== undefined
+            ? sanitizedData.basicSalary
             : Number(current.basicSalary);
         const housing =
-          data.housingAllowance !== undefined
-            ? data.housingAllowance
+          sanitizedData.housingAllowance !== undefined
+            ? sanitizedData.housingAllowance
             : Number(current.housingAllowance);
         const transport =
-          data.transportAllowance !== undefined
-            ? data.transportAllowance
+          sanitizedData.transportAllowance !== undefined
+            ? sanitizedData.transportAllowance
             : Number(current.transportAllowance);
         const other =
-          data.otherAllowances !== undefined
-            ? data.otherAllowances
+          sanitizedData.otherAllowances !== undefined
+            ? sanitizedData.otherAllowances
             : Number(current.otherAllowances);
-        data.monthlySalary = basic + housing + transport + other;
+        sanitizedData.monthlySalary = basic + housing + transport + other;
       }
     }
 
     const updated = await prisma.employee.update({
       where: { id },
-      data,
+      data: sanitizedData,
       include: { reportsTo: true },
     });
     return NextResponse.json(updated);
@@ -304,8 +379,24 @@ export async function DELETE(request: Request) {
         { status: 400 },
       );
 
-    await prisma.employee.delete({ where: { id } });
-    return NextResponse.json({ ok: true });
+    const existing = await prisma.employee.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Employee not found" },
+        { status: 404 },
+      );
+    }
+
+    // Soft deactivation preserves 5-year statutory payroll & attendance audit trails
+    await prisma.employee.update({
+      where: { id },
+      data: {
+        isActive: false,
+        employmentStatus: "TERMINATED",
+        terminationDate: new Date(),
+      },
+    });
+    return NextResponse.json({ ok: true, message: "Employee deactivated successfully" });
   } catch (error) {
     console.error("Error deleting employee:", error);
     return NextResponse.json(

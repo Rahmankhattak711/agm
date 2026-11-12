@@ -1,9 +1,24 @@
 import { NextResponse } from "next/server";
-import { getAuthUser } from "@/lib/auth-server";
+import { getAuthUser, unauthorized, forbidden, hasRole } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: Request) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "COMMERCIAL_MANAGER",
+        "PROJECT_MANAGER",
+        "ESTIMATOR",
+        "SITE_ENGINEER",
+      ])
+    ) {
+      return forbidden();
+    }
+
     const { searchParams } = new URL(request.url);
     const search = (searchParams.get("search") || "").trim();
     const status = (searchParams.get("status") || "").toUpperCase().trim();
@@ -36,10 +51,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/commercial/method-statements error:", error);
     return NextResponse.json(
-      {
-        error: "Failed to fetch method statements from database",
-        details: error.message,
-      },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
@@ -48,6 +60,19 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "COMMERCIAL_MANAGER",
+        "PROJECT_MANAGER",
+        "ESTIMATOR",
+        "SITE_ENGINEER",
+      ])
+    ) {
+      return forbidden();
+    }
     const body = await request.json();
 
     if (!body.refNumber) {
@@ -112,10 +137,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/commercial/method-statements error:", error);
     return NextResponse.json(
-      {
-        error: "Failed to save method statement to database",
-        details: error.message,
-      },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

@@ -51,7 +51,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/commercial/customer-payments error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch customer payments" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/commercial/customer-payments error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to record customer payment" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

@@ -179,7 +179,7 @@ export async function GET(
   } catch (error: any) {
     console.error("GET customer statement error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch customer statement" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

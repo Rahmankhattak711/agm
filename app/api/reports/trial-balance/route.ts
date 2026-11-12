@@ -514,7 +514,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/reports/trial-balance error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error", details: error.message },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

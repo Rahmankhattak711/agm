@@ -165,7 +165,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/reports/payables error:", error);
     return NextResponse.json(
-      { error: "Failed to generate payables report", details: error.message },
+      { error: "Failed to generate payables report" },
       { status: 500 },
     );
   }

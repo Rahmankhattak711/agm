@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/finance/reports/year-end-closing error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch fiscal year summary", details: error.message },
+      { error: "Failed to fetch fiscal year summary" },
       { status: 500 }
     );
   }
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/finance/reports/year-end-closing error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to close fiscal year" },
+      { error: "Failed to close fiscal year" },
       { status: 500 }
     );
   }

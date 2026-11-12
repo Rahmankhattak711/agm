@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { postSupplierPaymentJournalEntry } from "@/lib/commercial-accounting";
+import { getNextPaymentNumber } from "@/lib/utils/sequence";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -51,7 +52,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/commercial/supplier-payments error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch supplier payments" },
+      { error: "Failed to fetch supplier payments" },
       { status: 500 },
     );
   }
@@ -86,91 +87,100 @@ export async function POST(request: Request) {
       );
     }
 
-    let supId = supplierId;
-    let supName = supplierName;
-    let billNo = "";
-
-    if (supplierBillId) {
-      const bill = await prisma.supplierBill.findUnique({
-        where: { id: supplierBillId },
-      });
-      if (bill) {
-        billNo = bill.billNumber;
-        if (!supId) supId = bill.supplierId;
-        if (!supName) supName = bill.supplierName;
-      }
-    }
-
-    if (!supName && supId) {
-      const s = await prisma.supplier.findUnique({ where: { id: supId } });
-      if (s) supName = s.name;
-    }
-
-    let pmtNo = paymentNumber;
-    if (!pmtNo) {
-      const count = await prisma.supplierPayment.count();
-      pmtNo = `SP-2026-${(count + 1).toString().padStart(4, "0")}`;
-    }
-
     const pmtDate = paymentDate ? new Date(paymentDate) : new Date();
 
-    const je = await postSupplierPaymentJournalEntry({
-      paymentId: "",
-      paymentNumber: pmtNo,
-      paymentDate: pmtDate,
-      supplierName: supName || "Vendor",
-      amount: payAmount,
-      paymentMethod,
-      billNumber: billNo,
-      userId: authUser.id,
-    });
+    const payment = await prisma.$transaction(async (tx) => {
+      let supId = supplierId;
+      let supName = supplierName;
+      let billNo = "";
+      let currentBill: any = null;
 
-    const payment = await prisma.supplierPayment.create({
-      data: {
-        paymentNumber: pmtNo,
-        supplierId: supId || null,
-        supplierName: supName || "Vendor",
-        supplierBillId: supplierBillId || null,
-        paymentDate: pmtDate,
-        amount: payAmount,
-        paymentMethod: paymentMethod as any,
-        referenceNumber,
-        notes,
-        journalEntryId: je.id,
-        createdById: authUser.id,
-      },
-      include: {
-        supplierBill: true,
-        supplier: true,
-      },
-    });
-
-    if (supplierBillId) {
-      const bill = await prisma.supplierBill.findUnique({
-        where: { id: supplierBillId },
-      });
-      if (bill) {
-        const newPaid = Number(bill.paidAmount) + payAmount;
-        const newRem = Math.max(0, Number(bill.totalAmount) - newPaid);
-        const newStatus =
-          newRem <= 0 ? "PAID" : newPaid > 0 ? "PARTIALLY_PAID" : bill.status;
-
-        await prisma.supplierBill.update({
+      if (supplierBillId) {
+        currentBill = await tx.supplierBill.findUnique({
           where: { id: supplierBillId },
+        });
+        if (currentBill) {
+          billNo = currentBill.billNumber;
+          if (!supId) supId = currentBill.supplierId;
+          if (!supName) supName = currentBill.supplierName;
+        }
+      }
+
+      if (!supName && supId) {
+        const s = await tx.supplier.findUnique({ where: { id: supId } });
+        if (s) supName = s.name;
+      }
+
+      let pmtNo = paymentNumber;
+      if (!pmtNo) {
+        pmtNo = await getNextPaymentNumber(tx);
+      }
+
+      const je = await postSupplierPaymentJournalEntry(
+        {
+          paymentId: "",
+          paymentNumber: pmtNo,
+          paymentDate: pmtDate,
+          supplierName: supName || "Vendor",
+          amount: payAmount,
+          paymentMethod,
+          billNumber: billNo,
+          userId: authUser.id,
+        },
+        tx
+      );
+
+      const createdPayment = await tx.supplierPayment.create({
+        data: {
+          paymentNumber: pmtNo,
+          supplierId: supId || null,
+          supplierName: supName || "Vendor",
+          supplierBillId: supplierBillId || null,
+          paymentDate: pmtDate,
+          amount: payAmount,
+          paymentMethod: paymentMethod as any,
+          referenceNumber,
+          notes,
+          journalEntryId: je.id,
+          createdById: authUser.id,
+        },
+        include: {
+          supplierBill: true,
+          supplier: true,
+        },
+      });
+
+      if (currentBill) {
+        const newPaid = Number(currentBill.paidAmount) + payAmount;
+        const newRem = Math.max(0, Number(currentBill.totalAmount) - newPaid);
+        const newStatus =
+          newRem <= 0 ? "PAID" : newPaid > 0 ? "PARTIALLY_PAID" : currentBill.status;
+
+        const updateRes = await tx.supplierBill.updateMany({
+          where: {
+            id: supplierBillId,
+            paidAmount: currentBill.paidAmount,
+          },
           data: {
             paidAmount: newPaid,
             remainingBalance: newRem,
             status: newStatus as any,
           },
         });
+
+        if (updateRes.count === 0) {
+          throw new Error("Concurrency conflict: Supplier bill was modified concurrently. Please retry.");
+        }
       }
-    }
+
+      return createdPayment;
+    });
 
     return NextResponse.json(payment, { status: 201 });
   } catch (error: any) {
     console.error("POST /api/commercial/supplier-payments error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to record supplier payment" },
+      { error: "Failed to record supplier payment" },
       { status: 500 },
     );
   }

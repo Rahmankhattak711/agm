@@ -86,7 +86,7 @@ export async function POST(
   } catch (error: any) {
     console.error("POST convert quotation to sales order error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to convert quotation to sales order" },
+      { error: "Failed to convert quotation to sales order" },
       { status: 500 },
     );
   }

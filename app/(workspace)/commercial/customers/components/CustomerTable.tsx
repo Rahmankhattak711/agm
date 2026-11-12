@@ -89,16 +89,15 @@ export function CustomerTable({
                   onStatusFilterChange(tab.id);
                   setCurrentPage(1);
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
-                  isActive
-                    ? "text-white"
-                    : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-[#cbd5e1]"
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shadow-2xs ${isActive
+                  ? "text-white"
+                  : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-[#cbd5e1]"
+                  }`}
                 style={
                   isActive
                     ? {
-                        backgroundColor: "#1d4ed8",
-                      }
+                      backgroundColor: "#1d4ed8",
+                    }
                     : undefined
                 }
               >
@@ -188,9 +187,8 @@ export function CustomerTable({
                       <Fragment key={c.id}>
                         <tr
                           onClick={() => onToggleExpand(c.id)}
-                          className={`hover:bg-[#f8fafc] transition-colors cursor-pointer ${
-                            isExpanded ? "bg-[#f8fafc]" : ""
-                          }`}
+                          className={`hover:bg-[#f8fafc] transition-colors cursor-pointer ${isExpanded ? "bg-[#f8fafc]" : ""
+                            }`}
                         >
                           {/* Customer Code Badge */}
                           <td className="py-3 px-3.5 font-mono whitespace-nowrap">
@@ -248,9 +246,8 @@ export function CustomerTable({
 
                           {/* Outstanding */}
                           <td
-                            className={`py-3 px-3.5 text-right font-mono font-bold whitespace-nowrap ${
-                              bal > 0 ? "text-rose-600" : "text-emerald-700"
-                            }`}
+                            className={`py-3 px-3.5 text-right font-mono font-bold whitespace-nowrap ${bal > 0 ? "text-rose-600" : "text-emerald-700"
+                              }`}
                           >
                             AED {formatNumber(bal)}
                           </td>
@@ -308,18 +305,16 @@ export function CustomerTable({
                               <button
                                 type="button"
                                 onClick={() => onToggleExpand(c.id)}
-                                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                                  isExpanded
-                                    ? "text-[#1d4ed8] bg-blue-50"
-                                    : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-                                }`}
+                                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isExpanded
+                                  ? "text-[#1d4ed8] bg-blue-50"
+                                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                                  }`}
                                 title={isExpanded ? "Collapse preview" : "Expand preview"}
                               >
                                 <ChevronDownIcon
                                   size={16}
-                                  className={`transition-transform duration-200 ${
-                                    isExpanded ? "rotate-180" : ""
-                                  }`}
+                                  className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""
+                                    }`}
                                 />
                               </button>
                             </div>
@@ -378,11 +373,10 @@ export function CustomerTable({
                       <button
                         type="button"
                         onClick={() => setCurrentPage(page)}
-                        className={`w-7 h-7 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                          isActive
-                            ? "text-white shadow-2xs"
-                            : "bg-white text-slate-600 hover:bg-[#f8fafc] border"
-                        }`}
+                        className={`w-7 h-7 rounded-lg text-xs font-semibold transition-all cursor-pointer ${isActive
+                          ? "text-white shadow-2xs"
+                          : "bg-white text-slate-600 hover:bg-[#f8fafc] border"
+                          }`}
                         style={{
                           backgroundColor: isActive ? "#1d4ed8" : undefined,
                           borderColor: isActive ? "#1d4ed8" : "#cbd5e1",

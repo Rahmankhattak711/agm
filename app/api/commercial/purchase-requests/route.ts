@@ -54,7 +54,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/commercial/purchase-requests error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch purchase requests" },
+      { error: "Failed to fetch purchase requests" },
       { status: 500 },
     );
   }
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/commercial/purchase-requests error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create purchase request" },
+      { error: "Failed to create purchase request" },
       { status: 500 },
     );
   }

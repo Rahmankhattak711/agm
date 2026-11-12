@@ -189,7 +189,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/finance/account-types error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create account type" },
+      { error: "Failed to create account type" },
       { status: 500 },
     );
   }

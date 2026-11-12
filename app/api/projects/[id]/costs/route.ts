@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { getAuthUser, unauthorized } from "@/lib/auth-server";
+import { getAuthUser, unauthorized, forbidden, hasRole } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
 async function recalculateProjectCosts(projectId: string) {
@@ -63,7 +63,7 @@ export async function GET(
   } catch (error: any) {
     console.error("Error fetching project costs:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch project costs" },
+      { error: "Failed to fetch project costs" },
       { status: 500 },
     );
   }
@@ -76,6 +76,18 @@ export async function POST(
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "PROJECT_MANAGER",
+        "SITE_ENGINEER",
+        "ESTIMATOR",
+        "ACCOUNTANT",
+      ])
+    ) {
+      return forbidden();
+    }
 
     const { id: projectId } = await params;
     const body = await request.json();
@@ -187,7 +199,7 @@ export async function POST(
   } catch (error: any) {
     console.error("Error adding project cost:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to add project cost" },
+      { error: "Failed to add project cost" },
       { status: 500 },
     );
   }
@@ -270,7 +282,7 @@ export async function PATCH(
   } catch (error: any) {
     console.error("Error updating project cost:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update project cost" },
+      { error: "Failed to update project cost" },
       { status: 500 },
     );
   }
@@ -283,6 +295,16 @@ export async function DELETE(
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "PROJECT_MANAGER",
+        "COMMERCIAL_MANAGER",
+      ])
+    ) {
+      return forbidden();
+    }
 
     const { id: projectId } = await params;
     const { searchParams } = new URL(request.url);
@@ -305,7 +327,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error("Error deleting project cost:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete project cost" },
+      { error: "Failed to delete project cost" },
       { status: 500 },
     );
   }

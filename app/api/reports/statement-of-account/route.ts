@@ -751,7 +751,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/reports/statement-of-account error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to generate Statement of Account" },
+      { error: "Failed to generate Statement of Account" },
       { status: 500 },
     );
   }

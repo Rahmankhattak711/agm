@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { getJwtAccessSecret } from "@/lib/auth/jwt-secret";
 
 const PUBLIC_EXACT_PATHS = new Set([
   "/login",
@@ -13,11 +14,7 @@ const PUBLIC_EXACT_PATHS = new Set([
   "/api/cron/cleanup-tokens",
 ]);
 
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_ACCESS_SECRET ||
-    process.env.ACCESS_TOKEN_SECRET ||
-    "agm_access_secret_super_key_2026_secure",
-);
+const SECRET_KEY = new TextEncoder().encode(getJwtAccessSecret());
 
 async function verifyEdgeToken(token: string): Promise<boolean> {
   try {

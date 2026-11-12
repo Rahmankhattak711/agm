@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { getAuthUser, unauthorized } from "@/lib/auth-server";
+import { getAuthUser, unauthorized, forbidden, hasRole } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 import { sumBy } from "@/lib/utils/math";
 import {
@@ -89,7 +89,7 @@ export async function GET(
   } catch (error: any) {
     console.error("Error fetching project:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch project" },
+      { error: "Failed to fetch project" },
       { status: 500 },
     );
   }
@@ -102,6 +102,17 @@ export async function PATCH(
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "PROJECT_MANAGER",
+        "COMMERCIAL_MANAGER",
+        "ESTIMATOR",
+      ])
+    ) {
+      return forbidden();
+    }
 
     const { id } = await params;
     const body = await request.json();
@@ -150,7 +161,7 @@ export async function PATCH(
   } catch (error: any) {
     console.error("Error updating project:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update project" },
+      { error: "Failed to update project" },
       { status: 500 },
     );
   }
@@ -163,6 +174,15 @@ export async function DELETE(
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "COMMERCIAL_MANAGER",
+      ])
+    ) {
+      return forbidden();
+    }
 
     const { id } = await params;
 
@@ -174,7 +194,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error("Error deleting project:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete project" },
+      { error: "Failed to delete project" },
       { status: 500 },
     );
   }

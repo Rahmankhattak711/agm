@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { postSupplierBillJournalEntry } from "@/lib/commercial-accounting";
+import { getNextBillNumber } from "@/lib/utils/sequence";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -67,7 +68,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/commercial/supplier-bills error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch supplier bills" },
+      { error: "Failed to fetch supplier bills" },
       { status: 500 },
     );
   }
@@ -120,11 +121,8 @@ export async function POST(request: Request) {
       }
     }
 
-    let bNo = billNumber;
-    if (!bNo) {
-      const count = await prisma.supplierBill.count();
-      bNo = `BILL-2026-${(count + 1).toString().padStart(4, "0")}`;
-    }
+    let discTotal = parseFloat(discount) || 0;
+    const bDate = billDate ? new Date(billDate) : new Date();
 
     let subtotal = 0;
     const formattedItems = items.map((item: any) => {
@@ -143,71 +141,84 @@ export async function POST(request: Request) {
       };
     });
 
-    const discTotal = parseFloat(discount) || 0;
     const netSubtotal = Math.max(0, subtotal - discTotal);
     const vatRate = 5.0;
     const vatAmount = (netSubtotal * vatRate) / 100;
     const totalAmount = netSubtotal + vatAmount;
 
-    const bDate = billDate ? new Date(billDate) : new Date();
+    const bill = await prisma.$transaction(async (tx) => {
+      let bNo = billNumber;
+      if (!bNo) {
+        bNo = await getNextBillNumber(tx);
+      }
 
-    const bill = await prisma.supplierBill.create({
-      data: {
-        billNumber: bNo,
-        supplierId: supplierId || null,
-        supplierName: supName || "Vendor",
-        supplierTrn: supTrn || null,
-        purchaseOrderId: purchaseOrderId || null,
-        goodsReceiptId: goodsReceiptId || null,
-        billDate: bDate,
-        dueDate: dueDate
-          ? new Date(dueDate)
-          : new Date(bDate.getTime() + 30 * 24 * 60 * 60 * 1000),
-        status: autoPost ? "POSTED" : "DRAFT",
-        subtotal: netSubtotal,
-        discount: discTotal,
-        vatRate,
-        vatAmount,
-        totalAmount,
-        paidAmount: 0,
-        remainingBalance: totalAmount,
-        createdById: authUser.id,
-        items: {
-          create: formattedItems,
-        },
-      },
-      include: {
-        items: true,
-        supplier: true,
-      },
-    });
-
-    if (autoPost) {
-      const je = await postSupplierBillJournalEntry({
-        billId: bill.id,
-        billNumber: bill.billNumber,
-        billDate: bDate,
-        supplierName: bill.supplierName,
-        subtotal: netSubtotal,
-        vatAmount,
-        totalAmount,
-        userId: authUser.id,
-      });
-
-      await prisma.supplierBill.update({
-        where: { id: bill.id },
+      const createdBill = await tx.supplierBill.create({
         data: {
-          journalEntryId: je.id,
-          postedAt: new Date(),
+          billNumber: bNo,
+          supplierId: supplierId || null,
+          supplierName: supName || "Vendor",
+          supplierTrn: supTrn || null,
+          purchaseOrderId: purchaseOrderId || null,
+          goodsReceiptId: goodsReceiptId || null,
+          billDate: bDate,
+          dueDate: dueDate
+            ? new Date(dueDate)
+            : new Date(bDate.getTime() + 30 * 24 * 60 * 60 * 1000),
+          status: autoPost ? "POSTED" : "DRAFT",
+          subtotal: netSubtotal,
+          discount: discTotal,
+          vatRate,
+          vatAmount,
+          totalAmount,
+          paidAmount: 0,
+          remainingBalance: totalAmount,
+          createdById: authUser.id,
+          items: {
+            create: formattedItems,
+          },
+        },
+        include: {
+          items: true,
+          supplier: true,
         },
       });
-    }
+
+      if (autoPost) {
+        const je = await postSupplierBillJournalEntry(
+          {
+            billId: createdBill.id,
+            billNumber: createdBill.billNumber,
+            billDate: bDate,
+            supplierName: createdBill.supplierName,
+            subtotal: netSubtotal,
+            vatAmount,
+            totalAmount,
+            userId: authUser.id,
+          },
+          tx
+        );
+
+        return await tx.supplierBill.update({
+          where: { id: createdBill.id },
+          data: {
+            journalEntryId: je.id,
+            postedAt: new Date(),
+          },
+          include: {
+            items: true,
+            supplier: true,
+          },
+        });
+      }
+
+      return createdBill;
+    });
 
     return NextResponse.json(bill, { status: 201 });
   } catch (error: any) {
     console.error("POST /api/commercial/supplier-bills error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create supplier bill" },
+      { error: "Failed to create supplier bill" },
       { status: 500 },
     );
   }

@@ -39,24 +39,42 @@ export async function POST(
       );
     }
 
-    const je = await postSupplierBillJournalEntry({
-      billId: bill.id,
-      billNumber: bill.billNumber,
-      billDate: bill.billDate,
-      supplierName: bill.supplierName,
-      subtotal: Number(bill.subtotal),
-      vatAmount: Number(bill.vatAmount),
-      totalAmount: Number(bill.totalAmount),
-      userId: authUser.id,
-    });
+    const { updated, je } = await prisma.$transaction(async (tx) => {
+      const lockRes = await tx.supplierBill.updateMany({
+        where: { id, status: "DRAFT" },
+        data: { status: "POSTED", postedAt: new Date() },
+      });
 
-    const updated = await prisma.supplierBill.update({
-      where: { id },
-      data: {
-        status: "POSTED",
-        journalEntryId: je.id,
-        postedAt: new Date(),
-      },
+      if (lockRes.count === 0) {
+        const recheck = await tx.supplierBill.findUnique({ where: { id } });
+        if (recheck?.status === "POSTED" || recheck?.status === "PAID") {
+          throw new Error("Bill is already posted");
+        }
+        throw new Error("Concurrency conflict: Bill was modified concurrently");
+      }
+
+      const journalEntry = await postSupplierBillJournalEntry(
+        {
+          billId: bill.id,
+          billNumber: bill.billNumber,
+          billDate: bill.billDate,
+          supplierName: bill.supplierName,
+          subtotal: Number(bill.subtotal),
+          vatAmount: Number(bill.vatAmount),
+          totalAmount: Number(bill.totalAmount),
+          userId: authUser.id,
+        },
+        tx
+      );
+
+      const upd = await tx.supplierBill.update({
+        where: { id },
+        data: {
+          journalEntryId: journalEntry.id,
+        },
+      });
+
+      return { updated: upd, je: journalEntry };
     });
 
     return NextResponse.json({
@@ -67,7 +85,7 @@ export async function POST(
   } catch (error: any) {
     console.error("POST post supplier bill error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to post supplier bill" },
+      { error: "Failed to post supplier bill" },
       { status: 500 },
     );
   }

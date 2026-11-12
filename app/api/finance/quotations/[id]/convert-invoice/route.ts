@@ -235,8 +235,12 @@ export async function POST(
         });
       }
 
-      await tx.quotation.delete({
+      // Preserve quotation in database to maintain statutory audit trail and commercial history
+      await tx.quotation.update({
         where: { id },
+        data: {
+          status: "ACCEPTED",
+        },
       });
 
       return inv;
@@ -247,7 +251,7 @@ export async function POST(
     console.error("POST convert quotation to sales invoice error:", error);
     return NextResponse.json(
       {
-        error: error.message || "Failed to convert quotation to sales invoice",
+        error: "Failed to convert quotation to sales invoice",
       },
       { status: 500 },
     );

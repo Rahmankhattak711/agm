@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/finance/reports/vat-return error:", error);
     return NextResponse.json(
-      { error: "Failed to generate VAT return report", details: error.message },
+      { error: "Failed to generate VAT return report" },
       { status: 500 },
     );
   }

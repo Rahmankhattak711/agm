@@ -44,7 +44,7 @@ export async function GET(
     return NextResponse.json(expense);
   } catch (error: any) {
     return NextResponse.json(
-      { error: "Failed to fetch expense", details: error.message },
+      { error: "Failed to fetch expense" },
       { status: 500 },
     );
   }
@@ -115,7 +115,7 @@ export async function PATCH(
     return NextResponse.json(updated);
   } catch (error: any) {
     return NextResponse.json(
-      { error: "Failed to update expense", details: error.message },
+      { error: "Failed to update expense" },
       { status: 500 },
     );
   }
@@ -159,7 +159,7 @@ export async function DELETE(
     });
   } catch (error: any) {
     return NextResponse.json(
-      { error: "Failed to delete expense", details: error.message },
+      { error: "Failed to delete expense" },
       { status: 500 },
     );
   }

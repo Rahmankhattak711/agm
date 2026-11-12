@@ -71,20 +71,22 @@ export function isAdminRole(role: UserRole): boolean {
 
 export function hasRole(
   actor: AuthUser,
-  ...roles: (UserRole | UserRole[])[]
+  ...roles: (UserRole | string | (UserRole | string)[])[]
 ): boolean {
   if (actor.role === "SUPER_ADMIN" || actor.role === "ADMIN") return true;
   const flatRoles = roles.flat();
-  return flatRoles.includes(actor.role);
+  return flatRoles.includes(actor.role as any);
 }
 
 export function canModifyResource(
   actor: AuthUser,
   resourceOwnerId?: string | null,
-  allowedRoles: UserRole[] = [],
+  allowedRoles: (UserRole | string)[] = [],
 ): boolean {
   if (actor.role === "SUPER_ADMIN" || actor.role === "ADMIN") return true;
-  if (allowedRoles.length > 0 && allowedRoles.includes(actor.role)) return true;
+  if (allowedRoles.length > 0) {
+    return allowedRoles.includes(actor.role as any);
+  }
   if (resourceOwnerId && actor.id === resourceOwnerId) return true;
   return false;
 }

@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/finance/general-ledger error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch general ledger records", details: error.message },
+      { error: "Failed to fetch general ledger records" },
       { status: 500 }
     );
   }

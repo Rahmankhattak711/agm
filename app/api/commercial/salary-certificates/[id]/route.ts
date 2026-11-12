@@ -1,11 +1,26 @@
 import { NextResponse } from "next/server";
+import { getAuthUser, unauthorized, forbidden, hasRole } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   props: { params: Promise<{ id: string }> },
 ) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "HR_MANAGER",
+        "HR",
+        "ACCOUNTANT",
+      ])
+    ) {
+      return forbidden();
+    }
+
     const { id } = await props.params;
 
     const item = await (prisma as any).salaryCertificate.findUnique({
@@ -33,20 +48,30 @@ export async function GET(
   } catch (error: any) {
     console.error("GET /api/commercial/salary-certificates/[id] error:", error);
     return NextResponse.json(
-      {
-        error: "Failed to fetch salary certificate from database",
-        details: error.message,
-      },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   props: { params: Promise<{ id: string }> },
 ) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "HR_MANAGER",
+        "HR",
+      ])
+    ) {
+      return forbidden();
+    }
+
     const { id } = await props.params;
 
     await (prisma as any).salaryCertificate.delete({
@@ -60,10 +85,7 @@ export async function DELETE(
       error,
     );
     return NextResponse.json(
-      {
-        error: "Failed to delete salary certificate from database",
-        details: error.message,
-      },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

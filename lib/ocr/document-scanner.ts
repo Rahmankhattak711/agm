@@ -26,7 +26,21 @@ export async function scanDocumentWithOcr(
 
   try {
     worker = await createWorker("eng");
-    const ret = await worker.recognize(imageInput);
+
+    let timeoutId: NodeJS.Timeout | undefined;
+    const recognizePromise = worker.recognize(imageInput);
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => {
+        reject(new Error("OCR scanning timed out after 30 seconds"));
+      }, 30000);
+    });
+
+    const ret = await Promise.race([recognizePromise, timeoutPromise]).finally(
+      () => {
+        if (timeoutId) clearTimeout(timeoutId);
+      },
+    );
+
     const ocrText = ret?.data?.text || "";
     const confidence = ret?.data?.confidence || 0;
 

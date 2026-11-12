@@ -627,7 +627,7 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error("GET /api/reports/profit-loss error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error", details: error.message },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

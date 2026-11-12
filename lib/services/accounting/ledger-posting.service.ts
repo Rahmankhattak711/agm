@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/app/generated/prisma";
 import { TaxCategoryType } from "./tax-engine.service";
 
 export interface CreateJournalLineInput {
@@ -71,7 +72,7 @@ export class LedgerPostingService {
   /**
    * Creates a full double-entry journal entry with line-level project & tax dimensions
    */
-  static async createJournalEntry(input: CreateJournalEntryInput) {
+  static async createJournalEntry(input: CreateJournalEntryInput, tx?: Prisma.TransactionClient) {
     const { isValid, totalDebit, totalCredit, difference } = this.validateDoubleEntry(input.lines);
 
     if (input.isPosted && !isValid) {
@@ -83,8 +84,8 @@ export class LedgerPostingService {
     const entryNumber = await this.generateEntryNumber();
     const entryDate = new Date(input.entryDate);
 
-    return await prisma.$transaction(async (tx) => {
-      const entry = await tx.journalEntry.create({
+    const executeCreate = async (client: Prisma.TransactionClient | typeof prisma) => {
+      return await client.journalEntry.create({
         data: {
           entryNumber,
           entryDate,
@@ -128,16 +129,23 @@ export class LedgerPostingService {
           },
         },
       });
+    };
 
-      return entry;
+    if (tx) {
+      return await executeCreate(tx);
+    }
+
+    return await prisma.$transaction(async (innerTx) => {
+      return await executeCreate(innerTx);
     });
   }
 
   /**
    * Posts an approved Sales Invoice to General Ledger
    */
-  static async postSalesInvoiceToLedger(invoiceId: string, createdBy: string) {
-    const invoice = await prisma.salesInvoice.findUnique({
+  static async postSalesInvoiceToLedger(invoiceId: string, createdBy: string, tx?: Prisma.TransactionClient) {
+    const db = tx || prisma;
+    const invoice = await db.salesInvoice.findUnique({
       where: { id: invoiceId },
       include: {
         items: true,
@@ -148,7 +156,7 @@ export class LedgerPostingService {
     if (invoice.journalEntryId) return invoice.journalEntryId; // Already posted
 
     // 1. Find Accounts Receivable account (112 or code 1200)
-    const arAccount = await prisma.chartOfAccount.findFirst({
+    const arAccount = await db.chartOfAccount.findFirst({
       where: {
         OR: [
           { accountCode: "112" },
@@ -159,7 +167,7 @@ export class LedgerPostingService {
     });
 
     // 2. Find Sales Revenue account (411 or code 4000)
-    const revenueAccount = await prisma.chartOfAccount.findFirst({
+    const revenueAccount = await db.chartOfAccount.findFirst({
       where: {
         OR: [
           { accountCode: "411" },
@@ -170,7 +178,7 @@ export class LedgerPostingService {
     });
 
     // 3. Find VAT Output account (218 or code 2210)
-    const vatAccount = await prisma.chartOfAccount.findFirst({
+    const vatAccount = await db.chartOfAccount.findFirst({
       where: {
         OR: [
           { accountCode: "218" },
@@ -229,9 +237,9 @@ export class LedgerPostingService {
       isPosted: true,
       createdBy,
       lines,
-    });
+    }, tx);
 
-    await prisma.salesInvoice.update({
+    await db.salesInvoice.update({
       where: { id: invoiceId },
       data: { journalEntryId: journal.id },
     });

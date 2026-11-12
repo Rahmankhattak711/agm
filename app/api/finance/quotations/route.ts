@@ -65,7 +65,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/finance/quotations error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch quotations", details: error.message },
+      { error: "Failed to fetch quotations" },
       { status: 500 },
     );
   }
@@ -278,7 +278,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/finance/quotations error:", error);
     return NextResponse.json(
-      { error: "Failed to save quotation", details: error.message },
+      { error: "Failed to save quotation" },
       { status: 500 },
     );
   }

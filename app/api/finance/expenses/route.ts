@@ -6,6 +6,8 @@ import {
   unauthorized,
   forbidden,
 } from "@/lib/auth-server";
+import { getNextExpenseNumber } from "@/lib/utils/sequence";
+import { findOrCreateAccount } from "@/lib/commercial-accounting";
 
 export async function GET(req: NextRequest) {
   try {
@@ -89,7 +91,7 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error("Error fetching expenses:", error);
     return NextResponse.json(
-      { error: "Failed to fetch expenses", details: error.message },
+      { error: "Failed to fetch expenses" },
       { status: 500 },
     );
   }
@@ -133,13 +135,9 @@ export async function POST(req: NextRequest) {
     const numTax = Number(taxAmount || 0);
     const totalAmount = numAmount + numTax;
 
-    const expenseCount = await prisma.expense.count();
-    const expenseNumber = `EXP-${new Date().getFullYear()}-${String(
-      expenseCount + 1,
-    ).padStart(5, "0")}`;
-
     const result = await prisma.$transaction(async (tx) => {
       let journalEntryId: string | null = null;
+      const expenseNumber = await getNextExpenseNumber(tx);
 
       if (createJournal && expenseAccountId && paymentAccountId) {
         const entryCount = await tx.journalEntry.count();
@@ -161,16 +159,22 @@ export async function POST(req: NextRequest) {
         ];
 
         if (numTax > 0) {
-          const vatInputAccount = await tx.chartOfAccount.findFirst({
-            where: { accountCode: "2200" },
+          const vatInputAccount =
+            (await tx.chartOfAccount.findFirst({
+              where: { accountCode: "2200" },
+            })) ||
+            (await findOrCreateAccount(
+              "2200",
+              "VAT Input Tax (5%)",
+              "ASSET",
+              tx,
+            ));
+
+          lines.splice(1, 0, {
+            accountId: vatInputAccount.id,
+            debit: numTax,
+            credit: 0,
           });
-          if (vatInputAccount) {
-            lines.splice(1, 0, {
-              accountId: vatInputAccount.id,
-              debit: numTax,
-              credit: 0,
-            });
-          }
         }
 
         const journal = await tx.journalEntry.create({
@@ -224,7 +228,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Error creating expense:", error);
     return NextResponse.json(
-      { error: "Failed to create expense", details: error.message },
+      { error: "Failed to create expense" },
       { status: 500 },
     );
   }

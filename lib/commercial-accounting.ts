@@ -1,13 +1,16 @@
 import prisma from "@/lib/prisma";
-import { AccountResolverService } from "@/app/(workspace)/finance/accounts";
+import type { Prisma } from "@/app/generated/prisma";
+import { AccountResolverService } from "@/app/(workspace)/finance/accounts/services/account-resolver.service";
 import { FiscalLockService } from "./modules/accounting/services/fiscal-lock.service";
 
 export async function findOrCreateAccount(
   code: string,
   name: string,
   type: "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE",
+  tx?: Prisma.TransactionClient,
 ) {
-  let account = await prisma.chartOfAccount.findFirst({
+  const db = tx || prisma;
+  let account = await db.chartOfAccount.findFirst({
     where: {
       OR: [
         { accountCode: code },
@@ -17,7 +20,7 @@ export async function findOrCreateAccount(
   });
 
   if (!account) {
-    account = await prisma.chartOfAccount.create({
+    account = await db.chartOfAccount.create({
       data: {
         accountCode: code,
         accountName: name,
@@ -60,7 +63,8 @@ export async function postSalesInvoiceJournalEntry(params: {
   vatAmount: number;
   totalAmount: number;
   userId: string;
-}) {
+}, tx?: Prisma.TransactionClient) {
+  const db = tx || prisma;
   await FiscalLockService.assertPeriodNotLocked(params.invoiceDate);
 
   const accounts = await getStandardAccounts();
@@ -95,7 +99,7 @@ export async function postSalesInvoiceJournalEntry(params: {
   let discountApplied = false;
   if (discountAmount > 0) {
     const discountAcc = params.discountAccountId
-      ? await prisma.chartOfAccount.findUnique({ where: { id: params.discountAccountId } })
+      ? await db.chartOfAccount.findUnique({ where: { id: params.discountAccountId } })
       : accounts.salesDiscount;
     const targetAccountId = discountAcc?.id || accounts.salesDiscount?.id || accounts.expenseDiscount?.id;
 
@@ -165,7 +169,7 @@ export async function postSalesInvoiceJournalEntry(params: {
     );
   }
 
-  const journalEntry = await prisma.journalEntry.create({
+  const journalEntry = await db.journalEntry.create({
     data: {
       entryNumber,
       entryDate: params.invoiceDate,
@@ -201,7 +205,8 @@ export async function postCustomerPaymentJournalEntry(params: {
   paymentMethod: string;
   invoiceNumber?: string;
   userId: string;
-}) {
+}, tx?: Prisma.TransactionClient) {
+  const db = tx || prisma;
   await FiscalLockService.assertPeriodNotLocked(params.paymentDate);
 
   const accounts = await getStandardAccounts();
@@ -241,7 +246,7 @@ export async function postCustomerPaymentJournalEntry(params: {
     },
   ];
 
-  const journalEntry = await prisma.journalEntry.create({
+  const journalEntry = await db.journalEntry.create({
     data: {
       entryNumber,
       entryDate: params.paymentDate,
@@ -280,7 +285,8 @@ export async function postSupplierBillJournalEntry(params: {
   vatAmount: number;
   totalAmount: number;
   userId: string;
-}) {
+}, tx?: Prisma.TransactionClient) {
+  const db = tx || prisma;
   await FiscalLockService.assertPeriodNotLocked(params.billDate);
 
   const accounts = await getStandardAccounts();
@@ -373,7 +379,7 @@ export async function postSupplierBillJournalEntry(params: {
     );
   }
 
-  const journalEntry = await prisma.journalEntry.create({
+  const journalEntry = await db.journalEntry.create({
     data: {
       entryNumber,
       entryDate: params.billDate,
@@ -409,7 +415,8 @@ export async function postSupplierPaymentJournalEntry(params: {
   paymentMethod: string;
   billNumber?: string;
   userId: string;
-}) {
+}, tx?: Prisma.TransactionClient) {
+  const db = tx || prisma;
   await FiscalLockService.assertPeriodNotLocked(params.paymentDate);
 
   const accounts = await getStandardAccounts();
@@ -449,7 +456,7 @@ export async function postSupplierPaymentJournalEntry(params: {
     },
   ];
 
-  const journalEntry = await prisma.journalEntry.create({
+  const journalEntry = await db.journalEntry.create({
     data: {
       entryNumber,
       entryDate: params.paymentDate,
@@ -487,7 +494,8 @@ export async function postCreditNoteJournalEntry(params: {
   vatAmount: number;
   totalAmount: number;
   userId: string;
-}) {
+}, tx?: Prisma.TransactionClient) {
+  const db = tx || prisma;
   await FiscalLockService.assertPeriodNotLocked(params.returnDate);
 
   const accounts = await getStandardAccounts();
@@ -547,7 +555,7 @@ export async function postCreditNoteJournalEntry(params: {
     description: `Credit Note receivable reduction: ${params.creditNoteNumber} - ${params.customerName}`,
   });
 
-  const journalEntry = await prisma.journalEntry.create({
+  const journalEntry = await db.journalEntry.create({
     data: {
       entryNumber,
       entryDate: params.returnDate,
@@ -585,7 +593,8 @@ export async function postDebitNoteJournalEntry(params: {
   vatAmount: number;
   totalAmount: number;
   userId: string;
-}) {
+}, tx?: Prisma.TransactionClient) {
+  const db = tx || prisma;
   await FiscalLockService.assertPeriodNotLocked(params.returnDate);
 
   const accounts = await getStandardAccounts();
@@ -644,7 +653,7 @@ export async function postDebitNoteJournalEntry(params: {
     });
   }
 
-  const journalEntry = await prisma.journalEntry.create({
+  const journalEntry = await db.journalEntry.create({
     data: {
       entryNumber,
       entryDate: params.returnDate,
@@ -670,8 +679,9 @@ export async function postDebitNoteJournalEntry(params: {
  * Dr. 2200 Input VAT (5% tax)
  *   Cr. 2000 Accounts Payable (Gross total)
  */
-export async function convertPurchaseOrderToBill(poId: string, userId: string) {
-  const po = await prisma.purchaseOrder.findUnique({
+export async function convertPurchaseOrderToBill(poId: string, userId: string, tx?: Prisma.TransactionClient) {
+  const db = tx || prisma;
+  const po = await db.purchaseOrder.findUnique({
     where: { id: poId },
     include: {
       supplier: true,
@@ -727,7 +737,7 @@ export async function convertPurchaseOrderToBill(poId: string, userId: string) {
   const billDate = po.orderDate ? new Date(po.orderDate) : new Date();
 
   // Create SupplierBill
-  const bill = await prisma.supplierBill.create({
+  const bill = await db.supplierBill.create({
     data: {
       billNumber,
       supplierId: po.supplierId,
@@ -762,10 +772,10 @@ export async function convertPurchaseOrderToBill(poId: string, userId: string) {
     vatAmount: Number(bill.vatAmount),
     totalAmount: Number(bill.totalAmount),
     userId,
-  });
+  }, tx);
 
   // Link Journal Entry back to the bill
-  const updatedBill = await prisma.supplierBill.update({
+  const updatedBill = await db.supplierBill.update({
     where: { id: bill.id },
     data: {
       journalEntryId: je.id,

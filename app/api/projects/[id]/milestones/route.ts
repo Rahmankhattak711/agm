@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { getAuthUser, unauthorized } from "@/lib/auth-server";
+import { getAuthUser, unauthorized, forbidden, hasRole } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -21,7 +21,7 @@ export async function GET(
   } catch (error: any) {
     console.error("Error fetching project milestones:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch milestones" },
+      { error: "Failed to fetch milestones" },
       { status: 500 },
     );
   }
@@ -34,6 +34,17 @@ export async function POST(
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "PROJECT_MANAGER",
+        "SITE_ENGINEER",
+        "COMMERCIAL_MANAGER",
+      ])
+    ) {
+      return forbidden();
+    }
 
     const { id: projectId } = await params;
     const body = await request.json();
@@ -71,7 +82,7 @@ export async function POST(
   } catch (error: any) {
     console.error("Error creating project milestone:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create milestone" },
+      { error: "Failed to create milestone" },
       { status: 500 },
     );
   }
@@ -84,6 +95,17 @@ export async function PATCH(
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "PROJECT_MANAGER",
+        "SITE_ENGINEER",
+        "COMMERCIAL_MANAGER",
+      ])
+    ) {
+      return forbidden();
+    }
 
     const { id: projectId } = await params;
     const { searchParams } = new URL(request.url);
@@ -125,7 +147,7 @@ export async function PATCH(
   } catch (error: any) {
     console.error("Error updating milestone:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update milestone" },
+      { error: "Failed to update milestone" },
       { status: 500 },
     );
   }

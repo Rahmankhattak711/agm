@@ -1,7 +1,13 @@
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
-import { getAuthUser, unauthorized } from "@/lib/auth-server";
+import {
+  getAuthUser,
+  hasRole,
+  unauthorized,
+  forbidden,
+  resolveLinkedEmployee,
+} from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { DocumentVaultService } from "@/lib/modules/hr/services/document-vault.service";
 import { buildEmployeeDossierPdf } from "@/lib/pdf/dossier-builder";
@@ -16,6 +22,14 @@ export async function POST(request: Request) {
 
     if (!employeeId) {
       return NextResponse.json({ error: "employeeId is required" }, { status: 400 });
+    }
+
+    const isHrOrAdmin = hasRole(user, "SUPER_ADMIN", "ADMIN", "HR_MANAGER", "HR");
+    if (!isHrOrAdmin) {
+      const linkage = await resolveLinkedEmployee(user);
+      if (linkage.status !== "MATCH" || linkage.employeeId !== employeeId) {
+        return forbidden("Forbidden: You cannot export dossiers of other employees");
+      }
     }
 
     const employee = await prisma.employee.findUnique({
@@ -93,7 +107,7 @@ export async function POST(request: Request) {
   } catch (err: any) {
     console.error("Error generating dossier PDF:", err);
     return NextResponse.json(
-      { error: err.message || "Failed to generate compliance dossier" },
+      { error: "Failed to generate compliance dossier" },
       { status: 500 }
     );
   }

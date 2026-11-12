@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { getAuthUser, unauthorized } from "@/lib/auth-server";
+import { getAuthUser, unauthorized, forbidden, hasRole } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
 import { sumBy } from "@/lib/utils/math";
 import {
@@ -118,7 +118,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("Error fetching projects:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch projects" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
@@ -128,6 +128,17 @@ export async function POST(request: Request) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "PROJECT_MANAGER",
+        "COMMERCIAL_MANAGER",
+        "ESTIMATOR",
+      ])
+    ) {
+      return forbidden();
+    }
 
     const body = await request.json();
     const {
@@ -249,7 +260,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Error creating project:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create project" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

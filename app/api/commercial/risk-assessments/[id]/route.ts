@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getAuthUser, unauthorized, forbidden, hasRole } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 
 export async function GET(
@@ -6,6 +7,21 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "COMMERCIAL_MANAGER",
+        "PROJECT_MANAGER",
+        "ESTIMATOR",
+        "SITE_ENGINEER",
+      ])
+    ) {
+      return forbidden();
+    }
+
     const { id } = await params;
     const isUuid =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
@@ -29,8 +45,9 @@ export async function GET(
     }
     return NextResponse.json(item);
   } catch (error: any) {
+    console.error("GET /api/commercial/risk-assessments/[id] error:", error);
     return NextResponse.json(
-      { error: "Failed to get risk assessment", details: error.message },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
@@ -41,6 +58,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) return unauthorized();
+    if (
+      !hasRole(authUser, [
+        "SUPER_ADMIN",
+        "ADMIN",
+        "COMMERCIAL_MANAGER",
+        "PROJECT_MANAGER",
+      ])
+    ) {
+      return forbidden();
+    }
+
     const { id } = await params;
     const isUuid =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
@@ -64,8 +94,9 @@ export async function DELETE(
 
     return NextResponse.json({ ok: true });
   } catch (error: any) {
+    console.error("DELETE /api/commercial/risk-assessments/[id] error:", error);
     return NextResponse.json(
-      { error: "Failed to delete risk assessment", details: error.message },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

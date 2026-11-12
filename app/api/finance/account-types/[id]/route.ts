@@ -32,7 +32,7 @@ export async function GET(
   } catch (error: any) {
     console.error("GET /api/finance/account-types/[id] error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch account type" },
+      { error: "Failed to fetch account type" },
       { status: 500 },
     );
   }
@@ -116,7 +116,7 @@ export async function PUT(
   } catch (error: any) {
     console.error("PUT /api/finance/account-types/[id] error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update account type" },
+      { error: "Failed to update account type" },
       { status: 500 },
     );
   }
@@ -165,7 +165,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error("DELETE /api/finance/account-types/[id] error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete account type" },
+      { error: "Failed to delete account type" },
       { status: 500 },
     );
   }

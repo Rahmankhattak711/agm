@@ -87,7 +87,7 @@ export async function POST(
   } catch (error: any) {
     console.error("POST convert sales order to invoice error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to convert sales order to invoice" },
+      { error: "Failed to convert sales order to invoice" },
       { status: 500 },
     );
   }

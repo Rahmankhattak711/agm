@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/finance/reports/corporate-tax error:", error);
     return NextResponse.json(
-      { error: "Failed to generate Corporate Tax report", details: error.message },
+      { error: "Failed to generate Corporate Tax report" },
       { status: 500 },
     );
   }

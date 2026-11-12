@@ -1,10 +1,10 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma";
 import {
-  canModifyResource,
   forbidden,
   getAuthUser,
   hasRole,
+  resolveLinkedEmployee,
   unauthorized,
 } from "@/lib/auth-server";
 import { NextResponse } from "next/server";
@@ -19,8 +19,25 @@ export async function GET(request: Request) {
     const status = searchParams.get("status");
 
     const where: any = {};
-    if (employeeId) where.employeeId = employeeId;
     if (status) where.status = status;
+
+    const isHrOrAccountant =
+      hasRole(authUser, "HR") || hasRole(authUser, "ACCOUNTANT");
+
+    if (isHrOrAccountant) {
+      if (employeeId) where.employeeId = employeeId;
+    } else {
+      const linkage = await resolveLinkedEmployee(authUser);
+      if (linkage.status !== "MATCH") {
+        return NextResponse.json([]);
+      }
+      if (employeeId && employeeId !== linkage.employeeId) {
+        return forbidden(
+          "Forbidden: You cannot view another employee's leave requests",
+        );
+      }
+      where.employeeId = linkage.employeeId;
+    }
 
     const leaves = await prisma.leaveRequest.findMany({
       where,
@@ -64,6 +81,13 @@ export async function POST(request: Request) {
         { error: "Missing required leave fields" },
         { status: 400 },
       );
+    }
+
+    if (!hasRole(authUser, "HR")) {
+      const linkage = await resolveLinkedEmployee(authUser);
+      if (linkage.status !== "MATCH" || linkage.employeeId !== employeeId) {
+        return forbidden("Forbidden: You can only apply for your own leave");
+      }
     }
 
     const created = await prisma.leaveRequest.create({
@@ -127,13 +151,25 @@ export async function PATCH(request: Request) {
       );
     }
 
-    if (
-      status === "CANCELLED" &&
-      !hasRole(user, "HR") &&
-      user.id !== existing.employeeId
+    if (status === "CANCELLED") {
+      if (!hasRole(user, "HR")) {
+        const linkage = await resolveLinkedEmployee(user);
+        if (
+          linkage.status !== "MATCH" ||
+          linkage.employeeId !== existing.employeeId
+        ) {
+          return forbidden(
+            "Forbidden: You cannot cancel another user's leave request",
+          );
+        }
+      }
+    } else if (
+      status !== "APPROVED" &&
+      status !== "REJECTED" &&
+      !hasRole(user, "HR")
     ) {
       return forbidden(
-        "Forbidden: You cannot cancel another user's leave request",
+        "Forbidden: You do not have permission to update this leave request",
       );
     }
 
@@ -205,7 +241,7 @@ export async function DELETE(request: Request) {
 
     const existing = await prisma.leaveRequest.findUnique({
       where: { id },
-      select: { id: true, employeeId: true },
+      select: { id: true, employeeId: true, status: true },
     });
 
     if (!existing) {
@@ -215,10 +251,21 @@ export async function DELETE(request: Request) {
       );
     }
 
-    if (!canModifyResource(user, existing.employeeId, ["HR"])) {
-      return forbidden(
-        "Forbidden: You cannot delete another user's leave request",
-      );
+    if (!hasRole(user, "HR")) {
+      const linkage = await resolveLinkedEmployee(user);
+      if (
+        linkage.status !== "MATCH" ||
+        linkage.employeeId !== existing.employeeId
+      ) {
+        return forbidden(
+          "Forbidden: You cannot delete another user's leave request",
+        );
+      }
+      if (existing.status === "APPROVED") {
+        return forbidden(
+          "Forbidden: Approved leave requests cannot be deleted by employees",
+        );
+      }
     }
 
     await prisma.leaveRequest.delete({ where: { id } });

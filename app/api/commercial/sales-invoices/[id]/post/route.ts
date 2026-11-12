@@ -33,7 +33,7 @@ export async function POST(
   } catch (error: any) {
     console.error("POST post sales invoice error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to post sales invoice" },
+      { error: "Failed to post sales invoice" },
       { status: 400 },
     );
   }

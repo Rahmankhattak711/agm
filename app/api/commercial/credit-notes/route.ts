@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth-server";
 import prisma from "@/lib/prisma";
 import { postCreditNoteJournalEntry } from "@/lib/commercial-accounting";
+import { getNextCreditNoteNumber } from "@/lib/utils/sequence";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -52,7 +53,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/commercial/credit-notes error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch credit notes" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
@@ -81,91 +82,97 @@ export async function POST(request: Request) {
       autoPost = true,
     } = body;
 
-    let custId = customerId;
-    let custName = customerName;
-
-    if (salesInvoiceId && !custId) {
-      const inv = await prisma.salesInvoice.findUnique({
-        where: { id: salesInvoiceId },
-      });
-      if (inv) {
-        custId = inv.customerId;
-        if (!custName) custName = inv.customerName;
-      }
-    }
-
-    let cnNo = creditNoteNumber;
-    if (!cnNo) {
-      const count = await prisma.creditNote.count();
-      cnNo = `CN-2026-${(count + 1).toString().padStart(4, "0")}`;
-    }
-
     const netSub = parseFloat(subtotal) || 0;
     const netVat = parseFloat(vatAmount) || netSub * 0.05;
     const netTot = parseFloat(totalAmount) || netSub + netVat;
     const retDate = returnDate ? new Date(returnDate) : new Date();
 
-    let journalEntryId: string | null = null;
-    if (autoPost) {
-      const je = await postCreditNoteJournalEntry({
-        creditNoteId: "",
-        creditNoteNumber: cnNo,
-        returnDate: retDate,
-        customerName: custName || "Customer",
-        subtotal: netSub,
-        vatAmount: netVat,
-        totalAmount: netTot,
-        userId: authUser.id,
-      });
-      journalEntryId = je.id;
-    }
+    const creditNote = await prisma.$transaction(async (tx) => {
+      let custId = customerId;
+      let custName = customerName;
 
-    const creditNote = await prisma.creditNote.create({
-      data: {
-        creditNoteNumber: cnNo,
-        customerId: custId || null,
-        customerName: custName || "Valued Customer",
-        salesInvoiceId: salesInvoiceId || null,
-        returnDate: retDate,
-        reason: reason || "Scope alteration / Client credit note",
-        subtotal: netSub,
-        vatAmount: netVat,
-        totalAmount: netTot,
-        status: autoPost ? "POSTED" : "DRAFT",
-        journalEntryId,
-        createdById: authUser.id,
-        items: {
-          create: items.map((i: any) => ({
-            description: i.description || "Credit item",
-            quantity: parseFloat(i.quantity) || 1,
-            unitPrice: parseFloat(i.unitPrice || i.unitRate) || 0,
-            totalAmount:
-              (parseFloat(i.quantity) || 1) *
-              (parseFloat(i.unitPrice || i.unitRate) || 0),
-          })),
-        },
-      },
-      include: {
-        items: true,
-        customerRel: true,
-        salesInvoice: true,
-      },
-    });
+      if (salesInvoiceId && !custId) {
+        const inv = await tx.salesInvoice.findUnique({
+          where: { id: salesInvoiceId },
+        });
+        if (inv) {
+          custId = inv.customerId;
+          if (!custName) custName = inv.customerName;
+        }
+      }
 
-    if (autoPost && custId) {
-      await prisma.customer.update({
-        where: { id: custId },
+      let cnNo = creditNoteNumber;
+      if (!cnNo) {
+        cnNo = await getNextCreditNoteNumber(tx);
+      }
+
+      let journalEntryId: string | null = null;
+      if (autoPost) {
+        const je = await postCreditNoteJournalEntry(
+          {
+            creditNoteId: "",
+            creditNoteNumber: cnNo,
+            returnDate: retDate,
+            customerName: custName || "Customer",
+            subtotal: netSub,
+            vatAmount: netVat,
+            totalAmount: netTot,
+            userId: authUser.id,
+          },
+          tx
+        );
+        journalEntryId = je.id;
+      }
+
+      const createdNote = await tx.creditNote.create({
         data: {
-          currentBalance: { decrement: netTot },
+          creditNoteNumber: cnNo,
+          customerId: custId || null,
+          customerName: custName || "Valued Customer",
+          salesInvoiceId: salesInvoiceId || null,
+          returnDate: retDate,
+          reason: reason || "Scope alteration / Client credit note",
+          subtotal: netSub,
+          vatAmount: netVat,
+          totalAmount: netTot,
+          status: autoPost ? "POSTED" : "DRAFT",
+          journalEntryId,
+          createdById: authUser.id,
+          items: {
+            create: items.map((i: any) => ({
+              description: i.description || "Credit item",
+              quantity: parseFloat(i.quantity) || 1,
+              unitPrice: parseFloat(i.unitPrice || i.unitRate) || 0,
+              totalAmount:
+                (parseFloat(i.quantity) || 1) *
+                (parseFloat(i.unitPrice || i.unitRate) || 0),
+            })),
+          },
+        },
+        include: {
+          items: true,
+          customerRel: true,
+          salesInvoice: true,
         },
       });
-    }
+
+      if (autoPost && custId) {
+        await tx.customer.update({
+          where: { id: custId },
+          data: {
+            currentBalance: { decrement: netTot },
+          },
+        });
+      }
+
+      return createdNote;
+    });
 
     return NextResponse.json(creditNote, { status: 201 });
   } catch (error: any) {
     console.error("POST /api/commercial/credit-notes error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create credit note" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

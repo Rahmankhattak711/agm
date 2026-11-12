@@ -55,7 +55,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/commercial/sales-orders error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch sales orders" },
+      { error: "Failed to fetch sales orders" },
       { status: 500 },
     );
   }
@@ -174,7 +174,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/commercial/sales-orders error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create sales order" },
+      { error: "Failed to create sales order" },
       { status: 500 },
     );
   }

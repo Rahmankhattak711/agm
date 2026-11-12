@@ -1,4 +1,10 @@
-import { getAuthUser, unauthorized } from "@/lib/auth-server";
+import {
+  getAuthUser,
+  hasRole,
+  unauthorized,
+  forbidden,
+  resolveLinkedEmployee,
+} from "@/lib/auth-server";
 import { SalarySlipService } from "@/lib/modules/hr/services/salary-slip.service";
 import { NextResponse } from "next/server";
 
@@ -11,8 +17,24 @@ export async function GET(request: Request) {
     const now = new Date();
     const month = searchParams.get("month") ? parseInt(searchParams.get("month")!, 10) : now.getMonth() + 1;
     const year = searchParams.get("year") ? parseInt(searchParams.get("year")!, 10) : now.getFullYear();
-    const employeeId = searchParams.get("employeeId") || undefined;
+    let employeeId = searchParams.get("employeeId") || undefined;
     const search = searchParams.get("search") || undefined;
+
+    const isHrOrFinance = hasRole(user, "SUPER_ADMIN", "ADMIN", "HR_MANAGER", "HR", "ACCOUNTANT");
+
+    if (!isHrOrFinance) {
+      // Non-privileged users can only access their own salary slips
+      const linkage = await resolveLinkedEmployee(user);
+      if (linkage.status !== "MATCH") {
+        return forbidden("Forbidden: No linked employee profile found");
+      }
+
+      if (employeeId && employeeId !== linkage.employeeId) {
+        return forbidden("Forbidden: You can only view your own salary slip");
+      }
+
+      employeeId = linkage.employeeId;
+    }
 
     const slips = await SalarySlipService.getSalarySlips({
       month,

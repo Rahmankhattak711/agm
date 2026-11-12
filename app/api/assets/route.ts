@@ -8,20 +8,6 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { microCache } from "@/lib/modules/accounting/cache/micro-cache";
 
-async function ensureFixedAssetFileColumns() {
-  try {
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE fixed_assets
-      ADD COLUMN IF NOT EXISTS image_url TEXT,
-      ADD COLUMN IF NOT EXISTS file_name TEXT,
-      ADD COLUMN IF NOT EXISTS file_type TEXT,
-      ADD COLUMN IF NOT EXISTS notes TEXT;
-    `);
-  } catch {
-    // Ignore if columns already exist or permissions restrict DDL
-  }
-}
-
 export async function POST(request: Request) {
   try {
     const authUser = await getAuthUser(request);
@@ -60,8 +46,6 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-
-    await ensureFixedAssetFileColumns();
 
     // Auto-resolve fallback accounts if not provided by user
     let finalAssetAccId = assetAccountId || null;
@@ -210,7 +194,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("POST /api/assets error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to register fixed asset" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
@@ -229,8 +213,6 @@ export async function GET(request: Request) {
     if (cached && !forceRefresh) {
       return NextResponse.json(cached);
     }
-
-    await ensureFixedAssetFileColumns();
 
     const assets = await prisma.fixedAsset.findMany({
       orderBy: { purchaseDate: "desc" },

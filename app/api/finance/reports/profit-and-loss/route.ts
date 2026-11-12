@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("GET /api/finance/reports/profit-and-loss error:", error);
     return NextResponse.json(
-      { error: "Failed to generate Profit and Loss report", details: error.message },
+      { error: "Failed to generate Profit and Loss report" },
       { status: 500 }
     );
   }
